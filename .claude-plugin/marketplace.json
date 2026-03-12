@@ -1,0 +1,27 @@
+{
+  "name": "ryosukee-tools",
+  "owner": {
+    "name": "ryosukee"
+  },
+  "metadata": {
+    "description": "個人用 Claude Code plugin marketplace",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "session",
+      "source": "./plugins/session",
+      "description": "tmux pane ID を使った Claude Code セッション追跡"
+    },
+    {
+      "name": "version-check",
+      "source": "./plugins/version-check",
+      "description": "Claude Code のバージョン追跡・更新検知"
+    },
+    {
+      "name": "workflow",
+      "source": "./plugins/workflow",
+      "description": "エンジニアリングワークフロー skill 群"
+    }
+  ]
+}

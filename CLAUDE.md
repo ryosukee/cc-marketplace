@@ -20,11 +20,12 @@ utility 系 plugin（session, version-check）と、将来的に workflow 系 pl
 claude-marketplace/
 ├── CLAUDE.md
 ├── README.md
-├── marketplace.json              # marketplace 定義
+├── .claude-plugin/
+│   └── marketplace.json          # marketplace カタログ
 ├── plugins/
 │   └── {plugin-name}/
 │       ├── .claude-plugin/
-│       │   └── plugin.json       # plugin 定義
+│       │   └── plugin.json       # plugin マニフェスト
 │       ├── hooks/
 │       │   └── hooks.json        # hooks 定義
 │       ├── scripts/              # hooks スクリプト、API スクリプト
