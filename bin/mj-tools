@@ -57,22 +57,19 @@ resolve_plugin_path() {
 resolve_api_script() {
   local plugin_path="$1"
   local command="$2"
+  local plugin_name="$3"
 
-  # コマンド名 → スクリプトファイル名のマッピング
-  local -A cmd_map=(
-    ["session:get-by-pane"]="get-session-by-pane.sh"
-    ["session:list"]="list-sessions.sh"
-    ["version-check:get"]="get-version.sh"
-    ["version-check:check"]="check-update.sh"
-  )
-
-  local key="${3}:${command}"
-  local script_name="${cmd_map[$key]:-}"
-
-  if [ -z "$script_name" ]; then
-    echo "error: unknown command '$command' for plugin '$3'" >&2
-    return 1
-  fi
+  local script_name=""
+  case "${plugin_name}:${command}" in
+    session:get-by-pane)   script_name="get-session-by-pane.sh" ;;
+    session:list)          script_name="list-sessions.sh" ;;
+    version-check:get)     script_name="get-version.sh" ;;
+    version-check:check)   script_name="check-update.sh" ;;
+    *)
+      echo "error: unknown command '$command' for plugin '$plugin_name'" >&2
+      return 1
+      ;;
+  esac
 
   local script_path="$plugin_path/scripts/api/$script_name"
 
