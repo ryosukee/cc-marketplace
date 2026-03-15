@@ -1,0 +1,173 @@
+#!/bin/bash
+# mj-tools — marketplace CLI
+# plugin の API スクリプトを呼び出すフロントエンド
+set -euo pipefail
+
+MARKETPLACE_NAME="mj-tools"
+INSTALLED_PLUGINS="$HOME/.claude/plugins/installed_plugins.json"
+
+usage() {
+  cat <<'USAGE'
+Usage: mj-tools <plugin> <command> [args...]
+       mj-tools doctor
+       mj-tools help
+
+Plugins:
+  session         セッション管理
+  version-check   バージョン追跡
+
+Commands per plugin:
+  session:
+    get-by-pane [PANE_ID]   pane のセッション情報を取得
+    list                    アクティブセッション一覧
+
+  version-check:
+    get                     現在のバージョンを取得
+    check                   更新有無をチェック
+USAGE
+}
+
+# installed_plugins.json から plugin の installPath を解決
+resolve_plugin_path() {
+  local plugin_name="$1"
+  local key="${plugin_name}@${MARKETPLACE_NAME}"
+
+  if [ ! -f "$INSTALLED_PLUGINS" ]; then
+    echo "error: $INSTALLED_PLUGINS not found" >&2
+    return 1
+  fi
+
+  local path
+  path=$(jq -r --arg key "$key" '.plugins[$key][0].installPath // empty' "$INSTALLED_PLUGINS")
+
+  if [ -z "$path" ]; then
+    echo "error: plugin '$plugin_name' not found in $MARKETPLACE_NAME" >&2
+    return 1
+  fi
+
+  if [ ! -d "$path" ]; then
+    echo "error: plugin path does not exist: $path" >&2
+    return 1
+  fi
+
+  echo "$path"
+}
+
+# コマンド名から API スクリプトのファイル名を解決
+resolve_api_script() {
+  local plugin_path="$1"
+  local command="$2"
+
+  # コマンド名 → スクリプトファイル名のマッピング
+  local -A cmd_map=(
+    ["session:get-by-pane"]="get-session-by-pane.sh"
+    ["session:list"]="list-sessions.sh"
+    ["version-check:get"]="get-version.sh"
+    ["version-check:check"]="check-update.sh"
+  )
+
+  local key="${3}:${command}"
+  local script_name="${cmd_map[$key]:-}"
+
+  if [ -z "$script_name" ]; then
+    echo "error: unknown command '$command' for plugin '$3'" >&2
+    return 1
+  fi
+
+  local script_path="$plugin_path/scripts/api/$script_name"
+
+  if [ ! -f "$script_path" ]; then
+    echo "error: API script not found: $script_path" >&2
+    return 1
+  fi
+
+  echo "$script_path"
+}
+
+# doctor: ヘルスチェック
+cmd_doctor() {
+  local ok=true
+
+  echo "mj-tools doctor"
+  echo "==============="
+
+  # jq
+  if command -v jq &>/dev/null; then
+    echo "  [ok] jq"
+  else
+    echo "  [ng] jq: not found"
+    ok=false
+  fi
+
+  # installed_plugins.json
+  if [ -f "$INSTALLED_PLUGINS" ]; then
+    echo "  [ok] installed_plugins.json"
+  else
+    echo "  [ng] installed_plugins.json: not found"
+    ok=false
+  fi
+
+  # 各 plugin のパス
+  for plugin in session version-check; do
+    local path
+    if path=$(resolve_plugin_path "$plugin" 2>/dev/null); then
+      echo "  [ok] $plugin: $path"
+    else
+      echo "  [ng] $plugin: not installed"
+      ok=false
+    fi
+  done
+
+  # TMUX_PANE
+  if [ -n "${TMUX_PANE:-}" ]; then
+    echo "  [ok] TMUX_PANE: $TMUX_PANE"
+  else
+    echo "  [--] TMUX_PANE: not set (session commands will need explicit pane ID)"
+  fi
+
+  echo ""
+  if $ok; then
+    echo "All checks passed."
+  else
+    echo "Some checks failed."
+    return 1
+  fi
+}
+
+# メイン
+if [ $# -eq 0 ]; then
+  usage
+  exit 0
+fi
+
+case "$1" in
+  help|--help|-h)
+    usage
+    exit 0
+    ;;
+  doctor)
+    cmd_doctor
+    exit $?
+    ;;
+  session|version-check)
+    plugin_name="$1"
+    if [ $# -lt 2 ]; then
+      echo "error: missing command for plugin '$plugin_name'" >&2
+      echo "Run 'mj-tools help' for usage." >&2
+      exit 1
+    fi
+    command="$2"
+    shift 2
+
+    plugin_path=$(resolve_plugin_path "$plugin_name")
+    script_path=$(resolve_api_script "$plugin_path" "$command" "$plugin_name")
+
+    export CLAUDE_PLUGIN_ROOT="$plugin_path"
+    exec bash "$script_path" "$@"
+    ;;
+  *)
+    echo "error: unknown plugin or command '$1'" >&2
+    echo "Run 'mj-tools help' for usage." >&2
+    exit 1
+    ;;
+esac

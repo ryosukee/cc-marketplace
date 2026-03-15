@@ -41,17 +41,22 @@ my-plugin/
 
 ## TODO
 
-- [ ] marketplace の初期セットアップ（marketplace.json, plugin.json）
+- [x] marketplace の初期セットアップ（marketplace.json, plugin.json）
 - [ ] session plugin の設計・実装
-  - [ ] hooks: SessionStart/SessionEnd で pane ↔ session ID を記録
-  - [ ] internal: pane ごとの状態管理
+  - [x] hooks: SessionStart/SessionEnd で pane ↔ session ID を記録
+  - [x] internal: pane ごとの状態管理
   - [ ] api: get-current-session-id, list-active-sessions
   - [ ] skills: session 情報を活用する skill（あれば）
-- [ ] version-check plugin の設計・実装
-  - [ ] hooks: SessionStart でバージョンをキャプチャ
-  - [ ] internal: バージョン履歴、更新フラグ
-  - [ ] api: get-version, check-update
-  - [ ] skills: changelog-check
+  - [ ] pane 終了時のクリーンアップ（tmux hook 等で pane 死亡検知 → mapping 削除）
+- [x] version-check plugin の設計・実装
+  - [x] hooks: SessionStart でバージョンをキャプチャ
+  - [x] internal: バージョン履歴、更新フラグ
+  - [x] api: get-version, check-update
+  - [x] skills: changelog-check
+- [ ] CLI (`mj-tools`) の設計・実装
+  - [ ] サブコマンド体系の定義
+  - [ ] `~/.claude/bin/mj-tools` の実装
+  - [ ] `installed_plugins.json` からの plugin パス解決
 - [ ] 既存グローバル skills/hooks の plugin 移行計画
   - [ ] ~/.claude/skills/ のどれを plugin 化するか棚卸し
   - [ ] ~/.claude/rules/ 内の workflow 系ルールの扱い検討（plugin から rules は配置できない制約）
