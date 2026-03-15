@@ -17,29 +17,28 @@ utility 系 plugin（session, version-check）と、将来的に workflow 系 pl
 ## ディレクトリ構成
 
 ```
-claude-marketplace/
+marujirou-cc-marketplace/
 ├── CLAUDE.md
 ├── README.md
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
-├── plugins/
-│   └── {plugin-name}/
-│       ├── .claude-plugin/
-│       │   └── plugin.json       # plugin マニフェスト
-│       ├── hooks/
-│       │   └── hooks.json        # hooks 定義
-│       ├── scripts/              # hooks スクリプト、API スクリプト
-│       │   ├── hooks/            # hooks 実装
-│       │   └── api/              # skills 向け公開 I/F
-│       ├── internal/             # 永続化された状態（外部参照禁止）
-│       │   └── {resource}/
-│       │       ├── dependency.md # 依存情報
-│       │       └── {data}        # 実データ
-│       ├── skills/               # consumer skills
-│       │   └── {skill-name}/
-│       │       └── SKILL.md
-│       └── agents/               # consumer agents（あれば）
-└── docs/
+├── bin/
+│   └── mj-tools                  # CLI 本体
+└── plugins/
+    └── {plugin-name}/
+        ├── .claude-plugin/
+        │   └── plugin.json       # plugin マニフェスト
+        ├── hooks/
+        │   └── hooks.json        # hooks 定義
+        ├── scripts/
+        │   ├── hooks/            # hooks 実装
+        │   ├── api/              # skills・CLI 向け公開 I/F
+        │   │   └── README.md     # API 定義ドキュメント
+        │   └── lib/              # 共通ライブラリ（あれば）
+        ├── internal/             # 永続化された状態（外部参照禁止）
+        │   └── {resource}/
+        ├── skills/               # consumer skills
+        └── agents/               # consumer agents（あれば）
 ```
 
 ## コーディング規約
@@ -67,9 +66,21 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 - エラーメッセージは stderr
 - Exit codes: 0=成功, 1=該当なし, 2=前提条件エラー
 - 引数はコマンドライン引数で受ける
+- I/O 定義は各 plugin の `scripts/api/README.md` に記載する
+
+### CLI (`bin/mj-tools`)
+
+- marketplace 単位の CLI コマンド。`mj-tools <plugin> <command> [args...]` の形式
+- `installed_plugins.json` から plugin のキャッシュパスを解決し、`scripts/api/` に delegate
+- CLI ソースは repo ルートの `bin/` に配置
+- 配布方法: marketplace clone (`~/.claude/plugins/marketplaces/mj-tools/`) からの symlink
+    - `~/.claude/bin/mj-tools → ~/.claude/plugins/marketplaces/mj-tools/bin/mj-tools`
+    - `marketplace update` で git pull されるため CLI も自動追従
+- コマンド → API スクリプトのマッピングは CLI 内の case 文でハードコード
 
 ## 設計原則
 
 1. **Plugin 自己完結** — 各 plugin は `${CLAUDE_PLUGIN_ROOT}` 内で完結する。グローバルを汚染しない
 2. **Internal 隔離** — internal/ のデータは skills から直接参照せず、api スクリプト経由でアクセスする
 3. **Dependency 追跡** — internal リソースの依存関係を明示的に管理する
+4. **CLI は plugin の外** — CLI は marketplace ルートの `bin/` に置き、plugin システムとは別ライフサイクルで管理する
