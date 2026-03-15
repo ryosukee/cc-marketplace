@@ -30,9 +30,10 @@ if [ "$CURRENT_VERSION" = "$LAST_VERSION" ]; then
   exit 0
 fi
 
-# バージョンが変わっている → additionalContext を注入
+# バージョンが変わっている → systemMessage で通知 + additionalContext を注入
 cat <<EOF
 {
+  "systemMessage": "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚡ Claude Code v${LAST_VERSION} → v${CURRENT_VERSION}\n→ /version-check:check で changelog を確認\n→ /release-notes で公式リリースノートを確認\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
     "additionalContext": "{\"trigger\":\"version-check:check\",\"has_update\":true,\"current_version\":\"${CURRENT_VERSION}\",\"last_version\":\"${LAST_VERSION}\"}"

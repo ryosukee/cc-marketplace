@@ -1,5 +1,5 @@
 {
   "name": "version-check",
   "description": "Claude Code のバージョン追跡・更新検知",
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
