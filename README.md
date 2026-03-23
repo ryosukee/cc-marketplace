@@ -185,32 +185,12 @@ cc-marketplace/
 
 ## TODO
 
-- [x] marketplace の初期セットアップ
 - [ ] session plugin
-    - [x] hooks: SessionStart/SessionEnd で pane ↔ session ID を記録
-    - [x] internal: pane ごとの状態管理
-    - [x] api: get-session-by-pane, list-sessions
     - [ ] skills: session 情報を活用する skill（あれば）
     - [ ] pane 終了時のクリーンアップ（tmux hook 等で pane 死亡検知 → mapping 削除）
     - [ ] fork-to-pane skill（セッションを fork して別 pane で開く）
     - 参考: [docs/claude-session-internals.md](docs/claude-session-internals.md) — セッション内部構造・rewind・fork の調査
-- [ ] version-check plugin
-    - [x] hooks: SessionStart でバージョン変更検知・systemMessage 通知
-    - [x] internal: last-version の記録
-    - [x] api: get-version, check-update
-    - [x] skills: changelog 取得・要約表示
-    - [x] lib: 旧キャッシュからの last-version マイグレーション
-    - [x] changelog 要約の永続化（バージョン別保存・閲覧）
-- [x] CLI (`cc-tools`)
-    - [x] サブコマンド体系（`<plugin> <command>` 形式）
-    - [x] `installed_plugins.json` からの plugin パス解決
-    - [x] doctor コマンド
-    - [x] marketplace clone からの symlink 配布
 - [ ] 既存グローバル skills/hooks の plugin 移行計画
     - [ ] ~/.claude/skills/ のどれを plugin 化するか棚卸し
     - [ ] settings.json の hooks の移行
 - [ ] dependency 管理の設計（internal 側 vs skill 側）
-
-## ライセンス
-
-MIT
