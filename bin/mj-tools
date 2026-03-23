@@ -24,6 +24,8 @@ Commands per plugin:
   version-check:
     get                     現在のバージョンを取得
     check                   更新有無をチェック
+    summaries [LIMIT]       保存済み changelog 要約の一覧
+    summary <VERSION>       指定バージョンの changelog 要約を表示
 USAGE
 }
 
@@ -63,8 +65,10 @@ resolve_api_script() {
   case "${plugin_name}:${command}" in
     session:get-by-pane)   script_name="get-session-by-pane.sh" ;;
     session:list)          script_name="list-sessions.sh" ;;
-    version-check:get)     script_name="get-version.sh" ;;
-    version-check:check)   script_name="check-update.sh" ;;
+    version-check:get)       script_name="get-version.sh" ;;
+    version-check:check)     script_name="check-update.sh" ;;
+    version-check:summaries) script_name="list-changelog-summaries.sh" ;;
+    version-check:summary)   script_name="get-changelog-summary.sh" ;;
     *)
       echo "error: unknown command '$command' for plugin '$plugin_name'" >&2
       return 1

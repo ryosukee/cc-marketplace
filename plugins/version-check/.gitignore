@@ -1,2 +1,3 @@
 # 実行時に生成される状態データ
 internal/version/last-version
+internal/changelogs/*.json
