@@ -19,6 +19,11 @@
       "description": "Claude Code のバージョン追跡・更新検知"
     },
     {
+      "name": "gitdiff",
+      "source": "./plugins/gitdiff",
+      "description": "diffview.nvim を使った diff レビュー skill"
+    },
+    {
       "name": "workflow",
       "source": "./plugins/workflow",
       "description": "エンジニアリングワークフロー skill 群"
