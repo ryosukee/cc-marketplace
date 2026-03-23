@@ -17,13 +17,13 @@ utility 系 plugin（session, version-check）と、将来的に workflow 系 pl
 ## ディレクトリ構成
 
 ```
-marujirou-cc-marketplace/
+cc-marketplace/
 ├── CLAUDE.md
 ├── README.md
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
 ├── bin/
-│   └── mj-tools                  # CLI 本体
+│   └── cc-tools                  # CLI 本体
 └── plugins/
     └── {plugin-name}/
         ├── .claude-plugin/
@@ -68,13 +68,13 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 - 引数はコマンドライン引数で受ける
 - I/O 定義は各 plugin の `scripts/api/README.md` に記載する
 
-### CLI (`bin/mj-tools`)
+### CLI (`bin/cc-tools`)
 
-- marketplace 単位の CLI コマンド。`mj-tools <plugin> <command> [args...]` の形式
+- marketplace 単位の CLI コマンド。`cc-tools <plugin> <command> [args...]` の形式
 - `installed_plugins.json` から plugin のキャッシュパスを解決し、`scripts/api/` に delegate
 - CLI ソースは repo ルートの `bin/` に配置
-- 配布方法: marketplace clone (`~/.claude/plugins/marketplaces/mj-tools/`) からの symlink
-    - `~/.claude/bin/mj-tools → ~/.claude/plugins/marketplaces/mj-tools/bin/mj-tools`
+- 配布方法: marketplace clone (`~/.claude/plugins/marketplaces/cc-tools/`) からの symlink
+    - `~/.claude/bin/cc-tools → ~/.claude/plugins/marketplaces/cc-tools/bin/cc-tools`
     - `marketplace update` で git pull されるため CLI も自動追従
 - コマンド → API スクリプトのマッピングは CLI 内の case 文でハードコード
 

@@ -1,16 +1,16 @@
 #!/bin/bash
-# mj-tools — marketplace CLI
+# cc-tools — marketplace CLI
 # plugin の API スクリプトを呼び出すフロントエンド
 set -euo pipefail
 
-MARKETPLACE_NAME="mj-tools"
+MARKETPLACE_NAME="cc-tools"
 INSTALLED_PLUGINS="$HOME/.claude/plugins/installed_plugins.json"
 
 usage() {
   cat <<'USAGE'
-Usage: mj-tools <plugin> <command> [args...]
-       mj-tools doctor
-       mj-tools help
+Usage: cc-tools <plugin> <command> [args...]
+       cc-tools doctor
+       cc-tools help
 
 Plugins:
   session         セッション管理
@@ -89,7 +89,7 @@ resolve_api_script() {
 cmd_doctor() {
   local ok=true
 
-  echo "mj-tools doctor"
+  echo "cc-tools doctor"
   echo "==============="
 
   # jq
@@ -154,7 +154,7 @@ case "$1" in
     plugin_name="$1"
     if [ $# -lt 2 ]; then
       echo "error: missing command for plugin '$plugin_name'" >&2
-      echo "Run 'mj-tools help' for usage." >&2
+      echo "Run 'cc-tools help' for usage." >&2
       exit 1
     fi
     command="$2"
@@ -168,7 +168,7 @@ case "$1" in
     ;;
   *)
     echo "error: unknown plugin or command '$1'" >&2
-    echo "Run 'mj-tools help' for usage." >&2
+    echo "Run 'cc-tools help' for usage." >&2
     exit 1
     ;;
 esac

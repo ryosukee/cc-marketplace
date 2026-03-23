@@ -17,7 +17,7 @@ resolve_changelogs() {
   fi
 
   # 旧バージョンキャッシュから探索
-  local cache_base="$HOME/.claude/plugins/cache/mj-tools/version-check"
+  local cache_base="$HOME/.claude/plugins/cache/cc-tools/version-check"
   if [ ! -d "$cache_base" ]; then
     return 0
   fi
