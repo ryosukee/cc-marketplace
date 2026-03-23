@@ -8,6 +8,7 @@
 
 - **session** (0.2.0) — tmux pane ID を使った Claude Code セッション追跡。hooks でセッション開始/終了を検知し、pane ↔ session ID の紐付けを管理
 - **version-check** (0.4.0) — Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示・要約保持
+- **diff** (0.1.0) — diffview.nvim を使った diff レビュー。`/gitdiff` で直前の編集差分を tmux ウィンドウに表示
 
 
 ## インストールとアップデート
@@ -164,6 +165,9 @@ cc-marketplace/
     │   │   └── api/get-session-by-pane.sh, list-sessions.sh
     │   ├── internal/sessions/
     │   └── skills/status/
+    ├── diff/
+    │   ├── .claude-plugin/plugin.json
+    │   └── skills/gitdiff/SKILL.md
     ├── version-check/
     │   ├── .claude-plugin/plugin.json
     │   ├── hooks/hooks.json
