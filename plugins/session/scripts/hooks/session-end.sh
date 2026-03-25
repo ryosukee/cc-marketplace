@@ -3,6 +3,7 @@
 set -euo pipefail
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
+DATA_ROOT="${CLAUDE_PLUGIN_DATA:-$PLUGIN_ROOT/internal}"
 
 command -v jq >/dev/null 2>&1 || { echo "jq is required" >&2; exit 0; }
 
@@ -14,7 +15,7 @@ if [ -z "$SESSION_ID" ] || [ "$SESSION_ID" = "null" ]; then
   exit 0
 fi
 
-SESSIONS_DIR="$PLUGIN_ROOT/internal/sessions"
+SESSIONS_DIR="$DATA_ROOT/sessions"
 TARGET="$SESSIONS_DIR/$SESSION_ID.json"
 
 rm -f "$TARGET"

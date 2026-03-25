@@ -163,7 +163,12 @@ case "$1" in
     plugin_path=$(resolve_plugin_path "$plugin_name")
     script_path=$(resolve_api_script "$plugin_path" "$command" "$plugin_name")
 
+    # CLAUDE_PLUGIN_DATA: {plugin}-{marketplace} で @ を - に置換
+    plugin_data_id="${plugin_name}-${MARKETPLACE_NAME}"
+    plugin_data_dir="$HOME/.claude/plugins/data/$plugin_data_id"
+
     export CLAUDE_PLUGIN_ROOT="$plugin_path"
+    export CLAUDE_PLUGIN_DATA="$plugin_data_dir"
     exec bash "$script_path" "$@"
     ;;
   *)

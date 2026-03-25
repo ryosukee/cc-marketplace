@@ -6,6 +6,7 @@
 set -euo pipefail
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
+DATA_ROOT="${CLAUDE_PLUGIN_DATA:-$PLUGIN_ROOT/internal}"
 
 PANE_ID="${1:-${TMUX_PANE:-}}"
 
@@ -14,7 +15,7 @@ if [ -z "$PANE_ID" ]; then
   exit 2
 fi
 
-SESSIONS_DIR="$PLUGIN_ROOT/internal/sessions"
+SESSIONS_DIR="$DATA_ROOT/sessions"
 
 if [ ! -d "$SESSIONS_DIR" ]; then
   echo "{\"error\": \"no_session\", \"paneId\": \"${PANE_ID}\"}"

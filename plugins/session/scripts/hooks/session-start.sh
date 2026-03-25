@@ -3,6 +3,7 @@
 set -euo pipefail
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
+DATA_ROOT="${CLAUDE_PLUGIN_DATA:-$PLUGIN_ROOT/internal}"
 
 command -v jq >/dev/null 2>&1 || { echo "jq is required" >&2; exit 0; }
 
@@ -21,8 +22,17 @@ if [ -z "${TMUX_PANE:-}" ]; then
   exit 0
 fi
 
-SESSIONS_DIR="$PLUGIN_ROOT/internal/sessions"
+SESSIONS_DIR="$DATA_ROOT/sessions"
 mkdir -p "$SESSIONS_DIR"
+
+# マイグレーション: PLUGIN_ROOT/internal/sessions/ から DATA_ROOT/sessions/ へ
+OLD_SESSIONS_DIR="$PLUGIN_ROOT/internal/sessions"
+if [ "$SESSIONS_DIR" != "$OLD_SESSIONS_DIR" ] && [ -d "$OLD_SESSIONS_DIR" ]; then
+  for f in "$OLD_SESSIONS_DIR"/*.json; do
+    [ -f "$f" ] || continue
+    mv -n "$f" "$SESSIONS_DIR/" 2>/dev/null || true
+  done
+fi
 
 TARGET="$SESSIONS_DIR/$SESSION_ID.json"
 
