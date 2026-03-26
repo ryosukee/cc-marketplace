@@ -69,8 +69,28 @@ ${BODY}
 fi
 
 # --- コミュニティ changelog (marckrenn/claude-code-changelog) ---
+# セクション別に分離して出力する
+# Highlights/CLI changelog → 公式の要約・補足
+# Flags/CLI surface → 事実ベース（diff 由来）
+# System prompt changes/Other prompt changes → diff からの推測的解釈
+# Metadata → 統計情報
 COMMUNITY_VERSIONS=$(collect_versions "marckrenn/claude-code-changelog")
-COMMUNITY_BODY=""
+COMMUNITY_HIGHLIGHTS=""
+COMMUNITY_FLAGS=""
+COMMUNITY_CLI_SURFACE=""
+COMMUNITY_PROMPT_CHANGES=""
+COMMUNITY_METADATA=""
+# セクション抽出ヘルパー: 指定ヘッダーから次の ### までを抽出
+extract_section() {
+  local body="$1"
+  local header="$2"
+  echo "$body" | awk -v h="### $header" '
+    $0 == h { found=1; next }
+    found && /^### / { found=0 }
+    found { print }
+  '
+}
+
 if [ -n "$COMMUNITY_VERSIONS" ]; then
   for TAG in $COMMUNITY_VERSIONS; do
     BODY=$(gh release view "$TAG" --repo marckrenn/claude-code-changelog --json body -q '.body' 2>&1)
@@ -79,10 +99,66 @@ if [ -n "$COMMUNITY_VERSIONS" ]; then
       BODY=""
     fi
     if [ -n "$BODY" ]; then
-      COMMUNITY_BODY="${COMMUNITY_BODY}#### ${TAG}
-${BODY}
+      # Highlights: 本文冒頭（最初の ### より前）から抽出
+      HIGHLIGHTS=$(echo "$BODY" | awk '
+        /^### / { exit }
+        /^Highlights:/ { found=1; next }
+        found { print }
+      ')
+      if [ -n "$HIGHLIGHTS" ]; then
+        COMMUNITY_HIGHLIGHTS="${COMMUNITY_HIGHLIGHTS}#### ${TAG}
+${HIGHLIGHTS}
 
 "
+      fi
+
+      # Flags（CLI surface: サブセクションを分離）
+      FLAGS_RAW=$(extract_section "$BODY" "Flags")
+      if [ -n "$FLAGS_RAW" ]; then
+        # CLI surface: 行より前を Flags として抽出
+        FLAGS=$(echo "$FLAGS_RAW" | awk '/^CLI surface:/ { exit } { print }')
+        # CLI surface: 行以降を CLI surface として抽出
+        CLI_SURFACE=$(echo "$FLAGS_RAW" | awk '/^CLI surface:/ { found=1 } found { print }')
+
+        if [ -n "$FLAGS" ]; then
+          COMMUNITY_FLAGS="${COMMUNITY_FLAGS}#### ${TAG}
+${FLAGS}
+
+"
+        fi
+        if [ -n "$CLI_SURFACE" ]; then
+          COMMUNITY_CLI_SURFACE="${COMMUNITY_CLI_SURFACE}#### ${TAG}
+${CLI_SURFACE}
+
+"
+        fi
+      fi
+
+      # System prompt changes + Other prompt changes
+      PROMPT_CHANGES=$(extract_section "$BODY" "System prompt changes")
+      OTHER_PROMPT=$(extract_section "$BODY" "Other prompt changes")
+      COMBINED_PROMPT=""
+      [ -n "$PROMPT_CHANGES" ] && COMBINED_PROMPT="${PROMPT_CHANGES}"
+      if [ -n "$OTHER_PROMPT" ]; then
+        [ -n "$COMBINED_PROMPT" ] && COMBINED_PROMPT="${COMBINED_PROMPT}
+"
+        COMBINED_PROMPT="${COMBINED_PROMPT}${OTHER_PROMPT}"
+      fi
+      if [ -n "$COMBINED_PROMPT" ]; then
+        COMMUNITY_PROMPT_CHANGES="${COMMUNITY_PROMPT_CHANGES}#### ${TAG}
+${COMBINED_PROMPT}
+
+"
+      fi
+
+      # Metadata
+      METADATA=$(extract_section "$BODY" "Metadata")
+      if [ -n "$METADATA" ]; then
+        COMMUNITY_METADATA="${COMMUNITY_METADATA}#### ${TAG}
+${METADATA}
+
+"
+      fi
     fi
   done
 fi
@@ -119,23 +195,50 @@ OUTPUT="Claude Code が v${LAST_VERSION} → v${CURRENT_VERSION} にアップデ
 "
 
 if [ -n "$OFFICIAL_BODY" ]; then
-  OUTPUT="${OUTPUT}### 公式 changelog (anthropics/claude-code)
+  OUTPUT="${OUTPUT}### [信頼度: 高] 公式 changelog (anthropics/claude-code)
 ${OFFICIAL_BODY}"
 fi
 
-if [ -n "$COMMUNITY_BODY" ]; then
-  OUTPUT="${OUTPUT}### コミュニティ changelog (marckrenn/claude-code-changelog)
-${COMMUNITY_BODY}"
+if [ -n "$COMMUNITY_HIGHLIGHTS" ]; then
+  OUTPUT="${OUTPUT}### [信頼度: 中] コミュニティ Highlights (marckrenn)
+${COMMUNITY_HIGHLIGHTS}"
+fi
+
+if [ -n "$COMMUNITY_FLAGS" ]; then
+  OUTPUT="${OUTPUT}### [信頼度: 中] コミュニティ Flags (marckrenn)
+${COMMUNITY_FLAGS}"
+fi
+
+if [ -n "$COMMUNITY_CLI_SURFACE" ]; then
+  OUTPUT="${OUTPUT}### [信頼度: 中] コミュニティ CLI surface (marckrenn)
+${COMMUNITY_CLI_SURFACE}"
+fi
+
+if [ -n "$COMMUNITY_PROMPT_CHANGES" ]; then
+  OUTPUT="${OUTPUT}### [信頼度: 低] コミュニティ プロンプト変更 (marckrenn)
+※ diff からの推測的解釈。誤認リスクあり
+${COMMUNITY_PROMPT_CHANGES}"
+fi
+
+if [ -n "$COMMUNITY_METADATA" ]; then
+  OUTPUT="${OUTPUT}### [参考] Metadata (marckrenn)
+${COMMUNITY_METADATA}"
 fi
 
 if [ -n "$COMMUNITY_DIFF" ]; then
-  OUTPUT="${OUTPUT}### 変更 diff
+  OUTPUT="${OUTPUT}### [信頼度: 中] 変更 diff
 ${COMMUNITY_DIFF}
 "
 fi
 
-# どちらも取得できなかった場合
-if [ -z "$OFFICIAL_BODY" ] && [ -z "$COMMUNITY_BODY" ] && [ -z "$COMMUNITY_DIFF" ]; then
+# どのソースも取得できなかった場合
+HAS_ANY=""
+[ -n "$OFFICIAL_BODY" ] && HAS_ANY=1
+[ -n "$COMMUNITY_HIGHLIGHTS" ] && HAS_ANY=1
+[ -n "$COMMUNITY_FLAGS" ] && HAS_ANY=1
+[ -n "$COMMUNITY_PROMPT_CHANGES" ] && HAS_ANY=1
+[ -n "$COMMUNITY_DIFF" ] && HAS_ANY=1
+if [ -z "$HAS_ANY" ]; then
   OUTPUT="${OUTPUT}（changelog の取得に失敗しました）
 "
 fi
