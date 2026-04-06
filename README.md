@@ -10,6 +10,9 @@
 - **version-check** (0.4.0) — Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示・要約保持
 - **gitdiff** (0.1.0) — diffview.nvim を使った diff レビュー。`/gitdiff` で直前の編集差分を tmux ウィンドウに表示
 
+### Workflow plugin
+
+- **workflow** (0.2.0) — チーム開発ワークフローのセットアップ。`/workflow:setup` で agents/skills/rules テンプレートを対話的に展開。`/workflow:sync` で参照元リポジトリとの差分を検出・反映。`/workflow:registry` で参照元リポジトリを管理
 
 ## インストールとアップデート
 
@@ -110,7 +113,7 @@ marketplace install 後のローカルの状態:
         │           ├── version/               ← バージョン記録
         │           └── changelogs/            ← changelog 要約
         └── workflow/
-            └── 0.1.0/
+            └── 0.2.0/
 
 ~/.claude/bin/
 └── cc-tools → ../plugins/marketplaces/cc-tools/bin/cc-tools   ← symlink
@@ -168,6 +171,14 @@ cc-marketplace/
     ├── gitdiff/
     │   ├── .claude-plugin/plugin.json
     │   └── skills/gitdiff/SKILL.md
+    ├── workflow/
+    │   ├── .claude-plugin/plugin.json
+    │   ├── registry.json              # 参照元リポジトリ (GitHub リンク)
+    │   ├── skills/
+    │   │   ├── setup/SKILL.md         # セットアップ + 差分補完
+    │   │   ├── sync/SKILL.md          # プロジェクト→テンプレート同期
+    │   │   └── registry/SKILL.md      # 参照元リポジトリ管理
+    │   └── templates/                 # agent/skill/rules テンプレート
     ├── version-check/
     │   ├── .claude-plugin/plugin.json
     │   ├── hooks/hooks.json
@@ -194,7 +205,7 @@ cc-marketplace/
     - [ ] pane 終了時のクリーンアップ（tmux hook 等で pane 死亡検知 → mapping 削除）
     - [ ] fork-to-pane skill（セッションを fork して別 pane で開く）
     - 参考: [docs/claude-session-internals.md](docs/claude-session-internals.md) — セッション内部構造・rewind・fork の調査
-- [ ] 既存グローバル skills/hooks の plugin 移行計画
-    - [ ] ~/.claude/skills/ のどれを plugin 化するか棚卸し
+- [x] 既存グローバル skills の plugin 移行
+    - [x] チーム開発ワークフロー系 17 skill を workflow plugin に移行・削除
     - [ ] settings.json の hooks の移行
 - [ ] dependency 管理の設計（internal 側 vs skill 側）

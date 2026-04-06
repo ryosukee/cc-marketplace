@@ -1,0 +1,12 @@
+{
+  "description": "workflow テンプレートの参照元リポジトリ。sync skill がここから最新の .claude/ 構成を取得する",
+  "repositories": [
+    {
+      "name": "feedmarks",
+      "github": "life-ops-kit/feedmarks",
+      "description": "Go JSON API + React SPA。3 層アーキテクチャ + Playwright E2E",
+      "role": "primary",
+      "note": "テンプレートの原型。agents/skills の構造はここから抽出した"
+    }
+  ]
+}

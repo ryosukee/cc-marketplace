@@ -1,5 +1,5 @@
 {
   "name": "workflow",
-  "description": "エンジニアリングワークフロー skill 群",
-  "version": "0.1.0"
+  "description": "チーム開発ワークフローのセットアップ。agents/skills/rules のテンプレートを対話的に展開する",
+  "version": "0.2.0"
 }

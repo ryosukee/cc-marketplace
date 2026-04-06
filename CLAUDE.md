@@ -3,7 +3,7 @@
 ## プロジェクト概要
 
 個人用 Claude Code plugin marketplace。1 marketplace / multi plugin 構成。
-utility 系 plugin（session, version-check）と、将来的に workflow 系 plugin を提供する。
+utility 系 plugin（session, version-check, gitdiff）と workflow 系 plugin（workflow）を提供する。
 
 ## 技術スタック
 

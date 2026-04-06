@@ -26,7 +26,7 @@
     {
       "name": "workflow",
       "source": "./plugins/workflow",
-      "description": "エンジニアリングワークフロー skill 群"
+      "description": "チーム開発ワークフローのセットアップ。agents/skills/rules テンプレートを対話的に展開"
     }
   ]
 }
