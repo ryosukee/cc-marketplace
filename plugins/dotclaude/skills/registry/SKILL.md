@@ -57,15 +57,19 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
    - ローカル or GitHub API で `.claude/agents/` と `.claude/skills/` の有無をチェック
    - どちらも空の場合は「ワークフロー構成がまだないリポジトリです。参考リポジトリとして追加する意味は薄いかもしれません」と案内
    - それでも追加するか確認
-6. AskUserQuestion で以下を確認:
+6. description / note の候補を事前生成する:
+   - ローカルクローンがあれば `README.md`, `CLAUDE.md`, `.claude/agents/`, `.claude/skills/`, `.claude/rules/` を読んで内容を把握する
+   - ローカルがなければ `gh api repos/{owner}/{repo}/readme` 等で取得
+   - 把握した内容から description 案 (技術スタック・目的を 1 行) と note 案 (ワークフロー構成の特徴・参考にすべきポイント) を 1 案ずつ生成する
+7. AskUserQuestion で以下を確認:
    - **role**: `primary` (手本として主に参考にする) / `reference` (補助的に参考にする)
    - **owned**: あなたの持ち物ですか? (yes/no)。`/dotclaude:cross-review` で改善提案の出力先になるかどうかの判定に使う
    - **name**: 表示名 (デフォルトは repo 名)
-   - **description**: リポジトリの説明 (任意・自由入力)
-   - **note**: 参考の仕方の補助コメント (任意・自由入力)。例: 「パイプライン部分は runner 依存なので抽出不要」「個別 agents は成熟、rules は未整備」。doctor/cross-review がこの note を合成時のヒントとして読む
-7. `${CLAUDE_PLUGIN_DATA}` ディレクトリがなければ `mkdir -p` で作成
-8. `registry.json` に追加して保存
-9. 完了メッセージを表示
+   - **description**: 事前生成した案を第 1 選択肢として提示。「空のまま」も選択肢に入れる。ユーザーは Other で自由入力して修正できる
+   - **note**: 事前生成した案を第 1 選択肢として提示。「空のまま」も選択肢に入れる。参考の仕方の補助コメント (例: 「パイプライン部分は runner 依存なので抽出不要」「個別 agents は成熟、rules は未整備」)。doctor/cross-review がこの note を合成時のヒントとして読む
+8. `${CLAUDE_PLUGIN_DATA}` ディレクトリがなければ `mkdir -p` で作成
+9. `registry.json` に追加して保存
+10. 完了メッセージを表示
 
 ### remove
 
