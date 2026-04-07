@@ -10,9 +10,9 @@
 - **version-check** (0.4.0) — Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示・要約保持
 - **gitdiff** (0.1.0) — diffview.nvim を使った diff レビュー。`/gitdiff` で直前の編集差分を tmux ウィンドウに表示
 
-### Workflow plugin
+### dotclaude plugin
 
-- **workflow** (0.4.0) — チーム開発ワークフロー構成の診断・合成・相互レビュー。`/workflow:doctor` でプロジェクトの `.claude/` を診断し、参考リポジトリと原則に基づいて 4 モード (差分アップデート / エッセンス保持再構成 / リセット再生成 / レポートのみ) から選んで実行。`/workflow:cross-review` で registry 内の owned リポジトリ同士を相互比較し改善提案を出す。`/workflow:registry` で参考リポジトリを管理 (`${CLAUDE_PLUGIN_DATA}` に保持、plugin update でも永続)
+- **dotclaude** (0.5.0) — 対象プロジェクトの `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビューする。`/dotclaude:doctor` でプロジェクトを診断し 4 モード (差分アップデート / エッセンス保持再構成 / リセット再生成 / レポートのみ) から選んで実行。`/dotclaude:cross-review` で registry 内の owned リポジトリ同士を相互比較し改善提案を出す。`/dotclaude:registry` で参考リポジトリを管理 (`${CLAUDE_PLUGIN_DATA}` に保持、plugin update でも永続)。抽出対象は実装パイプラインだけでなくドキュメント・調査・メタ作業など広く
 
 ## インストールとアップデート
 
@@ -95,7 +95,7 @@ marketplace install 後のローカルの状態:
 │       └── plugins/
 │           ├── session/
 │           ├── version-check/
-│           └── workflow/
+│           └── dotclaude/
 └── cache/
     └── cc-tools/
         ├── session/
@@ -112,8 +112,8 @@ marketplace install 後のローカルの状態:
         │       └── internal/
         │           ├── version/               ← バージョン記録
         │           └── changelogs/            ← changelog 要約
-        └── workflow/
-            └── 0.4.0/
+        └── dotclaude/
+            └── 0.5.0/
 
 ~/.claude/bin/
 └── cc-tools → ../plugins/marketplaces/cc-tools/bin/cc-tools   ← symlink
@@ -171,7 +171,7 @@ cc-marketplace/
     ├── gitdiff/
     │   ├── .claude-plugin/plugin.json
     │   └── skills/gitdiff/SKILL.md
-    ├── workflow/
+    ├── dotclaude/
     │   ├── .claude-plugin/plugin.json
     │   └── skills/
     │       ├── doctor/SKILL.md        # プロジェクト診断 + 合成 (原則は skill 内に encode)
@@ -205,6 +205,6 @@ cc-marketplace/
     - [ ] fork-to-pane skill（セッションを fork して別 pane で開く）
     - 参考: [docs/claude-session-internals.md](docs/claude-session-internals.md) — セッション内部構造・rewind・fork の調査
 - [x] 既存グローバル skills の plugin 移行
-    - [x] チーム開発ワークフロー系 17 skill を workflow plugin に移行・削除
+    - [x] チーム開発ワークフロー系 17 skill を dotclaude plugin に移行・削除
     - [ ] settings.json の hooks の移行
 - [ ] dependency 管理の設計（internal 側 vs skill 側）

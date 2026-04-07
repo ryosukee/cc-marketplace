@@ -24,9 +24,9 @@
       "description": "diffview.nvim を使った diff レビュー skill"
     },
     {
-      "name": "workflow",
-      "source": "./plugins/workflow",
-      "description": "チーム開発ワークフローを診断・合成・相互レビューする。参考リポジトリと原則に基づいて .claude/ を生成・更新、owned repo 同士の改善提案"
+      "name": "dotclaude",
+      "source": "./plugins/dotclaude",
+      "description": "対象プロジェクトの .claude/ を参考リポジトリと原則に基づいて診断・合成・相互レビューする"
     }
   ]
 }

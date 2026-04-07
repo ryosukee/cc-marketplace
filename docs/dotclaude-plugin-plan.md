@@ -1,4 +1,4 @@
-# workflow plugin リニューアル計画
+# dotclaude plugin 計画
 
 ## 背景
 
@@ -49,8 +49,8 @@ feedmarks (`~/ghq_root/github.com/life-ops-kit/feedmarks`) で実践している
 
 | 要素 | 配置 | 役割 |
 |---|---|---|
-| doctor skill | `plugins/workflow/skills/doctor/` | プロジェクト診断と `.claude/` 合成 |
-| registry skill | `plugins/workflow/skills/registry/` | 参照リポジトリのカタログ管理 |
+| doctor skill | `plugins/dotclaude/skills/doctor/` | プロジェクト診断と `.claude/` 合成 |
+| registry skill | `plugins/dotclaude/skills/registry/` | 参照リポジトリのカタログ管理 |
 | registry.json | `${CLAUDE_PLUGIN_DATA}/registry.json` | 参照リポジトリ一覧。ユーザーローカル、plugin update で消えない |
 
 テンプレートディレクトリ (`templates/`) は削除済み。`hooks/` も `scripts/api/` もない。skill が `${CLAUDE_PLUGIN_DATA}/registry.json` を直接読み書きする。
@@ -69,11 +69,11 @@ ghq でローカルクローンがあればそこから読む。なければ Git
 
 ## doctor skill の 4 モード
 
-`/workflow:doctor` は診断後にユーザーに 4 つのモードを提示する。
+`/dotclaude:doctor` は診断後にユーザーに 4 つのモードを提示する。
 
 1. 差分アップデート: 既存構造を尊重し、不足分の追加と既存ファイルの部分修正にとどめる
 2. エッセンス保持再構成: 参照リポジトリの構造に大きく寄せた再構成を行う。既存の価値あるエッセンスは救出する
-3. リセット & 再生成: 既存の workflow ファイルを削除して一から生成する
+3. リセット & 再生成: 既存のワークフロー系ファイルを削除して一から生成する
 4. レポートのみ: 差分レポートを出すだけで変更は加えない
 
 ## doctor skill が保持する原則
@@ -109,13 +109,13 @@ ghq でローカルクローンがあればそこから読む。なければ Git
 
 ## registry skill
 
-`/workflow:registry` で発動する。リポジトリの追加、一覧、削除を行う。データは `${CLAUDE_PLUGIN_DATA}/registry.json` に保存する。
+`/dotclaude:registry` で発動する。リポジトリの追加、一覧、削除を行う。データは `${CLAUDE_PLUGIN_DATA}/registry.json` に保存する。
 
 ## TODO
 
 ### Phase 4: 動作検証 (未着手)
 
-新規プロジェクトと既存プロジェクトの両方で `/workflow:doctor` を実行し、4 モードがそれぞれ意図通りに動くことを確認する。生成された構成で impl-plan 相当のフロー → team-implement 相当のフローが回ることを確認する。自己除外と registry 空時のフォールバックも検証する。
+新規プロジェクトと既存プロジェクトの両方で `/dotclaude:doctor` を実行し、4 モードがそれぞれ意図通りに動くことを確認する。生成された構成で impl-plan 相当のフロー → team-implement 相当のフローが回ることを確認する。自己除外と registry 空時のフォールバックも検証する。
 
 ## スコープ外 (YAGNI)
 

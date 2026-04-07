@@ -5,11 +5,11 @@ description: 参考リポジトリの登録・一覧・削除を行う。doctor 
 
 # 参考リポジトリ管理
 
-workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.json`) を管理する。
+dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.json`) を管理する。
 
 ## 意図
 
-`/workflow:doctor` が参照する「手本となるリポジトリ」のリストを user-local で管理する。workflow plugin の repo には置かず、`${CLAUDE_PLUGIN_DATA}` に保持するため、plugin のアップデートやバージョン変更とは独立して永続化される。
+`/dotclaude:doctor` が参照する「手本となるリポジトリ」のリストを user-local で管理する。dotclaude plugin の repo には置かず、`${CLAUDE_PLUGIN_DATA}` に保持するため、plugin のアップデートやバージョン変更とは独立して永続化される。
 
 ## 前提
 
@@ -18,13 +18,13 @@ workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.
 
 ## 引数
 
-`/workflow:registry {command} [args]`
+`/dotclaude:registry {command} [args]`
 
 | command | 説明 | 例 |
 |---|---|---|
-| (なし) | 一覧表示 | `/workflow:registry` |
-| `add {owner/repo}` | 追加 | `/workflow:registry add life-ops-kit/feedmarks` |
-| `remove {name}` | 削除 | `/workflow:registry remove feedmarks` |
+| (なし) | 一覧表示 | `/dotclaude:registry` |
+| `add {owner/repo}` | 追加 | `/dotclaude:registry add life-ops-kit/feedmarks` |
+| `remove {name}` | 削除 | `/dotclaude:registry remove feedmarks` |
 
 ## ワークフロー
 
@@ -34,7 +34,7 @@ workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.
 2. ファイルがない、または空の場合は以下を表示:
    ```
    参考リポジトリは登録されていません。
-   /workflow:registry add {owner/repo} で追加してください。
+   /dotclaude:registry add {owner/repo} で追加してください。
    ```
 3. ある場合は表形式で表示:
    ```
@@ -59,7 +59,7 @@ workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.
    - それでも追加するか確認
 6. AskUserQuestion で以下を確認:
    - **role**: `primary` (手本として主に参考にする) / `reference` (補助的に参考にする)
-   - **owned**: あなたの持ち物ですか? (yes/no)。`/workflow:cross-review` で改善提案の出力先になるかどうかの判定に使う
+   - **owned**: あなたの持ち物ですか? (yes/no)。`/dotclaude:cross-review` で改善提案の出力先になるかどうかの判定に使う
    - **name**: 表示名 (デフォルトは repo 名)
    - **description**: リポジトリの説明 (任意・自由入力)
    - **note**: 参考の仕方の補助コメント (任意・自由入力)。例: 「パイプライン部分は runner 依存なので抽出不要」「個別 agents は成熟、rules は未整備」。doctor/cross-review がこの note を合成時のヒントとして読む
@@ -96,7 +96,7 @@ workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.
 
 - `role: primary` — 主に参考にするリポジトリ
 - `role: reference` — 補助的に参考にするリポジトリ
-- `owned: true` — ユーザーが編集権限を持つ自分のリポジトリ。`/workflow:cross-review` で改善提案の出力先になる
+- `owned: true` — ユーザーが編集権限を持つ自分のリポジトリ。`/dotclaude:cross-review` で改善提案の出力先になる
 - `owned: false` — 他人のリポジトリ。改善提案の出力先にはならず、参照元としてのみ使う
 - `note` — doctor / cross-review が合成時にヒントとして読む自由テキスト
 
