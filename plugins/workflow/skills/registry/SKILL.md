@@ -38,10 +38,11 @@ workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.
    ```
 3. ある場合は表形式で表示:
    ```
-   | 名前 | GitHub | role | 説明 |
-   |---|---|---|---|
-   | feedmarks | life-ops-kit/feedmarks | primary | ... |
+   | 名前 | GitHub | role | owned | 説明 |
+   |---|---|---|---|---|
+   | feedmarks | life-ops-kit/feedmarks | primary | ✓ | ... |
    ```
+   `owned` が `true` のリポジトリは `✓`、それ以外は空欄で表示する。
 
 ### add
 
@@ -58,9 +59,10 @@ workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.
    - それでも追加するか確認
 6. AskUserQuestion で以下を確認:
    - **role**: `primary` (手本として主に参考にする) / `reference` (補助的に参考にする)
+   - **owned**: あなたの持ち物ですか? (yes/no)。`/workflow:cross-review` で改善提案の出力先になるかどうかの判定に使う
    - **name**: 表示名 (デフォルトは repo 名)
    - **description**: リポジトリの説明 (任意・自由入力)
-   - **note**: 補足情報 (任意・自由入力)
+   - **note**: 参考の仕方の補助コメント (任意・自由入力)。例: 「パイプライン部分は runner 依存なので抽出不要」「個別 agents は成熟、rules は未整備」。doctor/cross-review がこの note を合成時のヒントとして読む
 7. `${CLAUDE_PLUGIN_DATA}` ディレクトリがなければ `mkdir -p` で作成
 8. `registry.json` に追加して保存
 9. 完了メッセージを表示
@@ -85,7 +87,8 @@ workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.
       "github": "owner/repo",
       "description": "リポジトリの説明",
       "role": "primary | reference",
-      "note": "補足情報"
+      "owned": true,
+      "note": "参考の仕方のヒント"
     }
   ]
 }
@@ -93,6 +96,9 @@ workflow plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry.
 
 - `role: primary` — 主に参考にするリポジトリ
 - `role: reference` — 補助的に参考にするリポジトリ
+- `owned: true` — ユーザーが編集権限を持つ自分のリポジトリ。`/workflow:cross-review` で改善提案の出力先になる
+- `owned: false` — 他人のリポジトリ。改善提案の出力先にはならず、参照元としてのみ使う
+- `note` — doctor / cross-review が合成時にヒントとして読む自由テキスト
 
 ## 注意
 

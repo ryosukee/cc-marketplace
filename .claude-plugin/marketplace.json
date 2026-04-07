@@ -26,7 +26,7 @@
     {
       "name": "workflow",
       "source": "./plugins/workflow",
-      "description": "チーム開発ワークフローを診断・合成する。参考リポジトリと原則に基づいて .claude/ を生成・更新"
+      "description": "チーム開発ワークフローを診断・合成・相互レビューする。参考リポジトリと原則に基づいて .claude/ を生成・更新、owned repo 同士の改善提案"
     }
   ]
 }

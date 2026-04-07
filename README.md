@@ -12,7 +12,7 @@
 
 ### Workflow plugin
 
-- **workflow** (0.3.0) — チーム開発ワークフロー構成の診断・合成。`/workflow:doctor` でプロジェクトの `.claude/` を診断し、参考リポジトリと原則に基づいて 4 モード (差分アップデート / エッセンス保持再構成 / リセット再生成 / レポートのみ) から選んで実行。`/workflow:registry` で参考リポジトリを管理 (`${CLAUDE_PLUGIN_DATA}` に保持、plugin update でも永続)
+- **workflow** (0.4.0) — チーム開発ワークフロー構成の診断・合成・相互レビュー。`/workflow:doctor` でプロジェクトの `.claude/` を診断し、参考リポジトリと原則に基づいて 4 モード (差分アップデート / エッセンス保持再構成 / リセット再生成 / レポートのみ) から選んで実行。`/workflow:cross-review` で registry 内の owned リポジトリ同士を相互比較し改善提案を出す。`/workflow:registry` で参考リポジトリを管理 (`${CLAUDE_PLUGIN_DATA}` に保持、plugin update でも永続)
 
 ## インストールとアップデート
 
@@ -113,7 +113,7 @@ marketplace install 後のローカルの状態:
         │           ├── version/               ← バージョン記録
         │           └── changelogs/            ← changelog 要約
         └── workflow/
-            └── 0.3.0/
+            └── 0.4.0/
 
 ~/.claude/bin/
 └── cc-tools → ../plugins/marketplaces/cc-tools/bin/cc-tools   ← symlink
@@ -174,8 +174,9 @@ cc-marketplace/
     ├── workflow/
     │   ├── .claude-plugin/plugin.json
     │   └── skills/
-    │       ├── doctor/SKILL.md        # 診断 + 合成 (原則は skill 内に encode)
-    │       └── registry/SKILL.md      # 参考リポジトリ管理
+    │       ├── doctor/SKILL.md        # プロジェクト診断 + 合成 (原則は skill 内に encode)
+    │       ├── cross-review/SKILL.md  # registry 横断レビュー (owned repo への改善提案)
+    │       └── registry/SKILL.md      # 参考リポジトリ管理 (owned, note 含む)
     │   # 参考リポジトリの一覧は ${CLAUDE_PLUGIN_DATA}/registry.json に保持
     ├── version-check/
     │   ├── .claude-plugin/plugin.json

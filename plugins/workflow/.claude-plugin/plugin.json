@@ -1,5 +1,5 @@
 {
   "name": "workflow",
   "description": "チーム開発ワークフローを診断・合成する。参考リポジトリと原則に基づいて .claude/ を生成・更新する",
-  "version": "0.3.0"
+  "version": "0.4.0"
 }
