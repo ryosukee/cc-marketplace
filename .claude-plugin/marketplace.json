@@ -26,7 +26,7 @@
     {
       "name": "workflow",
       "source": "./plugins/workflow",
-      "description": "チーム開発ワークフローのセットアップ。agents/skills/rules テンプレートを対話的に展開"
+      "description": "チーム開発ワークフローを診断・合成する。参考リポジトリと原則に基づいて .claude/ を生成・更新"
     }
   ]
 }

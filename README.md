@@ -12,7 +12,7 @@
 
 ### Workflow plugin
 
-- **workflow** (0.2.0) — チーム開発ワークフローのセットアップ。`/workflow:setup` で agents/skills/rules テンプレートを対話的に展開。`/workflow:sync` で参照元リポジトリとの差分を検出・反映。`/workflow:registry` で参照元リポジトリを管理
+- **workflow** (0.3.0) — チーム開発ワークフロー構成の診断・合成。`/workflow:doctor` でプロジェクトの `.claude/` を診断し、参考リポジトリと原則に基づいて 4 モード (差分アップデート / エッセンス保持再構成 / リセット再生成 / レポートのみ) から選んで実行。`/workflow:registry` で参考リポジトリを管理 (`${CLAUDE_PLUGIN_DATA}` に保持、plugin update でも永続)
 
 ## インストールとアップデート
 
@@ -113,7 +113,7 @@ marketplace install 後のローカルの状態:
         │           ├── version/               ← バージョン記録
         │           └── changelogs/            ← changelog 要約
         └── workflow/
-            └── 0.2.0/
+            └── 0.3.0/
 
 ~/.claude/bin/
 └── cc-tools → ../plugins/marketplaces/cc-tools/bin/cc-tools   ← symlink
@@ -173,12 +173,10 @@ cc-marketplace/
     │   └── skills/gitdiff/SKILL.md
     ├── workflow/
     │   ├── .claude-plugin/plugin.json
-    │   ├── registry.json              # 参照元リポジトリ (GitHub リンク)
-    │   ├── skills/
-    │   │   ├── setup/SKILL.md         # セットアップ + 差分補完
-    │   │   ├── sync/SKILL.md          # プロジェクト→テンプレート同期
-    │   │   └── registry/SKILL.md      # 参照元リポジトリ管理
-    │   └── templates/                 # agent/skill/rules テンプレート
+    │   └── skills/
+    │       ├── doctor/SKILL.md        # 診断 + 合成 (原則は skill 内に encode)
+    │       └── registry/SKILL.md      # 参考リポジトリ管理
+    │   # 参考リポジトリの一覧は ${CLAUDE_PLUGIN_DATA}/registry.json に保持
     ├── version-check/
     │   ├── .claude-plugin/plugin.json
     │   ├── hooks/hooks.json
