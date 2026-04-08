@@ -32,10 +32,11 @@ doctor は「今いるプロジェクト」を対象にするが、cross-review 
 各エントリについて以下を試みる:
 
 1. registry から `note` も合わせて読む (ヒントとして使う)
-2. `ghq list --full-path` でローカルクローンを探す
-3. 見つかればローカルから `.claude/` を読む
-4. 見つからなければ `gh api repos/{owner}/{repo}/contents/.claude` で取得
-5. 失敗したらスキップし、理由を記録する
+2. `github` フィールドをパース: 最初の 2 セグメントを `{owner}/{repo}`、残りを `{subpath}` として扱う
+3. `ghq list --full-path` で `{owner}/{repo}` を探し、あれば `{local}/{subpath}` を base dir として使う (subpath なしならクローン root)
+4. 見つかればそこから `.claude/` を読む
+5. 見つからなければ `gh api repos/{owner}/{repo}/contents/{subpath}/.claude` (subpath なしなら `/.claude`) で取得
+6. 失敗したらスキップし、理由を記録する
 
 #### 有効性チェック
 
