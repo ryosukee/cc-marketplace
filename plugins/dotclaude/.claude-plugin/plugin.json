@@ -1,5 +1,5 @@
 {
   "name": "dotclaude",
   "description": "対象プロジェクトの .claude/ を参考リポジトリと原則に基づいて診断・合成・相互レビューする",
-  "version": "0.8.0"
+  "version": "0.9.0"
 }
