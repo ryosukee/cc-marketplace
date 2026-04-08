@@ -67,10 +67,14 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
    - ローカル or GitHub API で `.claude/agents/` と `.claude/skills/` の有無をチェック
    - どちらも空の場合は「ワークフロー構成がまだないリポジトリです。参考リポジトリとして追加する意味は薄いかもしれません」と案内
    - それでも追加するか確認
-6. description / note の候補を事前生成する:
-   - ローカルクローンがあれば `README.md`, `CLAUDE.md`, `.claude/agents/`, `.claude/skills/`, `.claude/rules/` を読んで内容を把握する
-   - ローカルがなければ `gh api repos/{owner}/{repo}/readme` 等で取得
-   - 把握した内容から description 案 (技術スタック・目的を 1 行) と note 案 (ワークフロー構成の特徴・参考にすべきポイント) を 1 案ずつ生成する
+6. description / note の候補を `dotclaude-repo-profiler` agent に生成させる。main thread では README や `.claude/` 配下の本文を直接読まない (context 節約):
+   - subagent_type: `dotclaude-repo-profiler`
+   - 入力 prompt:
+     - `name`: 表示名候補 (デフォルトは repo 名)
+     - `github`: `owner/repo` または `owner/repo/subpath`
+     - `fetch_mode`: ローカルクローンがあれば `local` + `base_dir`、なければ `gh-api`
+     - `purpose: registry-add`
+   - 出力として description 候補 (1 行) と note 候補 (2-3 行)、tech stack 推定を受け取る
 7. AskUserQuestion で以下を確認:
    - **role**: `primary` (手本として主に参考にする) / `reference` (補助的に参考にする)
    - **owned**: あなたの持ち物ですか? (yes/no)。`/dotclaude:cross-review` で改善提案の出力先になるかどうかの判定に使う
