@@ -16,18 +16,38 @@ doctor は「今いるプロジェクト」を対象にするが、cross-review 
 ## 前提
 
 - registry: `${CLAUDE_PLUGIN_DATA}/registry.json`
-- 登録リポジトリが 2 件以上必要 (1 件だけなら比較対象がない)
-- `owned: true` のリポジトリが 1 件以上必要 (出力先がない)
+- 加えて、ユーザーグローバル dotclaude root (`$HOME/.claude`) を **暗黙エントリ** として常に対象に含める。registry.json への登録は不要で、どの環境にも存在する前提
+- 暗黙エントリは `owned: true` 扱い。改善提案の出力先にもなる
+- 比較成立条件: registry エントリ + 暗黙エントリの合計が 2 件以上 (1 件だけなら比較対象がない)
+- `owned: true` のエントリが 1 件以上必要 (暗黙エントリが常に満たすので実質常に成立する)
+
+### 暗黙エントリ (`$HOME/.claude`) の扱い
+
+registry の通常エントリと同列に扱うが、以下の点だけ異なる:
+
+| 項目 | 値 |
+|---|---|
+| name | `user-global` |
+| github | なし (ローカル専用) |
+| role | `primary` |
+| owned | `true` |
+| note | ユーザーグローバルの dotclaude root。全プロジェクト共通のルール・skill・agent が置かれる |
+| base dir | `$HOME/.claude` (subpath 解決なし) |
+
+有効性チェック (`.claude/agents/` または `.claude/skills/` に 1 ファイル以上) は通常エントリと同じ。`$HOME/.claude` 自体が `.claude` 相当なので、`$HOME/.claude/agents/` と `$HOME/.claude/skills/` を直接見る。無効なら比較対象から外す。
 
 ## ワークフロー
 
 ### ステップ 1: 前提チェック
 
 1. `${CLAUDE_PLUGIN_DATA}/registry.json` を読む
-2. リポジトリが 2 件未満 → 「比較には 2 件以上の参考リポジトリが必要です」と表示して終了
-3. `owned: true` のエントリが 0 件 → 「改善提案の出力先となる自分のリポジトリが登録されていません。`/dotclaude:registry add` で登録する際に owned を true に設定してください」と表示して終了
+2. 暗黙エントリ (`$HOME/.claude`) の有効性を確認し、有効ならリストに追加する
+3. registry + 暗黙エントリの合計が 2 件未満 → 「比較には 2 件以上の参考リポジトリが必要です」と表示して終了
+4. `owned: true` のエントリが 0 件 → 「改善提案の出力先となる自分のリポジトリがありません」と表示して終了 (暗黙エントリが有効なら通常この分岐には来ない)
 
 ### ステップ 2: 参考リポジトリの fetch
+
+registry の各エントリに加え、暗黙エントリ (`$HOME/.claude`) を常にリストに含めて処理する。暗黙エントリは `github` フィールドがなく、base dir は `$HOME/.claude` 固定、subpath 解決・ghq 検索・gh api fetch をスキップして直接読む。
 
 各エントリについて以下を試みる:
 
