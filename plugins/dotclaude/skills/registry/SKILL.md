@@ -24,7 +24,17 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
 |---|---|---|
 | (なし) | 一覧表示 | `/dotclaude:registry` |
 | `add {owner/repo}` | 追加 | `/dotclaude:registry add life-ops-kit/feedmarks` |
+| `add {owner/repo/subpath}` | サブディレクトリ単位で追加 | `/dotclaude:registry add omnisinc/efso-document/to-be/idp` |
 | `remove {name}` | 削除 | `/dotclaude:registry remove feedmarks` |
+
+### サブパス指定
+
+1 つの repo の中に独立したワークフロー構成 (`.claude/` が subdir にある等) が複数ある場合、`owner/repo/subpath` 形式で追加できる。
+
+- `github` フィールドにはサブパスを含めて保存する (例: `omnisinc/efso-document/to-be/idp`)
+- 存在確認・ワークフロー検出・description/note 生成は `ghq list --full-path` で得た repo root に subpath を join したディレクトリに対して実行する
+- GitHub 上の存在確認は `owner/repo` 部分だけを `gh api repos/{owner}/{repo}` に渡す (subpath は `gh api repos/{owner}/{repo}/contents/{subpath}` で別途確認)
+- doctor / cross-review 側も `github` から最初の 2 セグメントを repo、残りを subpath として解釈する
 
 ## ワークフロー
 
