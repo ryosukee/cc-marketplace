@@ -27,6 +27,11 @@
       "name": "dotclaude",
       "source": "./plugins/dotclaude",
       "description": "対象プロジェクトの .claude/ を参考リポジトリと原則に基づいて診断・合成・相互レビューする"
+    },
+    {
+      "name": "plugin-update",
+      "source": "./plugins/plugin-update",
+      "description": "SessionStart 時にプラグインの更新を検知・通知する"
     }
   ]
 }
