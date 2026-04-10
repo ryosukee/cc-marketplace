@@ -6,13 +6,14 @@
 
 ### Utility plugins
 
-- **session** (0.2.0) — tmux pane ID を使った Claude Code セッション追跡。hooks でセッション開始/終了を検知し、pane ↔ session ID の紐付けを管理
-- **version-check** (0.4.0) — Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示・要約保持
-- **gitdiff** (0.1.0) — diffview.nvim を使った diff レビュー。`/gitdiff` で直前の編集差分を tmux ウィンドウに表示
+- session (0.3.0) — tmux pane ID を使った Claude Code セッション追跡。hooks でセッション開始/終了を検知し、pane ↔ session ID の紐付けを管理
+- version-check (0.7.0) — Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示・要約保持。`/version-check:skip` で通知を既読にできる
+- plugin-update (0.3.0) — SessionStart 時にプラグインの更新を検知・通知。全プラグイン最新でもステータスを表示
+- gitdiff (0.1.0) — diffview.nvim を使った diff レビュー。`/gitdiff` で直前の編集差分を tmux ウィンドウに表示
 
 ### dotclaude plugin
 
-- **dotclaude** (0.5.0) — 対象プロジェクトの `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビューする。`/dotclaude:doctor` でプロジェクトを診断し 4 モード (差分アップデート / エッセンス保持再構成 / リセット再生成 / レポートのみ) から選んで実行。`/dotclaude:cross-review` で registry 内の owned リポジトリ同士を相互比較し改善提案を出す。`/dotclaude:registry` で参考リポジトリを管理 (`${CLAUDE_PLUGIN_DATA}` に保持、plugin update でも永続)。抽出対象は実装パイプラインだけでなくドキュメント・調査・メタ作業など広く
+- dotclaude (0.10.0) — 対象プロジェクトの `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビューする。`/dotclaude:doctor` でプロジェクトを診断し 4 モード (差分アップデート / エッセンス保持再構成 / リセット再生成 / レポートのみ) から選んで実行。`/dotclaude:cross-review` で registry 内の owned リポジトリ同士を相互比較し改善提案を出す。`/dotclaude:registry` で参考リポジトリを管理 (`${CLAUDE_PLUGIN_DATA}` に保持、plugin update でも永続)。抽出対象は実装パイプラインだけでなくドキュメント・調査・メタ作業など広く
 
 ## インストールとアップデート
 
@@ -25,6 +26,7 @@ claude plugins marketplace add https://github.com/ryosukee/cc-marketplace.git
 # 2. plugin をインストール
 claude plugins install session@cc-tools
 claude plugins install version-check@cc-tools
+claude plugins install plugin-update@cc-tools
 # 3. CLI のセットアップ（初回のみ）
 mkdir -p ~/.claude/bin
 ln -s ~/.claude/plugins/marketplaces/cc-tools/bin/cc-tools ~/.claude/bin/cc-tools
@@ -95,25 +97,32 @@ marketplace install 後のローカルの状態:
 │       └── plugins/
 │           ├── session/
 │           ├── version-check/
+│           ├── plugin-update/
 │           └── dotclaude/
 └── cache/
     └── cc-tools/
         ├── session/
-        │   └── 0.2.0/                      ← CLAUDE_PLUGIN_ROOT
+        │   └── 0.3.0/                      ← CLAUDE_PLUGIN_ROOT
         │       ├── scripts/
         │       ├── hooks/
         │       ├── skills/
         │       └── internal/sessions/      ← 状態データ (hooks が書き込み)
         ├── version-check/
-        │   └── 0.4.0/
+        │   └── 0.7.0/
         │       ├── scripts/
         │       ├── hooks/
         │       ├── skills/
+        │       │   ├── check/
+        │       │   └── skip/
         │       └── internal/
         │           ├── version/               ← バージョン記録
         │           └── changelogs/            ← changelog 要約
+        ├── plugin-update/
+        │   └── 0.3.0/
+        │       ├── scripts/
+        │       └── hooks/
         └── dotclaude/
-            └── 0.5.0/
+            └── 0.10.0/
 
 ~/.claude/bin/
 └── cc-tools → ../plugins/marketplaces/cc-tools/bin/cc-tools   ← symlink
@@ -192,9 +201,16 @@ cc-marketplace/
     │   ├── internal/
     │   │   ├── version/
     │   │   └── changelogs/
-    │   └── skills/check/
-    │       ├── SKILL.md
-    │       └── references/         # skill から呼ぶラッパースクリプト群
+    │   └── skills/
+    │       ├── check/
+    │       │   ├── SKILL.md
+    │       │   └── references/     # skill から呼ぶラッパースクリプト群
+    │       └── skip/SKILL.md       # 更新通知を既読にする
+    ├── plugin-update/
+    │   ├── .claude-plugin/plugin.json
+    │   ├── hooks/hooks.json
+    │   └── scripts/
+    │       └── hooks/session-start.sh
 ```
 
 ## TODO
@@ -206,5 +222,5 @@ cc-marketplace/
     - 参考: [docs/claude-session-internals.md](docs/claude-session-internals.md) — セッション内部構造・rewind・fork の調査
 - [x] 既存グローバル skills の plugin 移行
     - [x] チーム開発ワークフロー系 17 skill を dotclaude plugin に移行・削除
-    - [ ] settings.json の hooks の移行
+    - [x] settings.json の hooks の移行 (plugin-update として plugin 化)
 - [ ] dependency 管理の設計（internal 側 vs skill 側）
