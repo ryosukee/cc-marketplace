@@ -36,7 +36,7 @@ done < <(claude plugin list --json 2>/dev/null | jq -r '.[] | [.id, .version] | 
 if [ ${#updatable[@]} -eq 0 ]; then
   cat <<EOF
 {
-  "systemMessage": "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✓ ${total} plugins — all up to date\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  "systemMessage": "\n✓ ${total} plugins — all up to date\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 EOF
   exit 0
@@ -52,6 +52,6 @@ done
 
 cat <<EOF
 {
-  "systemMessage": "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⬆ ${#updatable[@]}/${total} plugins have updates:${update_lines}\n\nRun to update:${update_cmds}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  "systemMessage": "\n⬆ ${#updatable[@]}/${total} plugins have updates:${update_lines}\n\nRun to update:${update_cmds}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 EOF
