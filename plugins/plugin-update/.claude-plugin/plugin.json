@@ -1,5 +1,5 @@
 {
   "name": "plugin-update",
   "description": "SessionStart 時にプラグインの更新を検知・通知する",
-  "version": "0.1.0"
+  "version": "0.2.0"
 }
