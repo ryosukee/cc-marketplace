@@ -32,6 +32,11 @@
       "name": "plugin-update",
       "source": "./plugins/plugin-update",
       "description": "SessionStart 時にプラグインの更新を検知・通知する"
+    },
+    {
+      "name": "session-retrospective",
+      "source": "./plugins/session-retrospective",
+      "description": "セッション終了時の振り返り。学びの昇格、陳腐化チェック、やり残し検出、次アクション提案"
     }
   ]
 }
