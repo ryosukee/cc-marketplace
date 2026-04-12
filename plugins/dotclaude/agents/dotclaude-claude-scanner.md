@@ -31,6 +31,10 @@ dotclaude plugin の skill (cross-review / doctor) から呼ばれる read-only 
 - `.claude/skills/*/SKILL.md` (なければ `.claude/skills/*/skill.md`)
 - `.claude/rules/*.md`
 - `CLAUDE.md` (base_dir 直下)
+- hooks 設定: `.claude/settings.json` の `hooks` キー、または `hooks/hooks.json`
+- lint 設定: `.markdownlint.yaml`, `.markdownlint-cli2.yaml`, `.markdownlint.json` (base_dir 直下)
+
+hooks/lint 設定は「決定論的に rule を強制する仕組み」として rule と同等に扱う。クラスタリングの際は kind を `hook` / `lint-config` として区別する。
 
 各ファイルについて以下を抽出する:
 
@@ -96,6 +100,12 @@ note_excluded:
 ## note 不一致
 
 - {repo}: note「{引用}」→ 実態「{観測}」
+
+## クラスタ分割提案 (あれば)
+
+### {元クラスタ名} → {分割先 A} + {分割先 B}
+理由: {なぜ分割が望ましいか (異なる関心事が混在、paths 対象が異なる等)}
+影響 repo: [{repo}, ...]
 ```
 
 ## 処理: mode=doctor-diagnose
