@@ -92,6 +92,19 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 | plugin-update | SessionStart 時にプラグイン更新を検知・通知 |
 | session-retrospective | セッション末尾の振り返り・学び昇格 |
 
+## Plugin 更新手順
+
+plugin の内容 (skills/agents/hooks/scripts) を変更したら、
+必ず以下を一連で実行する:
+
+1. plugin.json の `version` を bump する
+2. `git commit` + `git push`
+3. `claude plugin marketplace update cc-tools`
+4. `claude plugin update {plugin}@cc-tools`
+
+手元の plugin cache は update するまで古いバージョンのまま。
+bump + push だけで終わらせない。
+
 ## 設計原則
 
 1. **Plugin 自己完結** — 各 plugin は `${CLAUDE_PLUGIN_ROOT}` 内で完結する。グローバルを汚染しない
