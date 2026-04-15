@@ -19,7 +19,7 @@
 
 - markdownlint (0.1.0) — Write/Edit 後に markdownlint-cli2 を実行し、`.md` ファイルの lint エラーを Claude にフィードバックする
 - mkdocs-setup (0.1.0) — mkdocs-material を使ったドキュメントサイトの初期セットアップ手順とテンプレートを提供する skill
-- security-guards (0.1.0) — credentials 保護系の hook を束ねる plugin。現在は Write/Edit で `.netrc` への書き込みをブロック
+- security-guards (0.1.1) — credentials 保護系の hook を束ねる plugin。Write/Edit で `.netrc` への書き込み、Read で `.netrc` の読み取りをブロック
 
 ## インストールとアップデート
 

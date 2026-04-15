@@ -51,7 +51,7 @@
     {
       "name": "security-guards",
       "source": "./plugins/security-guards",
-      "description": "credentials 保護系の hook を束ねる plugin。現在は Write/Edit で .netrc への書き込みをブロック"
+      "description": "credentials 保護系の hook を束ねる plugin。Write/Edit で .netrc への書き込み、Read で .netrc の読み取りをブロック"
     }
   ]
 }

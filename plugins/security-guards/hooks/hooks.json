@@ -18,6 +18,15 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/deny-netrc-write.sh"
           }
         ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/deny-netrc-read.sh"
+          }
+        ]
       }
     ]
   }
