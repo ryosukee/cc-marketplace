@@ -5,7 +5,10 @@
 個人用 Claude Code plugin marketplace。1 marketplace / multi plugin 構成。
 utility 系 plugin (session, version-check, gitdiff, plugin-update)、
 dotclaude plugin (doctor/cross-review/registry)、
-session-retrospective plugin を提供する。
+session-retrospective plugin、
+authoring / tooling 系 plugin (markdownlint, mkdocs-setup, security-guards) を提供する。
+加えて user global rules を repo 直下の `rules/` で管理し、
+symlink で `~/.claude/rules/cc-marketplace` に配置する。
 
 ## 技術スタック
 
@@ -22,10 +25,16 @@ session-retrospective plugin を提供する。
 cc-marketplace/
 ├── CLAUDE.md
 ├── README.md
+├── .markdownlint.jsonc           # repo lint 設定
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
 ├── bin/
 │   └── cc-tools                  # CLI 本体
+├── docs/                         # repo 管理設計
+│   └── architecture.md
+├── rules/                        # user global rules (symlink で配布)
+│   ├── author-defaults/
+│   └── markdown/
 └── plugins/
     └── {plugin-name}/
         ├── .claude-plugin/
@@ -40,6 +49,7 @@ cc-marketplace/
         ├── internal/             # 永続化された状態（外部参照禁止）
         │   └── {resource}/
         ├── skills/               # consumer skills
+        ├── config/               # plugin 同梱 default config（あれば）
         └── agents/               # consumer agents（あれば）
 ```
 
@@ -91,6 +101,9 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 | dotclaude | doctor/cross-review/registry |
 | plugin-update | SessionStart 時にプラグイン更新を検知・通知 |
 | session-retrospective | セッション末尾の振り返り・学び昇格 |
+| markdownlint | Write/Edit 後に markdownlint-cli2 を実行 |
+| mkdocs-setup | MkDocs セットアップ手順 + テンプレート |
+| security-guards | .netrc 等の credentials 保護 hook |
 
 ## Plugin 更新手順
 
@@ -112,5 +125,7 @@ bump + push だけで終わらせない。
 3. **Dependency 追跡** — internal リソースの依存関係を明示的に管理する
 4. **CLI は plugin の外** — CLI は marketplace ルートの `bin/` に置き、plugin システムとは別ライフサイクルで管理する
 5. **Plugin は skills/agents/hooks で完結するものに限る**
-    — plugin から rules は自動発動しない。
-    rules が絡むものは dotfiles (`~/.claude/rules/`) で管理する
+    — plugin loader は plugin 内の `rules/` を読まない。
+    rules は plugin ではなく repo 直下の `rules/` で管理し、
+    `~/.claude/rules/cc-marketplace` への dir symlink で配布する。
+    設計の詳細は [docs/architecture.md](docs/architecture.md) を参照
