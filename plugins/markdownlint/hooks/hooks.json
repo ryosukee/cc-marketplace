@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/markdownlint-post.sh",
+            "statusMessage": "markdownlint checking..."
+          }
+        ]
+      }
+    ]
+  }
+}

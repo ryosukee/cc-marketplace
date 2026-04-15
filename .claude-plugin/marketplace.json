@@ -37,6 +37,21 @@
       "name": "session-retrospective",
       "source": "./plugins/session-retrospective",
       "description": "セッション終了時の振り返り。学びの昇格、陳腐化チェック、やり残し検出、次アクション提案"
+    },
+    {
+      "name": "markdownlint",
+      "source": "./plugins/markdownlint",
+      "description": "Write/Edit 後に markdownlint-cli2 を実行し、.md ファイルの lint エラーを Claude にフィードバックする"
+    },
+    {
+      "name": "mkdocs-setup",
+      "source": "./plugins/mkdocs-setup",
+      "description": "mkdocs-material を使ったドキュメントサイトの初期セットアップ手順とテンプレートを提供する skill"
+    },
+    {
+      "name": "security-guards",
+      "source": "./plugins/security-guards",
+      "description": "credentials 保護系の hook を束ねる plugin。現在は Write/Edit で .netrc への書き込みをブロック"
     }
   ]
 }

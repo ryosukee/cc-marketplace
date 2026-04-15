@@ -1,0 +1,35 @@
+// markdownlint plugin bundled default config
+// 他 repo に plugin を install したときのフォールバックとして使う
+// repo-local 設定と ~/.markdownlint.jsonc が両方無い場合のみ適用される
+{
+  // インデントは 4 スペース (箇条書きのネスト)
+  "MD007": { "indent": 4 },
+
+  // 行の長さ制限は無効
+  "MD013": false,
+
+  // fenced code block の language 指定は任意
+  "MD040": false,
+
+  // テーブルカラムスタイルは任意
+  "MD060": false,
+
+  // HTML タグを許可 (<br>, GFM Alerts 等)
+  "MD033": false,
+
+  // 末尾スペースによる改行を禁止 (<br> を使う)
+  "MD009": true,
+
+  // 空行の連続を許可
+  "MD012": false,
+
+  // 見出しの重複を許可
+  "MD024": false,
+
+  // 引用ブロック間の空行を許可
+  "MD028": false,
+
+  // 強調マーカー: アスタリスク
+  "MD049": { "style": "asterisk" },
+  "MD050": { "style": "asterisk" }
+}
