@@ -80,7 +80,10 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
    - **owned**: あなたの持ち物ですか? (yes/no)。`/dotclaude:cross-review` で改善提案の出力先になるかどうかの判定に使う
    - **name**: 表示名 (デフォルトは repo 名)
    - **description**: 事前生成した案を第 1 選択肢として提示。「空のまま」も選択肢に入れる。ユーザーは Other で自由入力して修正できる
-   - **note**: 事前生成した案を第 1 選択肢として提示。「空のまま」も選択肢に入れる。参考の仕方の補助コメント (例: 「パイプライン部分は runner 依存なので抽出不要」「個別 agents は成熟、rules は未整備」)。doctor/cross-review がこの note を合成時のヒントとして読む
+   - **note**: 事前生成した案を第 1 選択肢として提示。「空のまま」も選択肢に入れる。doctor/cross-review がこの note を合成時のヒントとして読む
+     - note は「このリポジトリの特徴・差分・成熟度」を中立に記述する。「どの部分を参考にし、どの部分を参考にしない」の仕分けは事前に決めつけない。参考にするかどうかは doctor/cross-review が対象プロジェクトとの比較で実行時に判断するため、事前に断定すると実行時判断の材料を奪う
+     - 書くべき例: 技術スタック、対応 harness、agents/skills/rules のディレクトリ構成方針、カテゴリ分類、ワークフロー連携の型 (team-implement 等)、スケール (agents N 個 / skills N 個 / commands N 個)、作者の立場 (個人 / 社内 / 第三者 OSS)、特殊な仕組み (runner 連携、selective install、hook gating 等)
+     - 書くべきでない例: 「〜は転用不要」「〜は抽出対象外」「〜は真似るべきでない」等の事前仕分け
 8. `${CLAUDE_PLUGIN_DATA}` ディレクトリがなければ `mkdir -p` で作成
 9. `registry.json` に追加して保存
 10. 完了メッセージを表示
