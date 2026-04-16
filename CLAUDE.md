@@ -104,6 +104,7 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 | markdownlint | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | MkDocs セットアップ手順 + テンプレート |
 | security-guards | .netrc 等の credentials 保護 hook |
+| cc-transcript | 現在セッションの直近やり取りを jq で整形して vim で開く |
 
 ## Plugin 更新手順
 

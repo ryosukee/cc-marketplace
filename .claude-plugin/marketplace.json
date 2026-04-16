@@ -52,6 +52,11 @@
       "name": "security-guards",
       "source": "./plugins/security-guards",
       "description": "credentials 保護系の hook を束ねる plugin。Write/Edit で .netrc への書き込み、Read で .netrc の読み取りをブロック"
+    },
+    {
+      "name": "cc-transcript",
+      "source": "./plugins/cc-transcript",
+      "description": "現在セッションの直近 N 件のやり取りを jq で整形して vim で開く skill"
     }
   ]
 }
