@@ -28,9 +28,9 @@
 | `popup` | `tmux display-popup -E -w 90% -h 90% vim <file>` でポップアップ表示 |
 | `print` | 生成した md のパスだけ stdout に出力 |
 
-`$2` を省略した場合、skill は AskUserQuestion で選択を促す。推奨は tmux 内なら `window`、tmux 外なら `print`。
+MODE を省略した場合、skill は tmux 環境に応じて自動で決める (tmux 内なら `window`、tmux 外なら `print`)。問い合わせなし。
 
-tmux 外 (`$TMUX` unset) で `window` / `popup` が指定された場合、自動的に `print` にフォールバックする (stderr に通知あり)。
+tmux 外 (`$TMUX` unset) で `window` / `popup` が明示指定された場合、自動的に `print` にフォールバックする (stderr に通知あり)。
 
 どのモードでも `open.sh` は最初にパスを stdout に表示する。vim を閉じた後にパスを控えておいて再度開きたい用途に対応する。
 
