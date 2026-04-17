@@ -53,7 +53,19 @@ Bash ツールで以下を実行する。`<path>` は 1 で取得したパス、
 bash ${CLAUDE_SKILL_DIR}/scripts/open.sh <path> <mode>
 ```
 
-`open.sh` は MODE によらず最初にパスを stdout に出す。vim を閉じた後に再度開きたい時のリマインダ。
+`open.sh` は MODE によらず最初にパスを stdout に出す。
 
 - `popup` / `window`: パス表示後に tmux を介して vim が開く。Bash ツールは vim 終了までブロックする
 - `print`: パス表示のみ
+
+## 4. ユーザーへの報告
+
+実行完了後、**必ず** 書き出し先パスをユーザー向けテキストで明示する。vim を閉じた後でも再度開けるようにするリマインダ。
+
+例:
+
+```text
+transcript を `/tmp/cc-transcript-<session_id>.md` に書き出しました (MODE: window, SCOPE: dialogue)。
+```
+
+MODE=print 以外でも必ず出す。ユーザーは skill の stdout ではなく、Claude の応答テキストを読んでいる。

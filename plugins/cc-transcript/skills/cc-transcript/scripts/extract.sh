@@ -121,10 +121,13 @@ jq -sr --argjson n "$N" --arg scope "$SCOPE" '
     end;
 
   map(select(.type == "user" or .type == "assistant"))
-  | .[(-$n):]
-  | [.[] | blocks_of_record[]]
-  | (if $scope == "full" then .
-     else map(select(.kind == "user_text" or .kind == "assistant_text"))
+  | (if $scope == "full" then
+       .[(-$n):]
+       | [.[] | blocks_of_record[]]
+     else
+       [.[] | blocks_of_record[]]
+       | map(select(.kind == "user_text" or .kind == "assistant_text"))
+       | .[(-$n):]
      end)
   | group_segments
   | map(render_segment)

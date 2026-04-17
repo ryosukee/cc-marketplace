@@ -1,5 +1,5 @@
 {
   "name": "cc-transcript",
   "description": "現在セッションの直近 N 件のやり取りを jq で整形して vim で開く skill",
-  "version": "0.5.0"
+  "version": "0.6.0"
 }
