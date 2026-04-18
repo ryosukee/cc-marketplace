@@ -42,16 +42,20 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
 
 1. `${CLAUDE_PLUGIN_DATA}/registry.json` を読む
 2. ファイルがない、または空の場合は以下を表示:
+
    ```
    参考リポジトリは登録されていません。
    /dotclaude:registry add {owner/repo} で追加してください。
    ```
+
 3. ある場合は表形式で表示:
+
    ```
    | 名前 | GitHub | role | owned | 説明 |
    |---|---|---|---|---|
    | feedmarks | life-ops-kit/feedmarks | primary | ✓ | ... |
    ```
+
    `owned` が `true` のリポジトリは `✓`、それ以外は空欄で表示する。
 
 ### add
@@ -73,7 +77,7 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
      - `name`: 表示名候補 (デフォルトは repo 名)
      - `github`: `owner/repo` または `owner/repo/subpath`
      - `fetch_mode`: ローカルクローンがあれば `local` + `base_dir`、なければ `gh-api`
-     - `purpose: registry-add`
+     - `purpose: metadata`
    - 出力として description 候補 (1 行) と note 候補 (2-3 行)、tech stack 推定を受け取る
 7. AskUserQuestion で以下を確認:
    - **role**: `primary` (手本として主に参考にする) / `reference` (補助的に参考にする)

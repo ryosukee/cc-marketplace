@@ -17,11 +17,13 @@ dotclaude plugin の skill (cross-review / doctor) から呼ばれる read-only 
 
 - `cluster_name`: 役割名 (例: `rule-authoring`, `code-review`)
 - `files`: 所属ファイルの配列
-  - 各要素: `{repo, abs_path, kind (agent|skill|rule), tech_stack_hint?, note?, owned?}`
+    - 各要素: `{repo, abs_path, kind (agent|skill|rule), tech_stack_hint?, note?, owned?}`
 - `target_project` (optional, doctor から呼ぶ場合のみ):
-  - `{name, tech_stack, mode (差分アップデート|エッセンス保持再構成|リセット), existing_file_abs_path?}`
+    - `{name, tech_stack, codebase_patterns?, pattern_decisions?, mode (差分アップデート|エッセンス保持再構成|リセット), existing_file_abs_path?}`
+    - `codebase_patterns`: profiler が抽出した実装パターン。役割別 dominant / deviation (ファイル引用付き)、層間規約、cross-cutting、テスト規約、ドメイン語彙を含む
+    - `pattern_decisions`: internal_drift に対するユーザー判断 (統合 / 両方許容 / 保留)
 - `deployment_candidates` (optional): クラスタに未所属だが展開候補となり得る owned repo の配列
-  - 各要素: `{name, base_dir, tech_stack_hint, note}`
+    - 各要素: `{name, base_dir, tech_stack_hint, note}`
 
 ## 処理
 
@@ -57,6 +59,20 @@ dotclaude plugin の skill (cross-review / doctor) から呼ばれる read-only 
 マージ可能な差分を取り込み、個性部分を除外した「ベストバージョン」をドラフトする。`target_project` 指定時はそのプロジェクトの tech stack・モードに合わせて最終調整する。
 
 合成版は markdown 全文で出力する (diff ではなく完全版)。
+
+#### codebase_patterns の反映 (target_project.codebase_patterns あり時)
+
+profiler が抽出した実装パターンを受け取った場合、最終ドラフトは以下に従う。目的は「生成した rule から見て現状実装が legacy 扱いになる (legacy-drift)」を避けること。
+
+- rule のコード例・該当箇所は、実コードからの引用 (`{相対パス}:{行番号}`) を使う。架空の例は書かない
+- dominant パターンを rule 本文にする。deviation は「例外的に許容される場合」として本文末尾または別セクションに書く
+- 主流パターンが複数ある (profiler 出力で `internal_drift: true`) 項目は、`pattern_decisions` の指示に従う:
+    - 「パターン X に統合 / Y を legacy として警告」→ X を rule 本文、Y を legacy として注記
+    - 「パターン Y に統合 / X を legacy として警告」→ Y を rule 本文、X を legacy として注記
+    - 「両方許容」→ X / Y 併記。どちらを採っても OK と明記
+    - 「rule 化しない / 保留」→ 当該項目は rule に書かない。ドラフト末尾の「要整理ポイント」セクションに残す
+- cross-cutting (logging / error handling / auth / config) は profiler の主流パターン記述と同じライブラリ名・関数名を rule でも使う。参考 repo 由来の汎用表現に書き換えない
+- ドメイン語彙に登場する実型名・entity 名を rule の例で使う。参考 repo 由来の仮の名前 (`User`, `Order` 等) に置き換えない
 
 #### 外部参照のアンチパターン除外
 
@@ -141,11 +157,14 @@ strategy: {full_merge | essence_injection | user_decision_required}
 - 新規配置先: [{repo}, {repo}, ...]
 
 ### essence_injection の場合
+
 - repo {name} への注入差分:
-  ```
-  {注入する差分の内容}
-  ```
-  理由: {なぜこの部分だけを注入するか}
+
+    ```
+    {注入する差分の内容}
+    ```
+
+    理由: {なぜこの部分だけを注入するか}
 - repo {name} への注入差分: ...
 
 ## 合成版ドラフト
@@ -177,6 +196,7 @@ mode: {差分アップデート | エッセンス保持再構成 | リセット}
 tech stack: {name}
 
 調整内容:
+
 - {汎用合成版からの変更点 1}
 - {変更点 2}
 
@@ -187,12 +207,15 @@ tech stack: {name}
 ```
 
 配置先: {cwd 相対パス}
+
 ```
 
 ## 守るべきこと
 
 - 書き込みは一切行わない。Write / Edit / NotebookEdit は使わない
 - 合成版は完全な markdown 全文で出す (部分 diff ではない)
-- tech stack 固有部分を合成版に紛れ込ませない。判断に迷う場合は「個性として残す」に倒す
+- tech stack 固有部分を合成版 (汎用ベストバージョン) に紛れ込ませない。判断に迷う場合は「個性として残す」に倒す
+- `target_project` 向け最終ドラフトでは逆に、`codebase_patterns` から得た実コード引用・実型名・実ライブラリ名を積極的に使う。汎用表現に薄めない
+- `pattern_decisions` の指示を無視しない。internal_drift を勝手に片方採用して「もう一方は legacy」と書くと legacy-drift を起こす
 - 競合がある場合、無理に 1 案にまとめず両論併記して `user_decision_required` を返す
 - ユニーク役割 (files が 1 件のみ) を受け取った場合は、差分分析をスキップし、展開戦略 (そのまま移植 / 微調整 / スキップ) の判定と必要なら微調整版ドラフトを返す
