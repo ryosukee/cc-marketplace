@@ -135,7 +135,7 @@ plugin 同梱 default は「どの repo にも `.markdownlint*` がなく、user
 
 - kebab-case
 - 単機能なら 1 語: `gitdiff`、`session`、`markdownlint`
-- 複合なら `{domain}-{action}`: `version-check`、`plugin-update`、`session-retrospective`、`mkdocs-setup`
+- 複合なら `{domain}-{action}`: `version-check`、`plugin-update`、`session-closing`、`mkdocs-setup`
 - 複数形で「受け入れ枠」を示すこともある: `security-guards` (credentials 保護系を広く受け入れる)
 
 ### Rule ファイル名

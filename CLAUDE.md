@@ -5,7 +5,7 @@
 個人用 Claude Code plugin marketplace。1 marketplace / multi plugin 構成。
 utility 系 plugin (session, version-check, gitdiff, plugin-update)、
 dotclaude plugin (doctor/cross-review/registry)、
-session-retrospective plugin、
+session-closing plugin (session-retrospective / handover)、
 authoring / tooling 系 plugin (markdownlint, mkdocs-setup, security-guards) を提供する。
 加えて user global rules を repo 直下の `rules/` で管理し、
 symlink で `~/.claude/rules/cc-marketplace` に配置する。
@@ -100,7 +100,7 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 | gitdiff | diffview.nvim を使った diff レビュー |
 | dotclaude | doctor/cross-review/registry |
 | plugin-update | SessionStart 時にプラグイン更新を検知・通知 |
-| session-retrospective | セッション末尾の振り返り・学び昇格 |
+| session-closing | セッション終盤の作業を束ねる plugin。振り返り・学び codify (session-retrospective) と次セッションへの引き継ぎ資料生成 (handover) |
 | markdownlint | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | MkDocs セットアップ手順 + テンプレート |
 | security-guards | .netrc 等の credentials 保護 hook |

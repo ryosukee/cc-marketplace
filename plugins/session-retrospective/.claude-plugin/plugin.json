@@ -1,5 +1,0 @@
-{
-  "name": "session-retrospective",
-  "description": "セッション終了時の振り返り。学びの昇格、陳腐化チェック、やり残し検出、次アクション提案を行う",
-  "version": "0.3.0"
-}

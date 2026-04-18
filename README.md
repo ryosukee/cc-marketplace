@@ -15,6 +15,12 @@
 
 - dotclaude (0.10.0) — 対象プロジェクトの `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビューする。`/dotclaude:doctor` でプロジェクトを診断し 4 モード (差分アップデート / エッセンス保持再構成 / リセット再生成 / レポートのみ) から選んで実行。`/dotclaude:cross-review` で registry 内の owned リポジトリ同士を相互比較し改善提案を出す。`/dotclaude:registry` で参考リポジトリを管理 (`${CLAUDE_PLUGIN_DATA}` に保持、plugin update でも永続)。抽出対象は実装パイプラインだけでなくドキュメント・調査・メタ作業など広く
 
+### session-closing plugin
+
+- session-closing (0.4.0) — セッション終盤の作業を束ねる plugin。2 skill を提供
+    - `session-retrospective` — セッションで得た学びを rule / skill / CLAUDE.md に codify し、1 コミットにまとめる。やり残しと次アクション提案も併せて提示
+    - `handover` — context 逼迫時や明示要求時に次セッションへの引き継ぎ資料を生成。Task 一覧 / 決定事項 / 現在地 / 再開手順 / 再開 prompt を含む `HANDOVER.md` を project root に書き出す (commit しない)
+
 ### Authoring / tooling plugins
 
 - markdownlint (0.1.0) — Write/Edit 後に markdownlint-cli2 を実行し、`.md` ファイルの lint エラーを Claude にフィードバックする
@@ -35,7 +41,7 @@ claude plugins install version-check@cc-tools
 claude plugins install plugin-update@cc-tools
 claude plugins install gitdiff@cc-tools
 claude plugins install dotclaude@cc-tools
-claude plugins install session-retrospective@cc-tools
+claude plugins install session-closing@cc-tools
 claude plugins install markdownlint@cc-tools
 claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
@@ -112,7 +118,7 @@ marketplace install 後のローカルの状態:
 │       ├── bin/
 │       │   └── cc-tools                    ← CLI 本体
 │       └── plugins/                        ← session, version-check, plugin-update,
-│                                              gitdiff, dotclaude, session-retrospective,
+│                                              gitdiff, dotclaude, session-closing,
 │                                              markdownlint, mkdocs-setup, security-guards
 └── cache/
     └── cc-tools/
@@ -196,7 +202,7 @@ cc-marketplace/
     ├── plugin-update/                  # hooks (SessionStart)
     ├── gitdiff/                        # skill (/gitdiff)
     ├── dotclaude/                      # skills (doctor, cross-review, registry)
-    ├── session-retrospective/          # skill (セッション末尾振り返り)
+    ├── session-closing/                # skills (session-retrospective / handover)
     ├── markdownlint/                   # hook (Write/Edit 後 lint) + config/ 同梱 default
     ├── mkdocs-setup/                   # skill (MkDocs セットアップ手順 + templates)
     └── security-guards/                # hooks (.netrc の Write/Edit/Read をブロック)
