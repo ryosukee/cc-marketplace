@@ -36,7 +36,7 @@
     {
       "name": "session-closing",
       "source": "./plugins/session-closing",
-      "description": "セッション終盤の作業を束ねる plugin。学びの codify (session-retrospective) と次セッションへの引き継ぎ資料生成 (handover) の 2 skill を提供"
+      "description": "セッション終盤の作業を束ねる plugin。学びの codify (retrospective) と次セッションへの引き継ぎ資料生成 (handover) の 2 skill を提供"
     },
     {
       "name": "markdownlint",

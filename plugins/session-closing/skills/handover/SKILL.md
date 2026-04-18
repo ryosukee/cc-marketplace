@@ -19,7 +19,7 @@ session-closing plugin は 2 skill を持つ。役割が違うので混同しな
 
 | skill | 目的 | 出力 |
 | --- | --- | --- |
-| session-retrospective | セッションで得た学びを rule / skill / CLAUDE.md に codify | 既存 .md の更新 + commit |
+| retrospective | セッションで得た学びを rule / skill / CLAUDE.md に codify | 既存 .md の更新 + commit |
 | handover | 次セッションへの状態引き継ぎ | project root の HANDOVER.md (commit なし) |
 
 retrospective を実行した後に handover を呼ぶ運用も、handover だけ呼ぶ運用も OK。

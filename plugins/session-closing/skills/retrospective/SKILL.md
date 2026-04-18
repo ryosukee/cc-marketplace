@@ -1,5 +1,5 @@
 ---
-name: session-retrospective
+name: retrospective
 description: >-
   セッション終了時の振り返り。
   rules/skills/CLAUDE.md の更新をまとめてコミットし、
@@ -9,7 +9,7 @@ description: >-
   等で発動。
 ---
 
-# session-retrospective
+# retrospective
 
 セッション末尾の振り返り。2 フェーズで進める。
 

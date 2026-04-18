@@ -18,7 +18,7 @@
 ### session-closing plugin
 
 - session-closing (0.4.0) — セッション終盤の作業を束ねる plugin。2 skill を提供
-    - `session-retrospective` — セッションで得た学びを rule / skill / CLAUDE.md に codify し、1 コミットにまとめる。やり残しと次アクション提案も併せて提示
+    - `retrospective` — セッションで得た学びを rule / skill / CLAUDE.md に codify し、1 コミットにまとめる。やり残しと次アクション提案も併せて提示
     - `handover` — context 逼迫時や明示要求時に次セッションへの引き継ぎ資料を生成。Task 一覧 / 決定事項 / 現在地 / 再開手順 / 再開 prompt を含む `HANDOVER.md` を project root に書き出す (commit しない)
 
 ### Authoring / tooling plugins
@@ -202,7 +202,7 @@ cc-marketplace/
     ├── plugin-update/                  # hooks (SessionStart)
     ├── gitdiff/                        # skill (/gitdiff)
     ├── dotclaude/                      # skills (doctor, cross-review, registry)
-    ├── session-closing/                # skills (session-retrospective / handover)
+    ├── session-closing/                # skills (retrospective / handover)
     ├── markdownlint/                   # hook (Write/Edit 後 lint) + config/ 同梱 default
     ├── mkdocs-setup/                   # skill (MkDocs セットアップ手順 + templates)
     └── security-guards/                # hooks (.netrc の Write/Edit/Read をブロック)
