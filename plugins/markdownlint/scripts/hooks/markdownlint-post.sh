@@ -2,11 +2,12 @@
 # PostToolUse hook: Write/Edit 後に markdownlint を実行
 # Config 探索: repo-local → ~/.markdownlint.jsonc → plugin 同梱 default
 #
-# Config 発見時は必ず --config <abs-path> で明示指定する。cli2 の auto-discovery
-# に任せると cwd (Claude Code のセッション dir) の設定が拾われ、別リポジトリの
-# ファイルを編集したとき意図しない設定が適用される。
-# customRules の相対パスは設定ファイル自身のディレクトリ基準で解決されるため、
-# --config 指定だけで cd は不要。
+# Repo-local 設定を見つけたらそのディレクトリに cd してから cli2 を実行する。
+# --config 指定だけではルール設定は上書きできるが、.markdownlint-cli2.jsonc の
+# customRules は cwd から別系統で auto-discovery されるため、cwd (Claude Code の
+# セッション dir) にある設定が意図せず追加適用されてしまう。customRules 解決は
+# 実行時の cwd 基準なので、対象リポジトリの外から実行するとモジュール解決が
+# 失敗する。cd して cwd を対象リポジトリに切り替えるのが確実。
 set -euo pipefail
 
 file=$(jq -r '.tool_response.filePath // .tool_input.file_path')
@@ -35,7 +36,8 @@ find_local_config() {
 
 # Determine config and execute
 if find_local_config "$file"; then
-  result=$(npx -y markdownlint-cli2 --config "$LOCAL_CONFIG_PATH" "$file" 2>&1) && exit 0
+  local_dir="$(dirname "$LOCAL_CONFIG_PATH")"
+  result=$(cd "$local_dir" && npx -y markdownlint-cli2 "$file" 2>&1) && exit 0
 elif [ -f "$HOME/.markdownlint.jsonc" ]; then
   result=$(npx -y markdownlint-cli2 --config "$HOME/.markdownlint.jsonc" "$file" 2>&1) && exit 0
 else
