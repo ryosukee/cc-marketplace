@@ -1,5 +1,5 @@
 {
   "name": "security-guards",
   "description": "credentials 保護系の hook を束ねる plugin。Write/Edit で .netrc への書き込み、Read で .netrc の読み取りをブロック",
-  "version": "0.1.1"
+  "version": "0.2.0"
 }

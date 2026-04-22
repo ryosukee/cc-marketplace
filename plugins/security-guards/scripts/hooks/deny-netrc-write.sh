@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 INPUT=$(cat)
 TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
 case "$TOOL" in
