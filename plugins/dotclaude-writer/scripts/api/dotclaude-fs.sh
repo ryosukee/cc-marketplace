@@ -129,6 +129,7 @@ cmd_prepare() {
 cmd_install() {
   local rel_path="$1"
   validate_path "$rel_path" "install"
+  check_dotclaude_exists
 
   local src dst
   src="$(staging_path "$rel_path")"
@@ -183,7 +184,7 @@ Commands:
   export  <path>   Copy .claude/<path> to staging for editing
   prepare <path>   Create staging path for a new file
   install <path>   Copy staged file to .claude/<path> and clean up staging
-  rm      <path>   Delete .clone/<path>
+  rm      <path>   Delete .claude/<path>
 
 <path> is relative to .claude/ (e.g., "rules/foo.md").
 

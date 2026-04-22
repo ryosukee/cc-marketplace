@@ -1,5 +1,5 @@
 {
   "name": "dotclaude-writer",
   "description": ".claude/ 配下のファイルを作成・編集・削除する。Claude Code の protected directory 制限をスクリプト経由で回避するワークアラウンド",
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
