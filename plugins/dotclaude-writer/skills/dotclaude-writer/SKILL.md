@@ -1,10 +1,10 @@
 ---
 name: dotclaude-writer
 description: >-
-  .claude/ 配下のファイルを作成・編集・削除する。
-  Claude Code の protected directory 制限をスクリプト経由で回避する。
-  ".claude を編集"、"rules を作成"、"skill を追加"、
-  ".claude/ に書き込み"、"dotclaude writer" 等で発動。
+  .claude/ 配下のファイルを作成・編集・削除するときは必ずこのスキルを使うこと。
+  .claude/ は protected directory であり Write/Edit/Bash の直接操作はすべてブロックされる。
+  このスキルが提供するスクリプト経由のワークフローだけが .claude/ への唯一の書き込み手段。
+  .claude/ へのファイル操作が必要になった時点で、直接操作を試みる前にこのスキルを発動すること。
 ---
 
 # dotclaude-writer
