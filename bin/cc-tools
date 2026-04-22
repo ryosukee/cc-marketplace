@@ -13,14 +13,9 @@ Usage: cc-tools <plugin> <command> [args...]
        cc-tools help
 
 Plugins:
-  session         セッション管理
   version-check   バージョン追跡
 
 Commands per plugin:
-  session:
-    get-by-pane [PANE_ID]   pane のセッション情報を取得
-    list                    アクティブセッション一覧
-
   version-check:
     get                     現在のバージョンを取得
     check                   更新有無をチェック
@@ -63,8 +58,6 @@ resolve_api_script() {
 
   local script_name=""
   case "${plugin_name}:${command}" in
-    session:get-by-pane)   script_name="get-session-by-pane.sh" ;;
-    session:list)          script_name="list-sessions.sh" ;;
     version-check:get)       script_name="get-version.sh" ;;
     version-check:check)     script_name="check-update.sh" ;;
     version-check:summaries) script_name="list-changelog-summaries.sh" ;;
@@ -109,7 +102,7 @@ cmd_doctor() {
   fi
 
   # 各 plugin のパス
-  for plugin in session version-check; do
+  for plugin in version-check; do
     local path
     if path=$(resolve_plugin_path "$plugin" 2>/dev/null); then
       echo "  [ok] $plugin: $path"
@@ -118,13 +111,6 @@ cmd_doctor() {
       ok=false
     fi
   done
-
-  # TMUX_PANE
-  if [ -n "${TMUX_PANE:-}" ]; then
-    echo "  [ok] TMUX_PANE: $TMUX_PANE"
-  else
-    echo "  [--] TMUX_PANE: not set (session commands will need explicit pane ID)"
-  fi
 
   echo ""
   if $ok; then
@@ -150,7 +136,7 @@ case "$1" in
     cmd_doctor
     exit $?
     ;;
-  session|version-check)
+  version-check)
     plugin_name="$1"
     if [ $# -lt 2 ]; then
       echo "error: missing command for plugin '$plugin_name'" >&2

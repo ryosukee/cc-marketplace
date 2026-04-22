@@ -6,7 +6,6 @@
 
 ### Utility plugins
 
-- session (0.3.0) — tmux pane ID を使った Claude Code セッション追跡。hooks でセッション開始/終了を検知し、pane ↔ session ID の紐付けを管理
 - version-check (0.7.0) — Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示・要約保持。`/version-check:skip` で通知を既読にできる
 - plugin-update (0.3.0) — SessionStart 時にプラグインの更新を検知・通知。全プラグイン最新でもステータスを表示
 - gitdiff (0.1.0) — diffview.nvim を使った diff レビュー。`/gitdiff` で直前の編集差分を tmux ウィンドウに表示
@@ -37,7 +36,6 @@
 claude plugins marketplace add https://github.com/ryosukee/cc-marketplace.git
 
 # 2. plugin をインストール (必要なもののみ)
-claude plugins install session@cc-tools
 claude plugins install version-check@cc-tools
 claude plugins install plugin-update@cc-tools
 claude plugins install gitdiff@cc-tools
@@ -97,8 +95,6 @@ marketplace 単位の CLI コマンド。plugin の API スクリプトを外部
 ### コマンド一覧
 
 ```
-cc-tools session get-by-pane [PANE_ID]   pane のセッション情報を取得
-cc-tools session list                    アクティブセッション一覧
 cc-tools version-check get               現在のバージョンを取得
 cc-tools version-check check             更新有無をチェック
 cc-tools version-check summaries [LIMIT] 保存済み changelog 要約の一覧
@@ -119,14 +115,13 @@ marketplace install 後のローカルの状態:
 │   └── cc-tools/                           ← repo の clone (git pull で更新)
 │       ├── bin/
 │       │   └── cc-tools                    ← CLI 本体
-│       └── plugins/                        ← session, version-check, plugin-update,
+│       └── plugins/                        ← version-check, plugin-update,
 │                                              gitdiff, dotclaude, session-closing,
-│                                              markdownlint, mkdocs-setup, security-guards
+│                                              markdownlint, mkdocs-setup, security-guards,
+│                                              dotclaude-writer
 └── cache/
     └── cc-tools/
-        ├── session/0.3.0/                  ← バージョン別 CLAUDE_PLUGIN_ROOT
-        │   └── ...
-        ├── version-check/0.7.0/
+        ├── version-check/0.7.0/            ← バージョン別 CLAUDE_PLUGIN_ROOT
         │   └── internal/                   ← 状態データ (version, changelogs)
         └── ...                             (各 plugin ごと)
 
@@ -199,7 +194,6 @@ cc-marketplace/
 │       ├── authoring.md
 │       └── anti-ai-authoring.md
 └── plugins/
-    ├── session/                        # hooks + skills + internal/sessions
     ├── version-check/                  # hooks + skills + internal (version, changelogs)
     ├── plugin-update/                  # hooks (SessionStart)
     ├── gitdiff/                        # skill (/gitdiff)
@@ -207,6 +201,7 @@ cc-marketplace/
     ├── session-closing/                # skills (retrospective / handover)
     ├── markdownlint/                   # hook (Write/Edit 後 lint) + config/ 同梱 default
     ├── mkdocs-setup/                   # skill (MkDocs セットアップ手順 + templates)
+    ├── dotclaude-writer/                # skill (.claude/ protected dir への書き込みワークアラウンド)
     └── security-guards/                # hooks (.netrc の Write/Edit/Read をブロック)
 ```
 
@@ -214,11 +209,6 @@ cc-marketplace/
 
 ## TODO
 
-- [ ] session plugin
-    - [ ] skills: session 情報を活用する skill（あれば）
-    - [ ] pane 終了時のクリーンアップ（tmux hook 等で pane 死亡検知 → mapping 削除）
-    - [ ] fork-to-pane skill（セッションを fork して別 pane で開く）
-    - 参考: [docs/claude-session-internals.md](docs/claude-session-internals.md) — セッション内部構造・rewind・fork の調査
 - [x] 既存グローバル skills の plugin 移行
     - [x] チーム開発ワークフロー系 17 skill を dotclaude plugin に移行・削除
     - [x] settings.json の hooks の移行 (plugin-update として plugin 化)

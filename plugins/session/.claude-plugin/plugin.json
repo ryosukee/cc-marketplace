@@ -1,5 +1,0 @@
-{
-  "name": "session",
-  "description": "tmux pane ID を使った Claude Code セッション追跡",
-  "version": "0.3.0"
-}
