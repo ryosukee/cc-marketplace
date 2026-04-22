@@ -105,6 +105,7 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 | mkdocs-setup | MkDocs セットアップ手順 + テンプレート |
 | security-guards | .netrc 等の credentials 保護 hook |
 | cc-transcript | 現在セッションの直近やり取りを jq で整形して vim で開く |
+| dotclaude-writer | .claude/ protected directory への書き込みワークアラウンド。staging 経由で create/edit/rm を提供 |
 
 ## Plugin 更新手順
 

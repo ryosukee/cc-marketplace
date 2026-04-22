@@ -26,6 +26,7 @@
 - markdownlint (0.1.0) — Write/Edit 後に markdownlint-cli2 を実行し、`.md` ファイルの lint エラーを Claude にフィードバックする
 - mkdocs-setup (0.1.0) — mkdocs-material を使ったドキュメントサイトの初期セットアップ手順とテンプレートを提供する skill
 - security-guards (0.1.1) — credentials 保護系の hook を束ねる plugin。Write/Edit で `.netrc` への書き込み、Read で `.netrc` の読み取りをブロック
+- dotclaude-writer (0.2.0) — `.claude/` protected directory への書き込みワークアラウンド。staging 経由のスクリプトで create/edit/rm を提供。main session と `claude -p` で動作（subagent は skill 不可視のため非対応）
 
 ## インストールとアップデート
 
@@ -45,6 +46,7 @@ claude plugins install session-closing@cc-tools
 claude plugins install markdownlint@cc-tools
 claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
+claude plugins install dotclaude-writer@cc-tools
 
 # 3. CLI のセットアップ（初回のみ）
 mkdir -p ~/.claude/bin
