@@ -21,15 +21,18 @@ CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT" resolve_last_version
 
 # 初回実行時
 if [ -z "$LAST_VERSION" ]; then
-  echo "{\"has_update\": false, \"current_version\": \"${CURRENT_VERSION}\", \"last_version\": \"\", \"first_run\": true}"
+  jq -n --argjson update false --arg cur "$CURRENT_VERSION" --arg last "" --argjson first true \
+    '{"has_update": $update, "current_version": $cur, "last_version": $last, "first_run": $first}'
   exit 0
 fi
 
 # バージョンが同じ
 if [ "$CURRENT_VERSION" = "$LAST_VERSION" ]; then
-  echo "{\"has_update\": false, \"current_version\": \"${CURRENT_VERSION}\", \"last_version\": \"${LAST_VERSION}\", \"first_run\": false}"
+  jq -n --argjson update false --arg cur "$CURRENT_VERSION" --arg last "$LAST_VERSION" --argjson first false \
+    '{"has_update": $update, "current_version": $cur, "last_version": $last, "first_run": $first}'
   exit 0
 fi
 
 # バージョンが変わっている
-echo "{\"has_update\": true, \"current_version\": \"${CURRENT_VERSION}\", \"last_version\": \"${LAST_VERSION}\", \"first_run\": false}"
+jq -n --argjson update true --arg cur "$CURRENT_VERSION" --arg last "$LAST_VERSION" --argjson first false \
+  '{"has_update": $update, "current_version": $cur, "last_version": $last, "first_run": $first}'

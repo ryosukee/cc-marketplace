@@ -1,4 +1,5 @@
 #!/bin/bash
+set -uo pipefail
 # changelog 取得スクリプト
 # 引数: $1 = LAST_VERSION, $2 = CURRENT_VERSION
 # 結果は標準出力に出力（ファイルへの書き込みなし）

@@ -107,7 +107,7 @@ echo '{そのバージョンの要約テキスト}' | bash ${CLAUDE_SKILL_DIR}/r
 
 Bash で以下を実行してバージョンを記録する:
 ```
-bash ${CLAUDE_SKILL_DIR}/references/record-version.sh {current_version}
+bash ${CLAUDE_SKILL_DIR}/../../scripts/api/record-version.sh {current_version}
 ```
 
 ## エラーハンドリング

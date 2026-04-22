@@ -24,7 +24,7 @@ claude --version 2>/dev/null | awk '{print $1}'
 
 ステップ 1 で取得したバージョンを記録する:
 ```
-bash ${CLAUDE_SKILL_DIR}/../check/references/record-version.sh {version}
+bash ${CLAUDE_SKILL_DIR}/../../scripts/api/record-version.sh {version}
 ```
 
 ### ステップ 3: 完了メッセージ

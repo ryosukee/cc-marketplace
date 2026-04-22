@@ -24,7 +24,7 @@ CHANGELOGS_DIR="$PLUGIN_ROOT/internal/changelogs"
 TARGET="$CHANGELOGS_DIR/${VERSION}.json"
 
 if [ ! -f "$TARGET" ]; then
-  echo "{\"error\": \"no summary found for version ${VERSION}\"}" >&2
+  jq -n --arg v "$VERSION" '{"error": ("no summary found for version " + $v)}' >&2
   exit 1
 fi
 

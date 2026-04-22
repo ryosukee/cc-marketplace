@@ -32,36 +32,21 @@ resolve_last_version() {
   fi
 
   # 旧キャッシュの last-version を探し、最新バージョンのものを使う
-  local found=""
-  for candidate in "$cache_base"/*/internal/version/last-version; do
-    [ -f "$candidate" ] || continue
-    # 現在のキャッシュは除外（まだファイルがないので基本的にスキップされる）
-    if [ "$candidate" = "$version_file" ]; then
-      continue
-    fi
-    found="$candidate"
-  done
+  local latest
+  latest=$(
+    for f in "$cache_base"/*/internal/version/last-version; do
+      [ -f "$f" ] || continue
+      [ "$f" = "$version_file" ] && continue
+      echo "$f" | sed "s|$cache_base/||" | cut -d/ -f1
+    done | $version_sort_cmd | tail -1
+  )
 
-  # 複数ある場合は最新バージョンのものを選択
-  if [ -n "$found" ]; then
-    local latest
-    latest=$(
-      for f in "$cache_base"/*/internal/version/last-version; do
-        [ -f "$f" ] || continue
-        [ "$f" = "$version_file" ] && continue
-        # パスからバージョンを抽出
-        echo "$f" | sed "s|$cache_base/||" | cut -d/ -f1
-      done | $version_sort_cmd | tail -1
-    )
-
-    if [ -n "$latest" ]; then
-      local source_file="$cache_base/$latest/internal/version/last-version"
-      if [ -f "$source_file" ]; then
-        LAST_VERSION=$(cat "$source_file")
-        # 新しいキャッシュにコピー
-        mkdir -p "$(dirname "$version_file")"
-        cp "$source_file" "$version_file"
-      fi
+  if [ -n "$latest" ]; then
+    local source_file="$cache_base/$latest/internal/version/last-version"
+    if [ -f "$source_file" ]; then
+      LAST_VERSION=$(cat "$source_file")
+      mkdir -p "$(dirname "$version_file")"
+      cp "$source_file" "$version_file"
     fi
   fi
 }

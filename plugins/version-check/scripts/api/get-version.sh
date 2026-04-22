@@ -11,4 +11,4 @@ if [ -z "$CURRENT_VERSION" ]; then
   exit 1
 fi
 
-echo "{\"current_version\": \"${CURRENT_VERSION}\"}"
+jq -n --arg v "$CURRENT_VERSION" '{"current_version": $v}'
