@@ -12,6 +12,7 @@ _generated = []
 
 def on_pre_build(config, **kwargs):
     """Generate .md wrappers for all .yaml files in docs_dir."""
+    _generated.clear()
     docs_dir = config["docs_dir"]
     for root, dirs, filenames in os.walk(docs_dir, followlinks=True):
         for filename in filenames:

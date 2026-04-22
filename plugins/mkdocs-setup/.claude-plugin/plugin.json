@@ -1,5 +1,5 @@
 {
   "name": "mkdocs-setup",
   "description": "mkdocs-material を使ったドキュメントサイトの初期セットアップ手順とテンプレートを提供する skill",
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

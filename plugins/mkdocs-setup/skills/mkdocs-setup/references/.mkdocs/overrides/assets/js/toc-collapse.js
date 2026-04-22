@@ -70,7 +70,7 @@
       sidebar.classList.add("toc-peeking");
     }
 
-    function schedulClosePeek() {
+    function scheduleClosePeek() {
       clearTimeout(peekTimer);
       peekTimer = setTimeout(function () {
         sidebar.classList.remove("toc-peeking");
@@ -83,7 +83,7 @@
 
     // ボタンにホバー → ピーク開始
     btn.addEventListener("mouseenter", startPeek);
-    btn.addEventListener("mouseleave", schedulClosePeek);
+    btn.addEventListener("mouseleave", scheduleClosePeek);
 
     // サイドバーにホバー中 → ピーク維持
     sidebar.addEventListener("mouseenter", function () {
@@ -93,7 +93,7 @@
     });
     sidebar.addEventListener("mouseleave", function () {
       if (sidebar.classList.contains("toc-peeking")) {
-        schedulClosePeek();
+        scheduleClosePeek();
       }
     });
 

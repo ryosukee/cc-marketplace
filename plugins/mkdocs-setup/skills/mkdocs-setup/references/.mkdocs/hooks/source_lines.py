@@ -13,6 +13,11 @@ from bs4 import BeautifulSoup, NavigableString
 _md_store: dict[str, str] = {}
 
 
+def on_post_build(config, **kwargs):
+    """Clear leftover entries from interrupted builds."""
+    _md_store.clear()
+
+
 def on_page_markdown(markdown, page, **kwargs):
     """Save the original Markdown text for later matching."""
     _md_store[page.file.src_path] = markdown
