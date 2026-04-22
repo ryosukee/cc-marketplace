@@ -8,7 +8,6 @@
 
 - version-check (0.7.0) — Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示・要約保持。`/version-check:skip` で通知を既読にできる
 - plugin-update (0.3.0) — SessionStart 時にプラグインの更新を検知・通知。全プラグイン最新でもステータスを表示
-- gitdiff (0.1.0) — diffview.nvim を使った diff レビュー。`/gitdiff` で直前の編集差分を tmux ウィンドウに表示
 
 ### dotclaude plugin
 
@@ -38,7 +37,6 @@ claude plugins marketplace add https://github.com/ryosukee/cc-marketplace.git
 # 2. plugin をインストール (必要なもののみ)
 claude plugins install version-check@cc-tools
 claude plugins install plugin-update@cc-tools
-claude plugins install gitdiff@cc-tools
 claude plugins install dotclaude@cc-tools
 claude plugins install session-closing@cc-tools
 claude plugins install markdownlint@cc-tools
@@ -116,7 +114,7 @@ marketplace install 後のローカルの状態:
 │       ├── bin/
 │       │   └── cc-tools                    ← CLI 本体
 │       └── plugins/                        ← version-check, plugin-update,
-│                                              gitdiff, dotclaude, session-closing,
+│                                              dotclaude, session-closing,
 │                                              markdownlint, mkdocs-setup, security-guards,
 │                                              dotclaude-writer
 └── cache/
@@ -196,7 +194,6 @@ cc-marketplace/
 └── plugins/
     ├── version-check/                  # hooks + skills + internal (version, changelogs)
     ├── plugin-update/                  # hooks (SessionStart)
-    ├── gitdiff/                        # skill (/gitdiff)
     ├── dotclaude/                      # skills (doctor, cross-review, registry)
     ├── session-closing/                # skills (retrospective / handover)
     ├── markdownlint/                   # hook (Write/Edit 後 lint) + config/ 同梱 default

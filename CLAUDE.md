@@ -3,7 +3,7 @@
 ## プロジェクト概要
 
 個人用 Claude Code plugin marketplace。1 marketplace / multi plugin 構成。
-utility 系 plugin (version-check, gitdiff, plugin-update)、
+utility 系 plugin (version-check, plugin-update)、
 dotclaude plugin (doctor/cross-review/registry)、
 session-closing plugin (retrospective / handover)、
 authoring / tooling 系 plugin (markdownlint, mkdocs-setup, security-guards) を提供する。
@@ -96,7 +96,6 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 | plugin | 概要 |
 | --- | --- |
 | version-check | Claude Code のバージョン追跡・更新検知 |
-| gitdiff | diffview.nvim を使った diff レビュー |
 | dotclaude | doctor/cross-review/registry |
 | plugin-update | SessionStart 時にプラグイン更新を検知・通知 |
 | session-closing | セッション終盤の作業を束ねる plugin。振り返り・学び codify (retrospective) と次セッションへの引き継ぎ資料生成 (handover) |

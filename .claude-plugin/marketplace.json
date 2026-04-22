@@ -14,11 +14,6 @@
       "description": "Claude Code のバージョン追跡・更新検知"
     },
     {
-      "name": "gitdiff",
-      "source": "./plugins/gitdiff",
-      "description": "diffview.nvim を使った diff レビュー skill"
-    },
-    {
       "name": "dotclaude",
       "source": "./plugins/dotclaude",
       "description": "対象プロジェクトの .claude/ を参考リポジトリと原則に基づいて診断・合成・相互レビューする"

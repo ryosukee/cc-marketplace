@@ -1,5 +1,0 @@
-{
-  "name": "gitdiff",
-  "description": "diffview.nvim を使った diff レビュー skill",
-  "version": "0.1.0"
-}
