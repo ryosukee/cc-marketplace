@@ -57,6 +57,11 @@
       "name": "cc-transcript",
       "source": "./plugins/cc-transcript",
       "description": "現在セッションの直近 N 件のやり取りを jq で整形して vim で開く skill"
+    },
+    {
+      "name": "dotclaude-writer",
+      "source": "./plugins/dotclaude-writer",
+      "description": ".claude/ 配下のファイルを作成・編集・削除する。protected directory 制限のスクリプト経由ワークアラウンド"
     }
   ]
 }
