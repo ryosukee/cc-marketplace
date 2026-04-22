@@ -74,6 +74,9 @@ hooks で状態を永続化する plugin は以下の構造を使う:
 
 ### API スクリプト設計
 
+`scripts/api/` は CLI (`cc-tools`) や他 plugin から呼ばれる外部公開用スクリプトの配置先。
+skill 内部でのみ使うスクリプトは `skills/{skill-name}/scripts/` に配置すればよく、`scripts/api/` に置く必要はない。
+
 - 出力は JSON 推奨（stdout）
 - エラーメッセージは stderr
 - Exit codes: 0=成功, 1=該当なし, 2=前提条件エラー

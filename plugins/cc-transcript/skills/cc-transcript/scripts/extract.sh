@@ -13,6 +13,7 @@ case "$SCOPE" in
     ;;
 esac
 
+# ~/.claude/projects/<encoded-cwd>/<session-id>.jsonl の depth 2 構造を前提
 JSONL=$(find "$HOME/.claude/projects" -maxdepth 2 -type f -name "${SESSION_ID}.jsonl" 2>/dev/null | head -n1)
 if [ -z "$JSONL" ]; then
   echo "cc-transcript: session JSONL not found for ${SESSION_ID}" >&2

@@ -13,10 +13,10 @@ printf '%s\n' "$FILE"
 
 case "$MODE" in
   popup)
-    tmux display-popup -E -w 90% -h 90% "vim '$FILE'"
+    tmux display-popup -E -w 90% -h 90% "vim $(printf '%q' "$FILE")"
     ;;
   window)
-    tmux new-window -n cc-transcript "vim '$FILE'"
+    tmux new-window -n cc-transcript "vim $(printf '%q' "$FILE")"
     ;;
   print)
     ;;
