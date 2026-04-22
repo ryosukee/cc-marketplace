@@ -33,12 +33,13 @@ while IFS=$'\t' read -r id installed_version; do
 done < <(claude plugin list --json 2>/dev/null | jq -r '.[] | [.id, .version] | @tsv')
 
 # 3. Output result
+if [ "$total" -eq 0 ]; then
+  exit 0
+fi
+
 if [ ${#updatable[@]} -eq 0 ]; then
-  cat <<EOF
-{
-  "systemMessage": "\n✓ ${total} plugins — all up to date\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-}
-EOF
+  jq -n --arg msg "$(printf '\n✓ %d plugins — all up to date\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' "$total")" \
+    '{"systemMessage": $msg}'
   exit 0
 fi
 
@@ -46,12 +47,9 @@ update_lines=""
 update_cmds=""
 for item in "${updatable[@]}"; do
   plugin_id="${item%% (*}"
-  update_lines="${update_lines}\n  ${item}"
-  update_cmds="${update_cmds}\n  claude plugin update ${plugin_id}"
+  update_lines="${update_lines}$(printf '\n  %s' "$item")"
+  update_cmds="${update_cmds}$(printf '\n  claude plugin update %s' "$plugin_id")"
 done
 
-cat <<EOF
-{
-  "systemMessage": "\n⬆ ${#updatable[@]}/${total} plugins have updates:${update_lines}\n\nRun to update:${update_cmds}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-}
-EOF
+jq -n --arg msg "$(printf '\n⬆ %d/%d plugins have updates:%s\n\nRun to update:%s\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' "${#updatable[@]}" "$total" "$update_lines" "$update_cmds")" \
+  '{"systemMessage": $msg}'
