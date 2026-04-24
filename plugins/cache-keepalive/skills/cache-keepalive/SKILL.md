@@ -11,96 +11,73 @@ argument-hint: "[on|off|status|list]"
 
 # cache-keepalive
 
-prompt cache (extended cache, TTL 1h) が expire する前に keepalive を発火し、キャッシュを維持する。
-最終活動時刻から逆算し、cache 切れ 5 分前を狙う動的タイマー方式。
+## 目的
 
-固定間隔 cron ではなく ScheduleWakeup のワンタイムタイマーを使い、
-発火のたびに JSONL の mtime を元に次回タイマーを再計算する。
-アクティブ時は発火しない。
+prompt cache の extended cache (TTL 1h) が expire すると全 context が cache miss し、
+input トークンが急騰する。
+expire 前に軽量プロンプトを発火して TTL を延長することでこれを防ぐ。
 
-## 定数
+## 仕組み
 
-- TTL: 3600 秒 (1 時間)
-- マージン: 300 秒 (5 分)
-- TARGET: 3300 秒 (55 分。TTL - マージン)
+ScheduleWakeup のワンタイムタイマーを使う。
 
-## 引数
+- 「最終活動から 55 分後」(cache 切れ 5 分前) に発火することを目標とする
+- 発火時に JSONL の mtime で最終活動時刻を確認し、keepalive が必要か判断する
+- 判断後、次回タイマーを再登録することでループを形成する
+- 固定間隔 cron ではないので、アクティブ時に無駄な発火がない
 
-| 値 | 動作 |
-| --- | --- |
-| (なし) / `on` | keepalive タイマーを開始 |
-| `off` | タイマーを停止 |
-| `status` / `state` / `list` | 現在の状態を表示 |
+最終活動からの経過秒数を `elapsed` とすると:
 
-## 実行手順
+- `elapsed >= 3300` (55 分以上アイドル) → keepalive 発火。次回タイマーは 3300 秒後
+- `elapsed < 3300` (まだ余裕あり) → keepalive 不要。次回タイマーは `(3300 - elapsed)` 秒後
+    - つまり「最終活動から 55 分」の時点を狙って再スケジュールする
 
-### 1. 引数の判定
+## JSONL パスの特定
 
-`<command-args>` を確認する。
-
-- `off` → 停止フローへ
-- `status` / `state` / `list` → 状態表示フローへ
-- それ以外 (空 / `on`) → 開始フローへ
-
-### 2. 開始フロー (on)
-
-1. CronList を呼び、prompt に `[cache-keepalive]` を含むジョブが既にあるか確認する
-2. 既にある場合: 「cache-keepalive は既に有効です (ID: {id})」と報告して終了
-3. JSONL パスを特定し、初回タイマーを登録する (後述の「タイマー登録手順」を実行)
-4. 「cache-keepalive を有効にしました (ID: {id})」と報告
-
-### 3. 停止フロー (off)
-
-1. CronList を呼び、prompt に `[cache-keepalive]` を含むジョブを探す
-2. ある場合: CronDelete(id) で削除し、「cache-keepalive を停止しました (ID: {id})」と報告
-3. ない場合: 「現在有効な cache-keepalive はありません」と報告
-
-### 4. 状態表示フロー (status)
-
-1. CronList を呼び、prompt に `[cache-keepalive]` を含むジョブを探す
-2. ある場合: 「cache-keepalive: 有効 (ID: {id})」と報告
-3. ない場合: 「cache-keepalive: 無効」と報告
-
-## タイマー登録手順
-
-開始フローと keepalive 発火時の両方で使う共通手順。
-
-### JSONL パスの特定
-
-Bash で以下を実行してセッション JSONL のパスを取得する:
+セッション JSONL の mtime を最終活動時刻の代理指標として使う。
 
 ```bash
 find ~/.claude -name "*.jsonl" -path "*$CLAUDE_SESSION_ID*" 2>/dev/null | head -1
 ```
 
-パスが見つからない場合はエラー報告して終了。
-
-### 経過秒数の算出
+## 経過秒数の算出 (macOS)
 
 ```bash
 T=$(stat -f %m {JSONL_PATH}); N=$(date +%s); echo $((N - T))
 ```
 
-結果を `elapsed` とする。
+## サブコマンド
 
-### 遅延の計算
+`<command-args>` で分岐する。
 
-```
-delay = max(60, 3300 - elapsed)
-```
+### on (引数なし / `on`)
 
-- elapsed が小さい (直近に活動あり) → delay が大きい (次のチェックは遠い)
-- elapsed が大きい (長時間アイドル) → delay が小さい (すぐチェック)
-- elapsed >= 3300 → delay = 60 (最小値。次の発火で keepalive する)
+1. CronList で `[cache-keepalive]` を含むジョブを探す
+2. 既にある → 「cache-keepalive は既に有効です (ID: {id})」で終了
+3. JSONL パスを特定する (見つからなければエラー報告して終了)
+4. 経過秒数を算出し、`delay = max(60, 3300 - elapsed)` を計算する
+5. ScheduleWakeup を呼ぶ (詳細は「ScheduleWakeup パラメータ」参照)
+6. 「cache-keepalive を有効にしました (ID: {id})」と報告
 
-### ScheduleWakeup の呼び出し
+### off
 
-以下のパラメータで ScheduleWakeup を呼ぶ。
-`{JSONL_PATH}` は特定した実際のパスに置換すること:
+1. CronList で `[cache-keepalive]` を含むジョブを探す
+2. ある → CronDelete(id) し「cache-keepalive を停止しました (ID: {id})」と報告
+3. ない → 「現在有効な cache-keepalive はありません」と報告
+
+### status / state / list
+
+1. CronList で `[cache-keepalive]` を含むジョブを探す
+2. ある → 「cache-keepalive: 有効 (ID: {id})」と報告
+3. ない → 「cache-keepalive: 無効」と報告
+
+## ScheduleWakeup パラメータ
+
+`{JSONL_PATH}` は特定した実際のパスに置換する。
 
 - delaySeconds: 算出した delay
 - reason: `cache keepalive ({delay}s 後にチェック)`
-- prompt:
+- prompt (以下の文字列をそのまま使う):
 
 ```
 [cache-keepalive] keepalive timer.
