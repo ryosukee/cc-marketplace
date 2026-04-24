@@ -1,5 +1,5 @@
 {
   "name": "cache-keepalive",
   "description": "prompt cache (extended cache, TTL 1h) の expire 前に keepalive プロンプトを自動発火し、キャッシュを維持する skill",
-  "version": "0.6.0"
+  "version": "0.7.0"
 }
