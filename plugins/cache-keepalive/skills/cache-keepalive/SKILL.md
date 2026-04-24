@@ -77,7 +77,7 @@ while true; do
     echo "[cache-keepalive] キャッシュキープアライブです。OK とだけ返答してください。"
     sleep 3000
   else
-    sleep $((3000 - E + 10))
+    sleep $((3000 - E))
   fi
 done
 ```
@@ -86,8 +86,7 @@ done
 
 - JSONL の mtime から経過秒数を算出
 - 3000 秒以上経過 → 1 行出力 (Claude への keepalive 通知)、その後 3000 秒 sleep
-- 3000 秒未満 → `(3000 - elapsed + 10)` 秒 sleep して再チェック
-    - +10 はバッファ。sleep 後の再チェックで確実に 3000 を超えるようにする
+- 3000 秒未満 → `(3000 - elapsed)` 秒 sleep して再チェック
 - stat 失敗時は 60 秒待って retry
 
 ## keepalive 通知への応答
