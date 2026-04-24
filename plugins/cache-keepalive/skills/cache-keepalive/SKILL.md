@@ -32,18 +32,19 @@ ScheduleWakeup のワンタイムタイマーを使う。
 - `elapsed < 3300` (まだ余裕あり) → keepalive 不要。次回タイマーは `(3300 - elapsed)` 秒後
     - つまり「最終活動から 55 分」の時点を狙って再スケジュールする
 
-## JSONL パスの特定
+## セッション JSONL
 
-セッション JSONL の mtime を最終活動時刻の代理指標として使う。
+JSONL の mtime を最終活動時刻の代理指標として使う。
+このセッションの JSONL パス:
 
-```bash
-find ~/.claude -name "*.jsonl" -path "*$CLAUDE_SESSION_ID*" 2>/dev/null | head -1
-```
+!`find ~/.claude/projects -name "${CLAUDE_SESSION_ID}.jsonl" 2>/dev/null | head -1`
 
 ## 経過秒数の算出 (macOS)
 
+上記パスを `JSONL` として:
+
 ```bash
-T=$(stat -f %m {JSONL_PATH}); N=$(date +%s); echo $((N - T))
+T=$(stat -f %m JSONL); N=$(date +%s); echo $((N - T))
 ```
 
 ## サブコマンド
@@ -54,7 +55,7 @@ T=$(stat -f %m {JSONL_PATH}); N=$(date +%s); echo $((N - T))
 
 1. CronList で `[cache-keepalive]` を含むジョブを探す
 2. 既にある → 「cache-keepalive は既に有効です (ID: {id})」で終了
-3. JSONL パスを特定する (見つからなければエラー報告して終了)
+3. セッション JSONL セクションのパスが空なら、エラー報告して終了
 4. 経過秒数を算出し、`delay = max(60, 3300 - elapsed)` を計算する
 5. ScheduleWakeup を呼ぶ (詳細は「ScheduleWakeup パラメータ」参照)
 6. 「cache-keepalive を有効にしました (ID: {id})」と報告
@@ -73,15 +74,15 @@ T=$(stat -f %m {JSONL_PATH}); N=$(date +%s); echo $((N - T))
 
 ## ScheduleWakeup パラメータ
 
-`{JSONL_PATH}` は特定した実際のパスに置換する。
+セッション JSONL セクションで解決済みのパスを `JSONL` とする。
 
 - delaySeconds: 算出した delay
 - reason: `cache keepalive ({delay}s 後にチェック)`
-- prompt (以下の文字列をそのまま使う):
+- prompt (以下の文字列の `JSONL` を実際のパスに置換して使う):
 
 ```
 [cache-keepalive] keepalive timer.
-1. Bash: T=$(stat -f %m {JSONL_PATH}); N=$(date +%s); E=$((N-T)); echo $E
+1. Bash: T=$(stat -f %m JSONL); N=$(date +%s); E=$((N-T)); echo $E
 2. E >= 3300 → OK と返答し、ScheduleWakeup(delaySeconds=3300, reason="cache keepalive fired", prompt=<このプロンプト全文>)
 3. E < 3300 → 返答せず、ScheduleWakeup(delaySeconds=max(60,3300-E), reason="cache keepalive reschedule", prompt=<このプロンプト全文>)
 ```
