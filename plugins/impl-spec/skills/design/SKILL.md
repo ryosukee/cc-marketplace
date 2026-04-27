@@ -15,19 +15,6 @@ model: opus
 要件定義書 (requirements skill の出力) を入力に、「どう作るか」を設計レベルで明確化する。
 出力は設計書。実装者 (人または implement agent) がこの文書とコードベースから迷わず着手できるレベルを目指す。
 
-## 責務境界
-
-impl-spec plugin は 2 skill + 1 agent を持つ。
-
-| skill / agent | 目的 | 入力 | 出力 |
-| --- | --- | --- | --- |
-| requirements | 何を作るかを決める (WHAT) | 機能概要 or 既存の plan | 要件定義書 |
-| design | どう作るかを決める (HOW) | 要件定義書 | 設計書 |
-| spec-reviewer | 成果物の品質チェック (自動) | 要件定義書 or 設計書 | レビュー指摘 |
-
-design は requirements の下流。要件の変更・追加はこの skill のスコープ外。
-インタビュー中に要件の曖昧さが見つかった場合は、その旨をユーザーに伝え、requirements skill への差し戻しを提案する。
-
 ## 設計書の粒度原則
 
 設計書は「判断の記録」であり「コードの下書き」ではない。

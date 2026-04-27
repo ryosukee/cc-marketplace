@@ -15,18 +15,6 @@ model: opus
 コード実装の前段として、「何を作るか」を要件レベルで明確化する。
 出力は要件定義書。設計判断 (どう作るか) はこの skill のスコープ外で、design skill の責務。
 
-## 責務境界
-
-impl-spec plugin は 2 skill + 1 agent を持つ。
-
-| skill / agent | 目的 | 入力 | 出力 |
-| --- | --- | --- | --- |
-| requirements | 何を作るかを決める (WHAT) | 機能概要 or 既存の plan | 要件定義書 |
-| design | どう作るかを決める (HOW) | 要件定義書 | 設計書 |
-| spec-reviewer | 成果物の品質チェック (自動) | 要件定義書 or 設計書 | レビュー指摘 |
-
-requirements は上流、design は下流。requirements の出力を design の入力にする。
-
 ## 横断原則: プロジェクト方針への適応
 
 この skill はプロジェクト非依存だが、使われるプロジェクトに fit する。
