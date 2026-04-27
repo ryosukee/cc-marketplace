@@ -58,5 +58,11 @@ escaped_context=$(echo "$errors" | sed 's/"/\\"/g' | awk '{printf "%s\\n", $0}')
 header="━━━ markdownlint ERROR (${count}件) ━━━"
 footer="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-printf '{"systemMessage":"\\n\\u001b[31m%s\\u001b[0m\\n%s\\u001b[31m%s\\u001b[0m\\n","hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"markdownlint エラーが %s 件検出されました。以下のエラーを修正してください:\\n%s"}}' \
-  "$header" "$escaped_display" "$footer" "$count" "$escaped_context"
+context="markdownlint エラーが ${count} 件検出されました。以下の手順で対応してください。\\n\\n"
+context+="1. 全エラーを分類し、修正すべきものとプロジェクトで不要なものに仕分けする\\n"
+context+="2. 修正すべきエラーは全て把握した上で、1回の Edit でまとめて一括修正する（1件ずつ直さない）\\n"
+context+="3. プロジェクトの方針上スルーしてよいエラーがある場合は、理由を添えてユーザーに承認を求める。承認されたら、プロジェクトルートの markdownlint 設定ファイルに該当ルールの無効化を追加することを提案する\\n\\n"
+context+="エラー一覧:\\n${escaped_context}"
+
+printf '{"systemMessage":"\\n\\u001b[31m%s\\u001b[0m\\n%s\\u001b[31m%s\\u001b[0m\\n","hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"%s"}}' \
+  "$header" "$escaped_display" "$footer" "$context"
