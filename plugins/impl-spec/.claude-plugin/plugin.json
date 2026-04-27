@@ -1,5 +1,5 @@
 {
   "name": "impl-spec",
   "description": "実装のための仕様策定 plugin。要件定義書 (requirements) と設計書 (design) の 2 skill で、実装前の曖昧さをゼロにする",
-  "version": "0.3.0"
+  "version": "0.3.1"
 }
