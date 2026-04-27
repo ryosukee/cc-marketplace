@@ -19,6 +19,12 @@
     - `retrospective` — セッションで得た学びを rule / skill / CLAUDE.md に codify し、1 コミットにまとめる。やり残しと次アクション提案も併せて提示
     - `handover` — context 逼迫時や明示要求時に次セッションへの引き継ぎ資料を生成。Task 一覧 / 決定事項 / 現在地 / 再開手順 / 再開 prompt を含む `HANDOVER-{slug}.md` を project root に書き出す (commit しない)
 
+### impl-spec plugin
+
+- impl-spec (0.1.0) — 実装のための仕様策定 plugin。2 skill を提供
+    - `requirements` — コードベース調査 + ユーザーへのインタビューで「何を作るか」を要件レベルで明確化し、要件定義書を出力する
+    - `design` — 要件定義書を入力に、既存コードとプロジェクト方針に基づいて設計の選択肢をインタビューで確定させ、実装レベルで曖昧さのない設計書を出力する
+
 ### Authoring / tooling plugins
 
 - markdownlint (0.1.0) — Write/Edit 後に markdownlint-cli2 を実行し、`.md` ファイルの lint エラーを Claude にフィードバックする
@@ -43,6 +49,7 @@ claude plugins install markdownlint@cc-tools
 claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
 claude plugins install dotclaude-writer@cc-tools
+claude plugins install impl-spec@cc-tools
 
 # 3. CLI のセットアップ（初回のみ）
 mkdir -p ~/.claude/bin
@@ -199,6 +206,7 @@ cc-marketplace/
     ├── markdownlint/                   # hook (Write/Edit 後 lint) + config/ 同梱 default
     ├── mkdocs-setup/                   # skill (MkDocs セットアップ手順 + templates)
     ├── dotclaude-writer/                # skill (.claude/ protected dir への書き込みワークアラウンド)
+    ├── impl-spec/                      # skills (requirements / design)
     └── security-guards/                # hooks (.netrc の Write/Edit/Read をブロック)
 ```
 

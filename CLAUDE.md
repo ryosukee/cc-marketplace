@@ -6,6 +6,7 @@
 utility 系 plugin (version-check, plugin-update)、
 dotclaude plugin (doctor/cross-review/registry)、
 session-closing plugin (retrospective / handover)、
+impl-spec plugin (requirements / design)、
 authoring / tooling 系 plugin (markdownlint, mkdocs-setup, security-guards) を提供する。
 加えて user global rules を repo 直下の `rules/` で管理し、
 symlink で `~/.claude/rules/cc-marketplace` に配置する。
@@ -107,6 +108,7 @@ skill 内部でのみ使うスクリプトは `skills/{skill-name}/scripts/` に
 | security-guards | .netrc 等の credentials 保護 hook |
 | cc-transcript | 現在セッションの直近やり取りを jq で整形して vim で開く |
 | dotclaude-writer | .claude/ protected directory への書き込みワークアラウンド。staging 経由で create/edit/rm を提供 |
+| impl-spec | 実装のための仕様策定。要件定義書 (requirements) と設計書 (design) の 2 skill |
 
 ## Plugin 更新手順
 
