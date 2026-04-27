@@ -1,5 +1,5 @@
 {
   "name": "session-closing",
-  "description": "セッション終盤の作業を束ねる plugin。学びの codify (retrospective) と次セッションへの引き継ぎ資料生成 (handover) の 2 skill を提供する",
-  "version": "0.9.0"
+  "description": "セッション終盤の作業を束ねる plugin。学びの codify (retrospective)、引き継ぎ資料生成 (handover)、両者を順に実行するオーケストレーター (session-close) の 3 skill を提供する",
+  "version": "1.0.0"
 }
