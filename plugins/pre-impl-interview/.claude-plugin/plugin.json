@@ -1,0 +1,5 @@
+{
+  "name": "pre-impl-interview",
+  "description": "実装前のインタビュー skill。コードベース調査 + ユーザーへの質問で仕様を明確化し、plan/implement の入力となる仕様書を出力する",
+  "version": "0.1.0"
+}
