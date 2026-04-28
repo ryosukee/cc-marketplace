@@ -21,14 +21,15 @@
 
 ### impl-spec plugin
 
-- impl-spec (0.4.0) — 実装のための仕様策定 plugin。2 skill + 1 agent を提供
+- impl-spec (0.5.0) — 実装のための仕様策定 plugin。3 skill + 1 agent を提供
     - `requirements` — コードベース調査 + ユーザーへのインタビューで「何を作るか」を要件レベルで明確化し、要件定義書を出力する
-    - `design` — 要件定義書を入力に、既存コードとプロジェクト方針に基づいて設計の選択肢をインタビューで確定させ、設計書を出力す��。コントラクトと統合点を書き、内部実装は実装者に委ねる粒度原則を持つ
-    - `spec-reviewer` (agent) — requirements / design の出力前に自動起動し、未確定項目・曖昧表現・内部整合性・網羅性等を構造的にチェックする
+    - `design` — 要件定義書を入力に、既存コードとプロジェクト方針に基づいて設計の選択肢をインタビューで確定させ、設計書を出力する。コントラクトと統合点を書き、内部実装は実装者に委ねる粒度原則を持つ
+    - `test-plan` — 要件定義書と設計書を入力に、受入基準の全件トレーサビリティに基づくテスト計画書を出力する。受入基準の漏れを構造的に防ぐ
+    - `spec-reviewer` (agent) — requirements / design / test-plan の出力前に自動起動し、未確定項目・曖昧表現・内部整合性・網羅性等を構造的にチェックする
 
 ### Authoring / tooling plugins
 
-- markdownlint (0.3.1) — Write/Edit 後に markdownlint-cli2 を実行し、`.md` ファイルの lint エラーを Claude にフィードバックする
+- markdownlint (0.3.2) — Write/Edit 後に markdownlint-cli2 を実行し、`.md` ファイルの lint エラーを Claude にフィードバックする
 - mkdocs-setup (0.1.0) — mkdocs-material を使ったドキュメントサイトの初期セットアップ手順とテンプレートを提供する skill
 - security-guards (0.1.1) — credentials 保護系の hook を束ねる plugin。Write/Edit で `.netrc` への書き込み、Read で `.netrc` の読み取りをブロック
 - dotclaude-writer (0.2.0) — `.claude/` protected directory への書き込みワークアラウンド。staging 経由のスクリプトで create/edit/rm を提供。main session と `claude -p` で動作（subagent は skill 不可視のため非対応）

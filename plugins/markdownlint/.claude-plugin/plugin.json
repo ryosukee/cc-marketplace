@@ -1,5 +1,5 @@
 {
   "name": "markdownlint",
   "description": "Write/Edit 後に markdownlint-cli2 を実行し、.md ファイルの lint エラーを Claude にフィードバックする",
-  "version": "0.3.1"
+  "version": "0.3.2"
 }
