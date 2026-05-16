@@ -75,5 +75,26 @@ bash "$SCRIPT" rm rules/obsolete.md
   (cwd + staging 相対パス)
 - install を忘れると変更が `.claude/` に反映されない。
   export/prepare の後は必ず install で完了させる
+- 同一セッションで同じファイルを複数回修正する場合
+  (review サイクル、段階的な大規模修正など)、
+  install するたびに staging が削除されるため、
+  2 回目以降は再 export が必要
+
+    ```bash
+    # 1 回目
+    bash "$SCRIPT" export rules/foo.md
+    # Edit + install
+    bash "$SCRIPT" install rules/foo.md  # staging 削除
+
+    # 2 回目 (再 export 必要)
+    bash "$SCRIPT" export rules/foo.md
+    # Read してから Edit
+    bash "$SCRIPT" install rules/foo.md
+    ```
+
+- 再 export 後の staging ファイルは Edit/Write 前に必ず Read する。
+  harness は file_path 単位で Read 履歴を要求するため、
+  再 export 後は「File has not been read yet」エラーになる
+  (前 round で Read していても継承されない)
 - エラー時は stdout/stderr のメッセージに従うこと。
   `HINT:` 行に復帰手順が出力される
