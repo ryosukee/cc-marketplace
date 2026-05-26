@@ -19,11 +19,11 @@
 | --- | --- | --- |
 | dotclaude | 0.14.0 | `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビュー。doctor / cross-review / registry の 3 skill |
 
-### session-closing
+### session
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| session-closing | 1.0.0 | セッション終盤の作業を束ねる。retrospective (学びの codify) / handover (引き継ぎ資料) / session-close (両者のオーケストレーター) |
+| session | 2.0.0 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料) / end (オーケストレーター) + handover-reviewer agent |
 
 ### impl-spec
 
@@ -52,7 +52,7 @@ claude plugins install plugin-update@cc-tools
 claude plugins install cache-keepalive@cc-tools
 claude plugins install cc-transcript@cc-tools
 claude plugins install dotclaude@cc-tools
-claude plugins install session-closing@cc-tools
+claude plugins install session@cc-tools
 claude plugins install impl-spec@cc-tools
 claude plugins install markdownlint@cc-tools
 claude plugins install mkdocs-setup@cc-tools

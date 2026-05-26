@@ -5,7 +5,7 @@
 個人用 Claude Code plugin marketplace。1 marketplace / multi plugin 構成。
 utility 系 (version-check, plugin-update, cache-keepalive, cc-transcript)、
 dotclaude 系 (doctor/cross-review/registry)、
-session-closing 系 (retrospective/handover)、
+session 系 (start/debrief/retrospective/handover/end)、
 impl-spec 系 (requirements/design/test-plan)、
 authoring/tooling 系 (markdownlint, mkdocs-setup, security-guards, dotclaude-writer) を提供する。
 加えて user global rules を repo 直下の `rules/` で管理し、
@@ -72,7 +72,7 @@ cc-marketplace/
 | cache-keepalive | 0.7.3 | utility | prompt cache keepalive の自動発火 |
 | cc-transcript | 0.7.0 | utility | セッションの直近やり取りを jq 整形して vim で開く |
 | dotclaude | 0.14.0 | dotclaude | doctor/cross-review/registry |
-| session-closing | 1.0.0 | session | retrospective/handover/session-close |
+| session | 2.0.0 | session | start/debrief/retrospective/handover/end + handover-reviewer agent |
 | impl-spec | 0.5.4 | impl-spec | requirements/design/test-plan + spec-reviewer agent |
 | markdownlint | 0.3.2 | authoring | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | 0.2.0 | authoring | MkDocs セットアップ手順 + テンプレート |
