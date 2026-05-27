@@ -2,14 +2,14 @@
 name: retrospective
 description: >-
   セッション終了時の振り返り。学びの codify に特化。
-  rules/skills/CLAUDE.md の更新をまとめてコミットする。
+  rules/skills/CLAUDE.md の更新を洗い出し、ユーザー承認のうえ反映する。
   "振り返って"、"学びを明文化"、"session retrospective"、
   "明文化"、"codify"、"retroして" 等で発動。
 ---
 
 # retrospective
 
-セッションで得た学びを rules/skills/agents/CLAUDE.md に codify し、1 コミットにまとめる。
+セッションで得た学びを rules/skills/agents/CLAUDE.md に codify する。
 学びの抽出・明文化のみを担う。
 
 ## codify (rules/skills/CLAUDE.md の更新 → コミット)
@@ -102,10 +102,10 @@ AskUserQuestion ではなく自由対話形式。
 
 各項目の対話開始時に `[x/n] {項目名}` 形式で進捗を示す。
 
-### ステップ 7: コミット
+### ステップ 7: 変更の確定
 
-全項目の対話・反映が完了したら、コミットするかをユーザーに確認する。
-コミットする場合は全変更を 1 コミットにまとめる。
+全項目の対話・反映が完了したら、変更の確定方法をユーザーに確認する。
+コミット、PR 作成、保留など、プロジェクトのワークフローに合わせる。
 
 ## 注意事項
 
