@@ -55,10 +55,11 @@ draft のファイル名 (slug) がセッション内容を適切に表してい
 
 draft を `.handover/todo/` に移動する。
 
-### ステップ 6: handover-reviewer による検証
+### ステップ 6: handover-reviewer による検証ループ
 
 handover-reviewer agent を起動し、確定した handover の妥当性を検証する。
-指摘があればユーザーに提示し、修正するかどうか確認する。
+指摘があれば全て修正し、再度 reviewer を起動する。
+指摘が 0 件になるまで繰り返す。
 
 ### ステップ 7: 完了報告
 
