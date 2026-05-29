@@ -16,11 +16,13 @@ SessionStart hook の `systemMessage` でバージョン更新を通知し、ユ
 ### ステップ 1: バージョンチェック
 
 Bash で以下を実行:
+
 ```
 bash ${CLAUDE_SKILL_DIR}/references/check-update-wrapper.sh
 ```
 
 出力される JSON を確認する:
+
 - `first_run: true` の場合 → ステップ 3（バージョン記録）のみ実行して終了
 - `has_update: false` の場合 → 「最新バージョンです」と表示して終了
 - `has_update: true` の場合 → ステップ 2 へ進む
@@ -30,6 +32,7 @@ bash ${CLAUDE_SKILL_DIR}/references/check-update-wrapper.sh
 2a. 自前 changelog 取得
 
 Bash で以下を実行:
+
 ```
 bash ${CLAUDE_SKILL_DIR}/references/changelog-fetch.sh {last_version} {current_version}
 ```
@@ -57,6 +60,7 @@ bash ${CLAUDE_SKILL_DIR}/references/changelog-fetch.sh {last_version} {current_v
 | コミュニティ Metadata | 参考 | バンドルサイズ・トークン数等の統計。変更の規模感として 1 行で表示 |
 
 diff セクションのノイズフィルタ（信頼度「中」「低」のソース全般に適用）:
+
 - バージョン番号の更新だけ（例: `2.1.66` → `2.1.68`）→ 無視
 - パスやタイムスタンプの変更（例: `/tmp/claude-history-xxx`）→ 無視
 - ファイル名/ブロック名のリネームだけ（例: `c31a51ef-3` → `c31a51ef-4`）→ 無視
@@ -91,21 +95,12 @@ vX.X.X → vY.Y.Y
 
 各セクションは該当する内容がある場合のみ表示する。リンク URL は省略してよい。
 
-2d. 要約の保存
-
-表示した要約をバージョンごとに保存する。各バージョンについて以下を実行:
-
-```
-echo '{そのバージョンの要約テキスト}' | bash ${CLAUDE_SKILL_DIR}/references/save-summary-wrapper.sh {version} {previous_version}
-```
-
-例えば v2.1.71, v2.1.72 の 2 バージョンがある場合、2 回実行する。要約テキストには表示フォーマットのうちそのバージョンのセクション部分を渡す。
-
-要約の表示・保存後、ステップ 3 を実行する。
+要約の表示後、ステップ 3 を実行する。
 
 ### ステップ 3: バージョン記録
 
 Bash で以下を実行してバージョンを記録する:
+
 ```
 bash ${CLAUDE_SKILL_DIR}/../../scripts/api/record-version.sh {current_version}
 ```

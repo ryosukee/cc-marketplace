@@ -8,7 +8,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| version-check | 0.8.0 | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示・要約保持 |
+| version-check | 0.9.0 | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
 | plugin-update | 0.4.0 | SessionStart 時にプラグインの更新を検知・通知 |
 | cache-keepalive | 0.7.3 | prompt cache (extended cache, TTL 1h) の expire 前に keepalive を自動発火 |
 | cc-transcript | 0.7.0 | 現在セッションの直近やり取りを jq で整形して vim で開く |
