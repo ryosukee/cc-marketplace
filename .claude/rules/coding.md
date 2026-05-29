@@ -19,7 +19,7 @@ Plugin 名:
 
 Script ファイル名:
 
-- API スクリプト: `{verb}-{noun}.sh` (例: `get-current-session-id.sh`)
+- エントリスクリプト: `{verb}-{noun}.sh` (例: `check-update.sh`、`record-version.sh`)
 - hook script: `{event}.sh` or `{action}-{target}.sh` (例: `session-start.sh`、`deny-netrc-write.sh`)
 
 Rule ファイル名:
@@ -29,12 +29,12 @@ Rule ファイル名:
 
 ## スクリプト設計
 
-スクリプトは役割で配置を分ける (詳細は plugin-design.md の kernel パターン)。
+スクリプトは役割で配置を分ける (詳細は [Plugin 設計原則](./plugin-design.md) の kernel パターン)。
 
-- `scripts/hooks/` — hook 実装
-- `scripts/` — 複数 skill / hook が共有する plugin 内エントリスクリプト
-- `scripts/lib/` — source 用の共通ヘルパ
-- `skills/{skill-name}/scripts/` — その skill だけが使うスクリプト
+- `scripts/hooks/`: hook 実装
+- `scripts/`: 複数 skill / hook が共有する plugin 内エントリスクリプト
+- `scripts/lib/`: source 用の共通ヘルパ
+- `skills/{skill-name}/scripts/`: その skill だけが使うスクリプト
 
 外部公開 (他 plugin・CLI) 用の "API" 層は設けない。スクリプトはすべて plugin 内部のもの。
 
