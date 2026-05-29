@@ -73,4 +73,4 @@ claude plugins marketplace update cc-tools
 claude plugins install version-check@cc-tools
 ```
 
-状態データ (バージョン記録、changelog 要約等) は各 plugin の resolve スクリプトが旧キャッシュから自動引き継ぎするため、手動マイグレーション不要。
+状態データ (version-check のバージョン記録など) は各 plugin の resolve スクリプトが旧キャッシュから自動引き継ぎするため、手動マイグレーション不要。
