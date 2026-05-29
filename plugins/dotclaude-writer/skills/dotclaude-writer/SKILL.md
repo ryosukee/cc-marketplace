@@ -16,7 +16,7 @@ Write/Edit ツールや Bash の直接操作がブロックされる。
 ## スクリプトパス
 
 ```
-SCRIPT="${CLAUDE_SKILL_DIR}/../../scripts/api/dotclaude-fs.sh"
+SCRIPT="${CLAUDE_SKILL_DIR}/scripts/dotclaude-fs.sh"
 ```
 
 以降のコマンド例ではこの変数を使う。

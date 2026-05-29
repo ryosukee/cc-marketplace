@@ -27,13 +27,22 @@ Rule ファイル名:
 - kebab-case、名詞句
 - subdir で文脈が示せるなら prefix を削る (例: `markdown/authoring.md`)
 
-## API スクリプト設計
+## スクリプト設計
 
-`scripts/api/` は skill や他 plugin から呼ばれる外部公開用スクリプトの配置先。
-skill 内部でのみ使うスクリプトは `skills/{skill-name}/scripts/` に配置する。
+スクリプトは役割で配置を分ける (詳細は plugin-design.md の kernel パターン)。
+
+- `scripts/hooks/` — hook 実装
+- `scripts/` — 複数 skill / hook が共有する plugin 内エントリスクリプト
+- `scripts/lib/` — source 用の共通ヘルパ
+- `skills/{skill-name}/scripts/` — その skill だけが使うスクリプト
+
+外部公開 (他 plugin・CLI) 用の "API" 層は設けない。スクリプトはすべて plugin 内部のもの。
+
+invoke されるエントリスクリプトの規約:
 
 - 出力は JSON 推奨 (stdout)
 - エラーメッセージは stderr
-- Exit codes: 0=成功, 1=該当��し, 2=前提条件エラー
+- Exit codes: 0=成功, 1=該当なし, 2=前提条件エラー
 - 引数はコマンドライン引数で受ける
-- I/O 定義は各 plugin の `scripts/api/README.md` に記載
+- plugin root は `${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}` で解決する。
+  フォールバックの `$0` 相対パスは配置階層に依存するので、スクリプトを移動したら必ず合わせて直す

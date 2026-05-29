@@ -16,12 +16,9 @@ fi
 # 前回バージョンを解決
 CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT" resolve_last_version
 
-VERSION_FILE="$PLUGIN_ROOT/internal/version/last-version"
-
-# 初回実行時
+# 初回実行時: 現在バージョンを記録して終了
 if [ -z "$LAST_VERSION" ]; then
-  mkdir -p "$(dirname "$VERSION_FILE")"
-  echo "$CURRENT_VERSION" > "$VERSION_FILE"
+  CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT" bash "$PLUGIN_ROOT/scripts/record-version.sh" "$CURRENT_VERSION"
   exit 0
 fi
 

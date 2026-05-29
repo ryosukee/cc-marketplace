@@ -8,7 +8,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| version-check | 0.9.0 | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
+| version-check | 0.10.0 | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
 | plugin-update | 0.4.0 | SessionStart 時にプラグインの更新を検知・通知 |
 | cache-keepalive | 0.7.3 | prompt cache (extended cache, TTL 1h) の expire 前に keepalive を自動発火 |
 | cc-transcript | 0.7.0 | 現在セッションの直近やり取りを jq で整形して vim で開く |
@@ -38,7 +38,7 @@
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.0 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| dotclaude-writer | 0.3.1 | `.claude/` protected directory への書き込みワークアラウンド |
+| dotclaude-writer | 0.4.0 | `.claude/` protected directory への書き込みワークアラウンド |
 
 ## インストール
 

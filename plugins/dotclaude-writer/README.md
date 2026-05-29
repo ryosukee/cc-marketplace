@@ -41,9 +41,7 @@ staging ディレクトリを中継して間接的にファイル操作を行う
 plugins/dotclaude-writer/
 ├── .claude-plugin/plugin.json
 ├── README.md
-├── scripts/api/
-│   ├── dotclaude-fs.sh    # export / prepare / install / rm
-│   └── README.md          # API 仕様
 └── skills/dotclaude-writer/
-    └── SKILL.md
+    ├── SKILL.md
+    └── scripts/dotclaude-fs.sh    # export / prepare / install / rm
 ```

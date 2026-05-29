@@ -43,12 +43,12 @@ cc-marketplace/
         │   └── hooks.json        # hooks 定義
         ├── scripts/
         │   ├── hooks/            # hooks 実装
-        │   ├── api/              # skills 向け公開 I/F
-        │   │   └── README.md     # API 定義ドキュメント
-        │   └── lib/              # 共通ライブラリ（あれば）
+        │   ├── lib/              # source 用の共通ヘルパ（あれば）
+        │   └── *.sh              # skill/hook が invoke するエントリスクリプト（あれば）
         ├── internal/             # 永続化された状態（外部参照禁止）
         │   └── {resource}/
         ├── skills/               # consumer skills
+        │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）
         ├── config/               # plugin 同梱 default config（あれば）
         └── agents/               # consumer agents（あれば）
 ```
@@ -65,7 +65,7 @@ cc-marketplace/
 
 | plugin | version | カテゴリ | 概要 |
 | --- | --- | --- | --- |
-| version-check | 0.9.0 | utility | Claude Code のバージョン追跡・更新検知 |
+| version-check | 0.10.0 | utility | Claude Code のバージョン追跡・更新検知 |
 | plugin-update | 0.4.0 | utility | SessionStart 時にプラグイン更新を検知・通知 |
 | cache-keepalive | 0.7.3 | utility | prompt cache keepalive の自動発火 |
 | cc-transcript | 0.7.0 | utility | セッションの直近やり取りを jq 整形して vim で開く |
@@ -75,5 +75,5 @@ cc-marketplace/
 | markdownlint | 0.3.2 | authoring | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | 0.2.0 | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | 0.2.0 | tooling | .netrc 等の credentials 保護 hook |
-| dotclaude-writer | 0.3.1 | tooling | .claude/ protected directory への書き込みワークアラウンド |
+| dotclaude-writer | 0.4.0 | tooling | .claude/ protected directory への書き込みワークアラウンド |
 

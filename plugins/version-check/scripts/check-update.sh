@@ -4,9 +4,9 @@
 # exit 0: 成功, exit 1: バージョン取得失敗
 set -euo pipefail
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 
-# shellcheck source=../lib/resolve-last-version.sh
+# shellcheck source=lib/resolve-last-version.sh
 source "$PLUGIN_ROOT/scripts/lib/resolve-last-version.sh"
 
 # 現在のバージョンを取得
