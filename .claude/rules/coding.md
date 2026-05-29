@@ -29,7 +29,7 @@ Rule ファイル名:
 
 ## API スクリプト設計
 
-`scripts/api/` は CLI や他 plugin から呼ばれる外部公開用スクリプトの配置先。
+`scripts/api/` は skill や他 plugin から呼ばれる外部公開用スクリプトの配置先。
 skill 内部でのみ使うスクリプトは `skills/{skill-name}/scripts/` に配置する。
 
 - 出力は JSON 推奨 (stdout)

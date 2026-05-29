@@ -64,9 +64,3 @@ settings.json に hook を直書きしない理由:
 
 rule は plugin の外で管理する。plugin loader は plugin 内の `rules/` を読まないため、
 repo 直下の `rules/` に置き、`~/.claude/rules/cc-marketplace` への dir symlink で配布する。
-
-## CLI は plugin の外
-
-CLI は marketplace ルートの `bin/` に置き、plugin システムとは別ライフサイクルで管理する。
-`cc-tools <plugin> <command> [args...]` の形式で、`installed_plugins.json` から
-plugin のキャッシュパスを解決し `scripts/api/` に delegate する。

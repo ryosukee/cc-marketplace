@@ -32,8 +32,6 @@ cc-marketplace/
 │   └── rules/                    # プロジェクト固有ルール (設計原則、規約)
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
-├── bin/
-│   └── cc-tools                  # CLI 本体
 ├── rules/                        # user global rules (symlink で配布)
 │   ├── author-defaults/
 │   └── markdown/
@@ -45,7 +43,7 @@ cc-marketplace/
         │   └── hooks.json        # hooks 定義
         ├── scripts/
         │   ├── hooks/            # hooks 実装
-        │   ├── api/              # skills・CLI 向け公開 I/F
+        │   ├── api/              # skills 向け公開 I/F
         │   │   └── README.md     # API 定義ドキュメント
         │   └── lib/              # 共通ライブラリ（あれば）
         ├── internal/             # 永続化された状態（外部参照禁止）

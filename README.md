@@ -59,15 +59,9 @@ claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
 claude plugins install dotclaude-writer@cc-tools
 
-# CLI のセットアップ
-mkdir -p ~/.claude/bin
-ln -s ~/.claude/plugins/marketplaces/cc-tools/bin/cc-tools ~/.claude/bin/cc-tools
-
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace
 ```
-
-`~/.claude/bin` に PATH が通っていない場合は追加する。
 
 ## アップデート
 
@@ -79,17 +73,4 @@ claude plugins marketplace update cc-tools
 claude plugins install version-check@cc-tools
 ```
 
-CLI は marketplace clone 内のファイルへの symlink なので `marketplace update` だけで自動追従する。
-
 状態データ (バージョン記録、changelog 要約等) は各 plugin の resolve スクリプトが旧キャッシュから自動引き継ぎするため、手動マイグレーション不要。
-
-## CLI (`cc-tools`)
-
-```
-cc-tools version-check get               現在のバージョンを取得
-cc-tools version-check check             更新有無をチェック
-cc-tools version-check summaries [LIMIT] 保存済み changelog 要約の一覧
-cc-tools version-check summary <VERSION> 指定バージョンの changelog 要約を表示
-cc-tools doctor                          ヘルスチェック
-cc-tools help                            コマンド一覧
-```
