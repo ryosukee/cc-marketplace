@@ -15,12 +15,13 @@ description: >-
 ### ステップ 1: .handover/ ディレクトリの確認
 
 `${CLAUDE_PLUGIN_ROOT}/references/handover-init.md` を Read し、記載された手順に従って `.handover/` の存在確認と初期化を行う。
+特定された `.handover/` の絶対パスを以降のステップすべてで使う。
 
 初回作成の場合はステップ 4 に進む。
 
 ### ステップ 2: todo の読み込み
 
-`.handover/todo/` 内の全ファイルを Read する。
+`.handover/todo/` 内の全ファイルを Read する (ステップ 1 で特定したパス基準)。
 
 ファイルがない場合はステップ 4 に進む。
 
@@ -54,7 +55,7 @@ description: >-
 
 既に `.handover/draft/` にファイルが存在する場合 (前回 end せず終了):
 
-- 対象 draft は `handover-init.md` の「draft の特定」に従う
+- 対象 draft は上記 handover-init.md の「draft の特定」に従う
 - 既存 draft の内容をユーザーに提示する
 - 再利用するか新規作成するか確認する
 

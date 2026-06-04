@@ -20,7 +20,7 @@
 
 ## .handover/ ディレクトリ
 
-各プロジェクトの root に作成される。初回 start 時にユーザーに確認して作成する。
+CWD 直下または git root 直下に作成される。探索は CWD → git root の順。CWD と git root が異なる場合、初回作成時にどちらに置くかユーザーに確認する。
 
 ```
 .handover/
@@ -32,6 +32,8 @@
 ファイル名は slug 方式 (例: `refactor-auth.md`)。
 
 ## フロー
+
+`.handover/` のパスは [.handover/ ディレクトリの初期化](./references/handover-init.md) の探索手順で特定される。
 
 ```
 session:start

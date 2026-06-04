@@ -19,7 +19,7 @@ tools:
 ## 入力
 
 呼び出し元から handover ファイルのパスが渡される。
-パスが渡されなければ `.handover/todo/` の最新ファイルを対象とする。
+パスが渡されなければ `${CLAUDE_PLUGIN_ROOT}/references/handover-init.md` の存在確認手順で `.handover/` を特定し、その `todo/` の最新ファイルを対象とする。
 
 ## 手順
 
