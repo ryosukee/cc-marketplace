@@ -35,10 +35,17 @@
       display = standalone）と `icon-192.png` / `icon-512.png`。index の `<head>` に
       `<link rel="manifest">` と theme-color を入れる。「閲覧用 HTML のみ」の例外はこれらと index.html だけで、
       消えていたら index と同様に Claude が再生成する
-- モバイル閲覧: claude-pages は Tailscale Serve で tailnet 内限定の HTTPS 公開にしてある
-  （初回のみ `sudo tailscale serve --bg ~/.local/share/claude-pages`。解除は `tailscale serve off`、
-  確認は `tailscale serve status`）。提示時の報告テキストにはファイルパスに加えて
-  serve URL（`https://<ホスト名>.<tailnet 名>.ts.net/<ファイル名>`）を併記する
+- モバイル閲覧: claude-pages は Tailscale Serve の path serving で tailnet 内限定の HTTPS 公開にしてある
+  （初回のみ `tailscale serve --bg ~/.local/share/claude-pages`。解除は `tailscale serve --https=443 off`、
+  確認は `tailscale serve status`）。ルート URL で index.html が配信される。
+  提示時の報告テキストにはファイルパスに加えて serve URL
+  （`https://<ホスト名>.<tailnet 名>.ts.net/<ファイル名>`）を併記する
+    - macOS の GUI アプリ版 Tailscale は path serving 非対応。brew の OSS 版 tailscaled を使う
+      （`brew "tailscale"` は dotfiles の Brewfile 管理。`sudo tailscaled install-system-daemon` で自動起動、
+      `sudo tailscale set --operator=<ユーザー名>` で CLI の sudo を不要化。2026-07-22 に mac-mini を移行済み）
+    - OSS 版は `*.ts.net` の split-DNS をシステムに登録しないことがある。Mac 側で ts.net 名が引けない場合は
+      `/etc/resolver/ts.net` に `nameserver 100.100.100.100` を置く（スマートフォン側は各端末の
+      Tailscale アプリが解決するため影響なし）
 - 開き直せるように、ファイルパスを本文でも伝える
 - CSS/JS はすべてインラインで self-contained にする。外部 CDN・フォント・画像に依存しない
 - `prefers-color-scheme` でライト/ダーク両対応にする
