@@ -20,6 +20,8 @@
     - 種別は `form`（要回答）/ `report`（読むだけ）の 2 値。連番シリーズのフォームは `form-NN`（ゼロ埋め 2 桁）
     - サブディレクトリは作らない。グルーピングは index.html 側で表現する
     - 改稿は同名上書きにする（URL と日付プレフィックスは初版のまま維持）。別議題は新しいファイル名で作る
+    - 各ページの左下に「一覧に戻る」ボタン（`./` = index へのリンク）を常時固定のオーバーレイで置く。
+      下部固定フッターがあるページではフッター左端に置いてよい
 - 同ディレクトリの `index.html` で一覧と状態を管理する（Claude が生成・更新。
   エントリは index 内のインライン JS 配列 `entries`）
     - ページ作成時にエントリを追加する。状態は form → `awaiting`（回答待ち）、report → `shown`（提示済み）
@@ -36,8 +38,8 @@
       `<link rel="manifest">` と theme-color を入れる。「閲覧用 HTML のみ」の例外はこれらと index.html だけで、
       消えていたら index と同様に Claude が再生成する
 - モバイル閲覧: claude-pages は Tailscale Serve で tailnet 内限定の HTTPS 配信にしてある。
-  提示時の報告テキストにはファイルパスに加えて serve URL
-  （`https://<ホスト名>.<tailnet 名>.ts.net/<ファイル名>`）を併記する
+  提示時の報告テキストには、ファイルパス / ページの serve URL
+  （`https://<ホスト名>.<tailnet 名>.ts.net/<ファイル名>`）/ 一覧のルート URL の 3 つを必ず併記する
 - 開き直せるように、ファイルパスを本文でも伝える
 - CSS/JS はすべてインラインで self-contained にする。外部 CDN・フォント・画像に依存しない
 - `prefers-color-scheme` でライト/ダーク両対応にする
