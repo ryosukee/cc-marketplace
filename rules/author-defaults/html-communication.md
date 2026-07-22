@@ -27,6 +27,10 @@
     - index 更新のついでに掃除する: `answered` / `shown` になってから 14 日（デフォルト。変更可）経過した
       ファイルと index エントリを削除する。`awaiting` の form は日数に関わらず削除しない。
       ユーザーの「掃除して」には即時の全消し・個別消しで応じる
+    - index の最下部に運用元を明記する: この rule（cc-marketplace の
+      `rules/author-defaults/html-communication.md`）に基づく Claude Code の HTML コミュニケーション用
+      ディレクトリである旨と、rule のローカルパス・GitHub URL を footer に書く。
+      index を再生成するときも維持する
 - モバイル閲覧: claude-pages は Tailscale Serve で tailnet 内限定の HTTPS 公開にしてある
   （初回のみ `sudo tailscale serve --bg ~/.local/share/claude-pages`。解除は `tailscale serve off`、
   確認は `tailscale serve status`）。提示時の報告テキストにはファイルパスに加えて
