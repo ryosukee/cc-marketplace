@@ -12,16 +12,23 @@
 
 ## 生成・表示方法
 
-- 共通ページディレクトリ `/private/tmp/claude-501/pages/`（501 = ユーザーの UID。無ければ `mkdir -p` で作る）に
+- 共通ページディレクトリ `~/.local/share/claude-pages/`（無ければ `mkdir -p` で作る）に
   `YYYY-MM-DD-<プロジェクト>-<内容>-<種別>.html`（すべて kebab-case 英語）で書き、
   `open -a "Google Chrome" <file>` で Chrome で開く
     - ユーザーに見せる閲覧用 HTML（確認フォーム・調査レポートを含む全部）はここに置く。
       scratchpad は単一セッション内で使い切る中間物専用で、閲覧用 HTML は置かない
     - 種別は `form`（要回答）/ `report`（読むだけ）の 2 値。連番シリーズのフォームは `form-NN`（ゼロ埋め 2 桁）
-    - サブディレクトリは作らない。モバイルの一覧性と、日付プレフィックスによる全プロジェクト横断の時系列を優先する
+    - サブディレクトリは作らない。グルーピングは index.html 側で表現する
     - 改稿は同名上書きにする（URL と日付プレフィックスは初版のまま維持）。別議題は新しいファイル名で作る
-- モバイル閲覧: pages は Tailscale Serve で tailnet 内限定の HTTPS 公開にしてある
-  （初回のみ `sudo tailscale serve --bg /private/tmp/claude-501/pages`。解除は `tailscale serve off`、
+- 同ディレクトリの `index.html` で一覧と状態を管理する（Claude が生成・更新。
+  エントリは index 内のインライン JS 配列 `entries`）
+    - ページ作成時にエントリを追加する。状態は form → `awaiting`（回答待ち）、report → `shown`（提示済み）
+    - 「## HTML フォーム回答」を受領したターンで該当エントリを `answered`（回答済み）に更新する
+    - index 更新のついでに掃除する: `answered` / `shown` になってから 14 日（デフォルト。変更可）経過した
+      ファイルと index エントリを削除する。`awaiting` の form は日数に関わらず削除しない。
+      ユーザーの「掃除して」には即時の全消し・個別消しで応じる
+- モバイル閲覧: claude-pages は Tailscale Serve で tailnet 内限定の HTTPS 公開にしてある
+  （初回のみ `sudo tailscale serve --bg ~/.local/share/claude-pages`。解除は `tailscale serve off`、
   確認は `tailscale serve status`）。提示時の報告テキストにはファイルパスに加えて
   serve URL（`https://<ホスト名>.<tailnet 名>.ts.net/<ファイル名>`）を併記する
 - 開き直せるように、ファイルパスを本文でも伝える
