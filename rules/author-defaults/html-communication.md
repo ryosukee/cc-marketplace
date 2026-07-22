@@ -31,6 +31,10 @@
       `rules/author-defaults/html-communication.md`）に基づく Claude Code の HTML コミュニケーション用
       ディレクトリである旨と、rule のローカルパス・GitHub URL を footer に書く。
       index を再生成するときも維持する
+    - PWA 固定アセットを配置する: `manifest.json`（name = claude-pages、start_url = index.html、
+      display = standalone）と `icon-192.png` / `icon-512.png`。index の `<head>` に
+      `<link rel="manifest">` と theme-color を入れる。「閲覧用 HTML のみ」の例外はこれらと index.html だけで、
+      消えていたら index と同様に Claude が再生成する
 - モバイル閲覧: claude-pages は Tailscale Serve で tailnet 内限定の HTTPS 公開にしてある
   （初回のみ `sudo tailscale serve --bg ~/.local/share/claude-pages`。解除は `tailscale serve off`、
   確認は `tailscale serve status`）。提示時の報告テキストにはファイルパスに加えて
