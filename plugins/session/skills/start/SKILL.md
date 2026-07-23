@@ -45,6 +45,9 @@ description: >-
 - 承認されたタスクを TaskCreate で登録する
 - todo/ のファイルを archive/ に移動する
 
+TaskCreate 系ツールが提供されていない環境では、登録の代わりに draft にタスクボード節を作り、
+進行管理の正とする。
+
 ### ステップ 4: draft の作成
 
 `.handover/draft/` に新しい draft ファイルを作成する。

@@ -1,5 +1,5 @@
 {
   "name": "session",
   "description": "セッションのライフサイクルを管理する plugin。コンテキスト復元 (start)、棚卸し (debrief)、学びの codify (retrospective)、引き継ぎ資料生成 (handover)、終了オーケストレーター (end) の 5 skill + handover-reviewer agent を提供する",
-  "version": "2.3.1"
+  "version": "2.3.2"
 }
