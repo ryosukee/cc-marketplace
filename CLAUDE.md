@@ -76,5 +76,5 @@ cc-marketplace/
 | mkdocs-setup | 0.2.0 | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | 0.2.0 | tooling | .netrc 等の credentials 保護 hook |
 | dotclaude-writer | 0.4.0 | tooling | .claude/ protected directory への書き込みワークアラウンド |
-| japanese-text-writing | 0.1.3 | authoring | 日本語テキストの執筆規範 (共通原則 + 5 分類の references) |
+| japanese-text-writing | 0.1.4 | authoring | 日本語テキストの執筆規範 (共通原則 + 5 分類の references) |
 
