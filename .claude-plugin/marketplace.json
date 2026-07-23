@@ -67,6 +67,11 @@
       "name": "japanese-text-writing",
       "source": "./plugins/japanese-text-writing",
       "description": "日本語テキストの執筆・推敲の規範。共通原則と、テキスト種類（参照・判断・論文・解説・読み物）ごとの個別規範を提供する"
+    },
+    {
+      "name": "claude-user-communication",
+      "source": "./plugins/claude-user-communication",
+      "description": "ユーザーへの確認・提示のコミュニケーション方法。入り組んだ内容の HTML ページ提示 (claude-pages) と選択肢形式の確認 (ask-with-choices) の 2 skill を提供する"
     }
   ]
 }

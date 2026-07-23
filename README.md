@@ -41,6 +41,12 @@
 | dotclaude-writer | 0.4.0 | `.claude/` protected directory への書き込みワークアラウンド |
 | japanese-text-writing | 0.1.4 | 日本語テキストの執筆規範。共通原則 + 種類別（参照・判断・論文・解説・読み物）の規範 skill |
 
+### Communication
+
+| plugin | version | 概要 |
+| --- | --- | --- |
+| claude-user-communication | 0.1.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-pages) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_PAGES_DIR` / `CLAUDE_PAGES_BASE_URL` が必要（plugin README 参照） |
+
 ## インストール
 
 ```bash
@@ -60,6 +66,7 @@ claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
 claude plugins install dotclaude-writer@cc-tools
 claude plugins install japanese-text-writing@cc-tools
+claude plugins install claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
 
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace

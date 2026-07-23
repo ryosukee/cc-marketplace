@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" href="./icon-192.png">
+<title>claude-pages 一覧</title>
+<style>
+:root {
+  --bg: #f7f8fa; --card: #ffffff; --text: #1f2530; --sub: #5a6472;
+  --border: #d9dee6; --accent: #2563eb; --accent-fill: #2563eb;
+  --awaiting: #92400e; --awaiting-bg: #fef3e2; --done: #166534; --done-bg: #e8f5ec;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14181f; --card: #1c222c; --text: #e6eaf0; --sub: #9aa4b2;
+    --border: #333c49; --accent: #6ea8ff; --accent-fill: #2563eb;
+    --awaiting: #fbbf24; --awaiting-bg: #3a2f14; --done: #4ade80; --done-bg: #16301f;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  line-height: 1.7; font-size: 15.5px;
+}
+main { max-width: 660px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { font-size: 1.3rem; margin: 0 0 4px; }
+h2 { font-size: 1.05rem; margin: 1.6em 0 0.5em; }
+.sub { color: var(--sub); font-size: 0.82rem; }
+.row {
+  display: flex; gap: 10px; align-items: center;
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 14px; margin: 8px 0;
+}
+.row .meta { flex: 1; min-width: 0; }
+.row a { color: var(--accent); text-decoration: none; font-weight: 600; overflow-wrap: anywhere; }
+.row a:hover { text-decoration: underline; }
+.badge {
+  font-size: 0.72rem; font-weight: 600; border-radius: 999px; padding: 1px 10px; white-space: nowrap;
+}
+.badge.awaiting { color: var(--awaiting); background: var(--awaiting-bg); }
+.badge.done { color: var(--done); background: var(--done-bg); }
+.type {
+  display: inline-block; font-size: 0.7rem; font-weight: 700; border-radius: 6px;
+  padding: 1px 8px; margin-right: 8px; vertical-align: 1px; white-space: nowrap;
+}
+.type.form { background: var(--accent-fill); color: #fff; }
+.type.report { border: 1.5px solid var(--sub); color: var(--sub); }
+.row.form { border-left: 4px solid var(--accent-fill); }
+.row.report { border-left: 4px solid var(--border); }
+.chip {
+  display: inline-block; font-size: 0.74rem; color: var(--sub);
+  border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; margin-right: 6px;
+}
+.hidebtn {
+  background: none; border: 1px solid var(--border); color: var(--sub);
+  border-radius: 8px; padding: 3px 10px; font-size: 0.78rem; cursor: pointer; font-family: inherit;
+}
+.hidebtn:hover { border-color: var(--accent); color: var(--accent); }
+.empty { color: var(--sub); font-size: 0.9rem; padding: 6px 2px; }
+.pname { font-weight: 700; font-size: 0.9rem; margin: 12px 0 2px; }
+.pname .count { color: var(--sub); font-weight: 400; font-size: 0.8rem; margin-left: 8px; }
+details.proj {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 4px 14px; margin: 10px 0;
+}
+details.proj summary {
+  cursor: pointer; padding: 8px 0; font-weight: 700; font-size: 0.98rem;
+  display: flex; align-items: center; gap: 10px;
+}
+details.proj summary .count { color: var(--sub); font-weight: 400; font-size: 0.8rem; }
+details.proj .row { background: var(--bg); }
+#restore { margin-top: 14px; }
+footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); }
+code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<main>
+<h1>claude-pages 一覧</h1>
+<p class="sub">Claude Code が生成した閲覧用 HTML の一覧。すべてのページは未完了（回答待ち・確認待ち）で登録され、Claude とのやり取り（回答・確認応答）を経て完了へ遷移する。完了分はプロジェクトごとに直近 10 件だけ残して新規追加時に自動削除。未完了は削除しない。</p>
+
+<h2>未完了（回答待ち・確認待ち）</h2>
+<div id="awaiting"></div>
+
+<h2>プロジェクト別（完了分）</h2>
+<div id="projects"></div>
+
+<button class="hidebtn" id="restore" hidden></button>
+
+<script>
+// Claude が管理するエントリ。ページ作成時は必ず未完了で追加し、ユーザーとのやり取りを経て完了へ更新する。
+// 新規追加時、同プロジェクトの完了 (answered/confirmed) が 10 件を超えたら古い順に削除する。
+// status 遷移: form = "awaiting"（回答待ち）→ "answered"（回答済み・回答受領時）
+//             report = "unconfirmed"（確認待ち）→ "confirmed"（確認済み・確認応答時）
+//             "shown" はライフサイクル導入前の旧完了表記（完了扱い）
+const entries = [
+];
+
+const HIDE_KEY = "claude-pages-hidden";
+const hidden = new Set(JSON.parse(localStorage.getItem(HIDE_KEY) || "[]"));
+const statusLabel = {
+  awaiting: "回答待ち", unconfirmed: "確認待ち",
+  answered: "回答済み", confirmed: "確認済み", shown: "提示済み（旧）",
+};
+const INCOMPLETE = new Set(["awaiting", "unconfirmed"]);
+const RECENT_DAYS = 7;
+
+function save() { localStorage.setItem(HIDE_KEY, JSON.stringify([...hidden])); }
+
+function makeRow(e) {
+  const row = document.createElement("div");
+  row.className = "row " + e.type;
+  const badgeClass = INCOMPLETE.has(e.status) ? "awaiting" : "done";
+  const typeLabel = e.type === "form" ? "フォーム" : "レポート";
+  row.innerHTML =
+    '<div class="meta">' +
+      '<div><span class="type ' + e.type + '">' + typeLabel + '</span><a href="' + e.file + '">' + e.title + "</a></div>" +
+      '<div><span class="chip">' + e.project + '</span><span class="sub">' + e.created + "</span></div>" +
+    "</div>" +
+    '<span class="badge ' + badgeClass + '">' + statusLabel[e.status] + "</span>";
+  const btn = document.createElement("button");
+  btn.className = "hidebtn"; btn.textContent = "非表示";
+  btn.addEventListener("click", () => { hidden.add(e.file); save(); render(); });
+  row.appendChild(btn);
+  return row;
+}
+
+function isRecent(dateStr) {
+  return (Date.now() - new Date(dateStr + "T00:00:00").getTime()) / 86400000 <= RECENT_DAYS;
+}
+
+function render() {
+  const awaitingEl = document.getElementById("awaiting");
+  const projectsEl = document.getElementById("projects");
+  awaitingEl.innerHTML = ""; projectsEl.innerHTML = "";
+  const sorted = [...entries].sort((a, b) => b.created.localeCompare(a.created));
+
+  const awaitingGroups = new Map();
+  for (const e of sorted) {
+    if (hidden.has(e.file) || !INCOMPLETE.has(e.status)) continue;
+    if (!awaitingGroups.has(e.project)) awaitingGroups.set(e.project, []);
+    awaitingGroups.get(e.project).push(e);
+  }
+  for (const [project, list] of awaitingGroups) {
+    const name = document.createElement("div");
+    name.className = "pname";
+    name.innerHTML = project + '<span class="count">' + list.length + " 件</span>";
+    awaitingEl.appendChild(name);
+    for (const e of list) awaitingEl.appendChild(makeRow(e));
+  }
+  if (!awaitingEl.children.length) awaitingEl.innerHTML = '<div class="empty">未完了のページはありません</div>';
+
+  const groups = new Map();
+  for (const e of sorted) {
+    if (hidden.has(e.file) || INCOMPLETE.has(e.status)) continue;
+    if (!groups.has(e.project)) groups.set(e.project, []);
+    groups.get(e.project).push(e);
+  }
+  for (const [project, list] of groups) {
+    const det = document.createElement("details");
+    det.className = "proj";
+    if (isRecent(list[0].statusChanged)) det.open = true;
+    const sum = document.createElement("summary");
+    sum.innerHTML = project + ' <span class="count">完了 ' + list.length + " 件</span>";
+    det.appendChild(sum);
+    for (const e of list) det.appendChild(makeRow(e));
+    projectsEl.appendChild(det);
+  }
+  if (!groups.size) projectsEl.innerHTML = '<div class="empty">完了したページはありません</div>';
+
+  const restore = document.getElementById("restore");
+  const hiddenCount = entries.filter((e) => hidden.has(e.file)).length;
+  restore.hidden = hiddenCount === 0;
+  restore.textContent = "非表示 " + hiddenCount + " 件を戻す";
+}
+document.getElementById("restore").addEventListener("click", () => { hidden.clear(); save(); render(); });
+render();
+</script>
+
+<footer class="sub">
+このディレクトリと配下の HTML は、Claude Code が html-communication skill に基づいて
+ユーザーへの確認・報告（HTML コミュニケーション）を行うための置き場。
+この index.html も同 skill の運用として Claude Code が生成・更新する。<br>
+運用元ソース: cc-marketplace repo の
+<code>plugins/claude-user-communication/skills/html-communication/</code>
+（<a href="https://github.com/ryosukee/cc-marketplace/tree/main/plugins/claude-user-communication/skills/html-communication">GitHub</a>）<br>
+<code>manifest.json</code>・<code>icon-192.png</code>・<code>icon-512.png</code> は
+この一覧を PWA としてインストールするための固定アセットで、同 skill の運用として配置している。
+</footer>
+</main>
+</body>
+</html>

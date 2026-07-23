@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!--
+  claude-pages ページ雛形。{{...}} を置換し、不要な部分（report では設問・フォーム機構）を削って使う。
+  含まれる共通パターン: ライト/ダーク・一覧に戻る・設問ブロック・下書き自動保存(localStorage)・
+  下書きコピー・入力リセット・埋め込み下書きとの競合比較 UI・回答コピー + preview フォールバック。
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{タイトル}}</title>
+<style>
+  :root {
+    --bg: #fff; --fg: #1a1a1a; --sub: #555; --border: #d0d0d0;
+    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
+    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab; --border: #3a3f47;
+      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
+      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 15px; line-height: 1.7;
+         font-family: "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 190px; }
+  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.88em;
+         font-family: "SF Mono", Menlo, monospace; }
+  pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
+        font-size: 0.85em; line-height: 1.5; }
+  a { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88em; }
+  caption { caption-side: top; text-align: left; font-size: 0.85em; color: var(--sub); padding-bottom: 4px; }
+  th, td { border: 1px solid var(--border); padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  tr.key td, tr.key th { background: var(--hl); }
+  .fn { font-size: 0.85em; color: var(--sub); margin: 6px 0 0; padding-left: 20px; }
+  .ok { color: var(--ok); } .ng { color: var(--ng); }
+  .d { color: var(--sub); font-size: 0.9em; }
+  .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
+       padding: 12px 15px; margin: 16px 0; }
+  .q .t { font-weight: 700; margin-bottom: 6px; }
+  label.opt { display: block; background: var(--bg); border: 1px solid var(--border);
+              border-radius: 6px; padding: 7px 10px; margin: 6px 0; cursor: pointer; font-size: 0.95em; }
+  label.opt:has(input:checked) { outline: 2px solid var(--accent); }
+  .rec { background: var(--accent-fill); color: #fff; font-size: 0.75em; border-radius: 4px;
+         padding: 0 6px; margin-left: 4px; }
+  input.other { width: 100%; margin-top: 4px; padding: 5px 8px; border: 1px solid var(--border);
+                border-radius: 5px; background: var(--bg); color: var(--fg); }
+  textarea.note { width: 100%; margin-top: 6px; padding: 5px 8px; border: 1px solid var(--border);
+                  border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 0.9em;
+                  min-height: 30px; resize: vertical; }
+  #draft-conflict { background: var(--hl); border: 1.5px solid var(--accent); border-radius: 8px;
+                    padding: 12px 15px; margin: 14px 0; }
+  #draft-conflict pre { max-height: 160px; overflow: auto; }
+  #preview { width: 100%; min-height: 200px; font-family: "SF Mono", Menlo, monospace;
+             font-size: 0.85em; background: var(--code); color: var(--fg);
+             border: 1px solid var(--border); border-radius: 6px; padding: 10px; }
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+         border-top: 2px solid var(--accent); padding: 8px 16px; z-index: 100; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  #back { display: inline-block; background: none; border: 1px solid var(--border); color: var(--sub);
+          border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.85em; white-space: nowrap; }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #free { flex: 1 1 260px; min-height: 36px; max-height: 110px; padding: 5px 8px;
+          border: 1px solid var(--border); border-radius: 5px; background: var(--bg);
+          color: var(--fg); font-size: 0.9em; resize: vertical; }
+  #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
+          padding: 9px 14px; font-weight: 600; cursor: pointer; }
+  .subbtn { background: none; border: 1px solid var(--border); color: var(--sub); border-radius: 6px;
+            padding: 8px 10px; font-size: 0.8em; cursor: pointer; white-space: nowrap; }
+  .subbtn:hover { border-color: var(--accent); color: var(--accent); }
+  #cnt, #res { font-size: 0.8em; color: var(--sub); white-space: nowrap; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>{{タイトル}}</h1>
+
+<!-- 下書き埋め込み時のみ: 「下書き埋め込み済み（YYYY-MM-DD HH:MM）」の注意書きをここに置く -->
+
+<div id="draft-conflict" hidden>
+  <strong>下書きの競合</strong>: このページに埋め込まれた下書きと、この端末に保存された下書きが食い違っています。
+  どちらを使うか選んでください（選ぶまでフォームには埋め込み側を表示しています）。
+  <div class="table-wrap"><table>
+    <tr><th scope="col">埋め込み下書き</th><th scope="col">この端末の下書き</th></tr>
+    <tr><td><pre id="dc-embedded"></pre></td><td><pre id="dc-local"></pre></td></tr>
+  </table></div>
+  <button class="subbtn" id="dc-use-embedded">埋め込み側を使う</button>
+  <button class="subbtn" id="dc-use-local">端末側を使う</button>
+</div>
+
+<p>{{結論・概要。地図（目的 / 決めること一覧 / 読み方）}}</p>
+
+<h2 id="s1">1/{{N}} {{セクション見出し}}</h2>
+
+<p>{{本文。表の直前にはリード文（何の一覧か + 決め手）}}</p>
+
+<div class="q" id="q1">
+  <div class="t">Q1（{{設問ラベル}}）</div>
+  <label class="opt"><input type="radio" name="q1" value="{{選択肢 A}}">
+    {{選択肢 A}}<span class="rec">推奨</span>
+    <div class="d">推奨の根拠: {{根拠}}。覆し可: {{他の選択肢も選べることの明示}}</div></label>
+  <label class="opt"><input type="radio" name="q1" value="{{選択肢 B}}">{{選択肢 B}}
+    <div class="d">{{説明}}</div></label>
+  <label class="opt"><input type="radio" name="q1" value="__other__">その他
+    <input type="text" class="other" data-for="q1"></label>
+  <textarea class="note" data-note="q1" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-preview">付録: 回答の preview（番号外）</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" readonly></textarea>
+
+</main>
+
+<div id="bar">
+  <div id="bar-in">
+    <a id="back" href="./">一覧に戻る</a>
+    <textarea id="free" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <span id="cnt"></span>
+    <button id="copy">回答をコピー</button>
+    <button id="draftcopy" class="subbtn">下書きをコピー</button>
+    <button id="reset" class="subbtn">入力をリセット</button>
+    <span id="res"></span>
+  </div>
+</div>
+
+<script>
+(function () {
+  var THEME = '{{テーマ}}';
+  var KEY = 'draft:{{ファイル名（拡張子なし）}}';
+  var QS = [
+    { id: 'q1', label: '{{設問ラベル}}' }
+  ];
+  // 下書き埋め込み時: Claude が radio の checked / textarea の初期値を HTML に直接書き込み、
+  // あわせてこの変数へ埋め込み時点の整形テキストを入れる（競合比較 UI 用）。埋め込みが無ければ null。
+  var EMBEDDED_DRAFT = null;
+
+  function ans(qid) {
+    var c = document.querySelector('input[name="' + qid + '"]:checked');
+    if (!c) return null;
+    if (c.value === '__other__') {
+      var o = document.querySelector('.other[data-for="' + qid + '"]');
+      return (o && o.value.trim()) ? 'その他: ' + o.value.trim() : 'その他（記述なし）';
+    }
+    return c.value;
+  }
+  function build(header) {
+    var lines = ['## HTML フォーム' + header + '（' + THEME + '）'], n = 0;
+    QS.forEach(function (q) {
+      var a = ans(q.id);
+      if (a) n++;
+      lines.push('- ' + q.id.toUpperCase() + '（' + q.label + '）: ' + (a || '未回答'));
+      var note = document.querySelector('.note[data-note="' + q.id + '"]');
+      if (note && note.value.trim()) lines.push('    - ' + q.id.toUpperCase() + ' 補足: ' + note.value.trim());
+    });
+    var free = document.getElementById('free').value.trim();
+    lines.push('- 補足: ' + (free || 'なし'));
+    return { text: lines.join('\n'), n: n, total: QS.length };
+  }
+  function saveDraft() {
+    var d = { radios: {}, texts: {}, text: '' };
+    document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
+    document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
+    var free = document.getElementById('free').value;
+    if (free) d.texts['free'] = free;
+    d.text = build('下書き').text; // 競合比較用の整形テキスト
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  function applyDraft(d) {
+    Object.keys(d.radios || {}).forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
+      if (el) el.checked = true;
+    });
+    Object.keys(d.texts || {}).forEach(function (k) {
+      if (k === 'free') { document.getElementById('free').value = d.texts[k]; return; }
+      var kind = k.slice(0, 2), id = k.slice(2);
+      var el = kind === 'o:' ? document.querySelector('.other[data-for="' + id + '"]')
+                             : document.querySelector('.note[data-note="' + id + '"]');
+      if (el) el.value = d.texts[k];
+    });
+  }
+  function loadLocalDraft() {
+    try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  function refresh() {
+    var r = build('回答');
+    document.getElementById('preview').value = r.text;
+    document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+  }
+  function copyText(text, doneMsg) {
+    var res = document.getElementById('res');
+    function ok() { res.textContent = doneMsg; setTimeout(function () { res.textContent = ''; }, 3000); }
+    function ng() {
+      var p = document.getElementById('preview');
+      p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
+      res.textContent = 'コピー不可: preview を手動コピー';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, ng);
+    else ng();
+  }
+
+  document.addEventListener('input', function () { saveDraft(); refresh(); });
+  document.addEventListener('change', function () { saveDraft(); refresh(); });
+  document.getElementById('copy').addEventListener('click', function () { copyText(build('回答').text, 'コピーしました'); });
+  document.getElementById('draftcopy').addEventListener('click', function () { copyText(build('下書き').text, '下書きをコピーしました'); });
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
+    document.getElementById('free').value = '';
+    refresh();
+  });
+
+  // 起動時の下書き解決:
+  // - 埋め込みなし → 端末の localStorage 下書きを復元
+  // - 埋め込みあり + 端末下書きなし or 一致 → 埋め込み表示のまま（HTML の初期値が埋め込み下書き）
+  // - 埋め込みあり + 端末下書きが食い違う → 競合比較 UI を表示。選ぶまでフォームは埋め込み側のまま
+  var local = loadLocalDraft();
+  if (EMBEDDED_DRAFT === null) {
+    if (local) applyDraft(local);
+  } else if (local && local.text && local.text !== EMBEDDED_DRAFT) {
+    document.getElementById('dc-embedded').textContent = EMBEDDED_DRAFT;
+    document.getElementById('dc-local').textContent = local.text;
+    document.getElementById('draft-conflict').hidden = false;
+    document.getElementById('dc-use-embedded').addEventListener('click', function () {
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      document.getElementById('draft-conflict').hidden = true;
+    });
+    document.getElementById('dc-use-local').addEventListener('click', function () {
+      applyDraft(local); saveDraft(); refresh();
+      document.getElementById('draft-conflict').hidden = true;
+    });
+  }
+  refresh();
+})();
+</script>
+</body>
+</html>

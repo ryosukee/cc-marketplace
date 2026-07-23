@@ -1,0 +1,5 @@
+{
+  "name": "claude-user-communication",
+  "description": "ユーザーへの確認・提示のコミュニケーション方法。入り組んだ内容の HTML ページ提示 (claude-pages) と選択肢形式の確認 (ask-with-choices) の 2 skill を提供する",
+  "version": "0.1.0"
+}
