@@ -39,13 +39,13 @@
 | mkdocs-setup | 0.2.0 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
 | dotclaude-writer | 0.4.1 | `.claude/` protected directory への書き込みワークアラウンド |
-| japanese-text-writing | 0.1.4 | 日本語テキストの執筆規範。共通原則 + 種類別（参照・判断・論文・解説・読み物）の規範 skill |
+| japanese-text-writing | 0.1.5 | 日本語テキストの執筆規範。共通原則 + 種類別（参照・判断・論文・解説・読み物）の規範 skill |
 
 ### Communication
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.1.3 | ユーザーへの確認・提示。HTML ページ提示 (claude-pages) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_PAGES_DIR` / `CLAUDE_PAGES_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.1.4 | ユーザーへの確認・提示。HTML ページ提示 (claude-pages) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_PAGES_DIR` / `CLAUDE_PAGES_BASE_URL` が必要（plugin README 参照） |
 | claude-known-issues | 0.1.2 | Claude Code の既知バグ・制約の台帳。更新検知 → agent が changelog と突合 → 解除手順を提示。`jq` / `gh` が必要 |
 
 ## インストール
