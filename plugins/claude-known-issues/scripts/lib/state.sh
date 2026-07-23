@@ -60,14 +60,15 @@ JSON
 # 状態ファイルの 1 フィールドを読む
 # 引数: $1 = フィールド名
 state_get() {
-  resolve_state
+  # コマンド置換の中では errexit が効かないため、失敗を明示的に伝播させる
+  resolve_state || return $?
   jq -r --arg k "$1" '.[$k] // empty' "$STATE_PATH"
 }
 
 # 状態ファイルの複数フィールドを更新する
 # 引数: key=value の並び。value が "null" のときは JSON の null にする
 state_set() {
-  resolve_state
+  resolve_state || return $?
   local tmp
   tmp=$(mktemp)
   local filter='.'

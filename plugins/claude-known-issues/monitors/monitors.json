@@ -1,7 +1,7 @@
 [
   {
     "name": "known-issues-version-watch",
-    "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/monitor-version.sh",
+    "command": "CLAUDE_PLUGIN_DATA=\"${CLAUDE_PLUGIN_DATA}\" \"${CLAUDE_PLUGIN_ROOT}\"/scripts/monitor-version.sh",
     "description": "Claude Code の更新検知 (既知バグ台帳の突合トリガー)"
   }
 ]
