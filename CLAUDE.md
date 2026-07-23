@@ -33,9 +33,7 @@ cc-marketplace/
 │   └── rules/                    # プロジェクト固有ルール (設計原則、規約)
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
-├── rules/                        # user global rules (symlink で配布)
-│   ├── author-defaults/
-│   └── markdown/
+├── rules/                        # user global rules (symlink で配布、フラット構成)
 └── plugins/
     └── {plugin-name}/
         ├── .claude-plugin/
