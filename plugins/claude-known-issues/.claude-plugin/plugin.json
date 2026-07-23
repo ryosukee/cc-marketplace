@@ -1,0 +1,5 @@
+{
+  "name": "claude-known-issues",
+  "description": "Claude Code の既知バグ・制約とワークアラウンドの台帳。更新を検知して修正が入ったかを agent が判定し、解除手順を提示する",
+  "version": "0.1.0"
+}

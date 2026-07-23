@@ -46,7 +46,8 @@ description: >-
 - todo/ のファイルを archive/ に移動する
 
 TaskCreate 系ツールが提供されていない環境では、登録の代わりに draft にタスクボード節を作り、
-進行管理の正とする。
+進行管理の正とする（この制約の追跡は claude-known-issues plugin の台帳エントリ
+`task-tools-unavailable` が管理する）。
 
 ### ステップ 4: draft の作成
 

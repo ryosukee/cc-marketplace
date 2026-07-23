@@ -72,6 +72,11 @@
       "name": "claude-user-communication",
       "source": "./plugins/claude-user-communication",
       "description": "ユーザーへの確認・提示のコミュニケーション方法。入り組んだ内容の HTML ページ提示 (claude-pages) と選択肢形式の確認 (ask-with-choices) の 2 skill を提供する"
+    },
+    {
+      "name": "claude-known-issues",
+      "source": "./plugins/claude-known-issues",
+      "description": "Claude Code の既知バグ・制約とワークアラウンドの台帳。更新を検知して修正が入ったかを agent が判定し、解除手順を提示する"
     }
   ]
 }

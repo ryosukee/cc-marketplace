@@ -13,6 +13,9 @@ description: >-
 Write/Edit ツールや Bash の直接操作がブロックされる。
 このスキルは外部スクリプト経由で `.claude/` へのファイル操作を行う。
 
+この制約は仕様であり解除見込みがない。経緯は claude-known-issues plugin の台帳エントリ
+`claude-dir-write-protection` に記録している。
+
 ## スクリプトパス
 
 ```

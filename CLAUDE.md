@@ -8,7 +8,7 @@ dotclaude 系 (doctor/cross-review/registry)、
 session 系 (start/debrief/retrospective/handover/end)、
 impl-spec 系 (requirements/design/test-plan)、
 authoring/tooling 系 (markdownlint, mkdocs-setup, security-guards, dotclaude-writer, japanese-text-writing)、
-communication 系 (claude-user-communication) を提供する。
+communication 系 (claude-user-communication)、meta 系 (claude-known-issues) を提供する。
 加えて user global rules を repo 直下の `rules/` で管理し、
 symlink で `~/.claude/rules/cc-marketplace` に配置する。
 
@@ -71,12 +71,13 @@ cc-marketplace/
 | cache-keepalive | 0.7.3 | utility | prompt cache keepalive の自動発火 |
 | cc-transcript | 0.7.0 | utility | セッションの直近やり取りを jq 整形して vim で開く |
 | dotclaude | 0.14.0 | dotclaude | doctor/cross-review/registry |
-| session | 2.3.2 | session | start/debrief/retrospective/handover/end + handover-reviewer agent |
+| session | 2.3.3 | session | start/debrief/retrospective/handover/end + handover-reviewer agent |
 | impl-spec | 0.5.4 | impl-spec | requirements/design/test-plan + spec-reviewer agent |
 | markdownlint | 0.3.2 | authoring | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | 0.2.0 | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | 0.2.0 | tooling | .netrc 等の credentials 保護 hook |
-| dotclaude-writer | 0.4.0 | tooling | .claude/ protected directory への書き込みワークアラウンド |
+| dotclaude-writer | 0.4.1 | tooling | .claude/ protected directory への書き込みワークアラウンド |
 | japanese-text-writing | 0.1.4 | authoring | 日本語テキストの執筆規範 (共通原則 + 5 分類の references) |
-| claude-user-communication | 0.1.0 | communication | HTML ページ提示 (claude-pages) + 選択肢形式の確認。要環境変数 (plugin README) |
+| claude-user-communication | 0.1.1 | communication | HTML ページ提示 (claude-pages) + 選択肢形式の確認。要環境変数 (plugin README) |
+| claude-known-issues | 0.1.0 | meta | Claude Code の既知バグ台帳 + 更新検知 monitor + 突合 agent |
 

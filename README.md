@@ -23,7 +23,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| session | 2.3.2 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料) / end (オーケストレーター) + handover-reviewer agent |
+| session | 2.3.3 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料) / end (オーケストレーター) + handover-reviewer agent |
 
 ### impl-spec
 
@@ -38,14 +38,15 @@
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.0 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| dotclaude-writer | 0.4.0 | `.claude/` protected directory への書き込みワークアラウンド |
+| dotclaude-writer | 0.4.1 | `.claude/` protected directory への書き込みワークアラウンド |
 | japanese-text-writing | 0.1.4 | 日本語テキストの執筆規範。共通原則 + 種類別（参照・判断・論文・解説・読み物）の規範 skill |
 
 ### Communication
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.1.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-pages) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_PAGES_DIR` / `CLAUDE_PAGES_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.1.1 | ユーザーへの確認・提示。HTML ページ提示 (claude-pages) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_PAGES_DIR` / `CLAUDE_PAGES_BASE_URL` が必要（plugin README 参照） |
+| claude-known-issues | 0.1.0 | Claude Code の既知バグ・制約の台帳。更新検知 → agent が changelog と突合 → 解除手順を提示。`jq` / `gh` が必要 |
 
 ## インストール
 
@@ -67,6 +68,7 @@ claude plugins install security-guards@cc-tools
 claude plugins install dotclaude-writer@cc-tools
 claude plugins install japanese-text-writing@cc-tools
 claude plugins install claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
+claude plugins install claude-known-issues@cc-tools
 
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace
