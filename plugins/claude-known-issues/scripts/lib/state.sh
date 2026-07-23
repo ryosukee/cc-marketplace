@@ -4,8 +4,7 @@
 # 使い方: source して各関数を呼ぶ
 # 前提: CLAUDE_PLUGIN_DATA と CLAUDE_PLUGIN_ROOT が設定されていること
 #       hook プロセスには env として自動で渡る。
-#       monitor は command 文字列への置換だけなので monitors.json 側で明示的に渡す。
-#       skill から呼ぶ場合も同様に呼び出し側で渡す
+#       skill から呼ぶ場合は呼び出し側で渡す
 
 set -euo pipefail
 

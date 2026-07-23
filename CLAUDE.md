@@ -77,5 +77,5 @@ cc-marketplace/
 | dotclaude-writer | 0.4.1 | tooling | .claude/ protected directory への書き込みワークアラウンド |
 | japanese-text-writing | 0.1.5 | authoring | 日本語テキストの執筆規範 (共通原則 + 5 分類の references) |
 | claude-user-communication | 0.1.4 | communication | HTML ページ提示 (claude-pages) + 選択肢形式の確認。要環境変数 (plugin README) |
-| claude-known-issues | 0.1.2 | meta | Claude Code の既知バグ台帳 + 更新検知 monitor + 突合 agent |
+| claude-known-issues | 0.2.0 | meta | Claude Code の既知バグ台帳 + 更新検知 SessionStart hook + 突合 agent |
 
