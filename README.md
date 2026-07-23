@@ -39,7 +39,7 @@
 | mkdocs-setup | 0.2.0 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
 | dotclaude-writer | 0.4.0 | `.claude/` protected directory への書き込みワークアラウンド |
-| japanese-text-writing | 0.1.1 | 日本語テキストの執筆規範。共通原則 + 種類別（参照・判断・論文・解説・読み物）の規範 skill |
+| japanese-text-writing | 0.1.2 | 日本語テキストの執筆規範。共通原則 + 種類別（参照・判断・論文・解説・読み物）の規範 skill |
 
 ## インストール
 
