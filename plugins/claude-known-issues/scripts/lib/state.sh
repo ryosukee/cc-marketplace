@@ -3,7 +3,9 @@
 #
 # 使い方: source して各関数を呼ぶ
 # 前提: CLAUDE_PLUGIN_DATA と CLAUDE_PLUGIN_ROOT が設定されていること
-#       (hook / monitor プロセスには自動で渡る。skill から呼ぶ場合は引数で渡す)
+#       hook プロセスには env として自動で渡る。
+#       monitor は command 文字列への置換だけなので monitors.json 側で明示的に渡す。
+#       skill から呼ぶ場合も同様に呼び出し側で渡す
 
 set -euo pipefail
 
