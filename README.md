@@ -45,7 +45,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.1.2 | ユーザーへの確認・提示。HTML ページ提示 (claude-pages) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_PAGES_DIR` / `CLAUDE_PAGES_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.1.3 | ユーザーへの確認・提示。HTML ページ提示 (claude-pages) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_PAGES_DIR` / `CLAUDE_PAGES_BASE_URL` が必要（plugin README 参照） |
 | claude-known-issues | 0.1.0 | Claude Code の既知バグ・制約の台帳。更新検知 → agent が changelog と突合 → 解除手順を提示。`jq` / `gh` が必要 |
 
 ## インストール
