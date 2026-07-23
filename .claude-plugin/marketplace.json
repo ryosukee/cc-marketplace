@@ -62,6 +62,11 @@
       "name": "impl-spec",
       "source": "./plugins/impl-spec",
       "description": "実装のための仕様策定 plugin。要件定義書 (requirements)、設計書 (design)、テスト計画書 (test-plan) の 3 skill + spec-reviewer agent で、実装前の曖昧さをゼロにする"
+    },
+    {
+      "name": "japanese-text-writing",
+      "source": "./plugins/japanese-text-writing",
+      "description": "日本語テキストの執筆・推敲の規範。共通原則と、テキスト種類（参照・判断・論文・解説・読み物）ごとの個別規範を提供する"
     }
   ]
 }

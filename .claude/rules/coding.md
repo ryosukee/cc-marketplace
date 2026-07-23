@@ -25,7 +25,7 @@ Script ファイル名:
 Rule ファイル名:
 
 - kebab-case、名詞句
-- subdir で文脈が示せるなら prefix を削る (例: `markdown/authoring.md`)
+- subdir で文脈が示せるなら prefix を削る (例: `markdown/formatting.md`)
 
 ## スクリプト設計
 
