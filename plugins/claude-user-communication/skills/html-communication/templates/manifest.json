@@ -1,6 +1,6 @@
 {
-  "name": "claude-pages",
-  "short_name": "claude-pages",
+  "name": "claude-html-communication",
+  "short_name": "claude-html-communication",
   "description": "Claude Code の HTML コミュニケーション（確認フォーム・レポート）一覧",
   "start_url": "./index.html",
   "scope": "./",

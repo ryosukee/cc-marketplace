@@ -6,7 +6,7 @@
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#2563eb">
 <link rel="icon" href="./icon-192.png">
-<title>claude-pages 一覧</title>
+<title>claude-html-communication 一覧</title>
 <style>
 :root {
   --bg: #f7f8fa; --card: #ffffff; --text: #1f2530; --sub: #5a6472;
@@ -80,7 +80,7 @@ code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px;
 </head>
 <body>
 <main>
-<h1>claude-pages 一覧</h1>
+<h1>claude-html-communication 一覧</h1>
 <p class="sub">Claude Code が生成した閲覧用 HTML の一覧。すべてのページは未完了（回答待ち・確認待ち）で登録され、Claude とのやり取り（回答・確認応答）を経て完了へ遷移する。完了分はプロジェクトごとに直近 10 件だけ残して新規追加時に自動削除。未完了は削除しない。</p>
 
 <h2>未完了（回答待ち・確認待ち）</h2>
@@ -100,7 +100,7 @@ code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px;
 const entries = [
 ];
 
-const HIDE_KEY = "claude-pages-hidden";
+const HIDE_KEY = "claude-html-communication-hidden";
 const hidden = new Set(JSON.parse(localStorage.getItem(HIDE_KEY) || "[]"));
 const statusLabel = {
   awaiting: "回答待ち", unconfirmed: "確認待ち",

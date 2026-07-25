@@ -1,6 +1,6 @@
 ---
 name: html-communication
-description: 調査報告・検証結果・比較表・設計判断の選択肢をユーザーに提示する前に必ず読む。ターミナルに長い報告を書き始める前が発動点で、書き終えてからでは遅い。該当するのは、調査・突合・検証の結果報告、複数案の比較、前提説明の長い説明、設問が多い確認（目安 4 問超）。ほかに「## HTML フォーム回答」「## HTML フォーム下書き」を受け取ったとき、claude-pages の index・アセットを再生成するときにも使う。self-contained な HTML ページを共通ディレクトリ claude-pages に生成し、index 管理・serve URL 提示・下書きプロトコルまでの運用一式を定める。
+description: 調査報告・検証結果・比較表・設計判断の選択肢をユーザーに提示する前に必ず読む。ターミナルに長い報告を書き始める前が発動点で、書き終えてからでは遅い。該当するのは、調査・突合・検証の結果報告、複数案の比較、前提説明の長い説明、設問が多い確認（目安 4 問超）。ほかに「## HTML フォーム回答」「## HTML フォーム下書き」を受け取ったとき、claude-html-communication の index・アセットを再生成するときにも使う。self-contained な HTML ページを共通ディレクトリ claude-html-communication に生成し、index 管理・serve URL 提示・下書きプロトコルまでの運用一式を定める。
 ---
 
 # 入り組んだ説明・報告・確認は HTML で行う
@@ -19,15 +19,15 @@ description: 調査報告・検証結果・比較表・設計判断の選択肢�
 
 配置先ディレクトリと配信 URL は環境変数から解決する（値のセットアップは環境側の文書の管轄）。
 
-- `CLAUDE_PAGES_DIR`: 共通ページディレクトリ。未設定なら既定値 `~/.local/share/claude-pages` を使う
-- `CLAUDE_PAGES_BASE_URL`: 配信のベース URL（例: `https://<ホスト名>.<tailnet 名>.ts.net`）。
-  ページの serve URL は `{CLAUDE_PAGES_BASE_URL}/{ファイル名}`、一覧のルート URL は `{CLAUDE_PAGES_BASE_URL}/`
-- `CLAUDE_PAGES_BASE_URL` が未設定・空の場合は、ページ提示の前にユーザーに URL を確認し、
+- `CLAUDE_HTML_COMMUNICATION_DIR`: 共通ページディレクトリ。未設定なら既定値 `~/.local/share/claude-html-communication` を使う
+- `CLAUDE_HTML_COMMUNICATION_BASE_URL`: 配信のベース URL（例: `https://<ホスト名>.<tailnet 名>.ts.net`）。
+  ページの serve URL は `{CLAUDE_HTML_COMMUNICATION_BASE_URL}/{ファイル名}`、一覧のルート URL は `{CLAUDE_HTML_COMMUNICATION_BASE_URL}/`
+- `CLAUDE_HTML_COMMUNICATION_BASE_URL` が未設定・空の場合は、ページ提示の前にユーザーに URL を確認し、
   そのセッションではその値を使う。あわせて環境変数としての恒久設定を提案する
 
 ## 生成・表示方法
 
-- 共通ページディレクトリ（`CLAUDE_PAGES_DIR`。無ければ `mkdir -p` で作る）に
+- 共通ページディレクトリ（`CLAUDE_HTML_COMMUNICATION_DIR`。無ければ `mkdir -p` で作る）に
   `YYYY-MM-DD-<プロジェクト>-<内容>-<種別>.html`（すべて kebab-case 英語）で書く
     - ブラウザで自動で開かない（`open` コマンドを実行しない）。`file://` 直開きは
       「一覧に戻る」等の相対リンクが serve 側の一覧と繋がらず不便なため。
@@ -63,12 +63,12 @@ description: 調査報告・検証結果・比較表・設計判断の選択肢�
       `plugins/claude-user-communication/skills/html-communication/`）に基づく Claude Code の
       HTML コミュニケーション用ディレクトリである旨と、skill の GitHub URL を footer に書く。
       index を再生成するときも維持する
-    - PWA 固定アセットを配置する: `manifest.json`（name = claude-pages、start_url = index.html、
+    - PWA 固定アセットを配置する: `manifest.json`（name = claude-html-communication、start_url = index.html、
       display = standalone）と `icon-192.png` / `icon-512.png`。index の `<head>` に
       `<link rel="manifest">` と theme-color を入れる。「閲覧用 HTML のみ」の例外はこれらと index.html だけ
     - index・PWA アセットが消えていたら、この skill の `templates/`
       （index.html 雛形・manifest.json・icon-192.png・icon-512.png）から再生成する
-- モバイル閲覧: claude-pages は tailnet 内限定の HTTPS 配信にしてある。
+- モバイル閲覧: claude-html-communication は tailnet 内限定の HTTPS 配信にしてある。
   提示時の報告テキストには、ファイルパス / ページの serve URL / 一覧のルート URL の 3 つを必ず併記する
 - 開き直せるように、ファイルパスを本文でも伝える
 - CSS/JS はすべてインラインで self-contained にする。外部 CDN・フォント・画像に依存しない
