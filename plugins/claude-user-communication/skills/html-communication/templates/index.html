@@ -93,6 +93,7 @@ code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px;
 
 <script>
 // Claude が管理するエントリ。ページ作成時は必ず未完了で追加し、ユーザーとのやり取りを経て完了へ更新する。
+// form 型は questions（設問総数の数値）を持たせる。一覧に「設問 N 問」を表示する。report 型は持たせない。
 // 新規追加時、同プロジェクトの完了 (answered/confirmed) が 10 件を超えたら古い順に削除する。
 // status 遷移: form = "awaiting"（回答待ち）→ "answered"（回答済み・回答受領時）
 //             report = "unconfirmed"（確認待ち）→ "confirmed"（確認済み・確認応答時）
@@ -116,10 +117,12 @@ function makeRow(e) {
   row.className = "row " + e.type;
   const badgeClass = INCOMPLETE.has(e.status) ? "awaiting" : "done";
   const typeLabel = e.type === "form" ? "フォーム" : "レポート";
+  const qChip = (e.type === "form" && typeof e.questions === "number")
+    ? '<span class="chip">設問 ' + e.questions + " 問</span>" : "";
   row.innerHTML =
     '<div class="meta">' +
       '<div><span class="type ' + e.type + '">' + typeLabel + '</span><a href="' + e.file + '">' + e.title + "</a></div>" +
-      '<div><span class="chip">' + e.project + '</span><span class="sub">' + e.created + "</span></div>" +
+      '<div><span class="chip">' + e.project + "</span>" + qChip + '<span class="sub">' + e.created + "</span></div>" +
     "</div>" +
     '<span class="badge ' + badgeClass + '">' + statusLabel[e.status] + "</span>";
   const btn = document.createElement("button");
