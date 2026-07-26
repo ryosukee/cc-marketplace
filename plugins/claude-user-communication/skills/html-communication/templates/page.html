@@ -63,18 +63,18 @@
              border: 1px solid var(--border); border-radius: 6px; padding: 10px; }
   #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
          border-top: 2px solid var(--accent); padding: 8px 16px; z-index: 100; }
-  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 7px; }
-  .bar-row { display: flex; gap: 8px; align-items: center; }
-  .bar-top { flex-wrap: wrap; }
-  .bar-top #cnt { margin-left: auto; }
-  .bar-bottom { align-items: flex-end; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  .bar-info { display: flex; align-items: center; gap: 8px; }
+  .bar-info #res { margin-left: auto; text-align: right; }
+  .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
   #back { display: inline-block; background: none; border: 1px solid var(--border); color: var(--sub);
           border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.85em; white-space: nowrap; }
   #back:hover { border-color: var(--accent); color: var(--accent); }
   #proj { align-self: center; font-size: 0.78em; font-weight: 700; letter-spacing: 0.02em;
           border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
           padding: 3px 9px; white-space: nowrap; }
-  #free { flex: 1 1 260px; min-height: 36px; max-height: 110px; padding: 5px 8px;
+  #free { width: 100%; min-height: 48px; max-height: 130px; padding: 6px 9px;
           border: 1px solid var(--border); border-radius: 5px; background: var(--bg);
           color: var(--fg); font-size: 0.9em; resize: vertical; }
   #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
@@ -129,17 +129,19 @@
 
 <div id="bar">
   <div id="bar-in">
-    <div class="bar-row bar-top">
-      <a id="back" href="./">一覧に戻る</a>
+    <div class="bar-info">
       <span id="proj">{{プロジェクト名}}</span>
       <span id="cnt"></span>
       <span id="res"></span>
     </div>
-    <div class="bar-row bar-bottom">
-      <textarea id="free" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
-      <button id="copy">回答をコピー</button>
-      <button id="draftcopy" class="subbtn">下書きをコピー</button>
-      <button id="reset" class="subbtn">入力をリセット</button>
+    <textarea id="free" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <div class="bar-actions">
+      <a id="back" href="./">一覧に戻る</a>
+      <div class="action-cluster">
+        <button id="draftcopy" class="subbtn">下書きをコピー</button>
+        <button id="reset" class="subbtn">入力をリセット</button>
+        <button id="copy">回答をコピー</button>
+      </div>
     </div>
   </div>
 </div>
