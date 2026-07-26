@@ -63,7 +63,11 @@
              border: 1px solid var(--border); border-radius: 6px; padding: 10px; }
   #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
          border-top: 2px solid var(--accent); padding: 8px 16px; z-index: 100; }
-  #bar-in { max-width: 640px; margin: 0 auto; display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 7px; }
+  .bar-row { display: flex; gap: 8px; align-items: center; }
+  .bar-top { flex-wrap: wrap; }
+  .bar-top #cnt { margin-left: auto; }
+  .bar-bottom { align-items: flex-end; }
   #back { display: inline-block; background: none; border: 1px solid var(--border); color: var(--sub);
           border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.85em; white-space: nowrap; }
   #back:hover { border-color: var(--accent); color: var(--accent); }
@@ -125,14 +129,18 @@
 
 <div id="bar">
   <div id="bar-in">
-    <a id="back" href="./">一覧に戻る</a>
-    <span id="proj">{{プロジェクト名}}</span>
-    <textarea id="free" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
-    <span id="cnt"></span>
-    <button id="copy">回答をコピー</button>
-    <button id="draftcopy" class="subbtn">下書きをコピー</button>
-    <button id="reset" class="subbtn">入力をリセット</button>
-    <span id="res"></span>
+    <div class="bar-row bar-top">
+      <a id="back" href="./">一覧に戻る</a>
+      <span id="proj">{{プロジェクト名}}</span>
+      <span id="cnt"></span>
+      <span id="res"></span>
+    </div>
+    <div class="bar-row bar-bottom">
+      <textarea id="free" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+      <button id="copy">回答をコピー</button>
+      <button id="draftcopy" class="subbtn">下書きをコピー</button>
+      <button id="reset" class="subbtn">入力をリセット</button>
+    </div>
   </div>
 </div>
 
