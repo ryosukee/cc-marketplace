@@ -62,6 +62,19 @@ fi
   未設定のときは最新ファイルへフォールバックしない。別セッションの残量を自分のものとして
   出すほうが、出さないより悪いため
 
+## 今後の方向
+
+書き出しを plugin 側に取り込めば、セットアップが不要になる。ただし未検証の点が 3 つある。
+
+- `settings.json` の `statusLine` で `${CLAUDE_PLUGIN_ROOT}` が展開されるか。
+  展開されないと絶対パスになり、plugin 更新でバージョンディレクトリが変わって壊れる
+- `statusLine` は 1 つしか持てない。既存のステータスラインを writer 経由に通す必要がある
+- `statusLine` から起動されたスクリプトに plugin 系の環境変数が渡るか
+
+検証は `settings.json` の書き換えを伴う。折衷案として、置き場だけ
+`~/.claude/plugins/data/usage-line-cc-tools/` へ移し、書き出しはユーザー側に残す形もある
+（`CLAUDE_USAGE_LINE_DIR` がその切り替え点）。
+
 ## skill
 
 | skill | 概要 |
