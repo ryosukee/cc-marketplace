@@ -3,7 +3,7 @@
 ## プロジェクト概要
 
 個人用 Claude Code plugin marketplace。1 marketplace / multi plugin 構成。
-utility 系 (version-check, plugin-update, cache-keepalive, cc-transcript)、
+utility 系 (version-check, plugin-update, cache-keepalive, cc-transcript, usage-line)、
 dotclaude 系 (doctor/cross-review/registry)、
 session 系 (start/debrief/retrospective/handover/end)、
 impl-spec 系 (requirements/design/test-plan)、
@@ -78,4 +78,5 @@ cc-marketplace/
 | japanese-text-writing | 0.1.5 | authoring | 日本語テキストの執筆規範 (共通原則 + 5 分類の references) |
 | claude-user-communication | 0.6.0 | communication | HTML ページ提示 (claude-html-communication) + 選択肢形式の確認。要環境変数 (plugin README) |
 | claude-known-issues | 0.2.0 | meta | Claude Code の既知バグ台帳 + 更新検知 SessionStart hook + 突合 agent |
+| usage-line | 0.1.0 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 
