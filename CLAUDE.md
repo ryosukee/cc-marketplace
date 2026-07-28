@@ -6,7 +6,7 @@
 utility 系 (version-check, plugin-update, cache-keepalive, cc-transcript, usage-line)、
 dotclaude 系 (doctor/cross-review/registry)、
 session 系 (start/debrief/retrospective/handover/end)、
-impl-spec 系 (requirements/design/test-plan)、
+impl-spec 系 (requirements/design/test-plan)、github 系 (github-pr)、
 authoring/tooling 系 (markdownlint, mkdocs-setup, security-guards, dotclaude-writer, japanese-text-writing)、
 communication 系 (claude-user-communication)、meta 系 (claude-known-issues) を提供する。
 加えて user global rules を repo 直下の `rules/` で管理し、
@@ -79,4 +79,5 @@ cc-marketplace/
 | claude-user-communication | 0.6.1 | communication | HTML ページ提示 (claude-html-communication) + 選択肢形式の確認。要環境変数 (plugin README) |
 | claude-known-issues | 0.2.0 | meta | Claude Code の既知バグ台帳 + 更新検知 SessionStart hook + 突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
+| github-pr | 0.1.0 | github | PR の作成・更新 (write skill)。規模でテンプレート選択、行指定コメントまで。要 `gh` CLI |
 

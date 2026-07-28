@@ -31,6 +31,12 @@
 | --- | --- | --- |
 | impl-spec | 0.5.4 | 実装のための仕様策定。requirements / design / test-plan の 3 skill + spec-reviewer agent |
 
+### GitHub
+
+| plugin | version | 概要 |
+| --- | --- | --- |
+| github-pr | 0.1.0 | Pull Request の作成・更新。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。`gh` CLI が必要 |
+
 ### Authoring / tooling
 
 | plugin | version | 概要 |
@@ -70,6 +76,8 @@ claude plugins install dotclaude-writer@cc-tools
 claude plugins install japanese-text-writing@cc-tools
 claude plugins install claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
 claude plugins install claude-known-issues@cc-tools
+claude plugins install usage-line@cc-tools                 # 要セットアップ (plugin README 参照)
+claude plugins install github-pr@cc-tools
 
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace
