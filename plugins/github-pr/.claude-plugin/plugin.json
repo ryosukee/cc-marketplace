@@ -1,5 +1,5 @@
 {
   "name": "github-pr",
   "description": "GitHub の Pull Request を作成・更新する。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成する",
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

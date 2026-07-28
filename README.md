@@ -35,7 +35,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| github-pr | 0.1.0 | Pull Request の作成・更新。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。`gh` CLI が必要 |
+| github-pr | 0.2.0 | Pull Request の作成・更新。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。`gh` CLI が必要 |
 
 ### Authoring / tooling
 

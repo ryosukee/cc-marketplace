@@ -79,5 +79,5 @@ cc-marketplace/
 | claude-user-communication | 0.6.1 | communication | HTML ページ提示 (claude-html-communication) + 選択肢形式の確認。要環境変数 (plugin README) |
 | claude-known-issues | 0.2.0 | meta | Claude Code の既知バグ台帳 + 更新検知 SessionStart hook + 突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
-| github-pr | 0.1.0 | github | PR の作成・更新 (write skill)。規模でテンプレート選択、行指定コメントまで。要 `gh` CLI |
+| github-pr | 0.2.0 | github | PR の作成・更新 (create skill)。規模でテンプレート選択、行指定コメントまで。要 `gh` CLI |
 

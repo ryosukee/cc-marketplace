@@ -14,7 +14,7 @@ GitHub の Pull Request を作成・更新する。
 
 | skill | 概要 |
 | --- | --- |
-| write | PR の作成・更新。テンプレート選定から行指定コメントまで |
+| create | PR の作成・更新。テンプレート選定から行指定コメントまで |
 
 ## references
 
