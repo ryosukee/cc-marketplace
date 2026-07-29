@@ -69,6 +69,24 @@ plugin は rule を配布できない。plugin が持てるのは skills / agent
 MCP servers / LSP servers / monitors だけで、plugin 内の `rules/` は loader が読まない。
 symlink が唯一の配布経路になる。
 
+### symlink は配布元ごとに 1 段ネストさせる
+
+`~/.claude/rules/` 直下に個々の rule ファイルを張らず、
+`~/.claude/rules/{配布元}/` というディレクトリを 1 段挟んで、その中に repo の `rules/` を丸ごと向ける。
+Claude Code はネストしたディレクトリも読むので、階層を挟んでも rule は効く。
+
+```text
+~/.claude/rules/
+├── cc-marketplace -> ~/ghq_root/github.com/ryosukee/cc-marketplace/rules
+└── {別の配布元}    -> ...
+```
+
+ディレクトリ名が配布元になるので、次の 3 つが同時に得られる。
+
+- どの rule がどの repo 由来かがパスだけで分かる。配布元が増えても混ざらない
+- repo 側で rule を追加・削除すると自動で反映される。ファイル単位の symlink だと張り直しが要る
+- 配布をやめるときは symlink 1 本を消せば丸ごと外れる。個別に張ると消し残りが出る
+
 | rule | 適用 | 概要 |
 | --- | --- | --- |
 | japanese-text-writing | 常時 | 日本語テキストの執筆要点。正典は同名の skill |
