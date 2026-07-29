@@ -60,6 +60,33 @@
 | --- | --- | --- |
 | claude-known-issues | 0.2.0 | Claude Code の既知バグ・制約の台帳。更新検知 → agent が changelog と突合 → 解除手順を提示。`jq` / `gh` が必要 |
 
+## rules
+
+plugin とは別に、user global rule を repo 直下の `rules/` で管理している。
+`~/.claude/rules/cc-marketplace` への dir symlink で配布する。
+
+plugin は rule を配布できない。plugin が持てるのは skills / agents / hooks /
+MCP servers / LSP servers / monitors だけで、plugin 内の `rules/` は loader が読まない。
+symlink が唯一の配布経路になる。
+
+| rule | 適用 | 概要 |
+| --- | --- | --- |
+| japanese-text-writing | 常時 | 日本語テキストの執筆要点。正典は同名の skill |
+| user-communication-format | 常時 | 報告・質問の形式をフリーテキスト / HTML から選ぶ |
+| primary-sources-first | 常時 | 仕様を述べる前に手元の一次情報を当たる |
+| decision-record | 常時 | 複数セッションの調査・設計で確定事項の台帳を持つ |
+| subagent-delegation | 常時 | subagent の起動は原則許可。判断基準はコンテキストの節約 |
+| background-task | 常時 | バックグラウンド起動は `run_in_background` を使う |
+| markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
+
+`paths` を持つ rule は、一致するファイルを Claude が読んだときだけロードされる。
+持たない rule はセッション開始時に無条件でロードされる。
+
+> [!IMPORTANT]
+> rule はセッション開始時に一度だけ読まれる。
+> セッション中に追加・変更した rule は、そのセッションでは効かない。
+> commit した直後に「効いている」と扱わず、次のセッションで確認する。
+
 ## インストール
 
 ```bash
