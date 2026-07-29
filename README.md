@@ -52,7 +52,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.7.1 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.7.2 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 
