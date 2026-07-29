@@ -32,11 +32,6 @@ main { max-width: 660px; margin: 0 auto; padding: 24px 16px 60px; }
 h1 { font-size: 1.3em; margin: 0 0 4px; text-wrap: balance; }
 h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
 .sub { color: var(--sub); font-size: 0.875em; }
-#q {
-  width: 100%; margin: 14px 0 4px; padding: 9px 12px; font-size: 1em; font-family: inherit;
-  border: 1px solid var(--control-border); border-radius: 8px;
-  background: var(--card); color: var(--text);
-}
 .row {
   display: flex; gap: 10px; align-items: center;
   background: var(--card); border: 1px solid var(--border); border-radius: 10px;
@@ -62,8 +57,14 @@ h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
   display: inline-block; font-size: 0.875em; color: var(--sub);
   border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; margin-right: 6px;
 }
-.chip.stale { color: var(--awaiting); border-color: var(--awaiting); }
+.hidebtn {
+  background: none; border: 1px solid var(--control-border); color: var(--sub);
+  border-radius: 8px; padding: 3px 10px; font-size: 0.875em; cursor: pointer; font-family: inherit;
+}
+.hidebtn:hover { border-color: var(--accent); color: var(--accent); }
 .empty { color: var(--sub); font-size: 0.875em; padding: 6px 2px; }
+.pname { font-weight: 700; font-size: 0.9em; margin: 12px 0 2px; }
+.pname .count { color: var(--sub); font-weight: 400; font-size: 0.875em; margin-left: 8px; }
 details.proj {
   background: var(--card); border: 1px solid var(--border); border-radius: 10px;
   padding: 4px 14px; margin: 10px 0;
@@ -74,6 +75,7 @@ details.proj summary {
 }
 details.proj summary .count { color: var(--sub); font-weight: 400; font-size: 0.875em; }
 details.proj .row { background: var(--bg); }
+#restore { margin-top: 14px; }
 footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); }
 code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px; font-size: 0.875em; }
 </style>
@@ -83,20 +85,13 @@ code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px;
 <h1>claude-html-communication 一覧</h1>
 <p class="sub">Claude Code が生成した閲覧用 HTML の一覧。すべてのページは未完了（回答待ち・確認待ち）で登録され、Claude とのやり取り（回答・確認応答）を経て完了へ遷移する。完了分はプロジェクトごとに直近 10 件だけ残し、index を書き換えるたびに超過分を削除する。未完了は削除しない。</p>
 
-<input type="search" id="q" placeholder="タイトル・プロジェクト・ファイル名で絞り込む" autocomplete="off">
+<h2>未完了（回答待ち・確認待ち）</h2>
+<div id="awaiting"></div>
 
-<div id="results" hidden></div>
+<h2>プロジェクト別（完了分）</h2>
+<div id="projects"></div>
 
-<div id="normal">
-  <h2>未完了（回答待ち・確認待ち）</h2>
-  <div id="awaiting"></div>
-
-  <h2>最近の動き</h2>
-  <div id="recent"></div>
-
-  <h2>プロジェクト別（完了分）</h2>
-  <div id="projects"></div>
-</div>
+<button class="hidebtn" id="restore" hidden></button>
 
 <script>
 // Claude が管理するエントリ。ページ作成時は必ず未完了で追加し、ユーザーとのやり取りを経て完了へ更新する。
@@ -108,16 +103,15 @@ code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px;
 const entries = [
 ];
 
+const HIDE_KEY = "claude-html-communication-hidden";
+const hidden = new Set(JSON.parse(localStorage.getItem(HIDE_KEY) || "[]"));
 const statusLabel = {
   awaiting: "回答待ち", unconfirmed: "確認待ち",
   answered: "回答済み", confirmed: "確認済み",
 };
 const INCOMPLETE = new Set(["awaiting", "unconfirmed"]);
-const RECENT_DAYS = 7;   // プロジェクト別セクションを自動で開く閾値
-const RECENT_MAX = 8;    // 「最近の動き」に出す件数
-const STALE_DAYS = 5;    // 未完了がこの日数を超えたら滞留として印を付ける
 
-const days = (d) => Math.floor((Date.now() - new Date(d + "T00:00:00").getTime()) / 86400000);
+function save() { localStorage.setItem(HIDE_KEY, JSON.stringify([...hidden])); }
 
 function makeRow(e) {
   const row = document.createElement("div");
@@ -145,12 +139,6 @@ function makeRow(e) {
     q.textContent = "設問 " + e.questions + " 問";
     line2.append(q);
   }
-  if (INCOMPLETE.has(e.status) && days(e.created) >= STALE_DAYS) {
-    const s = document.createElement("span");
-    s.className = "chip stale";
-    s.textContent = "滞留 " + days(e.created) + " 日";
-    line2.append(s);
-  }
   const date = document.createElement("span");
   date.className = "sub";
   date.textContent = e.created;
@@ -161,53 +149,52 @@ function makeRow(e) {
   badge.className = "badge " + (INCOMPLETE.has(e.status) ? "awaiting" : "done");
   badge.textContent = statusLabel[e.status] || e.status;
   row.append(meta, badge);
+
+  const btn = document.createElement("button");
+  btn.className = "hidebtn";
+  btn.textContent = "非表示";
+  btn.addEventListener("click", () => { hidden.add(e.file); save(); render(); });
+  row.appendChild(btn);
   return row;
 }
 
-function fill(el, list, emptyMsg) {
-  el.innerHTML = "";
-  if (!list.length) { el.innerHTML = '<div class="empty">' + emptyMsg + "</div>"; return; }
-  for (const e of list) el.appendChild(makeRow(e));
+function groupByProject(list) {
+  const g = new Map();
+  for (const e of list) {
+    if (!g.has(e.project)) g.set(e.project, []);
+    g.get(e.project).push(e);
+  }
+  return g;
 }
 
 function render() {
-  const query = document.getElementById("q").value.trim().toLowerCase();
-  const results = document.getElementById("results");
-  const normal = document.getElementById("normal");
-
-  if (query) {
-    normal.hidden = true; results.hidden = false;
-    const hit = entries
-      .filter((e) => (e.title + " " + e.project + " " + e.file).toLowerCase().includes(query))
-      .sort((a, b) => b.statusChanged.localeCompare(a.statusChanged));
-    fill(results, hit, "一致するページはありません");
-    return;
-  }
-  normal.hidden = false; results.hidden = true;
-
-  // 未完了はフラットに、古い順（放置の長いものが上）
-  const open = entries.filter((e) => INCOMPLETE.has(e.status))
-    .sort((a, b) => a.created.localeCompare(b.created));
-  fill(document.getElementById("awaiting"), open, "未完了のページはありません");
-
-  // 最近の動き: 状態が変わった順にプロジェクト横断で上位 N 件
-  const recent = [...entries]
-    .sort((a, b) => b.statusChanged.localeCompare(a.statusChanged))
-    .slice(0, RECENT_MAX);
-  fill(document.getElementById("recent"), recent, "エントリがありません");
-
+  const awaitingEl = document.getElementById("awaiting");
   const projectsEl = document.getElementById("projects");
-  projectsEl.innerHTML = "";
-  const groups = new Map();
-  for (const e of [...entries].sort((a, b) => b.created.localeCompare(a.created))) {
-    if (INCOMPLETE.has(e.status)) continue;
-    if (!groups.has(e.project)) groups.set(e.project, []);
-    groups.get(e.project).push(e);
+  awaitingEl.innerHTML = ""; projectsEl.innerHTML = "";
+  const sorted = [...entries].sort((a, b) => b.created.localeCompare(a.created));
+
+  // 未完了もプロジェクトごとにまとめる
+  const awaitingGroups = groupByProject(
+    sorted.filter((e) => !hidden.has(e.file) && INCOMPLETE.has(e.status)));
+  for (const [project, list] of awaitingGroups) {
+    const name = document.createElement("div");
+    name.className = "pname";
+    const label = document.createElement("span");
+    label.textContent = project;
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = list.length + " 件";
+    name.append(label, count);
+    awaitingEl.appendChild(name);
+    for (const e of list) awaitingEl.appendChild(makeRow(e));
   }
+  if (!awaitingEl.children.length) awaitingEl.innerHTML = '<div class="empty">未完了のページはありません</div>';
+
+  const groups = groupByProject(
+    sorted.filter((e) => !hidden.has(e.file) && !INCOMPLETE.has(e.status)));
   for (const [project, list] of groups) {
     const det = document.createElement("details");
-    det.className = "proj";
-    if (list.some((e) => days(e.statusChanged) <= RECENT_DAYS)) det.open = true;
+    det.className = "proj";   // 既定は閉じたまま。自動で開かない
     const sum = document.createElement("summary");
     const name = document.createElement("span");
     name.textContent = project;
@@ -220,9 +207,13 @@ function render() {
     projectsEl.appendChild(det);
   }
   if (!groups.size) projectsEl.innerHTML = '<div class="empty">完了したページはありません</div>';
-}
 
-document.getElementById("q").addEventListener("input", render);
+  const restore = document.getElementById("restore");
+  const hiddenCount = entries.filter((e) => hidden.has(e.file)).length;
+  restore.hidden = hiddenCount === 0;
+  restore.textContent = "非表示 " + hiddenCount + " 件を戻す";
+}
+document.getElementById("restore").addEventListener("click", () => { hidden.clear(); save(); render(); });
 render();
 </script>
 
