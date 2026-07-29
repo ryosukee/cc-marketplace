@@ -2,34 +2,41 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#2563eb">
 <link rel="icon" href="./icon-192.png">
 <title>claude-html-communication 一覧</title>
 <style>
 :root {
+  color-scheme: light dark;
   --bg: #f7f8fa; --card: #ffffff; --text: #1f2530; --sub: #5a6472;
-  --border: #d9dee6; --accent: #2563eb; --accent-fill: #2563eb;
+  --border: #d9dee6; --control-border: #8a8a8a; --accent: #2563eb; --accent-fill: #2563eb;
   --awaiting: #92400e; --awaiting-bg: #fef3e2; --done: #166534; --done-bg: #e8f5ec;
 }
-@media (prefers-color-scheme: dark) {
+@media screen and (prefers-color-scheme: dark) {
   :root {
     --bg: #14181f; --card: #1c222c; --text: #e6eaf0; --sub: #9aa4b2;
-    --border: #333c49; --accent: #6ea8ff; --accent-fill: #2563eb;
+    --border: #333c49; --control-border: #767d87; --accent: #6ea8ff; --accent-fill: #2563eb;
     --awaiting: #fbbf24; --awaiting-bg: #3a2f14; --done: #4ade80; --done-bg: #16301f;
   }
 }
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--bg); color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
-  line-height: 1.7; font-size: 15.5px;
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", sans-serif;
+  line-height: 1.7; font-size: 16px; word-break: auto-phrase;
 }
 main { max-width: 660px; margin: 0 auto; padding: 24px 16px 60px; }
-h1 { font-size: 1.3rem; margin: 0 0 4px; }
-h2 { font-size: 1.05rem; margin: 1.6em 0 0.5em; }
-.sub { color: var(--sub); font-size: 0.82rem; }
+h1 { font-size: 1.3em; margin: 0 0 4px; text-wrap: balance; }
+h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
+.sub { color: var(--sub); font-size: 0.875em; }
+#q {
+  width: 100%; margin: 14px 0 4px; padding: 9px 12px; font-size: 1em; font-family: inherit;
+  border: 1px solid var(--control-border); border-radius: 8px;
+  background: var(--card); color: var(--text);
+}
 .row {
   display: flex; gap: 10px; align-items: center;
   background: var(--card); border: 1px solid var(--border); border-radius: 10px;
@@ -39,148 +46,183 @@ h2 { font-size: 1.05rem; margin: 1.6em 0 0.5em; }
 .row a { color: var(--accent); text-decoration: none; font-weight: 600; overflow-wrap: anywhere; }
 .row a:hover { text-decoration: underline; }
 .badge {
-  font-size: 0.72rem; font-weight: 600; border-radius: 999px; padding: 1px 10px; white-space: nowrap;
+  font-size: 0.875em; font-weight: 600; border-radius: 999px; padding: 1px 10px; white-space: nowrap;
 }
 .badge.awaiting { color: var(--awaiting); background: var(--awaiting-bg); }
 .badge.done { color: var(--done); background: var(--done-bg); }
 .type {
-  display: inline-block; font-size: 0.7rem; font-weight: 700; border-radius: 6px;
-  padding: 1px 8px; margin-right: 8px; vertical-align: 1px; white-space: nowrap;
+  display: inline-block; font-size: 0.875em; font-weight: 700; border-radius: 6px;
+  padding: 1px 8px; margin-right: 8px; white-space: nowrap;
 }
 .type.form { background: var(--accent-fill); color: #fff; }
 .type.report { border: 1.5px solid var(--sub); color: var(--sub); }
 .row.form { border-left: 4px solid var(--accent-fill); }
 .row.report { border-left: 4px solid var(--border); }
 .chip {
-  display: inline-block; font-size: 0.74rem; color: var(--sub);
+  display: inline-block; font-size: 0.875em; color: var(--sub);
   border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; margin-right: 6px;
 }
-.hidebtn {
-  background: none; border: 1px solid var(--border); color: var(--sub);
-  border-radius: 8px; padding: 3px 10px; font-size: 0.78rem; cursor: pointer; font-family: inherit;
-}
-.hidebtn:hover { border-color: var(--accent); color: var(--accent); }
-.empty { color: var(--sub); font-size: 0.9rem; padding: 6px 2px; }
-.pname { font-weight: 700; font-size: 0.9rem; margin: 12px 0 2px; }
-.pname .count { color: var(--sub); font-weight: 400; font-size: 0.8rem; margin-left: 8px; }
+.chip.stale { color: var(--awaiting); border-color: var(--awaiting); }
+.empty { color: var(--sub); font-size: 0.875em; padding: 6px 2px; }
 details.proj {
   background: var(--card); border: 1px solid var(--border); border-radius: 10px;
   padding: 4px 14px; margin: 10px 0;
 }
 details.proj summary {
-  cursor: pointer; padding: 8px 0; font-weight: 700; font-size: 0.98rem;
+  cursor: pointer; padding: 8px 0; font-weight: 700;
   display: flex; align-items: center; gap: 10px;
 }
-details.proj summary .count { color: var(--sub); font-weight: 400; font-size: 0.8rem; }
+details.proj summary .count { color: var(--sub); font-weight: 400; font-size: 0.875em; }
 details.proj .row { background: var(--bg); }
-#restore { margin-top: 14px; }
 footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); }
-code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px; font-size: 0.875em; }
 </style>
 </head>
 <body>
 <main>
 <h1>claude-html-communication 一覧</h1>
-<p class="sub">Claude Code が生成した閲覧用 HTML の一覧。すべてのページは未完了（回答待ち・確認待ち）で登録され、Claude とのやり取り（回答・確認応答）を経て完了へ遷移する。完了分はプロジェクトごとに直近 10 件だけ残して新規追加時に自動削除。未完了は削除しない。</p>
+<p class="sub">Claude Code が生成した閲覧用 HTML の一覧。すべてのページは未完了（回答待ち・確認待ち）で登録され、Claude とのやり取り（回答・確認応答）を経て完了へ遷移する。完了分はプロジェクトごとに直近 10 件だけ残し、index を書き換えるたびに超過分を削除する。未完了は削除しない。</p>
 
-<h2>未完了（回答待ち・確認待ち）</h2>
-<div id="awaiting"></div>
+<input type="search" id="q" placeholder="タイトル・プロジェクト・ファイル名で絞り込む" autocomplete="off">
 
-<h2>プロジェクト別（完了分）</h2>
-<div id="projects"></div>
+<div id="results" hidden></div>
 
-<button class="hidebtn" id="restore" hidden></button>
+<div id="normal">
+  <h2>未完了（回答待ち・確認待ち）</h2>
+  <div id="awaiting"></div>
+
+  <h2>最近の動き</h2>
+  <div id="recent"></div>
+
+  <h2>プロジェクト別（完了分）</h2>
+  <div id="projects"></div>
+</div>
 
 <script>
 // Claude が管理するエントリ。ページ作成時は必ず未完了で追加し、ユーザーとのやり取りを経て完了へ更新する。
 // form 型は questions（設問総数の数値）を持たせる。一覧に「設問 N 問」を表示する。report 型は持たせない。
-// 新規追加時、同プロジェクトの完了 (answered/confirmed) が 10 件を超えたら古い順に削除する。
+// 掃除は index を書き換えるたび（新規追加・状態更新のどちらでも）に行う。
+// 同プロジェクトの完了 (answered/confirmed) が 10 件を超えていたら、古い順にファイルごと削除する。
 // status 遷移: form = "awaiting"（回答待ち）→ "answered"（回答済み・回答受領時）
 //             report = "unconfirmed"（確認待ち）→ "confirmed"（確認済み・確認応答時）
-//             "shown" はライフサイクル導入前の旧完了表記（完了扱い）
 const entries = [
 ];
 
-const HIDE_KEY = "claude-html-communication-hidden";
-const hidden = new Set(JSON.parse(localStorage.getItem(HIDE_KEY) || "[]"));
 const statusLabel = {
   awaiting: "回答待ち", unconfirmed: "確認待ち",
-  answered: "回答済み", confirmed: "確認済み", shown: "提示済み（旧）",
+  answered: "回答済み", confirmed: "確認済み",
 };
 const INCOMPLETE = new Set(["awaiting", "unconfirmed"]);
-const RECENT_DAYS = 7;
+const RECENT_DAYS = 7;   // プロジェクト別セクションを自動で開く閾値
+const RECENT_MAX = 8;    // 「最近の動き」に出す件数
+const STALE_DAYS = 5;    // 未完了がこの日数を超えたら滞留として印を付ける
 
-function save() { localStorage.setItem(HIDE_KEY, JSON.stringify([...hidden])); }
+const days = (d) => Math.floor((Date.now() - new Date(d + "T00:00:00").getTime()) / 86400000);
 
 function makeRow(e) {
   const row = document.createElement("div");
   row.className = "row " + e.type;
-  const badgeClass = INCOMPLETE.has(e.status) ? "awaiting" : "done";
-  const typeLabel = e.type === "form" ? "フォーム" : "レポート";
-  const qChip = (e.type === "form" && typeof e.questions === "number")
-    ? '<span class="chip">設問 ' + e.questions + " 問</span>" : "";
-  row.innerHTML =
-    '<div class="meta">' +
-      '<div><span class="type ' + e.type + '">' + typeLabel + '</span><a href="' + e.file + '">' + e.title + "</a></div>" +
-      '<div><span class="chip">' + e.project + "</span>" + qChip + '<span class="sub">' + e.created + "</span></div>" +
-    "</div>" +
-    '<span class="badge ' + badgeClass + '">' + statusLabel[e.status] + "</span>";
-  const btn = document.createElement("button");
-  btn.className = "hidebtn"; btn.textContent = "非表示";
-  btn.addEventListener("click", () => { hidden.add(e.file); save(); render(); });
-  row.appendChild(btn);
+  const meta = document.createElement("div");
+  meta.className = "meta";
+
+  const line1 = document.createElement("div");
+  const type = document.createElement("span");
+  type.className = "type " + e.type;
+  type.textContent = e.type === "form" ? "フォーム" : "レポート";
+  const a = document.createElement("a");
+  a.href = e.file;
+  a.textContent = e.title;   // innerHTML で組まない。タイトルに < や & が入っても壊れない
+  line1.append(type, a);
+
+  const line2 = document.createElement("div");
+  const proj = document.createElement("span");
+  proj.className = "chip";
+  proj.textContent = e.project;
+  line2.append(proj);
+  if (e.type === "form" && typeof e.questions === "number") {
+    const q = document.createElement("span");
+    q.className = "chip";
+    q.textContent = "設問 " + e.questions + " 問";
+    line2.append(q);
+  }
+  if (INCOMPLETE.has(e.status) && days(e.created) >= STALE_DAYS) {
+    const s = document.createElement("span");
+    s.className = "chip stale";
+    s.textContent = "滞留 " + days(e.created) + " 日";
+    line2.append(s);
+  }
+  const date = document.createElement("span");
+  date.className = "sub";
+  date.textContent = e.created;
+  line2.append(date);
+
+  meta.append(line1, line2);
+  const badge = document.createElement("span");
+  badge.className = "badge " + (INCOMPLETE.has(e.status) ? "awaiting" : "done");
+  badge.textContent = statusLabel[e.status] || e.status;
+  row.append(meta, badge);
   return row;
 }
 
-function isRecent(dateStr) {
-  return (Date.now() - new Date(dateStr + "T00:00:00").getTime()) / 86400000 <= RECENT_DAYS;
+function fill(el, list, emptyMsg) {
+  el.innerHTML = "";
+  if (!list.length) { el.innerHTML = '<div class="empty">' + emptyMsg + "</div>"; return; }
+  for (const e of list) el.appendChild(makeRow(e));
 }
 
 function render() {
-  const awaitingEl = document.getElementById("awaiting");
+  const query = document.getElementById("q").value.trim().toLowerCase();
+  const results = document.getElementById("results");
+  const normal = document.getElementById("normal");
+
+  if (query) {
+    normal.hidden = true; results.hidden = false;
+    const hit = entries
+      .filter((e) => (e.title + " " + e.project + " " + e.file).toLowerCase().includes(query))
+      .sort((a, b) => b.statusChanged.localeCompare(a.statusChanged));
+    fill(results, hit, "一致するページはありません");
+    return;
+  }
+  normal.hidden = false; results.hidden = true;
+
+  // 未完了はフラットに、古い順（放置の長いものが上）
+  const open = entries.filter((e) => INCOMPLETE.has(e.status))
+    .sort((a, b) => a.created.localeCompare(b.created));
+  fill(document.getElementById("awaiting"), open, "未完了のページはありません");
+
+  // 最近の動き: 状態が変わった順にプロジェクト横断で上位 N 件
+  const recent = [...entries]
+    .sort((a, b) => b.statusChanged.localeCompare(a.statusChanged))
+    .slice(0, RECENT_MAX);
+  fill(document.getElementById("recent"), recent, "エントリがありません");
+
   const projectsEl = document.getElementById("projects");
-  awaitingEl.innerHTML = ""; projectsEl.innerHTML = "";
-  const sorted = [...entries].sort((a, b) => b.created.localeCompare(a.created));
-
-  const awaitingGroups = new Map();
-  for (const e of sorted) {
-    if (hidden.has(e.file) || !INCOMPLETE.has(e.status)) continue;
-    if (!awaitingGroups.has(e.project)) awaitingGroups.set(e.project, []);
-    awaitingGroups.get(e.project).push(e);
-  }
-  for (const [project, list] of awaitingGroups) {
-    const name = document.createElement("div");
-    name.className = "pname";
-    name.innerHTML = project + '<span class="count">' + list.length + " 件</span>";
-    awaitingEl.appendChild(name);
-    for (const e of list) awaitingEl.appendChild(makeRow(e));
-  }
-  if (!awaitingEl.children.length) awaitingEl.innerHTML = '<div class="empty">未完了のページはありません</div>';
-
+  projectsEl.innerHTML = "";
   const groups = new Map();
-  for (const e of sorted) {
-    if (hidden.has(e.file) || INCOMPLETE.has(e.status)) continue;
+  for (const e of [...entries].sort((a, b) => b.created.localeCompare(a.created))) {
+    if (INCOMPLETE.has(e.status)) continue;
     if (!groups.has(e.project)) groups.set(e.project, []);
     groups.get(e.project).push(e);
   }
   for (const [project, list] of groups) {
     const det = document.createElement("details");
     det.className = "proj";
-    if (isRecent(list[0].statusChanged)) det.open = true;
+    if (list.some((e) => days(e.statusChanged) <= RECENT_DAYS)) det.open = true;
     const sum = document.createElement("summary");
-    sum.innerHTML = project + ' <span class="count">完了 ' + list.length + " 件</span>";
+    const name = document.createElement("span");
+    name.textContent = project;
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = "完了 " + list.length + " 件";
+    sum.append(name, count);
     det.appendChild(sum);
     for (const e of list) det.appendChild(makeRow(e));
     projectsEl.appendChild(det);
   }
   if (!groups.size) projectsEl.innerHTML = '<div class="empty">完了したページはありません</div>';
-
-  const restore = document.getElementById("restore");
-  const hiddenCount = entries.filter((e) => hidden.has(e.file)).length;
-  restore.hidden = hiddenCount === 0;
-  restore.textContent = "非表示 " + hiddenCount + " 件を戻す";
 }
-document.getElementById("restore").addEventListener("click", () => { hidden.clear(); save(); render(); });
+
+document.getElementById("q").addEventListener("input", render);
 render();
 </script>
 
