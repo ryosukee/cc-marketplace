@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "html-validate:recommended",
+    "html-validate:a11y",
+    "html-validate:document"
+  ],
+  "rules": {
+    "no-inline-style": "off",
+    "prefer-tbody": "off",
+    "multiple-labeled-controls": "off",
+    "prefer-native-element": ["error", { "exclude": ["region"] }]
+  }
+}

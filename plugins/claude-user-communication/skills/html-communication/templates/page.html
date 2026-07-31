@@ -10,6 +10,12 @@
              .q / #preview / QS 定義 / 回答コピーの JS も削る
 
   フォントサイズは 4 段階だけを使う: 1.4em / 1.15em / 1em / 0.875em。新しい段を足さない。
+
+  強調は <mark>、引用は <blockquote> を使う（SR が境界を読み上げる。span 装飾より優先）。
+  脚注を <footer>、補足を <aside> に入れない。Firefox Reader View が両者を無条件削除する。
+  main 内の class / id に次の語を使わない（Readability が部分一致で本文から削る）:
+    meta / media / share / related / sidebar / scroll / tags / contact / hidden /
+    footer / header / banner / widget / comment / social / extra / menu / promo
 -->
 <head>
 <meta charset="UTF-8">
@@ -47,6 +53,10 @@
   h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
   code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
          font-family: "SF Mono", Menlo, monospace; }
+  mark { background: var(--hl); color: inherit; padding: 0 2px; }
+  blockquote { margin: 10px 0 14px; padding: 2px 0 2px 14px;
+               border-left: 3px solid var(--control-border); }
+  blockquote p { margin: 4px 0; }
   pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
         font-size: 0.875em; line-height: 1.5; }
   a { color: var(--accent); }
@@ -73,6 +83,7 @@
   .gloss b { color: var(--fg); font-weight: 700; }
   .ok { color: var(--ok); } .ng { color: var(--ng); }
   .d { color: var(--sub); font-size: 0.875em; }
+  label.opt .d { display: block; }
   .lead { margin-bottom: 6px; }
   .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
        padding: 12px 15px; margin: 16px 0; }
@@ -170,12 +181,12 @@
   <div class="t">設問 1/{{N}}（{{設問ラベル}}）</div>
   <label class="opt"><input type="radio" name="q1" value="{{選択肢 A}}">
     {{選択肢 A}}<span class="rec">推奨</span>
-    <div class="d">推奨の根拠: {{根拠}}。覆し可: {{他を選ぶのが妥当な条件}}</div></label>
+    <span class="d">推奨の根拠: {{根拠}}。覆し可: {{他を選ぶのが妥当な条件}}</span></label>
   <label class="opt"><input type="radio" name="q1" value="{{選択肢 B}}">{{選択肢 B}}
-    <div class="d">{{説明}}</div></label>
+    <span class="d">{{説明}}</span></label>
   <label class="opt"><input type="radio" name="q1" value="__other__">その他
     <input type="text" class="other" data-for="q1"></label>
-  <textarea class="note" data-note="q1" placeholder="補足（任意）"></textarea>
+  <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意）"></textarea>
 </div>
 
 <h2 id="s-ref">参考資料（判断には不要）</h2>
@@ -187,7 +198,7 @@
 
 <h2 id="s-preview">付録 回答の preview</h2>
 <p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
-<textarea id="preview" readonly></textarea>
+<textarea id="preview" aria-label="回答の preview" readonly></textarea>
 
 </main>
 
@@ -199,12 +210,12 @@
       <span id="cnt"></span>
       <span id="res"></span>
     </div>
-    <textarea id="free" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <textarea id="free" aria-label="自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
     <div class="bar-actions">
       <a id="back" href="./">一覧に戻る</a>
       <div class="action-cluster">
-        <button id="reset" class="subbtn">入力をリセット</button>
-        <button id="copy">回答をコピー</button>
+        <button type="button" id="reset" class="subbtn">入力をリセット</button>
+        <button type="button" id="copy">回答をコピー</button>
       </div>
     </div>
   </div>
