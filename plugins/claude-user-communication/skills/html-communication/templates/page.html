@@ -77,6 +77,17 @@
   .fnnum { text-decoration: none; font-weight: 700; }
   .fnback { text-decoration: none; margin-left: 3px; }
   .fnback:hover { text-decoration: underline; }
+  /* 脚注の 2 pane 表示。本文カラムの右に十分な余白がある画面幅でだけ発動する。
+     screen 限定なので印刷・狭幅では従来どおり本文末尾に流れる。DOM 順も変えない。
+     348px = main の外縁 (max-width 640px の半分 320px) + 間隔 28px、364px = 348px + 右余白 16px。
+     main のカラム幅を変えるときは連動して再計算する */
+  @media screen and (min-width: 1120px) {
+    #fn-set { position: fixed; top: 24px; left: calc(50% + 348px);
+              width: min(320px, calc(50vw - 364px));
+              max-height: calc(100vh - 240px); overflow-y: auto;
+              padding-right: 8px; }
+    #fn-set h2 { margin-top: 0; font-size: 1em; }
+  }
   .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
            border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
            padding: 7px 12px; margin: 8px 0 14px; }
@@ -192,9 +203,11 @@
 <h2 id="s-ref">参考資料（判断には不要）</h2>
 <p class="d">回答には要らない。{{何の記録か}}</p>
 
+<div id="fn-set">
 <h2 id="s-fn">脚注</h2>
 <p class="fn" id="fn-1"><a class="fnnum" href="#fnref-1-1">1.</a> {{脚注本文}}
   <a class="fnback" href="#fnref-1-1" aria-label="本文へ戻る">&#8617;</a></p>
+</div>
 
 <h2 id="s-preview">付録 回答の preview</h2>
 <p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
