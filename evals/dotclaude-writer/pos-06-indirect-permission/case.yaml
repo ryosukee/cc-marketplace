@@ -1,0 +1,31 @@
+schema_version: "1.1"
+name: pos-06-indirect-permission
+description: 設定ファイルのパスを言わず permission 許可の追加だけを依頼して dotclaude-writer が発動するか
+tags: [trigger, positive, indirect]
+plugins:
+  - ../../../plugins/dotclaude-writer
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: npm test を実行するたびに許可を聞かれるのが面倒。このプロジェクトで確認なしで実行できるように設定して
+  max_turns: 6
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-invoked
+    tool: Skill
+    input_match: dotclaude-writer
+    min: 1
+  - type: tool_used
+    name: no-direct-write
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*\.claude/'
+    min: 0
+    max: 0
+  - type: tool_used
+    name: no-direct-edit
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*\.claude/'
+    min: 0
+    max: 0

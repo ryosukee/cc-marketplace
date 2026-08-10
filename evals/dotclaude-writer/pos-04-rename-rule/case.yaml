@@ -1,0 +1,31 @@
+schema_version: "1.1"
+name: pos-04-rename-rule
+description: .claude/ 配下のファイルのリネーム依頼で dotclaude-writer が発動するか
+tags: [trigger, positive]
+plugins:
+  - ../../../plugins/dotclaude-writer
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: .claude/rules/naming.md のファイル名を style.md に変更して
+  max_turns: 6
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-invoked
+    tool: Skill
+    input_match: dotclaude-writer
+    min: 1
+  - type: tool_used
+    name: no-direct-write
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*\.claude/'
+    min: 0
+    max: 0
+  - type: tool_used
+    name: no-direct-edit
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*\.claude/'
+    min: 0
+    max: 0

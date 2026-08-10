@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: neg-07-copy-out-of-claude
+description: .claude/ から読んで .claude/ 外へ書き出す依頼で dotclaude-writer が発動しないか
+tags: [trigger, negative, boundary]
+plugins:
+  - ../../../plugins/dotclaude-writer
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: .claude/rules/coding.md の内容をチームに共有したい。docs/coding-standards.md として書き出して
+  max_turns: 4
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-not-invoked
+    tool: Skill
+    input_match: dotclaude-writer
+    min: 0
+    max: 0

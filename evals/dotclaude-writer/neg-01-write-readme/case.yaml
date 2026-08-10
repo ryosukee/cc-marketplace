@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: neg-01-write-readme
+description: .claude/ 外の通常ファイルへの追記依頼で dotclaude-writer が発動しないか
+tags: [trigger, negative]
+plugins:
+  - ../../../plugins/dotclaude-writer
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: README.md にインストール手順の節を追記して。npm install して npm start するだけの簡単な手順でいい
+  max_turns: 4
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+runs: 3
+graders:
+  - type: tool_used
+    name: skill-not-invoked
+    tool: Skill
+    input_match: dotclaude-writer
+    min: 0
+    max: 0
