@@ -66,7 +66,7 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
 - 名前は `pos-NN-<内容>` / `neg-NN-<内容>`。境界事例には `boundary` タグを付ける
 
 スキーマの全容・grader 6 種の仕様は
-`.handover/todo/merged-2026-07-30-trigger-eval-harness.md` の 9 節（バイナリ解析の一次記録）を参照。
+`notes/trigger-eval-harness.md` の 9 節（バイナリ解析の一次記録）を参照。
 
 ## ケース設計の規範
 
