@@ -30,8 +30,18 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
 - モデルはアカウント既定（opus）を使い、`--model` は指定しない
 - 消費はサブスクのレート枠（OAuth 経由）。実測 1 実行あたり平均 $0.21・約 27 秒
   （30 実行の平均。skill 発動 + 手順実行まで含む場合）。実行は直列
-- 恒久成果物は `evals/results/<timestamp>/`（gitignore 済み）と `--json` / `--report` の出力のみ。
-  実行は隔離 temp dir で行われ `~/.claude/projects/` を汚さない
+- 実行は隔離 temp dir で行われ `~/.claude/projects/` を汚さない
+
+## 結果の確認
+
+結果は `evals/results/latest/` に最新の全ケース実行分だけを保持する
+（`aggregate-result.json` + `report.html`）。HTML で確認するときは
+`evals/results/latest/report.html` をブラウザで開く。
+
+- `latest/` はケースとペアで git 管理する。ケースを追加・変更したら全体を回し、
+  latest の更新をケースの変更と同じコミットに含める
+- `--case` の部分実行は latest を更新しない（latest は常に全ケース実行の結果）
+- timestamp 付きの生出力ディレクトリは保持しない。run.sh が latest への反映後に削除する
 
 ## ケースの書き方
 
