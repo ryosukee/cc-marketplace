@@ -52,7 +52,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.10.1 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査の 3 層) を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.10.2 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査の 3 層) を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 

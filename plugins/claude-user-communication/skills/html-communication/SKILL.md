@@ -113,6 +113,9 @@ description: 調査報告・検証結果・比較表・設計判断の選択肢�
       `<link rel="manifest">` と theme-color を入れる。「閲覧用 HTML のみ」の例外はこれらと index.html だけ
     - index・PWA アセットが消えていたら、この skill の `templates/`
       （index.html 雛形・manifest.json・icon-192.png・icon-512.png）から再生成する
+    - 雛形 `templates/index.html` の表示仕様（レンダリング JS・CSS）を変えたら、
+      配信中の index.html にも同じ変更を適用する。配信中の index は以後エントリだけを
+      更新し続けるため、雛形の更新は自動では届かない
 - モバイル閲覧: claude-html-communication は tailnet 内限定の HTTPS 配信にしてある。
   提示時のターミナル出力には、ファイルパス / ページの serve URL / 一覧のルート URL の 3 つを必ず併記する
   （出力の全体像は下記「提示時のターミナル出力」）

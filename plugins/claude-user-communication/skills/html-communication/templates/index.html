@@ -57,6 +57,10 @@ h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
   display: inline-block; font-size: 0.875em; color: var(--sub);
   border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; margin-right: 6px;
 }
+/* ページ連番 (f008 / r012)。ファイル名と URL の識別子なので等幅で本文色にする */
+.chip.pid {
+  font-family: "SF Mono", Menlo, monospace; font-weight: 700; color: var(--text);
+}
 .hidebtn {
   background: none; border: 1px solid var(--control-border); color: var(--sub);
   border-radius: 8px; padding: 3px 10px; font-size: 0.875em; cursor: pointer; font-family: inherit;
@@ -132,6 +136,14 @@ function makeRow(e) {
   const proj = document.createElement("span");
   proj.className = "chip";
   proj.textContent = e.project;
+  // 短名ファイル (f008.html / r012.html) は連番をチップで見せる。旧命名の長いファイル名は出さない
+  const pid = e.file.replace(/\.html$/, "");
+  if (/^[fr]\d+$/.test(pid)) {
+    const pidChip = document.createElement("span");
+    pidChip.className = "chip pid";
+    pidChip.textContent = pid;
+    line2.append(pidChip);
+  }
   line2.append(proj);
   if (e.type === "form" && typeof e.questions === "number") {
     const q = document.createElement("span");
