@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # claude plugin eval を repo root 固定・規定オプション付きで実行する。
-# discovery root は target 無指定時に cwd で決まり (2026-08-10 実測)、cwd がずれると
+# discovery root は target 無指定時に cwd で決まり、cwd がずれると
 # ケースの plugins 参照 (../../../plugins/...) が root 外と判定されて全ケース load 失敗になる。
 # そのため cwd に依存せず、このスクリプトの位置から repo root を解決して固定する。
 #

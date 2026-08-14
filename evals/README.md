@@ -14,23 +14,22 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
 - run.sh は repo root への cd と規定オプション（early access ゲート解除・`--no-publish`・
   `--scaffold`・`--allow-tools Bash Write Edit`）を固定する。素の `claude plugin eval` を
   直接叩かない。cwd がずれると discovery root（= target 無指定時は cwd）が変わり、
-  ケースの `plugins:` 参照が root 外と判定されて全ケースが load 失敗する（2026-08-10 実測）
+  ケースの `plugins:` 参照が root 外と判定されて全ケースが load 失敗する
 - `--scaffold` は各ケースの scaffold.sh（対象ファイルの fixture 生成）の実行に必要。
   自作ケースにしか使わないこと
 - `--allow-tools Bash Write Edit` は正例の実測に必要。これが無いと子セッションで
   Write/Edit/Bash が denied になり、操作手段が Skill しか残らず発動率が構造的に底上げされる
-  （初回測定の満点の一因。遡及レビュー 2026-08-10 の指摘）
 - ケースの書式（scaffold の有無・grader・allowed_tools）を変えたら、全体を回す前に
   `--case` で 1 ケース `--runs 1` のスモークを回して load と grader の動作を確認する。
   書式の仕様は推測で埋めず、スモークの実測で閉じてから展開する
 
-- `--no-publish` を必ず付ける（規定。f002 回答 2026-08-10）。
+- `--no-publish` を必ず付ける。
   HTML レポートは既定で claude.ai へ Artifact として発行される。発行先は private だが、
   Artifact は CLI から削除できず実行のたびに増えるためローカル出力のみとする
   （制約の追跡は claude-known-issues 台帳のエントリ `artifact-no-cli-delete`）
 - モデルはアカウント既定（opus）を使い、`--model` は指定しない
 - 消費はサブスクのレート枠（OAuth 経由）。実測 1 実行あたり平均 $0.21・約 27 秒
-  （2026-08-10 の 30 実行、skill 発動 + 手順実行まで含む場合）。実行は直列
+  （30 実行の平均。skill 発動 + 手順実行まで含む場合）。実行は直列
 - 恒久成果物は `evals/results/<timestamp>/`（gitignore 済み）と `--json` / `--report` の出力のみ。
   実行は隔離 temp dir で行われ `~/.claude/projects/` を汚さない
 
@@ -46,8 +45,8 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
   fixture を作る。対象が無いと「存在確認 → 無いので終了」という正当な非発動経路ができ、
   測定にならない
 - `scaffold_script` の値は**スクリプトファイルへのパス**（ケースディレクトリ相対。
-  例: `scaffold.sh`）。インラインの bash 文字列はパスとして解決されて実行前エラーになる
-  （2026-08-10 実測）。スクリプトは各ケースディレクトリに `scaffold.sh` として置く
+  例: `scaffold.sh`）。インラインの bash 文字列はパスとして解決されて実行前エラーになる。
+  スクリプトは各ケースディレクトリに `scaffold.sh` として置く
 - 正例には逸脱検出 grader を併設する: `tool: Write` / `tool: Edit` に
   `input_match: '"file_path"\s*:\s*"[^"]*\.claude/'`・`min: 0, max: 0` で、
   skill を経由しない直接書き込みを fail にする。file_path フィールドへアンカーするのは、
@@ -61,8 +60,8 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
   （直接操作という実運用の失敗モードを選べる状態で測る。ツール枯渇は
   「唯一の行動手段 = Skill」という現実に無い圧力を作る）。読み取り専用の依頼は
   `[Read, Glob, Grep, Skill]` でよい
-- 初期規模は正例 5 + 負例 5 × runs 3 = 30 実行（f002 回答 2026-08-10）。
-  現行の dotclaude-writer スイートはレビューでの追加を経て 15 ケース × 3 = 45 実行
+- 初期規模の目安は正例 5 + 負例 5 × runs 3 = 30 実行。
+  現行の dotclaude-writer スイートは 15 ケース × 3 = 45 実行
 - 名前は `pos-NN-<内容>` / `neg-NN-<内容>`。境界事例には `boundary` タグを付ける
 
 スキーマの全容・grader 6 種の仕様は
