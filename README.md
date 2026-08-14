@@ -24,7 +24,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| session | 2.5.0 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料) / end (オーケストレーター) + handover-reviewer agent |
+| session | 2.6.0 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料) / end (オーケストレーター) + handover-reviewer agent |
 
 ### impl-spec
 
