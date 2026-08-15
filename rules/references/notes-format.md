@@ -10,6 +10,8 @@ paths:
 
 この frontmatter の `paths` は、どの作業にもマッチしない値を意図的に指定して
 このファイルを常時ロードから外している。`paths: []` や `["**"]` に変えると常時ロードに戻るため変更しない。
+この除外挙動は非公開仕様への依存で、claude-known-issues plugin の台帳エントリ
+`rule-paths-exclusion-undocumented` が Claude Code 更新のたびに監視している。
 
 ## 構造
 
