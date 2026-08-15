@@ -104,6 +104,20 @@ code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px;
 // 同プロジェクトの完了 (answered/confirmed) が 10 件を超えていたら、古い順にファイルごと削除する。
 // status 遷移: form = "awaiting"（回答待ち）→ "answered"（回答済み・回答受領時）
 //             report = "unconfirmed"（確認待ち）→ "confirmed"（確認済み・確認応答時）
+// プロジェクト略号の台帳。ファイル名の接頭辞に使う（例: ccm-f008.html）。
+// 番号空間をプロジェクトごとに閉じ、並行セッションの発番衝突を防ぐ。
+// 新しいプロジェクトの最初のページを作るときにここへ追加する（3〜5 文字、既存と衝突しない値）。
+const projects = {
+  "cc-marketplace": "ccm",
+  "idea-hub": "ih",
+  "efso-idp": "eidp",
+  "efso-core-review": "ecr",
+  "bambu": "bmb",
+  "voice-recorder": "vr",
+  "infra": "infra",
+  "dotfiles": "df",
+};
+
 const entries = [
 ];
 
@@ -136,9 +150,9 @@ function makeRow(e) {
   const proj = document.createElement("span");
   proj.className = "chip";
   proj.textContent = e.project;
-  // 短名ファイル (f008.html / r012.html) は連番をチップで見せる。旧命名の長いファイル名は出さない
+  // 連番ファイル (ccm-f008.html / f008.html) は識別子をチップで見せる。旧命名の長いファイル名は出さない
   const pid = e.file.replace(/\.html$/, "");
-  if (/^[fr]\d+$/.test(pid)) {
+  if (/^(?:[a-z0-9]+-)?[fr]\d+$/.test(pid)) {
     const pidChip = document.createElement("span");
     pidChip.className = "chip pid";
     pidChip.textContent = pid;
