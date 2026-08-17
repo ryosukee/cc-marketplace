@@ -33,7 +33,7 @@ h1 { font-size: 1.3em; margin: 0 0 4px; text-wrap: balance; }
 h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
 .sub { color: var(--sub); font-size: 0.875em; }
 .row {
-  display: flex; gap: 10px; align-items: center;
+  display: flex; gap: 10px; align-items: flex-start;
   background: var(--card); border: 1px solid var(--border); border-radius: 10px;
   padding: 10px 14px; margin: 8px 0;
 }
@@ -61,10 +61,11 @@ h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
 .chip.pid {
   font-family: "SF Mono", Menlo, monospace; font-weight: 700; color: var(--text);
 }
-/* メタ行。チップ類は左、生成元の版は右端へ寄せる */
 .line2 { display: flex; align-items: baseline; flex-wrap: wrap; row-gap: 2px; }
-/* 生成元の版。参照前の確認用なので、読み飛ばせる強さに落として右端へ逃がす */
-.genby { margin-left: auto; font-size: 0.875em; color: var(--sub); opacity: 0.55; }
+/* 右列。状態バッジの下に生成元の版を積む */
+.rightcol { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+/* 生成元の版。参照前の確認用なので、読み飛ばせる強さに落とす */
+.genby { font-size: 0.875em; color: var(--sub); opacity: 0.55; white-space: nowrap; }
 .empty { color: var(--sub); font-size: 0.875em; padding: 6px 2px; }
 .pname { font-weight: 700; font-size: 0.9em; margin: 12px 0 2px; }
 .pname .count { color: var(--sub); font-weight: 400; font-size: 0.875em; margin-left: 8px; }
@@ -170,14 +171,17 @@ function makeRow(e) {
   // 古い版のページを参考にしないための目印なので、読み飛ばせる強さでよい
   const ver = document.createElement("span");
   ver.className = "genby";
-  ver.textContent = e.skillVersion ? "via v" + e.skillVersion : "版の記録なし";
-  line2.append(ver);
+  ver.textContent = e.skillVersion ? "via v" + e.skillVersion : "via unknown version";
 
   meta.append(line1, line2);
   const badge = document.createElement("span");
   badge.className = "badge " + (INCOMPLETE.has(e.status) ? "awaiting" : "done");
   badge.textContent = statusLabel[e.status] || e.status;
-  row.append(meta, badge);
+  // 状態バッジと版を右列に縦積みする。版はバッジの下
+  const right = document.createElement("div");
+  right.className = "rightcol";
+  right.append(badge, ver);
+  row.append(meta, right);
 
   return row;
 }
