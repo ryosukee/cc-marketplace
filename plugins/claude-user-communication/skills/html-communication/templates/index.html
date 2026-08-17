@@ -33,7 +33,7 @@ h1 { font-size: 1.3em; margin: 0 0 4px; text-wrap: balance; }
 h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
 .sub { color: var(--sub); font-size: 0.875em; }
 .row {
-  display: flex; gap: 10px; align-items: flex-start;
+  display: flex; gap: 10px; align-items: stretch;
   background: var(--card); border: 1px solid var(--border); border-radius: 10px;
   padding: 10px 14px; margin: 8px 0;
 }
@@ -62,8 +62,12 @@ h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
   font-family: "SF Mono", Menlo, monospace; font-weight: 700; color: var(--text);
 }
 .line2 { display: flex; align-items: baseline; flex-wrap: wrap; row-gap: 2px; }
-/* 右列。状態バッジの下に生成元の版を積む */
-.rightcol { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+/* 右列。状態バッジは上端、生成元の版は下端に置く。
+   タイトルが折り返して行が伸びても、バッジがタイトル行に、版がチップ行に並ぶ */
+.rightcol {
+  display: flex; flex-direction: column; align-items: flex-end;
+  justify-content: space-between; gap: 4px;
+}
 /* 生成元の版。参照前の確認用なので、読み飛ばせる強さに落とす */
 .genby { font-size: 0.875em; color: var(--sub); opacity: 0.55; white-space: nowrap; }
 .empty { color: var(--sub); font-size: 0.875em; padding: 6px 2px; }
