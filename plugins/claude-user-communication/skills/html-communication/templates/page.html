@@ -5,9 +5,20 @@
   このファイルが起点。既存ページをコピーして作らない（雛形の更新を受け取れなくなる）。
 
   form / report の共通部分は同一。型ごとに次を切り替える。
-    form   : 下部バー #bar（情報・入力・操作の 3 ゾーン）と設問ブロック .q を使う
-    report : #bar を削り #footer-nav（一覧に戻る + プロジェクトバッジ）に差し替える。
-             .q / #preview / QS 定義 / 回答コピーの JS も削る
+    form   : 下部バー #bar（情報・入力・操作の 3 ゾーン）と設問 pane #q-pane を使う
+    report : #bar を #footer-nav に差し替え、#q-pane と .rng[data-q] の対応を削る。
+             #preview / QS 定義 / 回答コピーの JS も削る。範囲と追従は使わない
+
+  構造は 3 pane（左に設問・中央に本文・右に脚注）。1340px 以上で 3 列になり、
+  それ未満は DOM 順のまま 本文 → 設問 → 脚注 の 1 列で流れる。
+  DOM 順をこの並びにするのは、狭幅で読み終えた直後に答えられるようにするため。
+
+  色の役割は 3 つに固定する。増やさない。
+    青 --link      = 操作できるもの + 現在地
+    地の濃淡        = 構造（見出しの罫・表の罫・区切り）
+    琥珀 --mark    = 本文中の要点
+  本文テキスト --fg と構造の線 --rule-strong は必ず別トークンにする。
+  兼用すると両者のコントラストが 1.00 になり、ダークで区別が消える（実測で確認済み）。
 
   フォントサイズは 4 段階だけを使う: 1.4em / 1.15em / 1em / 0.875em。新しい段を足さない。
 
@@ -25,105 +36,171 @@
 <style>
   :root {
     color-scheme: light dark;
-    --bg: #fff; --fg: #1a1a1a; --sub: #555;
-    --border: #d0d0d0;          /* 罫線・区切り。装飾なのでコントラスト要件の対象外 */
-    --control-border: #8a8a8a;  /* 入力欄・ボタンの輪郭。WCAG 1.4.11 の 3:1 を満たす値 */
-    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
-    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+    --bg: #fff; --fg: #1a1a1a; --sub: #585d64;
+    --rule: #c8ccd2;            /* 構造の細い罫。装飾なのでコントラスト要件の対象外 */
+    --control-border: #7c828b;  /* 入力欄・ボタンの輪郭。WCAG 1.4.11 の 3:1 を満たす */
+    --rule-strong: #4a5058;     /* 構造の強い線。--fg とは別インクにする */
+    --link: #0b6bcb; --link-fill: #0b6bcb; --on-fill: #fff; --focus: #0b6bcb;
+    --mark: #ffd980;            /* 要点の下線。文字の背後に敷く */
+    --surface-now: #dfe5ee; --surface-code: #eef0f3; --surface-bar: #f6f7f9;
+    --ok: #12703a; --ng: #b42318;
+    --tw-shadow: rgba(0, 0, 0, .18);
   }
   /* print に適用されないよう screen を明示する（印刷時のスキーム切替は仕様未定義） */
   @media screen and (prefers-color-scheme: dark) {
     :root {
       --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab;
-      --border: #3a3f47; --control-border: #767d87;
-      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
-      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+      --rule: #3a3f47; --control-border: #767d87; --rule-strong: #9aa1ab;
+      --link: #5aa2e8; --link-fill: #7fb3f0; --on-fill: #0e1116; --focus: #5aa2e8;
+      /* ダークでは地より明るい側に置く。地より暗い帯は沈んで見えない */
+      --mark: #6f5c33;
+      --surface-now: #2d333d; --surface-code: #23272e; --surface-bar: #1d2026;
+      --ok: #74c489; --ng: #f0998f;
+      --tw-shadow: rgba(255, 255, 255, .30);
     }
   }
   * { box-sizing: border-box; }
   html { scroll-padding-bottom: 190px; }  /* 固定バーにフォーカスが隠れるのを防ぐ */
-  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.7;
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.8;
          word-break: auto-phrase;
          font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", Meiryo, sans-serif; }
-  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 170px; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 190px; }
   h1, h2, h3 { text-wrap: balance; }
-  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
-  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px;
-       scroll-margin-top: 12px; }
-  h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
-  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
+  h1 { font-size: 1.4em; letter-spacing: 0.01em; margin-bottom: 6px; }
+  /* 見出しの標識は左の縦罫。上の短い罫より、行の頭に線があるほうが節の始まりが分かる。
+     構造なので無彩。青にすると現在地の青い縦罫と 2 本並んで役割が読めなくなる */
+  h2 { font-size: 1.15em; margin-top: 2.4em; margin-bottom: 10px; letter-spacing: 0.01em;
+       scroll-margin-top: 12px;
+       border-left: 4px solid var(--rule-strong); padding-left: 9px; }
+  h3 { font-size: 1em; font-weight: 700; margin-top: 1.8em; letter-spacing: 0.01em; }
+  p { margin: 0 0 1.8em; }   /* 段落間は本文 1 行分。UA 既定の 1em だと行間より狭くなる */
+  .lead { margin-bottom: 6px; }
+  a { color: var(--link); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  /* リンクと弱いテキストの相互コントラストは 1.26 / 1.01 しかない。下線は装飾ではなく要件 */
+  code { background: var(--surface-code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
          font-family: "SF Mono", Menlo, monospace; }
-  mark { background: var(--hl); color: inherit; padding: 0 2px; }
-  blockquote { margin: 10px 0 14px; padding: 2px 0 2px 14px;
-               border-left: 3px solid var(--control-border); }
-  blockquote p { margin: 4px 0; }
-  pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
+  pre { background: var(--surface-code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
         font-size: 0.875em; line-height: 1.5; }
-  a { color: var(--accent); }
-  .table-wrap { overflow-x: auto; }
-  .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  /* 表だけ本文カラムより広く使う。本文の行長 (40 全角) は可読性の要件なので広げない。
-     画面の余白がある幅でだけ発動し、中央揃えのまま左右へ張り出す。
-     1120px 以上では右に脚注パネル (320px + 余白) が出るので、その分を差し引いて重なりを防ぐ */
-  @media screen and (min-width: 800px) {
-    .table-wrap { width: min(100vw - 48px, 1100px); margin-inline: calc((100% - min(100vw - 48px, 1100px)) / 2); }
-  }
-  @media screen and (min-width: 1120px) {
-    .table-wrap { width: min(100vw - 432px, 1100px); margin-inline: calc((100% - min(100vw - 432px, 1100px)) / 2); }
-  }
-  table { border-collapse: collapse; width: 100%; min-width: 440px; }
-  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub); padding-bottom: 4px; }
-  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
-  th { background: var(--card); }
-  tr.key td, tr.key th { background: var(--hl); }
-  .fn { font-size: 0.875em; color: var(--sub); margin: 6px 0 0; padding-left: 20px; scroll-margin-top: 16px; }
-  .fn:target { background: var(--accent-bg); border-left: 3px solid var(--accent);
-               padding-left: 17px; border-radius: 0 4px 4px 0; }
-  .fnref { scroll-margin-top: 16px; }
-  .fnref a { text-decoration: none; padding: 0 1px; }
-  .fnref a:hover { text-decoration: underline; }
-  .fnref:target a { background: var(--accent-bg); outline: 2px solid var(--accent); border-radius: 3px; }
-  .fnnum { text-decoration: none; font-weight: 700; }
-  .fnback { text-decoration: none; margin-left: 3px; }
-  .fnback:hover { text-decoration: underline; }
-  /* 脚注の 2 pane 表示。本文カラムの右に十分な余白がある画面幅でだけ発動する。
-     screen 限定なので印刷・狭幅では従来どおり本文末尾に流れる。DOM 順も変えない。
-     348px = main の外縁 (max-width 640px の半分 320px) + 間隔 28px、364px = 348px + 右余白 16px。
-     main のカラム幅を変えるときは連動して再計算する */
-  @media screen and (min-width: 1120px) {
-    #fn-set { position: fixed; top: 24px; left: calc(50% + 348px);
-              width: min(320px, calc(50vw - 364px));
-              max-height: calc(100vh - 240px); overflow-y: auto;
-              padding-right: 8px; }
-    #fn-set h2 { margin-top: 0; font-size: 1em; }
-  }
-  .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
-           border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
-           padding: 7px 12px; margin: 8px 0 14px; }
+  /* color を必ず指定する。省くとブラウザ既定の mark { color: MarkText } が残り、
+     ダークでは暗い文字色のまま帯に重なって読めなくなる */
+  mark { background: linear-gradient(transparent 58%, var(--mark) 58%);
+         color: inherit; font-weight: 700; padding: 0 1px; }
+  .d { color: var(--sub); font-size: 0.875em; }
+  .vnav { font-size: 0.875em; border-bottom: 1px solid var(--rule);
+          padding: 0 0 12px; margin: 12px 0 18px; color: var(--sub); }
+  .vnav b { color: var(--fg); }
+  .gloss { font-size: 0.875em; color: var(--sub);
+           border-left: 3px solid var(--rule); padding: 2px 0 2px 12px; margin: 8px 0 14px; }
   .gloss b { color: var(--fg); font-weight: 700; }
   .ok { color: var(--ok); } .ng { color: var(--ng); }
-  .d { color: var(--sub); font-size: 0.875em; }
-  label.opt .d { display: block; }
-  .lead { margin-bottom: 6px; }
-  .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
-       padding: 12px 15px; margin: 16px 0; }
-  .q .t { font-weight: 700; margin-bottom: 6px; }
-  label.opt { display: block; background: var(--bg); border: 1px solid var(--control-border);
-              border-radius: 6px; padding: 8px 10px; margin: 6px 0; cursor: pointer; }
-  label.opt:has(input:checked) { outline: 2px solid var(--accent); }
-  .rec { background: var(--accent-fill); color: #fff; font-size: 0.875em; border-radius: 4px;
-         padding: 0 6px; margin-left: 4px; }
+  /* --ok と --ng の相互コントラストは 1.07 / 1.04。色だけでは WCAG 1.4.1 を満たさないので
+     セルには必ず記号かテキストを併記する */
+
+  /* 引用は引用専用の記法。ラベル行に出典を載せ、本文末尾に出典行を置かない */
+  blockquote { margin: 14px 0 18px; padding: 0 0 0 16px; border-left: 3px solid var(--control-border); }
+  blockquote .src { display: block; font-size: 0.875em; color: var(--sub); font-weight: 700;
+                    margin-bottom: 6px; letter-spacing: 0.02em; }
+  blockquote p { margin: 6px 0; }
+
+  /* 表。3 pane と干渉するので本文カラムより広げない。横スクロールで逃がす */
+  .table-wrap { overflow-x: auto;
+    background:
+      linear-gradient(to right, var(--bg) 70%, transparent) left / 28px 100% no-repeat local,
+      linear-gradient(to left, var(--bg) 70%, transparent) right / 28px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, var(--tw-shadow), transparent) left / 12px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, var(--tw-shadow), transparent) right / 12px 100% no-repeat scroll; }
+  .table-wrap:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub);
+            padding-bottom: 10px; letter-spacing: 0.02em; }
+  th, td { border: none; border-bottom: 1px solid var(--rule); padding: 9px 14px 9px 0;
+           text-align: left; vertical-align: top; }
+  thead th { border-bottom: 2px solid var(--rule-strong); font-size: 0.875em; letter-spacing: 0.04em; }
+  tbody tr:last-child td { border-bottom: none; }
+  tr.key td { font-weight: 700; }
+  tr.key td:first-child { border-left: 3px solid var(--rule-strong); padding-left: 11px; }
+  th.num, td.num { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+
+  /* 本文の範囲。1 つの設問の判断材料がどこからどこまでかを示す。
+     前提部分は範囲を持たせない（その位置では設問をどれも開かない）。
+     既定は細い無彩の縦罫、現在地だけ青 2px に変わる。
+     2px ではアクティブと非アクティブが同じ太さになるが、--rule との輝度比が
+     ダーク 3.92 / ライト 3.27 あり、WCAG 1.4.1 の「明度でも 3:1 以上」を満たす */
+  .rng { position: relative; padding: 10px 0 10px 14px; margin: 26px 0; margin-inline: -14px; }
+  .rng::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 14px;
+                 width: 2px; border-radius: 1px; background: var(--rule); }
+  .rng.on::before { background: var(--link); }
+  /* 範囲のラベルは見出しの上に出る補助表示。太字にすると節の見出しと強さが並び、
+     どちらが節の名前か分からなくなる。最小の段のまま、太さと色で後ろへ下げる */
+  .rng > .rlabel { font-size: 0.875em; font-weight: 400; color: var(--sub);
+                   letter-spacing: 0.02em; margin: 0 0 2px; }
+  .rng > h2 { margin-top: 0.2em; }
+
+  /* 設問カード。読んでいる範囲のものが開く。手で開閉すると自動追従から外れる */
+  .qd { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; margin: 0 0 10px; }
+  .qd > summary { cursor: pointer; font-weight: 700; font-size: 0.875em; }
+  .qd > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .qd.on { box-shadow: inset 2px 0 0 var(--link); }
+  .qtext { font-size: 0.875em; margin: 8px 0 0; }
+
+  .q { margin: 8px 0 0; }
+  label.opt { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
+              padding: 8px 0 8px 2px; border-bottom: 1px solid var(--rule); cursor: pointer;
+              font-size: 0.875em; }
+  label.opt:has(input:checked) { font-weight: 700; }
+  label.opt input[type="radio"] { appearance: none; -webkit-appearance: none;
+      width: 15px; height: 15px; margin: 0; flex: none; border-radius: 50%;
+      border: 1.5px solid var(--control-border); background: var(--bg); transform: translateY(2px); }
+  label.opt input[type="radio"]:checked { border: 5px solid var(--link-fill); }
+  label.opt input[type="radio"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  label.opt .d { font-weight: 400; width: 100%; }
+  .rec { background: none; color: var(--fg); border: 1px solid var(--fg);
+         font-size: 0.875em; border-radius: 4px; padding: 0 6px; margin-left: 4px;
+         font-weight: 700; letter-spacing: 0.02em; }
   input.other { width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--control-border);
                 border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 1em; }
   textarea.note { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--control-border);
                   border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 0.875em;
                   min-height: 30px; resize: vertical; }
-  #preview { width: 100%; min-height: 180px; font-family: "SF Mono", Menlo, monospace;
-             font-size: 0.875em; background: var(--code); color: var(--fg);
+  #preview { width: 100%; min-height: 150px; font-family: "SF Mono", Menlo, monospace;
+             font-size: 0.875em; background: var(--surface-code); color: var(--fg);
              border: 1px solid var(--control-border); border-radius: 6px; padding: 10px; }
+
+  /* 脚注と補足。どちらも本文と双方向のページ内リンクにする。
+     番号の系列を混ぜない。脚注は数字 (1, 2)、補足は英字 (a, b) */
+  .pane-h { font-size: 0.875em; font-weight: 700; color: var(--sub); margin: 0 0 8px;
+            letter-spacing: 0.04em; }
+  .fn, .su { font-size: 0.875em; margin: 0 0 10px; scroll-margin-top: 16px; }
+  .fn:target, .su:target { background: var(--surface-now); border-radius: 4px;
+                           box-shadow: 0 0 0 4px var(--surface-now); }
+  .fnnum, .sunum { text-decoration: none; font-weight: 700; }
+  .fnback, .suback { text-decoration: none; margin-left: 3px; }
+  .fnback:hover, .suback:hover { text-decoration: underline; }
+  .fnref, .suref { font-size: 0.875em; scroll-margin-top: 16px; }
+  .fnref a { text-decoration: none; padding: 0 1px; }
+  .fnref a:hover { text-decoration: underline; }
+  .fnref:target a { background: var(--surface-now); outline: 2px solid var(--focus); border-radius: 3px; }
+  .suref a { text-decoration: none; font-weight: 700; color: var(--sub); padding: 0 2px; }
+  .suref a::before { content: "["; }
+  .suref a::after { content: "]"; }
+  .suref a:hover { color: var(--link); text-decoration: underline; }
+  .suref:target a { background: var(--surface-now); color: var(--link); border-radius: 3px; }
+
+  /* 3 pane。300 + 24 + 640 + 24 + 300 = 1288px 必要なので発動は 1340px 以上 */
+  @media screen and (min-width: 1340px) {
+    main { max-width: 1288px; display: grid;
+           grid-template-columns: 300px 640px 300px; column-gap: 24px;
+           grid-template-areas: "q bd fn"; align-items: start; }
+    #bd { grid-area: bd; min-width: 0; }
+    #q-pane { grid-area: q; }
+    #fn-pane { grid-area: fn; }
+    #q-pane, #fn-pane { position: sticky; top: 24px;
+                        max-height: calc(100vh - 200px); overflow-y: auto; }
+  }
+
   /* form 用の下部バー。情報・入力・操作の 3 ゾーンに分ける */
-  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
-         border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg);
+         border-top: 1px solid var(--rule); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
          z-index: 100; }
   #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
   .bar-info { display: flex; align-items: center; gap: 8px; }
@@ -131,31 +208,32 @@
   .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
   /* report 用の追従ナビ。操作が無いので 1 段だけ */
-  #footer-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
-                border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+  #footer-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg);
+                border-top: 1px solid var(--rule); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
                 z-index: 100; }
   #footer-nav > div { max-width: 640px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
-  #back { display: inline-block; background: none; border: 1px solid var(--control-border); color: var(--sub);
+  #back { display: inline-block; background: none; border: 1px solid var(--rule); color: var(--sub);
           border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
-  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #back:hover { border-color: var(--link); color: var(--link); }
   #proj { align-self: center; font-size: 0.875em; font-weight: 700;
-          border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
+          border: 1px solid var(--rule); color: var(--sub); border-radius: 6px;
           padding: 3px 9px; white-space: nowrap; }
   #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
           border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
           color: var(--fg); font-size: 0.875em; resize: vertical; }
   #free:focus { min-height: 88px; }
-  #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
+  #copy { background: var(--link-fill); color: var(--on-fill); border: none; border-radius: 4px;
           padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 1em; }
-  .subbtn { background: none; border: 1px solid var(--control-border); color: var(--sub); border-radius: 6px;
+  .subbtn { background: none; border: 1px solid var(--rule); color: var(--sub); border-radius: 6px;
             padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
-  .subbtn:hover { border-color: var(--accent); color: var(--accent); }
+  .subbtn:hover { border-color: var(--link); color: var(--link); }
   #cnt, #res { font-size: 0.875em; color: var(--sub); white-space: nowrap; }
   @media print {
     #bar, #footer-nav { display: none; }
-    main { max-width: none; padding: 0; }
+    main, main > * { max-width: none; display: block; }
+    #q-pane, #fn-pane { position: static; max-height: none; overflow: visible; }
     h1, h2, h3 { break-after: avoid; }
-    table, pre, .q { break-inside: avoid; }
+    table, pre, .qd { break-inside: avoid; }
     @page { margin: 16mm; }
   }
 </style>
@@ -163,18 +241,23 @@
 <body>
 <main>
 
+<div id="bd">
+
 <h1>{{タイトル}}</h1>
 
-<p>{{前提。何の話か・どういう経緯でこの文書が要るかを 2〜3 文}}</p>
+<div class="vnav">
+<b>この文書</b>: {{何の話か・どういう経緯でこの文書が要るか。2〜3 文}}<br>
+<b>読み方</b>: {{どこから読めばよいか。飛ばしてよい節はどれか}}
+</div>
 
 <p><b>結論</b>: {{読者が最初に知りたい答え}}</p>
 
-<p class="lead"><b>決めること</b>: {{N}} 件。説明 N と設問 N が 1 対 1 に対応する。</p>
-<ul>
-  <li>設問 1 {{一行}}</li>
-</ul>
+<p class="lead"><b>決めること</b>: {{N}} 件。左の pane にあります。</p>
 
-<p class="d"><b>読み方</b>: {{どこから読めばよいか。飛ばしてよい節はどれか}}</p>
+<!-- 前提部分はここまで。範囲を持たせない（この位置では設問をどれも開かない） -->
+
+<section class="rng" data-q="q1" aria-labelledby="rl-q1">
+<p class="rlabel" id="rl-q1">設問 1 の判断材料</p>
 
 <h2 id="s-e1">説明 1 {{主張型の見出し。結論を見出しに載せる}}</h2>
 
@@ -197,8 +280,31 @@
 ※ <b>{{用語}}</b> = {{初出の位置で 1〜3 文。冒頭に用語集を作らない}}
 </div>
 
+<p>{{本文}}<sup class="fnref" id="fnref-1-1"><a href="#fn-1">1</a></sup>。{{本文}}<sup class="suref" id="suref-a"><a href="#su-a">a</a></sup></p>
+
+<blockquote>
+<span class="src">引用: <a href="{{URL}}">{{タイトル}}</a></span>
+<p>{{文言の転記。補足説明は加えない}}</p>
+</blockquote>
+</section>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+<p class="d">回答には要りません。{{何の記録か}}</p>
+
+<h2 id="s-preview">付録 回答の preview</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" aria-label="回答の preview" readonly></textarea>
+
+</div>
+
+<!-- form 用。report では削る -->
+<aside id="q-pane" aria-label="設問">
+<p class="pane-h">設問 {{N}} 件（読んでいる範囲のものが開く／見出しで開閉）</p>
+
+<details class="qd" data-for="q1" open>
+<summary>設問 1/{{N}} {{設問ラベル}}</summary>
+<p class="qtext">{{設問文}}</p>
 <div class="q" id="q1">
-  <div class="t">設問 1/{{N}}（{{設問ラベル}}）</div>
   <label class="opt"><input type="radio" name="q1" value="{{選択肢 A}}">
     {{選択肢 A}}<span class="rec">推奨</span>
     <span class="d">推奨の根拠: {{根拠}}。覆し可: {{他を選ぶのが妥当な条件}}</span></label>
@@ -208,19 +314,18 @@
     <input type="text" class="other" data-for="q1"></label>
   <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意）"></textarea>
 </div>
+</details>
+</aside>
 
-<h2 id="s-ref">参考資料（判断には不要）</h2>
-<p class="d">回答には要らない。{{何の記録か}}</p>
-
-<div id="fn-set">
-<h2 id="s-fn">脚注</h2>
-<p class="fn" id="fn-1"><a class="fnnum" href="#fnref-1-1">1.</a> {{脚注本文}}
+<aside id="fn-pane" aria-label="脚注と補足">
+<p class="pane-h">脚注</p>
+<p class="fn" id="fn-1"><a class="fnnum" href="#fnref-1-1">1.</a> {{脚注本文。出典・再現手順・生データ}}
   <a class="fnback" href="#fnref-1-1" aria-label="本文へ戻る">&#8617;</a></p>
-</div>
 
-<h2 id="s-preview">付録 回答の preview</h2>
-<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
-<textarea id="preview" aria-label="回答の preview" readonly></textarea>
+<p class="pane-h" style="margin-top:18px">補足</p>
+<p class="su" id="su-a"><a class="sunum" href="#suref-a">a.</a> {{補足本文。判断の助けになる説明}}
+  <a class="suback" href="#suref-a" aria-label="本文へ戻る">&#8617;</a></p>
+</aside>
 
 </main>
 
@@ -260,6 +365,35 @@
     { id: 'q1', label: '{{設問ラベル}}' }
   ];
 
+  /* 読んでいる範囲の追従。各範囲と表示領域の重なりの高さで決める。
+     節の先頭が閾値を超えたかという点の判定はしない（範囲と重なりで見る）。
+     手で開閉した設問は pinned にして自動追従から外す。 */
+  var ranges = [].slice.call(document.querySelectorAll('.rng[data-q]'));
+  var pinned = {};
+  function follow() {
+    if (!ranges.length) return;
+    var vh = window.innerHeight, best = null, bestOv = 0;
+    ranges.forEach(function (r) {
+      var b = r.getBoundingClientRect();
+      var ov = Math.max(0, Math.min(b.bottom, vh) - Math.max(b.top, 0));
+      if (ov > bestOv) { bestOv = ov; best = r; }
+    });
+    ranges.forEach(function (r) { r.classList.toggle('on', r === best); });
+    document.querySelectorAll('.qd[data-for]').forEach(function (d) {
+      var on = !!(best && d.dataset.for === best.dataset.q);
+      d.classList.toggle('on', on);
+      if (!pinned[d.dataset.for]) d.open = on;
+    });
+  }
+  document.querySelectorAll('.qd[data-for]').forEach(function (d) {
+    var sm = d.querySelector('summary');
+    if (sm) sm.addEventListener('click', function () { pinned[d.dataset.for] = true; });
+    d.addEventListener('change', function () { pinned[d.dataset.for] = true; });
+  });
+  window.addEventListener('scroll', follow, { passive: true });
+  window.addEventListener('resize', follow);
+  follow();
+
   function ans(qid) {
     var c = document.querySelector('input[name="' + qid + '"]:checked');
     if (!c) return null;
@@ -271,12 +405,12 @@
   }
   function build() {
     var lines = ['## HTML フォーム回答（' + THEME + '）'], n = 0;
-    QS.forEach(function (q) {
+    QS.forEach(function (q, i) {
       var a = ans(q.id);
       if (a) n++;
-      lines.push('- ' + q.id.toUpperCase() + '（' + q.label + '）: ' + (a || '未回答'));
       var note = document.querySelector('.note[data-note="' + q.id + '"]');
-      if (note && note.value.trim()) lines.push('    - ' + q.id.toUpperCase() + ' 補足: ' + note.value.trim());
+      var nt = note && note.value.trim();
+      lines.push('- Q' + (i + 1) + '（' + q.label + '）: ' + (a || '未回答') + (nt ? '  ※ ' + nt : ''));
     });
     var free = document.getElementById('free').value.trim();
     lines.push('- 補足: ' + (free || 'なし'));
