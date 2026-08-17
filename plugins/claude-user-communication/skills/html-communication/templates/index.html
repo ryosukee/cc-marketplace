@@ -100,6 +100,9 @@ code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px;
 <script>
 // Claude が管理するエントリ。ページ作成時は必ず未完了で追加し、ユーザーとのやり取りを経て完了へ更新する。
 // form 型は questions（設問総数の数値）を持たせる。一覧に「設問 N 問」を表示する。report 型は持たせない。
+// skillVersion には、そのページを生成したときの claude-user-communication の版を入れる。
+// 一覧に「v0.13.0」として出る。古い雛形で作られたページを参考にしないための目印で、
+// 「既存のページを読んで参考にしない」という指示を版で裏づける。
 // 掃除は index を書き換えるたび（新規追加・状態更新のどちらでも）に行う。
 // 同プロジェクトの完了 (answered/confirmed) が 10 件を超えていたら、古い順にファイルごと削除する。
 // status 遷移: form = "awaiting"（回答待ち）→ "answered"（回答済み・回答受領時）
@@ -165,6 +168,13 @@ function makeRow(e) {
     q.textContent = "設問 " + e.questions + " 問";
     line2.append(q);
   }
+  // 生成に使った skill のバージョン。古い雛形で作られたページを参考にしないための目印。
+  // 記録が無い（skillVersion を持たない）エントリは、雛形にバージョンを入れる前のもの
+  const ver = document.createElement("span");
+  ver.className = "chip ver";
+  ver.textContent = e.skillVersion ? "v" + e.skillVersion : "v 未記録";
+  line2.append(ver);
+
   const date = document.createElement("span");
   date.className = "sub";
   date.textContent = e.created;
