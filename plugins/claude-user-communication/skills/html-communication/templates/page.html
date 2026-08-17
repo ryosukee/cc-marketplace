@@ -194,17 +194,39 @@
   .suref a:hover { color: var(--link); text-decoration: underline; }
   .suref:target a { background: var(--surface-now); color: var(--link); border-radius: 3px; }
 
+  /* pane の段階は 3 つ。設問カードは JS が本文と左 pane の間を移す（同じ DOM ノードを移動）。
+       1 pane（〜1023px）  本文だけ。設問は本文の該当範囲の直後、脚注は本文末尾
+       2 pane（1024〜1339） 本文 + 脚注補足。設問は本文の該当範囲の直後のまま
+       3 pane（1340px〜）   左に設問・中央に本文・右に脚注補足
+     設問を左 pane へ出すのは 3 pane のときだけ。2 pane 以下で最下部にまとめると、
+     判断材料と設問が離れて往復が発生する。
+     #q-pane を既定で隠すのは、設問が本文側にある状態では見出しだけが残るため。 */
+  #q-pane { display: none; }
+
+  /* 2 pane。640 + 24 + 300 = 964px + main の左右 padding 40px */
+  @media screen and (min-width: 1024px) and (max-width: 1339px) {
+    main { max-width: 1004px; display: grid;
+           grid-template-columns: 640px 300px; column-gap: 24px;
+           grid-template-areas: "bd fn"; align-items: start; }
+    #bd { grid-area: bd; min-width: 0; }
+    #fn-pane { grid-area: fn; position: sticky; top: 24px;
+               max-height: calc(100vh - 200px); overflow-y: auto; }
+  }
+
   /* 3 pane。300 + 24 + 640 + 24 + 300 = 1288px 必要なので発動は 1340px 以上 */
   @media screen and (min-width: 1340px) {
     main { max-width: 1288px; display: grid;
            grid-template-columns: 300px 640px 300px; column-gap: 24px;
            grid-template-areas: "q bd fn"; align-items: start; }
     #bd { grid-area: bd; min-width: 0; }
-    #q-pane { grid-area: q; }
+    #q-pane { grid-area: q; display: block; }
     #fn-pane { grid-area: fn; }
     #q-pane, #fn-pane { position: sticky; top: 24px;
                         max-height: calc(100vh - 200px); overflow-y: auto; }
   }
+
+  /* 本文中に置かれた設問カードは、範囲の判断材料の直後に来るので折り畳まない */
+  .rng > .qd { margin-top: 18px; }
 
   /* form 用の下部バー。情報・入力・操作の 3 ゾーンに分ける */
   #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg);
@@ -296,21 +318,9 @@
 <span class="src">引用: <a href="{{URL}}">{{タイトル}}</a></span>
 <p>{{文言の転記。補足説明は加えない}}</p>
 </blockquote>
-</section>
 
-<h2 id="s-ref">参考資料（判断には不要）</h2>
-<p class="d">回答には要りません。{{何の記録か}}</p>
-
-<h2 id="s-preview">付録 回答の preview</h2>
-<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
-<textarea id="preview" aria-label="回答の preview" readonly></textarea>
-
-</div>
-
-<!-- form 用。report では削る -->
-<aside id="q-pane" aria-label="設問">
-<p class="pane-h">設問 {{N}} 件（読んでいる範囲のものが開く／見出しで開閉）</p>
-
+<!-- 設問カードは判断材料の直後、範囲の中に置く。
+     3 pane では JS が左 pane へ移す。移動なので入力値は保たれる -->
 <details class="qd" data-for="q1" open>
 <summary>設問 1/{{N}} {{設問ラベル}}</summary>
 <p class="qtext">{{設問文}}</p>
@@ -326,6 +336,21 @@
   <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意）"></textarea>
 </div>
 </details>
+</section>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+<p class="d">回答には要りません。{{何の記録か}}</p>
+
+<h2 id="s-preview">付録 回答の preview</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" aria-label="回答の preview" readonly></textarea>
+
+</div>
+
+<!-- form 用。report では削る。
+     3 pane のときだけ表示され、設問カードは JS がここへ移してくる -->
+<aside id="q-pane" aria-label="設問">
+<p class="pane-h">設問 {{N}} 件（読んでいる範囲のものが開く／見出しで開閉）</p>
 </aside>
 
 <aside id="fn-pane" aria-label="脚注と補足">
@@ -376,34 +401,73 @@
     { id: 'q1', label: '{{設問ラベル}}' }
   ];
 
-  /* 読んでいる範囲の追従。各範囲と表示領域の重なりの高さで決める。
-     節の先頭が閾値を超えたかという点の判定はしない（範囲と重なりで見る）。
-     手で開閉した設問は pinned にして自動追従から外す。 */
   var ranges = [].slice.call(document.querySelectorAll('.rng[data-q]'));
+  var qds = [].slice.call(document.querySelectorAll('.qd[data-for]'));
+
+  /* 設問カードの置き場を画面幅で切り替える。3 pane では左 pane、それ以外は本文の
+     判断材料の直後。DOM ノードを移すだけなので入力値も下書きも保たれる。
+     本文側の位置はコメントノードで覚えておく（兄弟が動いても戻せる）。 */
+  var mq3 = window.matchMedia('(min-width: 1340px)');
+  qds.forEach(function (d) {
+    var home = document.createComment('qd-home:' + d.dataset.for);
+    d.parentNode.insertBefore(home, d);
+    d.__home = home;
+  });
+  function place() {
+    var pane = document.getElementById('q-pane');
+    qds.forEach(function (d) {
+      if (mq3.matches) {
+        if (d.parentNode !== pane) pane.appendChild(d);
+      } else if (d.parentNode === pane) {
+        d.__home.parentNode.insertBefore(d, d.__home);
+      }
+    });
+  }
+
+  /* 読んでいる範囲の追従。各範囲と表示領域の重なりの高さで決める。
+     節の先頭が閾値を超えたかという点の判定はしない（範囲と重なりで見る）。 */
   var pinned = {};
+  var lastBest = null;
   function follow() {
     if (!ranges.length) return;
     var vh = window.innerHeight, best = null, bestOv = 0;
+    /* 読み位置は画面の上から 35%。まずその線を含む範囲を採り、
+       どの範囲も含まなければ重なりが最大の範囲へ落とす。
+       重なりだけで決めると、背の高い画面では次の範囲のほうが重なりが大きくなり、
+       読み始めた範囲ではなく 1 つ先が現在地になる（実測で確認）。
+       節の先頭が閾値を超えたかという点の判定はしない。範囲が読み位置を含むかで見る。 */
+    var line = vh * 0.35;
     ranges.forEach(function (r) {
       var b = r.getBoundingClientRect();
       var ov = Math.max(0, Math.min(b.bottom, vh) - Math.max(b.top, 0));
-      if (ov > bestOv) { bestOv = ov; best = r; }
+      if (b.top <= line && b.bottom >= line) { best = r; bestOv = Infinity; }
+      else if (bestOv !== Infinity && ov > bestOv) { bestOv = ov; best = r; }
     });
+    /* 読んでいる範囲が変わったら手動の開閉を解除して自動追従へ戻す。
+       解除しないと、一度手で開閉しただけで以後ずっと追従しなくなる */
+    if (best !== lastBest) { pinned = {}; lastBest = best; }
     ranges.forEach(function (r) { r.classList.toggle('on', r === best); });
-    document.querySelectorAll('.qd[data-for]').forEach(function (d) {
+    qds.forEach(function (d) {
       var on = !!(best && d.dataset.for === best.dataset.q);
       d.classList.toggle('on', on);
+      /* 折り畳みは 3 pane の pane を短く保つための仕掛け。
+         本文中に置かれているときは位置そのものが対応を示すので常に開く */
+      if (!mq3.matches) { d.open = true; return; }
       if (!pinned[d.dataset.for]) d.open = on;
     });
   }
-  document.querySelectorAll('.qd[data-for]').forEach(function (d) {
+  /* 手動と見なすのは summary のクリックだけ。選択肢に触れただけで追従が止まると、
+     回答した瞬間に自動開閉が効かなくなる */
+  qds.forEach(function (d) {
     var sm = d.querySelector('summary');
     if (sm) sm.addEventListener('click', function () { pinned[d.dataset.for] = true; });
-    d.addEventListener('change', function () { pinned[d.dataset.for] = true; });
   });
+  function relayout() { place(); follow(); }
+  if (mq3.addEventListener) mq3.addEventListener('change', relayout);
+  else if (mq3.addListener) mq3.addListener(relayout);
   window.addEventListener('scroll', follow, { passive: true });
-  window.addEventListener('resize', follow);
-  follow();
+  window.addEventListener('resize', relayout);
+  relayout();
 
   function ans(qid) {
     var c = document.querySelector('input[name="' + qid + '"]:checked');
