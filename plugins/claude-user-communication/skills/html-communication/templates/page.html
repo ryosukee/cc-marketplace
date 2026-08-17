@@ -88,7 +88,15 @@
   .d { color: var(--sub); font-size: 0.875em; }
   .vnav { font-size: 0.875em; border-bottom: 1px solid var(--rule);
           padding: 0 0 12px; margin: 12px 0 18px; color: var(--sub); }
-  .vnav b { color: var(--fg); }
+  /* ラベルは独立した行に置き、コロンを付けない。
+     「結論: …」のようにラベルとコロンで段落を作る形は使わない
+     （user global rule が AI 口調の定型として禁じている。HTML 報告も適用範囲）。
+     ラベルが無くても分かるなら、ラベルごと消して地の文にする */
+  .eyebrow { display: block; font-size: 0.875em; font-weight: 700; color: var(--sub);
+             letter-spacing: 0.08em; margin: 0 0 2px; }
+  .concl { border-left: 3px solid var(--rule-strong); padding: 2px 0 2px 12px;
+           margin: 0 0 1.8em; }
+  .concl > p { margin: 0; }
   .gloss { font-size: 0.875em; color: var(--sub);
            border-left: 3px solid var(--rule); padding: 2px 0 2px 12px; margin: 8px 0 14px; }
   .gloss b { color: var(--fg); font-weight: 700; }
@@ -246,13 +254,15 @@
 <h1>{{タイトル}}</h1>
 
 <div class="vnav">
-<b>この文書</b>: {{何の話か・どういう経緯でこの文書が要るか。2〜3 文}}<br>
-<b>読み方</b>: {{どこから読めばよいか。飛ばしてよい節はどれか}}
+{{何の話か・どういう経緯でこの文書が要るか。2〜3 文。ラベルは付けない}}
 </div>
 
-<p><b>結論</b>: {{読者が最初に知りたい答え}}</p>
+<div class="concl">
+<span class="eyebrow">結論</span>
+<p>{{読者が最初に知りたい答え}}</p>
+</div>
 
-<p class="lead"><b>決めること</b>: {{N}} 件。左の pane にあります。</p>
+<p class="lead">決めることは {{N}} 件で、左の pane にあります。</p>
 
 <!-- 前提部分はここまで。範囲を持たせない（この位置では設問をどれも開かない） -->
 
@@ -307,7 +317,8 @@
 <div class="q" id="q1">
   <label class="opt"><input type="radio" name="q1" value="{{選択肢 A}}">
     {{選択肢 A}}<span class="rec">推奨</span>
-    <span class="d">推奨の根拠: {{根拠}}。覆し可: {{他を選ぶのが妥当な条件}}</span></label>
+    <span class="d">{{推奨する根拠を 1 文で}}<br>
+      {{他を選ぶのが妥当な条件を 1 文で。推奨を覆せることを必ず書く}}</span></label>
   <label class="opt"><input type="radio" name="q1" value="{{選択肢 B}}">{{選択肢 B}}
     <span class="d">{{説明}}</span></label>
   <label class="opt"><input type="radio" name="q1" value="__other__">その他
