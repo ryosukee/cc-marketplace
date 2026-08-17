@@ -782,8 +782,8 @@ f007 以降のフォームは、各設問がどの課題を解消するかを明
   実装が終わって置き場が固まってから、下記の材料をどう扱うかを論点として立てる。
   ここで挙げた重なりの分析は、そのときの入力として残す。
 - [ ] （上記の入力）調査部分と情報デザイン norm の重なり:
-  配色の設計値は claude-user-communication 0.11.0 の雛形と SKILL.md に実装済みで、
-  値と役割の正はそちら。残った調査部分は product-boilerplate の
+  配色の設計値は claude-user-communication の雛形と SKILL.md に実装済みで、
+  値の正は雛形の `:root`、役割の正は SKILL.md。残った調査部分は product-boilerplate の
   `docs/norms/visual-readability.md` の V7 / V8 / V10 と正面から重なり、
   **こちらのほうが裏付けが強い**ので norm 側を上書きできる。T4 の「norm の置き場」で扱う。
     - V10（ダークモード）: 現在の出典は Smashing Magazine と atmos.style のブログ 2 本。
