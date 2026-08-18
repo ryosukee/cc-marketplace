@@ -1,0 +1,10 @@
+.lane { display: grid; grid-template-columns: 1fr; gap: 5px; }
+.node { border: 1px solid var(--rule); border-radius: 8px; padding: 7px 10px; font-size: 0.875em; }
+.node .k { color: var(--sub); display: block; }
+.node.holds { border-color: var(--rule-strong); }
+.node.holds .k { color: var(--fg); font-weight: 700; }
+/* 破線は 2 種類目の囲み。色を増やさずに実線と役割を分ける */
+.own { border: 1px dashed var(--rule-strong); border-radius: 10px; padding: 8px; margin: 6px 0; }
+.own > .own-h { font-size: 0.875em; color: var(--sub); margin: 0 0 6px; letter-spacing: 0.02em; }
+.node > .own { margin: 6px 0 0; }
+.flowline { font-size: 0.875em; color: var(--sub); text-align: center; margin: 4px 0; }

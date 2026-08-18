@@ -61,8 +61,20 @@ const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, 
 const GALLERY_CSS = [
   "  .gallery { max-width: 720px; margin: 0 auto; padding: 24px 20px 60px; }",
   "  .g-body { min-width: 0; }",
+  "  .g-sec { margin: 0 0 1em; }",
+  "  .g-sec > h2 { scroll-margin-top: 24px; }",
+  "  .g-sec:first-of-type > h2 { margin-top: 0; }",
   "  .pattern { margin: 0 0 3.4em; scroll-margin-top: 24px; }",
-  "  .pattern > h2 { margin-top: 0; }",
+  "  .pattern > h3 { margin-top: 0; }",
+  "  .g-nav .g-group a { color: var(--sub); display: inline; padding: 0; border: 0; }",
+  "  .g-nav .g-group a:hover { color: var(--link); }",
+  "  /* 採否の判定。決まったら front matter ごと外す暫定表示 */",
+  "  .rec-line { font-size: 0.875em; color: var(--sub); margin: 8px 0 14px; }",
+  "  .rec-badge { font-weight: 700; border: 1px solid currentColor; border-radius: 999px;",
+  "               padding: 1px 10px; margin-right: 8px; white-space: nowrap; }",
+  "  .rec-badge.ok { color: var(--ok); }",
+  "  .rec-badge.ng { color: var(--ng); }",
+  "  .rec-badge.mid { color: var(--sub); }",
   "  .stage { border: 1px dashed var(--rule); border-radius: 8px; padding: 18px; margin: 12px 0; }",
   "  details { margin: 8px 0; font-size: 0.875em; }",
   "  summary { cursor: pointer; color: var(--sub); }",
@@ -136,11 +148,17 @@ function page(title, css, body, withSpy) {
 // README の front matter・見出し・要約を取り出す
 function meta(readme) {
   var group = "その他";
+  var verdict = "";
+  var reason = "";
   var body = readme;
   var fm = readme.match(/^---\n([\s\S]*?)\n---\n/);
   if (fm) {
     var g = fm[1].match(/^group:\s*(.+)$/m);
     if (g) group = g[1].trim();
+    var v = fm[1].match(/^verdict:\s*(.+)$/m);
+    if (v) verdict = v[1].trim();
+    var r = fm[1].match(/^reason:\s*(.+)$/m);
+    if (r) reason = r[1].trim();
     body = readme.slice(fm[0].length);
   }
   var lines = body.split("\n");
@@ -148,7 +166,7 @@ function meta(readme) {
   var title = i < 0 ? "" : lines[i].slice(2).trim();
   var rest = lines.slice(i + 1).join("\n").trim();
   var summary = rest.split("\n\n")[0].replace(/\n/g, " ");
-  return { group: group, title: title, summary: summary };
+  return { group: group, verdict: verdict, reason: reason, title: title, summary: summary };
 }
 
 const loaded = names.map(function (name) {
@@ -170,6 +188,8 @@ const loaded = names.map(function (name) {
     css: readFileSync(paths.css, "utf8"),
     example: readFileSync(paths.example, "utf8"),
     group: info.group,
+    verdict: info.verdict,
+    reason: info.reason,
     title: info.title || name,
     summary: info.summary,
     anchor: "p-" + name,
@@ -191,6 +211,17 @@ function sourceBlocks(p) {
 const groups = [];
 for (const p of loaded) if (!groups.includes(p.group)) groups.push(p.group);
 
+// グループ名はそのままでは id に使えないので、並び順の番号で引く
+function gid(g) {
+  return String(groups.indexOf(g) + 1);
+}
+
+// 本文の並びは左のリンク集と揃える。名前順のままだと、リンクを踏んだ先の位置と
+// 一覧での並びが食い違い、現在地の追従も飛び飛びになる
+const ordered = groups.flatMap(function (g) {
+  return loaded.filter(function (p) { return p.group === g; });
+});
+
 const nav = groups
   .map(function (g) {
     const items = loaded
@@ -199,29 +230,47 @@ const nav = groups
         return '<li><a href="#' + esc(p.anchor) + '">' + esc(p.title) + "</a></li>";
       })
       .join("\n");
-    return '<p class="g-group">' + esc(g) + "</p>\n<ul>\n" + items + "\n</ul>";
+    return '<p class="g-group"><a href="#g-' + gid(g) + '">' + esc(g) + "</a></p>\n<ul>\n" +
+      items + "\n</ul>";
   })
   .join("\n");
 
-const sections = loaded.map(function (p) {
+const sections = groups.map(function (g) {
+  const inner = ordered
+    .filter(function (p) { return p.group === g; })
+    .map(patternSection)
+    .join("\n");
+  return (
+    '<section class="g-sec">\n<h2 id="g-' + gid(g) + '">' + esc(g) + "</h2>\n" + inner + "\n</section>"
+  );
+});
+
+function patternSection(p) {
   return [
     '<section class="pattern" id="' + esc(p.anchor) + '">',
-    "<h2>" + esc(p.title) + "</h2>",
+    "<h3>" + esc(p.title) + "</h3>",
     '<p class="d">' + esc(p.summary) + "</p>",
     '<p class="d">条件と出典は <code>references/patterns/' + esc(p.name) + "/README.md</code></p>",
+    p.verdict
+      ? '<p class="rec-line"><span class="rec-badge ' +
+        (p.verdict === "推奨" ? "ok" : p.verdict === "非推奨" ? "ng" : "mid") +
+        '">' + esc(p.verdict) + "</span>" + esc(p.reason) + "</p>"
+      : "",
     '<div class="stage">',
     p.example + "</div>",
     sourceBlocks(p),
     "</section>",
-  ].join("\n");
-});
+  ].filter(function (l) { return l !== ""; }).join("\n");
+}
 
 const indexBody = [
   '<div class="g-head">',
   "<h1>見せ方のパターン集</h1>",
   '<p class="d">html-communication の雛形が持たない一点物の見せ方。' +
     loaded.length + " 件 / " + groups.length +
-    " グループ。このページと個別ページは build-gallery.mjs が生成する。手で編集しない。</p>",
+    " グループ。build-gallery.mjs が生成する。手で編集しない。</p>",
+  '<p class="d">推奨・非推奨のバッジは、どれを残すかを選ぶための暫定表示。' +
+    "各パターンの README の front matter に書いてあり、採否が決まったら front matter ごと外す。</p>",
   "</div>",
   '<nav class="g-nav" aria-label="パターン一覧">',
   nav,

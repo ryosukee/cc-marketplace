@@ -1,0 +1,4 @@
+.proscons { margin-top: 5px; }
+.proscons div { margin-top: 2px; }
+.pro { color: var(--ok); font-weight: 700; margin-right: 4px; }
+.con { color: var(--ng); font-weight: 700; margin-right: 4px; }

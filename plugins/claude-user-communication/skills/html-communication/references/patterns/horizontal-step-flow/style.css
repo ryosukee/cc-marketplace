@@ -1,0 +1,12 @@
+.steps { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.hstep { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; font-size: 0.875em; }
+.hstep .n { font-weight: 700; display: block; }
+.hstep code { font-size: 1em; }
+/* 矢印は擬似要素で向きを切り替える。1 列に積む幅で右向きのまま残すと流れが逆を指す */
+.arrow { text-align: center; color: var(--sub); font-size: 0.875em; line-height: 1.2; }
+.arrow::before { content: "\2193"; }
+@media screen and (min-width: 700px) {
+  .steps { grid-template-columns: 1fr auto 1fr; align-items: stretch; }
+  .arrow { display: flex; align-items: center; }
+  .arrow::before { content: "\2192"; }
+}

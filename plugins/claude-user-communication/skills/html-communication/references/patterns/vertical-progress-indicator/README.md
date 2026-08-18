@@ -1,5 +1,7 @@
 ---
 group: 進行と状態
+verdict: 推奨
+reason: 条件と出典が揃っている唯一のパターン。主要 5 デザインシステムを当たって使ってよい条件・いけない条件・アクセシビリティ要件まで確認済み。
 ---
 
 # vertical progress indicator

@@ -1,0 +1,11 @@
+.fig { margin: 14px 0 20px; }
+.fig .cap { font-size: 0.875em; color: var(--sub); letter-spacing: 0.02em; margin: 10px 0 0; }
+.fig .col-h { font-size: 0.875em; font-weight: 700; margin: 0 0 6px; letter-spacing: 0.02em; }
+.cols { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media screen and (min-width: 560px) { .cols { grid-template-columns: 1fr 1fr; gap: 12px; } }
+.bucket { border: 1px solid var(--rule-strong); border-radius: 8px; padding: 8px 10px; margin: 0 0 10px; }
+.bucket .bkey { font-size: 0.875em; font-family: "SF Mono", Menlo, monospace; color: var(--sub);
+                display: block; border-bottom: 1px solid var(--rule); padding-bottom: 5px;
+                margin-bottom: 6px; overflow-wrap: anywhere; }
+.bucket ul { margin: 0; padding-left: 18px; font-size: 0.875em; }
+.bucket li { margin: 2px 0; }

@@ -1,0 +1,5 @@
+/* 破線で設問カードと区別する。設問ではないので進捗にも数えない */
+.conf { border: 1.5px dashed var(--control-border); border-radius: 6px;
+        padding: 8px 12px; margin: 10px 0; }
+.conf label { cursor: pointer; font-size: 0.875em; display: flex; gap: 8px; align-items: baseline; }
+.conf .ch { font-weight: 700; flex: none; }
