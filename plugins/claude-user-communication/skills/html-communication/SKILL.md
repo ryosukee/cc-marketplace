@@ -194,9 +194,11 @@ description: 調査報告・検証結果・比較表・設計判断の選択肢�
       `<link rel="manifest">` と theme-color を入れる。「閲覧用 HTML のみ」の例外はこれらと index.html だけ
     - index・PWA アセットが消えていたら、この skill の `templates/`
       （index.html 雛形・manifest.json・icon-192.png・icon-512.png）から再生成する
-    - `gallery.html` は [見せ方のパターン集](./references/patterns/README.md) を実物で並べたページ。
-      `scripts/build-gallery.mjs` が生成する。パターンを追加・削除・修正したら作り直し、
-      共通ページディレクトリへ置く。index からはリンクで辿らせ、一覧のエントリは持たせない
+    - `gallery.html` と `gallery-{パターン名}.html` は
+      [見せ方のパターン集](./references/patterns/README.md) を実物で並べたページ。
+      `scripts/build-gallery.mjs` が一括で生成する。前者が全件の一覧、後者が 1 件ずつの個別ページ。
+      パターンを追加・削除・修正したら作り直し、共通ページディレクトリへ置く。
+      index からはリンクで辿らせ、一覧のエントリは持たせない
       （回答・確認の対象ではないため、状態遷移も掃除の対象にもならない）
     - 雛形 `templates/index.html` の表示仕様（レンダリング JS・CSS）を変えたら、
       配信中の index.html にも同じ変更を適用する。配信中の index は以後エントリだけを

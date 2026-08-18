@@ -259,8 +259,9 @@ render();
 <code>manifest.json</code>・<code>icon-192.png</code>・<code>icon-512.png</code> は
 この一覧を PWA としてインストールするための固定アセットで、同 skill の運用として配置している。
 消失した場合は skill 同梱の <code>templates/</code> から再生成する。<br>
-<code>gallery.html</code> は見せ方のパターン集を実物で並べたページで、
-skill 同梱の <code>scripts/build-gallery.mjs</code> が生成する。手で編集しない。
+<code>gallery.html</code> と <code>gallery-{パターン名}.html</code> は
+見せ方のパターン集を実物で並べたページで、skill 同梱の
+<code>scripts/build-gallery.mjs</code> が一括生成する。手で編集しない。
 一覧のエントリは持たない（回答・確認の対象ではないため）。
 </footer>
 </main>
