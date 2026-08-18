@@ -129,6 +129,11 @@
   tr.key td:first-child { border-left: 3px solid var(--rule-strong); padding-left: 11px; }
   th.num, td.num { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
 
+  /* 図のキャプション。表の caption と同じ作法にする。図の下に置き、同じ段と色にする。
+     図を語る文は本文に置かない（表と同じ） */
+  .fig { margin: 14px 0 20px; }
+  .fig > .cap { font-size: 0.875em; color: var(--sub); letter-spacing: 0.02em; margin: 10px 0 0; }
+
   /* 本文の範囲。1 つの設問の判断材料がどこからどこまでかを示す。
      前提部分は範囲を持たせない（その位置では設問をどれも開かない）。
      既定は細い無彩の縦罫、現在地だけ青 2px に変わる。
@@ -170,6 +175,17 @@
   .qtext { font-size: 0.875em; margin: 8px 0 0; }
 
   .q { margin: 8px 0 0; }
+  /* 確認だけを取るチェックリスト。設問の総数と進捗に数える。
+     既定を未チェックにするのが要点。既定チェック済みだと、読み飛ばしても
+     「承認」として記録され、合意を取った証拠にならない。
+     関係のない内容を「確認だから」という理由で 1 つのカードにまとめない。
+     設問の順序とトピックのグルーピングを優先し、分けたほうが読めるならカードを分ける */
+  .checks { margin: 8px 0 0; padding: 0; }
+  .checks > li { list-style: none; display: flex; gap: 9px; align-items: baseline;
+                 padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 0.875em; }
+  .checks > li:last-child { border-bottom: none; }
+  .checks input[type="checkbox"] { flex: none; margin: 0; transform: translateY(2px); }
+  .checks label { cursor: pointer; }
   label.opt { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
               padding: 8px 0 8px 2px; border-bottom: 1px solid var(--rule); cursor: pointer;
               font-size: 0.875em; }
@@ -355,6 +371,12 @@
 </table>
 </div>
 
+<!-- 図も表と同じ作法。キャプションは図の下、番号を振る。図を語る文は本文に置かない -->
+<div class="fig">
+{{図の中身。パターン集の見せ方を使うならここへ入れる}}
+<p class="cap">図 1 {{何の図か}}</p>
+</div>
+
 <p>{{本文}}<sup class="fnref" id="fnref-1-1"><a href="#fn-1">1</a></sup>。{{本文}}<sup class="suref" id="suref-a"><a href="#su-a">a</a></sup></p>
 
 <blockquote>
@@ -404,7 +426,8 @@
 <p class="pane-h" style="margin-top:18px">補足</p>
 <p class="su" id="su-a"><a class="sunum" href="#suref-a">a.</a> {{補足本文。判断の助けになる説明。
   用語の定義もここに置く。識別子・番号つきの語（規範 ID・フェーズ番号・フォーム番号・PR 番号）は
-  必ず実体を書く。番号だけでは読者が判定できない}}
+  必ず実体を書く。番号だけでは読者が判定できない。
+  短い定義を並べるなら ※ 語 = 定義 の形を 1 行ずつ使い、語だけを太字にする}}
   <a class="suback" href="#suref-a" aria-label="本文へ戻る">&#8617;</a></p>
 </aside>
 
@@ -517,6 +540,15 @@
   relayout();
 
   function ans(qid) {
+    /* 確認チェックリストの設問。全部にチェックが付いて初めて回答済みとする。
+       既定は未チェックなので、読み飛ばしは「未確認」として残る */
+    var list = document.querySelector('.checks[data-for="' + qid + '"]');
+    if (list) {
+      var boxes = [].slice.call(list.querySelectorAll('input[type="checkbox"]'));
+      var done = boxes.filter(function (b) { return b.checked; });
+      if (!boxes.length || done.length < boxes.length) return null;
+      return '確認 ' + done.length + ' 件すべて承認';
+    }
     var c = document.querySelector('input[name="' + qid + '"]:checked');
     if (!c) return null;
     if (c.value === '__other__') {
@@ -533,14 +565,24 @@
       var note = document.querySelector('.note[data-note="' + q.id + '"]');
       var nt = note && note.value.trim();
       lines.push('- Q' + (i + 1) + '（' + q.label + '）: ' + (a || '未回答') + (nt ? '  ※ ' + nt : ''));
+      /* チェックリストは項目ごとの承認・未確認も残す。1 行にまとめると
+         どれを承認したかが記録から落ちる */
+      var list = document.querySelector('.checks[data-for="' + q.id + '"]');
+      if (list) {
+        [].slice.call(list.querySelectorAll('input[type="checkbox"]')).forEach(function (b) {
+          var lb = list.querySelector('label[for="' + b.id + '"]');
+          lines.push('    - ' + (b.checked ? '承認' : '未確認') + ': ' + (lb ? lb.textContent.trim() : b.id));
+        });
+      }
     });
     var free = document.getElementById('free').value.trim();
     lines.push('- 補足: ' + (free || 'なし'));
     return { text: lines.join('\n'), n: n, total: QS.length };
   }
   function saveDraft() {
-    var d = { radios: {}, texts: {} };
+    var d = { radios: {}, texts: {}, checks: {} };
     document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('.checks input[type="checkbox"]').forEach(function (b) { d.checks[b.id] = b.checked; });
     document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
     document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
     var free = document.getElementById('free').value;
@@ -548,6 +590,10 @@
     try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
   }
   function applyDraft(d) {
+    Object.keys(d.checks || {}).forEach(function (id) {
+      var b = document.getElementById(id);
+      if (b) b.checked = !!d.checks[id];
+    });
     Object.keys(d.radios || {}).forEach(function (name) {
       var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
       if (el) el.checked = true;
@@ -593,6 +639,7 @@
   document.getElementById('reset').addEventListener('click', function () {
     try { localStorage.removeItem(KEY); } catch (e) {}
     document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('.checks input[type="checkbox"]').forEach(function (b) { b.checked = false; });
     document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
     document.getElementById('free').value = '';
     refresh();

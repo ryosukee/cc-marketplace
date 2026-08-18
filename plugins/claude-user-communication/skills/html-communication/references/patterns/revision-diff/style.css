@@ -1,0 +1,11 @@
+/* 変更後の実文。引用ではないので引用ブロックを使わない */
+.after { border: 1px solid var(--rule); border-radius: 6px; padding: 12px 16px; margin: 12px 0 18px; }
+.after p { margin: 6px 0; }
+/* 面の色を 2 つ足す。雛形の色役割 3 つの外側なので、採用するなら扱いを決める */
+.del { background: #fdeceb; text-decoration: line-through; text-decoration-thickness: 1px; padding: 0 2px; }
+.add { background: #e9f5ec; padding: 0 2px; }
+@media screen and (prefers-color-scheme: dark) {
+  .del { background: #3a1f1e; }
+  .add { background: #17301f; }
+}
+.legend { font-size: 0.875em; color: var(--sub); margin: 6px 0 14px; }

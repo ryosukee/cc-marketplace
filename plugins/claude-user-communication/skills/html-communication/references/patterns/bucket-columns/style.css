@@ -1,0 +1,13 @@
+/* 列数を固定しない。入る数だけ折り返す。案が 3 つ以上でも同じ書き方で通る */
+.cols { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media screen and (min-width: 560px) {
+  .cols { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+}
+.cols > div { min-width: 0; }
+.col-h { font-size: 0.875em; font-weight: 700; margin: 0 0 6px; letter-spacing: 0.02em; }
+.bucket { border: 1px solid var(--rule-strong); border-radius: 8px; padding: 8px 10px; margin: 0 0 10px; }
+.bucket .bkey { font-size: 0.875em; font-family: "SF Mono", Menlo, monospace; color: var(--sub);
+                display: block; border-bottom: 1px solid var(--rule); padding-bottom: 5px;
+                margin-bottom: 6px; overflow-wrap: anywhere; }
+.bucket ul { margin: 0; padding-left: 18px; font-size: 0.875em; }
+.bucket li { margin: 2px 0; }

@@ -1,0 +1,16 @@
+<div class="q">
+<label class="opt"><input type="radio" name="demo" value="案 1">
+案 1 コマンドで作成・維持<span class="rec">推奨</span>
+<span class="d">bootstrap で作成し、sync と doctor が欠損時に作り直す構成。</span>
+<div class="proscons">
+<div><span class="pro">メリット</span>フックを常駐させずに済む</div>
+<div><span class="con">デメリット</span>別マシンで clone した直後は手動で 1 回走らせる。別マシン運用が多いなら案 2</div>
+</div></label>
+<label class="opt"><input type="radio" name="demo" value="案 2">
+案 2 フックで自動復元
+<span class="d">セッション開始のフックが毎回チェックして復元する構成。</span>
+<div class="proscons">
+<div><span class="pro">メリット</span>別マシンでも初回セッションで自動復元</div>
+<div><span class="con">デメリット</span>フックが常駐する</div>
+</div></label>
+</div>

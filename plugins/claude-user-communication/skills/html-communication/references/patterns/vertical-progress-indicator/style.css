@@ -1,0 +1,29 @@
+/* 縦の直列ステップ。左の縦線が「前が終わらないと次に行けない」ことを表す。
+   マーカーは 3 状態を区別する。現在地だけを塗り、完了と未着手を同じ見た目にすると、
+   完了済みの工程を含むページで状態が読めない（USWDS の step indicator の規範）。
+   色は雛形のトークンを使う。専用の色相を作らない。 */
+.phase-list { list-style: none; padding: 0; margin: 0; }
+.phase { border-left: 2px solid var(--rule); padding: 0 0 0 18px; margin: 0 0 6px; position: relative; }
+.phase::before { content: ""; position: absolute; left: -6px; top: 12px; width: 10px; height: 10px;
+                 border-radius: 50%; background: var(--bg); border: 2px solid var(--control-border); }
+/* 完了した段は全体を薄くして後ろへ下げる。読み手が見るのは現在地とこれから先で、
+   済んだ段は経路の確認にしか使わない */
+.phase.done { border-left-color: var(--rule); color: var(--sub); }
+.phase.done::before { background: var(--rule); border-color: var(--rule); }
+.phase.done > .h { color: var(--sub); }
+.phase.now { border-left-color: var(--link); }
+.phase.now::before { background: var(--link); border-color: var(--link);
+                     box-shadow: 0 0 0 3px var(--surface-now); }
+.phase > .h { font-weight: 700; margin: 4px 0 2px; }
+.phase > .h .tag { font-size: 0.875em; font-weight: 400; color: var(--sub); margin-left: 8px; }
+.phase p { margin: 4px 0 14px; }
+/* 工程の切れ目に置く到達点。ここで何が終わるかを 1 行で示す */
+.milestone { border-left: 2px solid var(--rule); padding: 8px 0 8px 18px; margin: 0 0 6px;
+             position: relative; font-weight: 700; }
+.milestone::before { content: ""; position: absolute; left: -5px; top: 16px; width: 8px; height: 8px;
+                     background: var(--rule-strong); transform: rotate(45deg); }
+
+/* 状態を持たない変種。処理の段の構造だけを示すときに使う。
+   横に並べる形は作らない。縦のほうが読みやすく、直列であることも伝わる */
+.phase-list.plain .phase::before { background: var(--bg); border-color: var(--control-border); }
+.phase-list.plain .phase { border-left-color: var(--rule); }
