@@ -44,7 +44,7 @@
     --rule-strong: #4a5058;     /* 構造の強い線。--fg とは別インクにする */
     --link: #0b6bcb; --link-fill: #0b6bcb; --on-fill: #fff; --focus: #0b6bcb;
     --mark: #ffd980;            /* 要点の下線。文字の背後に敷く */
-    --surface-now: #dfe5ee; --surface-code: #eef0f3; --surface-bar: #f6f7f9;
+    --surface-now: #dfe5ee; --surface-code: #eef0f3;
     --ok: #12703a; --ng: #b42318;
     --tw-shadow: rgba(0, 0, 0, .18);
   }
@@ -56,7 +56,7 @@
       --link: #5aa2e8; --link-fill: #7fb3f0; --on-fill: #0e1116; --focus: #5aa2e8;
       /* ダークでは地より明るい側に置く。地より暗い帯は沈んで見えない */
       --mark: #6f5c33;
-      --surface-now: #2d333d; --surface-code: #23272e; --surface-bar: #1d2026;
+      --surface-now: #2d333d; --surface-code: #23272e;
       --ok: #74c489; --ng: #f0998f;
       --tw-shadow: rgba(255, 255, 255, .30);
     }
@@ -199,6 +199,11 @@
   label.opt input[type="radio"]:checked { border: 5px solid var(--link-fill); }
   label.opt input[type="radio"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   label.opt .d { font-weight: 400; width: 100%; }
+  /* 選択肢の帰結を長所と短所の 2 行に分ける。色だけに載せず、ラベル語を必ず併記する */
+  .proscons { display: block; margin-top: 5px; }
+  .proscons > span { display: block; margin-top: 2px; }
+  .pro { color: var(--ok); font-weight: 700; margin-right: 4px; }
+  .con { color: var(--ng); font-weight: 700; margin-right: 4px; }
   .rec { background: none; color: var(--fg); border: 1px solid var(--fg);
          font-size: 0.875em; border-radius: 4px; padding: 0 6px; margin-left: 4px;
          font-weight: 700; letter-spacing: 0.02em; }
@@ -400,13 +405,33 @@
   <label class="opt"><input type="radio" name="q1" value="{{選択肢 A}}">
     {{選択肢 A}}<span class="rec">推奨</span>
     <span class="d">{{推奨する根拠を 1 文で}}<br>
-      {{他を選ぶのが妥当な条件を 1 文で。推奨を覆せることを必ず書く}}</span></label>
+      {{他を選ぶのが妥当な条件を 1 文で。推奨を覆せることを必ず書く}}</span>
+    <!-- 案の帰結を長所と短所に分ける形。案の中身は .d、帰結はここ。1 行 1 文 60 字以内。
+         推奨案の短所には「他案が勝つ条件」を書く。選択肢が 2 つで片方が明確に優位なら使わない -->
+    <span class="proscons">
+      <span><span class="pro">メリット</span>{{採ると何が良くなるか}}</span>
+      <span><span class="con">デメリット</span>{{何を引き受けるか。他案が勝つ条件}}</span>
+    </span></label>
   <label class="opt"><input type="radio" name="q1" value="{{選択肢 B}}">{{選択肢 B}}
     <span class="d">{{説明}}</span></label>
   <label class="opt"><input type="radio" name="q1" value="__other__">その他
     <input type="text" class="other" data-for="q1"></label>
   <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意）"></textarea>
 </div>
+</details>
+
+<!-- 選択肢を持たない「承認するだけ」の確認は 1 枚のカードにまとめる。設問の総数と進捗に数える。
+     .checks の data-for が JS の引き口で、これが無いと進捗にも回答テキストにも入らない。
+     既定チェック済みにしない（読み飛ばしが承認として記録される）。
+     関係のない内容を「確認だから」という理由で 1 枚にまとめない -->
+<details class="qd" data-for="q2" open>
+<summary>設問 2 / {{N}} 確認事項<span class="qstat">未回答</span></summary>
+<p class="qtext">覆すつもりが無ければチェックしてください。異議があるものは補足欄へ。</p>
+<ul class="checks" data-for="q2">
+  <li><input type="checkbox" id="ck1"><label for="ck1">{{確認事項 1}}</label></li>
+  <li><input type="checkbox" id="ck2"><label for="ck2">{{確認事項 2}}</label></li>
+</ul>
+<textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="異議があれば補足（任意）"></textarea>
 </details>
 </section>
 
@@ -475,7 +500,8 @@
   var THEME = '{{テーマ}}';
   var KEY = 'draft:{{ファイル名（拡張子なし）}}';
   var QS = [
-    { id: 'q1', label: '{{設問ラベル}}' }
+    { id: 'q1', label: '{{設問ラベル}}' },
+    { id: 'q2', label: '確認事項' }
   ];
 
   var ranges = [].slice.call(document.querySelectorAll('.rng[data-q]'));
