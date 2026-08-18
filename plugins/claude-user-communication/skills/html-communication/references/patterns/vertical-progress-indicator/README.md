@@ -1,7 +1,5 @@
 ---
 group: 進行と状態
-verdict: 推奨
-reason: 条件と出典が揃っている唯一のパターン。主要 5 デザインシステムを当たって使ってよい条件・いけない条件・アクセシビリティ要件まで確認済み。
 ---
 
 # vertical progress indicator
@@ -16,14 +14,14 @@ Material Design 2 は steppers と呼び、縦形を vertical stepper、直列�
 Material Design 3、Shopify Polaris、GitHub Primer に該当コンポーネントは無い。
 Atlassian の progress tracker は横方向のみ。
 
-ここでは Carbon の呼称に方向を足した `vertical progress indicator` を使う。
-横に並べる形が要るなら `horizontal` として別のディレクトリに置く。
+Carbon の呼称に方向を足した `vertical progress indicator` を使う。横に並べる形は作らない。
+読みの方向が流れと一致する場合しか利点が無く、縦のほうが読みやすい。
 
 ## 使ってよい条件
 
 - 3 つ以上の工程に分割できる直列のプロセスを示すとき
 - 工程ごとに完了・現在・未着手の状態があるとき
-- 進捗の把握が読者の判断を助けるとき
+- 状態を持たない処理の段を示すとき（`.phase-list.plain` の変種を使う）
 
 ## 使ってはいけない条件
 
@@ -47,10 +45,11 @@ Carbon と USWDS が明文で一致している 3 つ。
 
 - 現在地は完了とも未着手とも区別する。現在だけを塗って他をすべて輪郭にすると、
   完了と未着手が同じ見た目になる（USWDS の明文）
+- 完了した段は全体を薄くして後ろへ下げる。読み手が見るのは現在地とこれから先
 - 順序付きリストを土台にする。専用の role は無く、WAI-ARIA APG にもパターンが無い
 - 現在の工程に `aria-current` を付ける。WAI-ARIA 1.2 が値 `step` を定義しているが、
   USWDS の実装は `true` を使う。仕様が許す範囲での差
-- 色だけに頼らない。`example.html` は状態を語（完了・現在・未着手）でも示している
+- 色だけに頼らない。状態を語（完了・現在・未着手）でも示す
 
 > 情報源: 各デザインシステムの公式ドキュメント（2026-08-18 調査）<br>
 > 呼称は [Progress indicator](https://carbondesignsystem.com/components/progress-indicator/usage/)（Carbon）と

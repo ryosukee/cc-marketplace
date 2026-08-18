@@ -1,13 +1,16 @@
+/* 検証 1 件 = カード 1 枚。見出し行に判定バッジ、中身は定型の 3 行。
+   状態の class に .ok / .ng を使わない。雛形の .ng { color: var(--ng) } が
+   カード全体のテキストを着色してしまう。色は左の縦罫とバッジだけに載せる */
 .verdict { border: 1px solid var(--rule); border-left: 5px solid var(--sub);
            border-radius: 8px; padding: 12px 14px; margin: 10px 0; }
-.verdict.ng { border-left-color: var(--ng); }
-.verdict.ok { border-left-color: var(--ok); }
+.verdict.v-ng { border-left-color: var(--ng); }
+.verdict.v-ok { border-left-color: var(--ok); }
 .vhead { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 .vhead .vname { font-weight: 700; }
 .vbadge { font-size: 0.875em; font-weight: 700; border-radius: 999px; padding: 1px 10px;
-          border: 1px solid currentColor; }
-.verdict.ng .vbadge { color: var(--ng); }
-.verdict.ok .vbadge { color: var(--ok); }
+          border: 1px solid currentColor; color: var(--sub); }
+.verdict.v-ng .vbadge { color: var(--ng); }
+.verdict.v-ok .vbadge { color: var(--ok); }
 .vrow { display: grid; grid-template-columns: 6em 1fr; gap: 4px 10px; margin: 0; }
 .vrow dt { color: var(--sub); font-size: 0.875em; }
 .vrow dd { margin: 0; }

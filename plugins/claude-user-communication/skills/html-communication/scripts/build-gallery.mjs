@@ -253,7 +253,7 @@ function patternSection(p) {
     '<p class="d">条件と出典は <code>references/patterns/' + esc(p.name) + "/README.md</code></p>",
     p.verdict
       ? '<p class="rec-line"><span class="rec-badge ' +
-        (p.verdict === "推奨" ? "ok" : p.verdict === "非推奨" ? "ng" : "mid") +
+        (p.verdict === "採用" ? "ok" : p.verdict === "非推奨" ? "ng" : "mid") +
         '">' + esc(p.verdict) + "</span>" + esc(p.reason) + "</p>"
       : "",
     '<div class="stage">',
