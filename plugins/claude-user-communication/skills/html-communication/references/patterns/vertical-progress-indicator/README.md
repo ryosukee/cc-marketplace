@@ -1,3 +1,7 @@
+---
+group: 進行と状態
+---
+
 # vertical progress indicator
 
 縦に並んだ複数の工程を、左端の縦線と各工程の円形マーカーで繋ぎ、
