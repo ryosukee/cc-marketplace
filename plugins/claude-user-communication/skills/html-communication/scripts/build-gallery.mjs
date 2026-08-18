@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // 見せ方のパターン集を HTML に起こす。
 //
-// 出力は 2 種類。
-//   一覧: 引数で指定したパス（例 gallery.html）。2 pane で、左にグループ別のリンク集、
-//         本文に全パターンを並べる。リンクは同一ページ内のアンカー
-//   個別: 同じディレクトリに <stem>-<pattern-name>.html。1 パターンだけを載せる
-// 個別ページを残すのは、全パターンの CSS を連結するとセレクタが衝突しうるため。
-// 単体の見え方を確実に確認できる場所が要る。
-// 共通ページディレクトリはサブディレクトリを作らない規定なので、接頭辞で並べる。
+// 出力は 1 枚だけ。引数で指定したパス（例 gallery.html）。
+// 2 pane で、左にグループ別のリンク集、本文に全パターンを並べる。
+// リンクは同一ページ内のアンカーで、ページを移動しない。
+//
+// パターンごとの個別ページは作らない。配信するファイルがパターンの数だけ増えるため。
+// 全パターンの CSS を 1 枚に連結するので、増えるとセレクタが衝突しうる。
+// 衝突したら個別に切り出す形を再検討する。
 //
 // グループは各パターンの README の front matter の group から取る。
 // 無ければ「その他」。グループの並び順はパターン名昇順で最初に現れた順。
@@ -19,7 +19,7 @@
 // 器を .gallery にすれば、雛形のページレイアウト用セレクタ（main / #bar / #q-pane /
 // #fn-pane）がどれも一致しない。持ち込みたいのは色トークンと文字組だけ。
 //
-// usage: node build-gallery.mjs <一覧の出力先パス>
+// usage: node build-gallery.mjs <出力先パス>
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
@@ -32,7 +32,7 @@ const patternsDir = join(skillRoot, "references", "patterns");
 
 const out = process.argv[2];
 if (!out) {
-  console.error("usage: node build-gallery.mjs <一覧の出力先パス>");
+  console.error("usage: node build-gallery.mjs <出力先パス>");
   process.exit(2);
 }
 const outDir = dirname(resolve(out));
@@ -66,7 +66,6 @@ const GALLERY_CSS = [
   "  .stage { border: 1px dashed var(--rule); border-radius: 8px; padding: 18px; margin: 12px 0; }",
   "  details { margin: 8px 0; font-size: 0.875em; }",
   "  summary { cursor: pointer; color: var(--sub); }",
-  "  .navback { display: inline-block; font-size: 0.875em; margin-bottom: 18px; }",
   "  /* リンク集。パターンが増えるほど本文に埋もれるので、独立した pane に置く */",
   "  .g-nav { font-size: 0.875em; margin: 0 0 2em; }",
   "  .g-nav ul { list-style: none; padding: 0; margin: 0 0 14px; }",
@@ -173,7 +172,6 @@ const loaded = names.map(function (name) {
     group: info.group,
     title: info.title || name,
     summary: info.summary,
-    file: stem + "-" + name + ".html",
     anchor: "p-" + name,
   };
 });
@@ -187,24 +185,6 @@ function sourceBlocks(p) {
     esc(p.example) +
     "</code></pre></details>"
   );
-}
-
-const written = [];
-
-for (const p of loaded) {
-  const body = [
-    '<a class="navback" href="./' + esc(stem) + '.html">← 見せ方のパターン集</a>',
-    "<h1>" + esc(p.title) + "</h1>",
-    '<p class="d">' + esc(p.summary) + "</p>",
-    '<p class="d">' + esc(p.group) + " ／ 条件と出典は <code>references/patterns/" +
-      esc(p.name) + "/README.md</code></p>",
-    '<div class="stage">',
-    p.example + "</div>",
-    sourceBlocks(p),
-  ].join("\n");
-  const dest = join(outDir, p.file);
-  writeFileSync(dest, page(p.title, baseCss + "\n" + p.css, body, false), "utf8");
-  written.push(dest);
 }
 
 // グループの並び順は、パターン名昇順で最初に現れた順
@@ -228,8 +208,7 @@ const sections = loaded.map(function (p) {
     '<section class="pattern" id="' + esc(p.anchor) + '">',
     "<h2>" + esc(p.title) + "</h2>",
     '<p class="d">' + esc(p.summary) + "</p>",
-    '<p class="d"><a href="./' + esc(p.file) + '">単体で開く</a>' +
-      " ／ 条件と出典は <code>references/patterns/" + esc(p.name) + "/README.md</code></p>",
+    '<p class="d">条件と出典は <code>references/patterns/' + esc(p.name) + "/README.md</code></p>",
     '<div class="stage">',
     p.example + "</div>",
     sourceBlocks(p),
@@ -256,6 +235,5 @@ const allCss =
   baseCss + "\n" +
   loaded.map(function (p) { return "/* ===== " + p.name + " ===== */\n" + p.css; }).join("\n");
 writeFileSync(resolve(out), page("見せ方のパターン集", allCss, indexBody, true), "utf8");
-written.push(resolve(out));
 
-console.log(JSON.stringify({ groups: groups, patterns: names, written: written }, null, 2));
+console.log(JSON.stringify({ groups: groups, patterns: names, out: resolve(out) }, null, 2));
