@@ -10,13 +10,13 @@
 | end | 「セッション終了」「今日はここまで」 | debrief → retrospective → handover のオーケストレーター |
 | debrief | 「棚卸し」「状態確認」 | 物理状態、タスク管理、完了事項、未完了の洗い出し → draft に記録 |
 | retrospective | 「振り返り」「codify」 | 学びの codify (rules/skills/CLAUDE.md 更新 → commit) |
-| handover | 「引き継ぎ」 | draft の最終化、タスク分類、todo/ への移動、reviewer による検証 |
+| handover | 「引き継ぎ」 | draft の最終化、タスク分類、todo/ への移動、機械検査、reviewer による検証 |
 
 ## agents
 
 | agent | 概要 |
 | --- | --- |
-| handover-reviewer | handover の妥当性を 3 観点 (背景/進捗/手順) で検証する read-only agent |
+| handover-reviewer | handover を 4 観点 (節をまたいだ矛盾/やることの集約/却下の妥当性/外部ファイルへの主張の検算) で検証する read-only agent。識別子の実在と git の突合は機械検査が持つ |
 
 ## .handover/ ディレクトリ
 
@@ -53,5 +53,6 @@ session:end
   ↓ ユーザー確認 (スキップ可)
   → session:handover
       draft を最終化 → draft/ から todo/ に移動 (★ draft → todo)
-  → handover-reviewer (妥当性検証)
+  → check-handover.mjs (機械検査 9 種)
+  → handover-reviewer (意味の一貫性と外部突合)
 ```
