@@ -131,7 +131,7 @@ DG1〜DG17 の全インスタンスを実ファイルから再特定した。番
 - SS4 — 同ファイル
   「ファイル path / commit hash / ブランチ名などの具体識別子は省略しない」
   → plugin に残す。SK23（DG13）と逆方向だが文書目的（再開可能性）由来の正当な例外。
-- FN14 — html-communication/references/facet-review-norms.md
+- FN14 — html-communication/references/review-norms.md
   「事実主張の正確さ: 数値・列挙は実測と突合。個数表記は同一文書内の列挙個数とも突合する。省略には省略マーカー」
   → T4 送り（FN 全体が op-review 一本化の設計対象）。
 - 正の置き場: core.md（保持規則 L1）。
@@ -171,10 +171,10 @@ DG1〜DG17 の全インスタンスを実ファイルから再特定した。番
 - DD7 — references/decision-docs.md
   「数値には実測か推定かを付け、出典・エビデンスへのリンクを添える」
   → 種別ファイルへ。実測/推定は core と重複するので削り、「出典・エビデンスへのリンク」という判断文書固有の追加要求だけ残す。
-- FN13 — facet-review-norms.md
+- FN13 — review-norms.md
   「実例は実測値そのまま: 実在 repo に帰属させる例示は実際のパス・値を転記し、理想化するなら架空例と明示」
   → T4 送り。
-- FN25 — facet-review-norms.md
+- FN25 — review-norms.md
   「量的表現のマーカー: 具体数値（レイテンシ・サイズ・期間等）は「裏取り済み」か「推定（未実測）」かを明示する」
   → T4 送り。
 - GP20 — generate-body.md（番号は逆算推定・中確度）
@@ -228,7 +228,7 @@ DG1〜DG17 の全インスタンスを実ファイルから再特定した。番
 - EW3 — references/explanatory-writing.md
   「導入した概念は以後その名前で通す。「ツール」「AI」のような曖昧な広い語に後退しない」
   → core へ吸収（解説・読み物統合ファイルからは削除。「ツール」「AI」の例は core 側で 1 回だけ使う）。
-- FN27 — facet-review-norms.md
+- FN27 — review-norms.md
   「新語導入の規律: 概念に名前を付ける前に、既存の一般用語・業界標準語を調査し、あればそれを使う。独自のコイン語・分類コードを作らない。」
   → T4 送り（C12〜13 明示参照のレビュー norm）。
 - IS1 — plugins/impl-spec/skills/requirements/SKILL.md（番号は趣旨照合・中確度）
@@ -248,7 +248,7 @@ DG1〜DG17 の全インスタンスを実ファイルから再特定した。番
 - GP21 — references/shared/formatting-rules.md（GP25〜27=external-citation の一致から逆算・高確度）
   「このタスクや変更について何も知らない初見の人に伝えるつもりで書く。専門用語やプロジェクト固有の概念は本文中で必ず説明する。」
   → plugin に残す。PR 本文の読者前提（初見のレビュアー）に紐づく。
-- FN26 — facet-review-norms.md
+- FN26 — review-norms.md
   「用語の出自: AI が持ち込んだ命名・専門用語はユーザー定義と区別し、初出で必ず定義する。」
   → T4 送り。
 - 正の置き場: core.md（初出定義の一般則）。「初出の位置で・冒頭用語集禁止」の配置論は T4 で C 系と併せて 1 箇所に。
@@ -355,7 +355,7 @@ DG1〜DG17 の全インスタンスを実ファイルから再特定した。番
 - SK = /Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace/plugins/japanese-text-writing/skills/japanese-text-writing/SKILL.md
 - RD / DD / AW / EW / NW = 同 skill の references/reference-docs.md / decision-docs.md / academic-writing.md / explanatory-writing.md / narrative-writing.md
 - HC = /Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace/plugins/claude-user-communication/skills/html-communication/SKILL.md
-- FN = 同 references/facet-review-norms.md
+- FN = 同 references/review-norms.md
 - AQ = /Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace/plugins/claude-user-communication/skills/ask-with-choices/SKILL.md
 - GP-fmt = /Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace/plugins/github-pr/skills/create/references/shared/formatting-rules.md
 - GP-cit = /Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace/plugins/github-pr/skills/create/references/shared/external-citation.md
@@ -742,13 +742,13 @@ DG41 / レビューループ（指摘ゼロ/approve まで反復）
 
 - インスタンス:
     - HC52: html-communication/SKILL.md:256「ページを提示する前にレビューにかけ、approve（指摘 0 件）まで修正を繰り返す。分量で強度を変える。」
-    - FN1: references/facet-review-norms.md:3-4
+    - FN1: references/review-norms.md:3-4
       「フォーム類の op-review は 1 agent に全部見せず、facet を分担した並列レビューにし、全 facet が approve（指摘 0 件）になるまで修正を繰り返してから提示する」
     - IS16: requirements/SKILL.md:192「修正後は再度 spec-reviewer を回す。指摘がゼロになるか、最大 5 回に達したら終了する。」（同文が design/SKILL.md:214、test-plan/SKILL.md:291 にもある）
     - SS8: plugins/session/skills/handover/SKILL.md:63-64
       「指摘があれば全て修正し、再度 reviewer を起動する。指摘が 0 件になるまで繰り返す。」
 - 処遇提案:
-    - HC52, FN1: T4 送り。FN（facet-review-norms）が絡む処遇は T4 の管轄。
+    - HC52, FN1: T4 送り。FN（review-norms）が絡む処遇は T4 の管轄。
     - IS16（3 箇所）: plugin に残す。spec-reviewer という plugin 内 agent の運転条件（上限 5 回という独自パラメータ込み）で、外へ出せない。
     - SS8: plugin に残す。handover-reviewer の運転条件で同上。
 - 正の置き場: 単一の正は置かない。「レビュアーの指摘が尽きるまで反復する」は各 plugin がそれぞれの reviewer の仕様として持つ（HC/FN 側をどう正典化するかは T4 で判断）。
@@ -757,7 +757,7 @@ DG41 / レビューループ（指摘ゼロ/approve まで反復）
 DG42 / 文脈を知らない読者による検証
 
 - インスタンス:
-    - FN4: facet-review-norms.md:9-12「clarity facet: …経緯・設計文脈を知らない新規 agent で毎回実行する（文脈なしで読んで伝わるかの外部検証。経緯を知る agent は書き手と同じ curse of knowledge を持ち、未定義用語・文脈依存の記述に気づけない）」
+    - FN4: review-norms.md:9-12「clarity facet: …経緯・設計文脈を知らない新規 agent で毎回実行する（文脈なしで読んで伝わるかの外部検証。経緯を知る agent は書き手と同じ curse of knowledge を持ち、未定義用語・文脈依存の記述に気づけない）」
     - SS10: plugins/session/skills/retrospective/SKILL.md:140
       「このセッションのコンテキストを知らない人がこのルールを読んで「何をすればいいか」がわかるか。」（冷読テスト。SS10 の再特定はこの箇所が最有力だが、plugins/session/agents/handover-reviewer.md:5「次セッションがこのファイルだけで迷わず再開できるかを 3 観点で検証し」も同旨の候補で、どちらが SS10 かは確定できない。両方が実在のインスタンス）
     - (C11): product-boilerplate/docs/norms/clarity-communication.md
@@ -772,7 +772,7 @@ DG43 / 全件列挙・「同様」省略禁止
 
 - インスタンス:
     - IS19: design/SKILL.md:238「全インスタンスを列挙する。「同様」で省略しない。」（同旨が design/SKILL.md:31「変更対象の全インスタンス (同一パターンでも省略せず列挙する)」、252「変更対象の全インスタンスが列挙されている (省略しない)」にもある）
-    - FN22: facet-review-norms.md:63「網羅性: 遷移表・仕分け表は対象全件を列挙してから分類する」
+    - FN22: review-norms.md:63「網羅性: 遷移表・仕分け表は対象全件を列挙してから分類する」
     - SK15: skills/japanese-text-writing/SKILL.md:84
       「列挙を「など」でぼかして情報を落とさない。網羅できるなら全件書き、省くなら省いたことを明示する」
 - 処遇提案:

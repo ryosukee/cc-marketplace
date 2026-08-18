@@ -22,7 +22,7 @@
 | EW | 同 references/explanatory-writing.md |
 | NW | 同 references/narrative-writing.md |
 | HC | plugins/claude-user-communication/skills/html-communication/SKILL.md |
-| FN | 同 references/facet-review-norms.md |
+| FN | 同 references/review-norms.md |
 | AQ | plugins/claude-user-communication/skills/ask-with-choices/SKILL.md |
 | GP | plugins/github-pr/skills/...（行内で個別ファイル明記） |
 | IS | plugins/impl-spec/...（同上） |

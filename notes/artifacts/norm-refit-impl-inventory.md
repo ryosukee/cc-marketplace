@@ -66,7 +66,7 @@ repo 全体では 100〜180 行の純減（plugin 側の削除 524 行に対し�
 | --- | --- | --- | --- |
 | C1 | `skills/ask-with-choices/SKILL.md` | 削除。163 行 | −163 |
 | C2 | `skills/html-communication/SKILL.md` | AQ 相対リンク 3 箇所（L16 / L151 / L313）。L313 は回答後フローの本文化が必須。AQ8 を設問設計節へ移設。表規範 2 件（L177-179）を削除し core を参照 | 40〜60 |
-| C3 | `references/facet-review-norms.md` | L49-51 の「」前提の verbatim 規範を新記法へ | 5〜8 |
+| C3 | `references/review-norms.md` | L49-51 の「」前提の verbatim 規範を新記法へ | 5〜8 |
 | C4-C6 | plugin README / plugin.json / marketplace.json | 記述削除と version bump | 5 |
 
 ### AskUserQuestion の除去（f008 Q4）
@@ -98,7 +98,7 @@ debrief と end に該当記述はない（実測）。
 
 ### 引用記法の適用
 
-鉤括弧の残存 4 箇所: facet-review-norms L49-51 / narrative-writing L56 /
+鉤括弧の残存 4 箇所: review-norms L49-51 / narrative-writing L56 /
 dotclaude-claude-scanner L102・L155 / cross-review SKILL L177。
 
 引用ブロックの書き換え 3 ファイル: `.claude/rules/plugin-design.md` L92-94（**protected

@@ -69,13 +69,13 @@
 混ぜると「手元 docs を読んだから裏付け済み」という誤読を招く。
 
 **検証結果のラベル**: 取り込み元は「合格」「確認済み」を結論に使わない。
-既存 facet-review-norms は数値に「裏取り済み / 推定」のマーカーを付ける。
+既存 review-norms は数値に「裏取り済み / 推定」のマーカーを付ける。
 レイヤーが違う（結論文の書き方 / 数値のマーカー）。
 → 「マーカーは付けてよいが、挙動を述べた文を消してラベルだけにしない」と条件を明記する。
 
 **既存側に残る鉤括弧引用 4 箇所**: ユーザー指示「既存の記述からも消す」の対象。
 
-- `plugins/claude-user-communication/skills/html-communication/references/facet-review-norms.md` 49-51 行
+- `plugins/claude-user-communication/skills/html-communication/references/review-norms.md` 49-51 行
   （verbatim 規範そのものが「」前提で書かれている）
 - `plugins/japanese-text-writing/skills/japanese-text-writing/references/narrative-writing.md` 56 行
 - `plugins/dotclaude/agents/dotclaude-claude-scanner.md` 102・155 行（出力テンプレート）
@@ -168,7 +168,7 @@
 ## 件数
 
 既存 21 件の内訳は markdown-formatting 8 / academic-writing 2 / decision-docs 1 /
-japanese-text-writing SKILL 1 / facet-review-norms 2 / github-pr external-citation 3 /
+japanese-text-writing SKILL 1 / review-norms 2 / github-pr external-citation 3 /
 html-communication SKILL 1 / primary-sources-first 2 / decision-record 1。
 
 統合による減が 5 件（引用 verbatim 3 → 1、出典要求 3 → 1、事前検証と不一致 2 → 1）、
@@ -184,7 +184,7 @@ html-communication SKILL 1 / primary-sources-first 2 / decision-record 1。
 - `rules/primary-sources-first.md`: core との重複整理。探索順序を core へ移すか rule を残すかの判断が要る
 - `plugins/github-pr/skills/create/references/shared/external-citation.md`: 意味規範を core 準拠に圧縮し、
   PR 生成の実行手順だけ残す（plugin 自己完結原則により削除はしない）
-- `plugins/claude-user-communication/skills/html-communication/references/facet-review-norms.md`
+- `plugins/claude-user-communication/skills/html-communication/references/review-norms.md`
 - `plugins/japanese-text-writing/skills/japanese-text-writing/references/academic-writing.md`
 - `plugins/japanese-text-writing/skills/japanese-text-writing/references/decision-docs.md`
 - `plugins/japanese-text-writing/skills/japanese-text-writing/references/narrative-writing.md`

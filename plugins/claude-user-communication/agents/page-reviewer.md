@@ -47,7 +47,7 @@ tools:
 **突合していないものを「一致している」と書かない。** 確認した項目と未確認の項目を分けて報告する。
 
 繰り返し出ている突合の観点は
-[提示前レビューの norm](../skills/html-communication/references/facet-review-norms.md)
+[提示前レビューの norm](../skills/html-communication/references/review-norms.md)
 の「突合の蓄積観点」にある。着手前に読む。
 
 ### (b) 推奨が依存する前提の出典
