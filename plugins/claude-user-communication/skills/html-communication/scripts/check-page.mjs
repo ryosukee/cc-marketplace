@@ -44,13 +44,21 @@ function lineOf(src, index) {
   return src.slice(0, index).split("\n").length;
 }
 
+/* 図のための CSS は本文の規定の外に置く。<style data-scope="figures"> の中身を
+   同じ長さの空白へ潰して、フォント段の検査だけから外す。改行は残すので行番号はずれない。
+   Readability の class 検査は図にも効かせる（図が Reader View で消えるのは実害） */
+function maskFigureStyles(src) {
+  return src.replace(/(<style\b[^>]*\bdata-scope="figures"[^>]*>)([\s\S]*?)(<\/style>)/g,
+    (_, open, body, close) => open + body.replace(/[^\n]/g, " ") + close);
+}
+
 function checkFile(path) {
   const src = readFileSync(path, "utf8");
   const findings = [];
 
-  // 1. フォントサイズの段階数
+  // 1. フォントサイズの段階数（図の CSS は対象外）
   const sizes = new Map(); // value -> [line...]
-  for (const m of src.matchAll(/font-size:\s*([0-9.]+(?:px|em|rem|%))/g)) {
+  for (const m of maskFigureStyles(src).matchAll(/font-size:\s*([0-9.]+(?:px|em|rem|%))/g)) {
     const v = m[1];
     if (!sizes.has(v)) sizes.set(v, []);
     sizes.get(v).push(lineOf(src, m.index));

@@ -82,9 +82,73 @@ group: 進行と状態
 生成ページは self-contained が必須なので、CSS は必ずページの中へ貼り込む。
 外部ファイルとして参照しない。
 
+## 図を Tailwind で組む
+
+図に限り Tailwind を使ってよい。外部 CDN は読み込めないので、生成のたびに CLI を回して
+使ったクラスだけの CSS を出し、ページの `<style data-scope="figures">` へ貼り込む。
+
+作業ディレクトリを 1 つ作り、次の 3 ファイルを置く。
+
+```text
+work/
+├── in.css        # 下記の 3 行 + 段落余白の打ち消し
+├── figure.html   # 図のマークアップ
+└── package.json  # npm install tailwindcss で作られる
+```
+
+`in.css` の中身。
+
+```css
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+@source "./figure.html";
+/* preflight を読み込まないので、雛形が段落に載せている下余白だけを図の中で打ち消す */
+.fig p { margin: 0; }
+```
+
+**リセット（preflight）を読み込まない。** `@import "tailwindcss"` と書くと入ってしまう。
+入れると雛形の表・見出し・段落・ボタンの作りが全部消える。
+
+```sh
+npm install tailwindcss
+npx @tailwindcss/cli -i in.css -o out.css --minify
+```
+
+出た `out.css` をページの `<style data-scope="figures">` へそのまま入れる。
+図 3 つ程度で 9 KB 前後。ダークは Tailwind の `dark:` が `prefers-color-scheme` を見るので、
+雛形と同じ切り替わり方になる。
+
+アイコンはインライン SVG の `symbol` を `<body>` の先頭に置き、`<use href="#id">` で呼ぶ。
+アイコンフォントもアイコンセットも読み込まない。
+
+色とフォントの段は、この `style` の中では雛形の規定の対象外
+（[SKILL.md](../../SKILL.md) の色役割とフォント段の項）。機械検査もこの `style` を飛ばす。
+
+### 守ること
+
+1. **Tailwind は図の中だけで使う。** 判定はその要素が `.fig` の中にあるかどうか。
+   本文・表・設問カード・下部バーに使わない。外に出た時点で雛形の CSS と二重管理になる
+2. **preflight を読み込まない。** `@import "tailwindcss"` と書くと入る。
+   `theme.css` と `utilities.css` を個別に読む
+3. **生成した CSS は `<style data-scope="figures">` にだけ入れる。**
+   雛形の `<style>` に混ぜない。この属性が、規定を適用しない範囲と機械検査が飛ばす範囲の
+   両方を決めている
+4. **色に意味を持たせたら凡例を出す。** 図の中は色が自由になるぶん、これが唯一の縛りになる。
+   色だけで区別させず、名前か形を併記する
+5. **アイコンはインライン SVG の `symbol` で持つ。** アイコンフォントもアイコンセットも
+   読み込まない。`<body>` の先頭に `symbol` を置いて `<use>` で呼び、色は `currentColor` にして
+   図の色に追従させる
+6. **生成物を手で編集しない。** `style.css` は CLI の出力。直すときは `example.html` の
+   クラスを変えて生成し直す
+
 ## 実物を並べて見る
 
 全パターンを 1 枚に並べた HTML を作れる。
+
+**このディレクトリと gallery は確定した完成品だけを置く場所。**
+検討中の候補・採否の判定・暫定の注記を混ぜない。
+新しい形を試すときは、このディレクトリの外に比較用のページを別に作って判断し、
+残すと決まったものだけをここへ入れる。
 
 ```sh
 node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/build-gallery.mjs" <出力先パス>

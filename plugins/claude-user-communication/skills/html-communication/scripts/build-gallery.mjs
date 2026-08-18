@@ -68,13 +68,6 @@ const GALLERY_CSS = [
   "  .pattern > h3 { margin-top: 0; }",
   "  .g-nav .g-group a { color: var(--sub); display: inline; padding: 0; border: 0; }",
   "  .g-nav .g-group a:hover { color: var(--link); }",
-  "  /* 採否の判定。決まったら front matter ごと外す暫定表示 */",
-  "  .rec-line { font-size: 0.875em; color: var(--sub); margin: 8px 0 14px; }",
-  "  .rec-badge { font-weight: 700; border: 1px solid currentColor; border-radius: 999px;",
-  "               padding: 1px 10px; margin-right: 8px; white-space: nowrap; }",
-  "  .rec-badge.ok { color: var(--ok); }",
-  "  .rec-badge.ng { color: var(--ng); }",
-  "  .rec-badge.mid { color: var(--sub); }",
   "  .stage { border: 1px dashed var(--rule); border-radius: 8px; padding: 18px; margin: 12px 0; }",
   "  details { margin: 8px 0; font-size: 0.875em; }",
   "  summary { cursor: pointer; color: var(--sub); }",
@@ -148,17 +141,11 @@ function page(title, css, body, withSpy) {
 // README の front matter・見出し・要約を取り出す
 function meta(readme) {
   var group = "その他";
-  var verdict = "";
-  var reason = "";
   var body = readme;
   var fm = readme.match(/^---\n([\s\S]*?)\n---\n/);
   if (fm) {
     var g = fm[1].match(/^group:\s*(.+)$/m);
     if (g) group = g[1].trim();
-    var v = fm[1].match(/^verdict:\s*(.+)$/m);
-    if (v) verdict = v[1].trim();
-    var r = fm[1].match(/^reason:\s*(.+)$/m);
-    if (r) reason = r[1].trim();
     body = readme.slice(fm[0].length);
   }
   var lines = body.split("\n");
@@ -166,7 +153,7 @@ function meta(readme) {
   var title = i < 0 ? "" : lines[i].slice(2).trim();
   var rest = lines.slice(i + 1).join("\n").trim();
   var summary = rest.split("\n\n")[0].replace(/\n/g, " ");
-  return { group: group, verdict: verdict, reason: reason, title: title, summary: summary };
+  return { group: group, title: title, summary: summary };
 }
 
 const loaded = names.map(function (name) {
@@ -188,8 +175,6 @@ const loaded = names.map(function (name) {
     css: readFileSync(paths.css, "utf8"),
     example: readFileSync(paths.example, "utf8"),
     group: info.group,
-    verdict: info.verdict,
-    reason: info.reason,
     title: info.title || name,
     summary: info.summary,
     anchor: "p-" + name,
@@ -251,11 +236,6 @@ function patternSection(p) {
     "<h3>" + esc(p.title) + "</h3>",
     '<p class="d">' + esc(p.summary) + "</p>",
     '<p class="d">条件と出典は <code>references/patterns/' + esc(p.name) + "/README.md</code></p>",
-    p.verdict
-      ? '<p class="rec-line"><span class="rec-badge ' +
-        (p.verdict === "採用" ? "ok" : p.verdict === "非推奨" ? "ng" : "mid") +
-        '">' + esc(p.verdict) + "</span>" + esc(p.reason) + "</p>"
-      : "",
     '<div class="stage">',
     p.example + "</div>",
     sourceBlocks(p),
@@ -269,8 +249,6 @@ const indexBody = [
   '<p class="d">html-communication の雛形が持たない一点物の見せ方。' +
     loaded.length + " 件 / " + groups.length +
     " グループ。build-gallery.mjs が生成する。手で編集しない。</p>",
-  '<p class="d">推奨・非推奨のバッジは、どれを残すかを選ぶための暫定表示。' +
-    "各パターンの README の front matter に書いてあり、採否が決まったら front matter ごと外す。</p>",
   "</div>",
   '<nav class="g-nav" aria-label="パターン一覧">',
   nav,
