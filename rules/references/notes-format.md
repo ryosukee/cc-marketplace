@@ -1,6 +1,6 @@
 ---
 paths:
-  - "zzz-never-match-k4q7x"
+  - "never-match-reference-only"
 ---
 
 # notes 形式: タスク別一時メモの運用

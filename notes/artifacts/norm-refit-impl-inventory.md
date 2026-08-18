@@ -3,24 +3,28 @@
 作成 2026-08-15。台帳・T3 明細・引用マージ案と実ファイルを突き合わせた実測。
 行数は `wc -l` / `rg` の実測で、新規作成分だけ推定。
 
-分割 PR の単位は未確定。候補は末尾。確定は台帳 [norm-refit 台帳](../norm-refit.md) が正。
+分割 PR の単位は案 C（依存の谷で切る 4 PR）で確定（f017 Q1）。候補の比較は末尾に残す。
+確定は台帳 [norm-refit 台帳](../norm-refit.md) が正。
 
 ## 常時 rule の総量検算
 
-**純減**。228 行 → 189〜205 行（10〜17% 減）。
+**純減**。298 行 → 247〜263 行（12〜17% 減）。
 
-現状の常時ロード対象は `rules/` 直下で paths frontmatter を持たない 9 ファイル、合計 228 行
-（subagent-delegation 47 / decision-record 33 / primary-sources-first 32 /
-user-communication-format 30 / japanese-text-writing 29 / bash-state-mutation-isolation 21 /
-propose-before-implement 19 / skill-invocation 14 / background-task 3）。
+現状の常時ロード対象は `rules/` 直下で paths frontmatter を持たない 9 ファイル、合計 298 行
+（subagent-delegation 70 / decision-record 46 / primary-sources-first 44 /
+user-communication-format 42 / bash-state-mutation-isolation 31 / japanese-text-writing 29 /
+propose-before-implement 19 / skill-invocation 14 / background-task 3。実測 2026-08-19）。
 
 | ファイル | 現 | 後 | 差 |
 | --- | --- | --- | --- |
 | japanese-text-writing.md | 29 | 20 | −9 |
-| user-communication-format.md | 30 | 0 | −30 |
+| user-communication-format.md | 42 | 0 | −42 |
 | propose-before-implement.md | 19 | 29〜35 | +10〜16 |
-| primary-sources-first.md | 32 | 22〜32 | 0〜−10 |
-| 他 5 ファイル | 118 | 118 | ±0 |
+| primary-sources-first.md | 44 | 34〜44 | 0〜−10 |
+| 他 5 ファイル | 164 | 164 | ±0 |
+
+この 9 ファイルは実装と無関係に増え続けている（228 行 = 2026-08-15 / 252 行 = 2026-08-18 /
+298 行 = 2026-08-19）。引くときは測り直す。
 
 新設する詳細規範 4 ファイル（380〜460 行）は paths 除外により常時層に載らない。
 repo 全体では 100〜180 行の純減（plugin 側の削除 524 行に対し新 references 380〜460 行）。
@@ -28,7 +32,7 @@ repo 全体では 100〜180 行の純減（plugin 側の削除 524 行に対し�
 > [!WARNING]
 > 検算上の最大のリスクは、新 references 4 ファイルの paths 除外 frontmatter の付け忘れ。
 > ハーネスは `rules/` 配下を subdir まで再帰的に常時ロードするため（2026-08-14 プローブ実測）、
-> 忘れると常時層が 228 行から 570〜670 行に膨らむ。
+> 忘れると常時層が、削減後の 247〜263 行から 627〜723 行に膨らむ。
 > この挙動は非公開仕様依存で、known-issues の `rule-paths-exclusion-undocumented` が監視している。
 
 ## 変更の一覧
@@ -38,14 +42,14 @@ repo 全体では 100〜180 行の純減（plugin 側の削除 524 行に対し�
 | # | パス | 操作 | 内容 | 行数 |
 | --- | --- | --- | --- | --- |
 | A1 | `rules/japanese-text-writing.md` | 改稿 | 29 → 約 20 行。共通原則の節を全削除し core へ。残すのはタイプ判定と数行返答の最小規範の 2 節 | −29 / +20 |
-| A2 | `rules/user-communication-format.md` | 削除 | 30 行。形式判定は A1 のタイプ判定へ統合 | −30 |
+| A2 | `rules/user-communication-format.md` | 削除 | 42 行。形式判定は A1 のタイプ判定へ統合 | −42 |
 | A3 | `rules/japanese-text-writing/references/core.md` | 新規 | 共通原則 7 節 + 分類判定表 + f004 実文群 + 引用/出典/エビデンス節 + 表規範 3 群 + 見出し共通句 + 「あなた」禁止 + 固有名 2 規範 + AI 口調 8 型。paths 除外必須 | +200〜260 |
 | A4 | `rules/japanese-text-writing/references/reference-docs.md` | 新規（移設圧縮） | core へ上がる分を削除。残すのは到達性・手順の再現性・関心事の分離の適用形・文体 | +35〜40 |
 | A5 | `rules/japanese-text-writing/references/decision-docs.md` | 新規（統合） | decision-docs 35 + academic-writing 34 の統合。末尾に論文の追加適用節 | +55〜65 |
 | A6 | `rules/japanese-text-writing/references/{解説読み物}.md` | 新規（統合） | explanatory 37 + narrative 74 の統合。読み物の例外だけを残す | +85〜95 |
 | A7 | `rules/markdown-formatting.md` | 改稿 | (a) スコープ宣言を詳細規範への参照へ（plugin 解体で参照が壊れる）。(b) 引用ブロック節 66 行を新記法へ差し替え。(c) 表の記法節は追加なし | 70〜80 |
 | A8 | `rules/propose-before-implement.md` | 追記 | AQ9「実行中に手段が変わったら確認に戻る」を移設 | +10〜16 |
-| A9 | `rules/primary-sources-first.md` | 改稿 | core の裏取り節との重複整理。**方針未確定** | 0〜−10 |
+| A9 | `rules/primary-sources-first.md` | 改稿 | 汎用執筆規範に当たる 1 文だけを core へ取り込み、core と 3 重複していた 1 文を削る。残り（探索順序 4 段・git 履歴・why の実例 2 件）は idea-hub への移管予定として記録し、rule は削除しない（f020） | 0〜−10 |
 | A10 | `rules/decision-record.md` | 改稿 | 相対リンクを新階層へ | ±1 |
 | A11 | `rules/references/notes-format.md` | 移設 | `rules/decision-record/references/` へ `git mv`。中身は変更なし | 移動 29 |
 
@@ -156,18 +160,21 @@ C-3 AskUserQuestion の全廃 / C-4 session と後始末。
 - rules 層の PR を plugin 側より先に出す
 - core.md を 2 PR で触るのを避けたいなら、引用節を最初の PR に含める（その場合 1000 行前後になる）
 
-## 台帳に記載がない未決事項
+## 未決事項（全件解消済み）
 
-- 解説・読み物統合ファイルのファイル名
-- 新 references 4 ファイルの paths 除外トークンの具体値（`notes-format.md` の値を踏襲するか）
-- `rules/primary-sources-first.md` の処遇（探索順序を core へ移すか rule に残すか）
-- version bump の幅
-- README の rule 表に 3 rule が載っていない既存の漏れ（skill-invocation /
-  propose-before-implement / bash-state-mutation-isolation）
-- `rules/markdown-formatting.md` L10・L136 の「」による文書名・見出し名の引用
-  （鉤括弧 4 箇所の対象外だが同種）
-- `plugins/dotclaude/skills/registry/SKILL.md` L84 の「あなた」の実文の扱い
-- 名詞構文の core 追加と DG14 の係り受け多義への拡張が、この実装スコープに入るか
+作成時点で台帳に記載が無かった 8 件は、いずれも上流で解消している。
+解消の出典は台帳が正で、下記はその引き当て。
+
+| 項目 | 確定 | 出典 |
+| --- | --- | --- |
+| 解説・読み物統合ファイルのファイル名 | `narrative-docs.md` | f017 Q3 |
+| 新 references 4 ファイルの paths 除外トークンの具体値 | `never-match-reference-only`。詳細規範 4 ファイルと移設する notes-format の計 5 ファイルで同じ値を使う | f018 |
+| `rules/primary-sources-first.md` の処遇 | 汎用執筆規範に当たる 1 文だけを core へ取り込み、core と 3 重複していた 1 文を削る。残りは idea-hub への移管予定として記録し、rule は削除しない | f020 |
+| version bump の幅 | skill の削除を伴う claude-user-communication は minor、記述変更のみの plugin は patch | f017 Q6 |
+| README の rule 表の漏れ 3 件（skill-invocation / propose-before-implement / bash-state-mutation-isolation） | 実装スコープに含める | f017 Q7 |
+| `rules/markdown-formatting.md` L10・L136 の鉤括弧 2 箇所 | PR 1 に入れる | r002 Q2 |
+| `plugins/dotclaude/skills/registry/SKILL.md` L84 の「あなた」 | 対象外。実文は変更せず、対象外という判断を PR 1 の変更記録に含める | f024 (5) |
+| 名詞構文の core 追加と DG14 の係り受け多義への拡張 | 名詞構文の core 追加は PR 1。DG14 は実装スコープ外で、PR 1 では鉤括弧の一句を削り「修飾語は係り先の直前に置く」だけを core に置く暫定対応にとどめる | r002 Q2 / f024 Q4 |
 
 ## 参考
 
