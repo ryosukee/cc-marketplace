@@ -98,9 +98,6 @@
   .concl { border-left: 3px solid var(--rule-strong); padding: 2px 0 2px 12px;
            margin: 0 0 1.8em; }
   .concl > p { margin: 0; }
-  .gloss { font-size: 0.875em; color: var(--sub);
-           border-left: 3px solid var(--rule); padding: 2px 0 2px 12px; margin: 8px 0 14px; }
-  .gloss b { color: var(--fg); font-weight: 700; }
   .ok { color: var(--ok); } .ng { color: var(--ng); }
   /* --ok と --ng の相互コントラストは 1.07 / 1.04。色だけでは WCAG 1.4.1 を満たさないので
      セルには必ず記号かテキストを併記する */
@@ -358,10 +355,6 @@
 </table>
 </div>
 
-<div class="gloss">
-※ <b>{{用語}}</b> = {{初出の位置で 1〜3 文。冒頭に用語集を作らない}}
-</div>
-
 <p>{{本文}}<sup class="fnref" id="fnref-1-1"><a href="#fn-1">1</a></sup>。{{本文}}<sup class="suref" id="suref-a"><a href="#su-a">a</a></sup></p>
 
 <blockquote>
@@ -409,7 +402,9 @@
   <a class="fnback" href="#fnref-1-1" aria-label="本文へ戻る">&#8617;</a></p>
 
 <p class="pane-h" style="margin-top:18px">補足</p>
-<p class="su" id="su-a"><a class="sunum" href="#suref-a">a.</a> {{補足本文。判断の助けになる説明}}
+<p class="su" id="su-a"><a class="sunum" href="#suref-a">a.</a> {{補足本文。判断の助けになる説明。
+  用語の定義もここに置く。識別子・番号つきの語（規範 ID・フェーズ番号・フォーム番号・PR 番号）は
+  必ず実体を書く。番号だけでは読者が判定できない}}
   <a class="suback" href="#suref-a" aria-label="本文へ戻る">&#8617;</a></p>
 </aside>
 
