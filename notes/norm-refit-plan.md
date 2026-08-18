@@ -99,6 +99,9 @@ plugin は version bump と更新を経る）。形式判定の rule が ask-wit
 - `.claude/rules/coding.md` の「`rules/` はフラット構成」を新階層に合わせる
   （protected directory なので dotclaude-writer 経由）
 - `textlint-plan.md` の japanese-text-writing plugin への言及 2 箇所
+- 文レベルの読解不能を条項にするかの判断。台帳の未解決課題「文レベルの読解不能を条項にするか」に
+  型 2 件と実例がある。条項を起こすなら core の AI 口調の型に足すか、
+  詳細規範の編集規則に置くかも同時に決める
 
 新設 4 ファイルと `notes-format.md` の計 5 ファイルに paths 除外
 （`never-match-reference-only`）を付ける。付け忘れると常時ロードに混入する。
