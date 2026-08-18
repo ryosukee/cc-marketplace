@@ -98,6 +98,12 @@ code { background: rgba(127,127,127,0.15); padding: 1px 5px; border-radius: 4px;
 <h2>プロジェクト別（完了分）</h2>
 <div id="projects"></div>
 
+<h2>見せ方のパターン集</h2>
+<p class="sub">雛形が持たない一点物の見せ方を、実物で並べた一覧。
+<a href="./gallery.html">gallery.html</a>。
+skill の <code>references/patterns/</code> を更新したら
+<code>build-gallery.mjs</code> で作り直す。</p>
+
 <script>
 // Claude が管理するエントリ。ページ作成時は必ず未完了で追加し、ユーザーとのやり取りを経て完了へ更新する。
 // form 型は questions（設問総数の数値）を持たせる。一覧に「設問 N 問」を表示する。report 型は持たせない。
@@ -252,7 +258,10 @@ render();
 （<a href="https://github.com/ryosukee/cc-marketplace/tree/main/plugins/claude-user-communication/skills/html-communication">GitHub</a>）<br>
 <code>manifest.json</code>・<code>icon-192.png</code>・<code>icon-512.png</code> は
 この一覧を PWA としてインストールするための固定アセットで、同 skill の運用として配置している。
-消失した場合は skill 同梱の <code>templates/</code> から再生成する。
+消失した場合は skill 同梱の <code>templates/</code> から再生成する。<br>
+<code>gallery.html</code> は見せ方のパターン集を実物で並べたページで、
+skill 同梱の <code>scripts/build-gallery.mjs</code> が生成する。手で編集しない。
+一覧のエントリは持たない（回答・確認の対象ではないため）。
 </footer>
 </main>
 </body>

@@ -3,6 +3,11 @@
 // 雛形の基盤 CSS + 全パターンの style.css を連結し、各パターンの example.html を並べる。
 // 生成物は self-contained（外部ファイルを参照しない）。
 //
+// 本文の器に main を使わない。雛形の CSS は main を 3 pane のグリッドにする
+// メディアクエリを持っており、連結するとこのページの本文まで 3 列に割れる。
+// 器を .gallery にすれば、雛形のページレイアウト用セレクタ（main / #bar / #q-pane /
+// #fn-pane）がどれも一致しない。持ち込みたいのは色トークンと文字組だけ。
+//
 // usage: node build-gallery.mjs <出力先パス>
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
@@ -87,7 +92,8 @@ const html = [
   '<style>',
   baseCss,
   css.join("\n"),
-  '  main { max-width: 720px; padding-bottom: 40px; }',
+  '  .gallery { max-width: 720px; margin: 0 auto; padding: 24px 20px 60px; }',
+  '  .pattern > h2 { margin-top: 0; }',
   '  .pattern { margin: 0 0 3em; }',
   '  .stage { border: 1px dashed var(--rule); border-radius: 8px; padding: 18px; margin: 12px 0; }',
   '  details { margin: 8px 0; font-size: 0.875em; }',
@@ -95,12 +101,12 @@ const html = [
   '</style>',
   '</head>',
   '<body>',
-  '<main>',
+  '<div class="gallery">',
   '<h1>見せ方のパターン集</h1>',
   '<p class="d">html-communication の雛形が持たない一点物の見せ方。' + names.length + ' 件。' +
     'このページは build-gallery.mjs が生成する。手で編集しない。</p>',
   parts.join("\n"),
-  '</main>',
+  '</div>',
   '</body>',
   '</html>',
   '',
