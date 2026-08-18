@@ -110,9 +110,12 @@ work/
 入れると雛形の表・見出し・段落・ボタンの作りが全部消える。
 
 ```sh
-npm install tailwindcss
-npx @tailwindcss/cli -i in.css -o out.css --minify
+npm install tailwindcss@4.3.3
+npx @tailwindcss/cli@4.3.3 -i in.css -o out.css --minify
 ```
+
+**版を固定する。** `@latest` にすると、次に回したときに版が変わって図の見た目が動いても
+検知できない。上げるときは図を作り直して差分を見る。
 
 出た `out.css` をページの `<style data-scope="figures">` へそのまま入れる。
 図 3 つ程度で 9 KB 前後。ダークは Tailwind の `dark:` が `prefers-color-scheme` を見るので、

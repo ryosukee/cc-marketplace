@@ -124,9 +124,12 @@
   th, td { border: none; border-bottom: 1px solid var(--rule); padding: 9px 14px 9px 0;
            text-align: left; vertical-align: top; }
   thead th { border-bottom: 2px solid var(--rule-strong); font-size: 0.875em; letter-spacing: 0.04em; }
-  tbody tr:last-child td { border-bottom: none; }
-  tr.key td { font-weight: 700; }
-  tr.key td:first-child { border-left: 3px solid var(--rule-strong); padding-left: 11px; }
+  /* 行見出しは th scope="row" にする（支援技術が行と列の交差を読むのに要る）。
+     見た目は本文と同じにしたいので、th の既定の太字を戻す */
+  tbody th { font-weight: 400; }
+  tbody tr:last-child > * { border-bottom: none; }
+  tr.key > * { font-weight: 700; }
+  tr.key > :first-child { border-left: 3px solid var(--rule-strong); padding-left: 11px; }
   th.num, td.num { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
 
   /* 図のキャプション。表の caption と同じ作法にする。図の下に置き、同じ段と色にする。
@@ -290,8 +293,10 @@
      常時見える位置に置くが、操作する要素ではないので行の右端へ寄せて弱く出す。
      右へ寄せるのは直前の #res の margin-left: auto に任せる。ここで auto を重ねると
      状態メッセージと版が離れて 2 か所に散る */
-  #ver { align-self: center; font-size: 0.875em; color: var(--sub);
-         opacity: 0.72; white-space: nowrap; }
+  /* opacity を重ねない。--sub は地に対して 6.19 / 6.52 あるが、0.72 を掛けると
+     3.32 / 4.06 まで落ちて本文コントラスト 4.5:1 を割る（実測 2026-08-18）。
+     弱く見せたいときは色トークンで決める */
+  #ver { align-self: center; font-size: 0.875em; color: var(--sub); white-space: nowrap; }
   #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
           border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
           color: var(--fg); font-size: 0.875em; resize: vertical; }
@@ -365,8 +370,8 @@
 <tr><th scope="col">{{観点}}</th><th scope="col">{{選択肢 A}}</th><th scope="col">{{選択肢 B}}</th></tr>
 </thead>
 <tbody>
-<tr class="key"><td>{{判断を分ける行}}</td><td>{{短い判定値}}</td><td class="ng">{{短い判定値}}</td></tr>
-<tr><td>{{観点}}</td><td>{{短い判定値}}</td><td>{{短い判定値}}</td></tr>
+<tr class="key"><th scope="row">{{判断を分ける行}}</th><td>{{短い判定値}}</td><td class="ng">{{短い判定値}}</td></tr>
+<tr><th scope="row">{{観点}}</th><td>{{短い判定値}}</td><td>{{短い判定値}}</td></tr>
 </tbody>
 </table>
 </div>
@@ -377,6 +382,8 @@
 <p class="cap">図 1 {{何の図か}}</p>
 </div>
 
+<!-- 参照マーカーの器は sup に固定する。span で書くと上付きにならず、
+     本文の行の中で数字や英字が地の文に紛れる -->
 <p>{{本文}}<sup class="fnref" id="fnref-1-1"><a href="#fn-1">1</a></sup>。{{本文}}<sup class="suref" id="suref-a"><a href="#su-a">a</a></sup></p>
 
 <blockquote>

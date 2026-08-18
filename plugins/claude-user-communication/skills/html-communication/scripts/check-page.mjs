@@ -1,12 +1,23 @@
 #!/usr/bin/env node
 // claude-html-communication ページの自作検査。
-// html-validate / linkinator が見ない 4 点を検査する:
+// html-validate / linkinator が見ない点を検査する:
 //   1. フォントサイズの段階数 (許可: 16px 基底 + 1.4em / 1.15em / 1em / 0.875em)
 //   2. 40 字超のセル (td のテキスト)
 //   3. aria-labelledby と caption id の対応
 //   4. 脚注の双方向対応 (fn-N と fnref-N-M のペアリング。リンク先の存在は linkinator が見る)
 //   5. main 内の class / id が Readability の削除・減点正規表現に当たらないか
 //      (当たると Firefox Reader View 等で本文が削られる。main 外の固定バーは対象外)
+//   6. 本文の 1 文が 100 字を超える
+//   7. 参照マーカーの器が sup 以外
+//   8. 脚注番号・補足英字が本文の初出順になっていない
+//   9. 識別子 (Q1 / PR 3 / foo.md) が本文に出るのに、その段落から補足へ飛べない
+//  10. 見出しの系統 (説明 N / 設問 N/M / 参考資料 / 付録)、設問の分母と QS 配列長、
+//      index の questions との突合
+//  11. チェックボックスの既定 checked
+//  12. 前景色に opacity を重ねている (コントラストが下がる。値はトークンで決める)
+//
+// 6〜12 は op-review の facet が繰り返し指摘していたものを機械へ移したもの
+// (2026-08-18。ih-f007 の実測で clarity facet の指摘 58 件の大半がこの形だった)。
 //
 // 正規表現ベース。対象は自前の雛形から生成したページに限る (一般の HTML には使えない)。
 // 出力: JSON (stdout)。exit 0 = 指摘なし, 1 = 指摘あり, 2 = 前提条件エラー。
@@ -144,6 +155,126 @@ function checkFile(path) {
         findings.push({ check: "readability-class", line,
           message: `class/id「${matchInfo.trim()}」が Readability の negative に当たる (-25 点で本文から実質除外)` });
       }
+    }
+  }
+
+
+  // ---- ここから 6〜12。本文 (#bd) を対象にする ----
+  const bd = src.match(/<div id="bd">([\s\S]*?)\n<\/div>/)?.[1] ?? "";
+
+  // 6. 1 文 100 字超。code / pre の中は数えない
+  const SENTENCE_LIMIT = 100;
+  const proseSrc = bd.replace(/<(pre|code)\b[\s\S]*?<\/\1>/g, " ");
+  let longSentences = 0, worstS = { len: 0, text: "" };
+  for (const m of proseSrc.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)) {
+    for (const sent of stripTags(m[1]).split(/(?<=。)/)) {
+      const t = sent.trim();
+      if (t.length > SENTENCE_LIMIT) {
+        longSentences++;
+        if (t.length > worstS.len) worstS = { len: t.length, text: t.slice(0, 34) };
+      }
+    }
+  }
+  if (longSentences > 0) {
+    findings.push({ check: "long-sentence", line: null,
+      message: `${SENTENCE_LIMIT} 字超の文 ${longSentences} 個 (最長 ${worstS.len} 字 「${worstS.text}…」)` });
+  }
+
+  // 7. 参照マーカーの器は sup に固定
+  for (const m of src.matchAll(/<(?!sup\b)([a-z]+)\b[^>]*class="[^"]*\b(fnref|suref)\b[^"]*"/g)) {
+    findings.push({ check: "ref-marker-tag", line: lineOf(src, m.index),
+      message: `${m[2]} の器が <${m[1]}>。sup にする` });
+  }
+
+  // 8. 脚注番号・補足英字は本文の初出順
+  const fnOrder = [...bd.matchAll(/id="fnref-(\d+)-\d+"/g)].map((m) => Number(m[1]));
+  const fnFirst = [...new Set(fnOrder)];
+  for (let i = 0; i < fnFirst.length; i++) {
+    if (fnFirst[i] !== i + 1) {
+      findings.push({ check: "ref-order", line: null,
+        message: `脚注番号が本文の初出順でない (${fnFirst.join(", ")})` });
+      break;
+    }
+  }
+  const suOrder = [...bd.matchAll(/id="suref-([a-z])"/g)].map((m) => m[1]);
+  const suFirst = [...new Set(suOrder)];
+  for (let i = 0; i < suFirst.length; i++) {
+    if (suFirst[i] !== String.fromCharCode(97 + i)) {
+      findings.push({ check: "ref-order", line: null,
+        message: `補足の英字が本文の初出順でない (${suFirst.join(", ")})` });
+      break;
+    }
+  }
+
+  // 9. 識別子が本文に出るのに、その段落から補足へ飛べない
+  const ID_PAT = /(?<![\w-])(Q\d+|PR \d+|[a-z][a-z0-9-]*\.md)(?![\w-])/;
+  for (const m of proseSrc.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)) {
+    const inner = m[1];
+    if (/class="[^"]*\bd\b[^"]*"/.test(m[0])) continue;   // 参考資料の注記は対象外
+    if (/suref/.test(inner)) continue;
+    const bare = inner.replace(/<code\b[\s\S]*?<\/code>/g, " ");
+    const hit = stripTags(bare).match(ID_PAT);
+    if (hit) {
+      findings.push({ check: "identifier-gloss", line: null,
+        message: `識別子「${hit[1]}」が本文に出るが、その段落から補足へ飛べない` });
+    }
+  }
+
+  // 10. 見出しの系統と設問数の突合
+  const h2s = [...bd.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => stripTags(m[1]));
+  for (const h of h2s) {
+    if (!/^(説明 \d+|設問 \d+\/\d+|参考資料|付録)/.test(h)) {
+      findings.push({ check: "heading-series", line: null,
+        message: `見出し「${h.slice(0, 24)}」が説明 N / 設問 N/M / 参考資料 / 付録 のどれでもない` });
+    }
+  }
+  // form 型のページだけを対象にする。回答の preview があるかで判定する
+  // （gallery のようにパターンの実例として設問カードを含むだけのページを除く）
+  const isForm = /id="preview"/.test(src);
+  const qCards = isForm ? [...src.matchAll(/<details class="qd"/g)].length : 0;
+  const qsLen = (src.match(/var QS = \[([\s\S]*?)\];/)?.[1].match(/\{\s*id:/g) ?? []).length;
+  if (qCards > 0 && qsLen !== qCards) {
+    findings.push({ check: "question-count", line: null,
+      message: `設問カード ${qCards} 件に対し JS の QS は ${qsLen} 件` });
+  }
+  for (const h of h2s) {
+    const d = h.match(/^設問 \d+\/(\d+)/);
+    if (d && Number(d[1]) !== qCards) {
+      findings.push({ check: "question-count", line: null,
+        message: `見出し「${h.slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
+    }
+  }
+  // index.html が同じディレクトリにあれば questions を突合する。
+  // 設問カードが 1 つも無いページは記法が違う旧版なので対象外
+  try {
+    if (qCards === 0) throw new Error("skip");
+    const dir = path.replace(/[^/]+$/, "");
+    const base = path.replace(/^.*\//, "");
+    const idx = readFileSync(dir + "index.html", "utf8");
+    const entry = idx.match(new RegExp(`file:\\s*"${base}"[\\s\\S]*?\\},`));
+    if (entry) {
+      const q = entry[0].match(/questions:\s*(\d+)/);
+      if (q && Number(q[1]) !== qCards) {
+        findings.push({ check: "question-count", line: null,
+          message: `index の questions ${q[1]} が設問カード数 ${qCards} と違う` });
+      }
+    }
+  } catch { /* index が無いページは対象外 */ }
+
+  // 11. チェックボックスの既定 checked
+  for (const m of src.matchAll(/<input\b[^>]*type="checkbox"[^>]*\bchecked\b/g)) {
+    findings.push({ check: "default-checked", line: lineOf(src, m.index),
+      message: "チェックボックスが既定でチェック済み。読み飛ばしが承認として記録される" });
+  }
+
+  // 12. 前景色に opacity を重ねている
+  //     実効コントラストの計算は var() の解決が要るのでここではやらない。
+  //     色を決めるのはトークンの役目なので、重ねていること自体を指摘する
+  for (const m of maskFigureStyles(src).matchAll(/\{[^{}]*\}/g)) {
+    const block = m[0];
+    if (/\bcolor:/.test(block) && /\bopacity:\s*0?\.\d+/.test(block)) {
+      findings.push({ check: "opacity-on-text", line: lineOf(src, m.index),
+        message: "前景色に opacity を重ねている。コントラストが下がるのでトークンで色を決める" });
     }
   }
 
