@@ -76,7 +76,6 @@
        border-left: 4px solid var(--rule-strong); padding-left: 9px; }
   h3 { font-size: 1em; font-weight: 700; margin-top: 1.8em; letter-spacing: 0.01em; }
   p { margin: 0 0 1.8em; }   /* 段落間は本文 1 行分。UA 既定の 1em だと行間より狭くなる */
-  .lead { margin-bottom: 6px; }
   a { color: var(--link); text-underline-offset: 3px; text-decoration-thickness: 1px; }
   /* リンクと弱いテキストの相互コントラストは 1.26 / 1.01 しかない。下線は装飾ではなく要件 */
   code { background: var(--surface-code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
@@ -121,8 +120,10 @@
       radial-gradient(farthest-side at 100% 50%, var(--tw-shadow), transparent) right / 12px 100% no-repeat scroll; }
   .table-wrap:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   table { border-collapse: collapse; width: 100%; min-width: 440px; }
-  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub);
-            padding-bottom: 10px; letter-spacing: 0.02em; }
+  /* caption は表の下。表の本体を先に見せる。表を語るリード文は本文に置かないので、
+     何の一覧かを示すのは caption だけになる */
+  caption { caption-side: bottom; text-align: left; font-size: 0.875em; color: var(--sub);
+            padding-top: 10px; letter-spacing: 0.02em; }
   th, td { border: none; border-bottom: 1px solid var(--rule); padding: 9px 14px 9px 0;
            text-align: left; vertical-align: top; }
   thead th { border-bottom: 2px solid var(--rule-strong); font-size: 0.875em; letter-spacing: 0.04em; }
@@ -151,9 +152,24 @@
 
   /* 設問カード。読んでいる範囲のものが開く。手で開閉すると自動追従から外れる */
   .qd { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; margin: 0 0 10px; }
-  .qd > summary { cursor: pointer; font-weight: 700; font-size: 0.875em; }
+  .qd > summary { cursor: pointer; font-weight: 700; font-size: 0.875em;
+                  display: flex; align-items: baseline; gap: 8px; }
+  .qd > summary::-webkit-details-marker { display: none; }
+  /* details の三角は flex にすると消える環境があるので、自前で描いて位置を固定する */
+  .qd > summary::before { content: "\25B8"; flex: none; font-weight: 400; color: var(--sub);
+                          transition: none; }
+  .qd[open] > summary::before { content: "\25BE"; }
   .qd > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .qd.on { box-shadow: inset 2px 0 0 var(--link); }
+  /* 回答済みマーカー。折り畳んだままでも、どこまで答えたかが一覧で分かるようにする。
+     色は使わない（色役割は 3 つに固定してあり、状態を表す枠が無い）。
+     形（輪郭の丸 / 塗りの丸）と語の両方で区別する。WCAG 1.4.1 も色単独を認めない */
+  .qstat { margin-left: auto; flex: none; font-weight: 400; color: var(--sub);
+           white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+  .qstat::before { content: ""; width: 9px; height: 9px; border-radius: 50%;
+                   border: 1.5px solid var(--control-border); background: var(--bg); }
+  .qd.done .qstat::before { background: var(--rule-strong); border-color: var(--rule-strong); }
+  .qd.done .qstat { color: var(--fg); }
   .qtext { font-size: 0.875em; margin: 8px 0 0; }
 
   .q { margin: 8px 0 0; }
@@ -318,17 +334,17 @@
 <p>{{読者が最初に知りたい答え}}</p>
 </div>
 
-<p class="lead">決めることは {{N}} 件で、左の pane にあります。</p>
-
-<!-- 前提部分はここまで。範囲を持たせない（この位置では設問をどれも開かない） -->
+<!-- 前提部分はここまで。範囲を持たせない（この位置では設問をどれも開かない）。
+     設問の件数・所在・設問どうしの関係を冒頭に書かない。件数は設問 pane の見出しと
+     下部バーの進捗が示す。目次も置かない -->
 
 <section class="rng" data-q="q1" aria-labelledby="rl-q1">
 <p class="rlabel" id="rl-q1">設問 1</p>
 
 <h2 id="s-e1">説明 1 {{主張型の見出し。結論を見出しに載せる}}</h2>
 
-<p class="lead">{{表の直前のリード文。これは何の一覧か + どこが決め手か（行名を名指しする）}}</p>
-
+<!-- 表を語る文は本文に置かない。何の一覧かは caption（表の下）、注目すべき行は
+     tr.key のハイライトが担う。前提・条件・読みどころは補足へ出し、セルから参照する -->
 <div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-1">
 <table>
 <caption id="cap-1">表 1 {{何の表か}}</caption>
@@ -336,7 +352,7 @@
 <tr><th scope="col">{{観点}}</th><th scope="col">{{選択肢 A}}</th><th scope="col">{{選択肢 B}}</th></tr>
 </thead>
 <tbody>
-<tr class="key"><td>{{決め手の行}}</td><td>{{短い判定値}}</td><td class="ng">{{短い判定値}}</td></tr>
+<tr class="key"><td>{{判断を分ける行}}</td><td>{{短い判定値}}</td><td class="ng">{{短い判定値}}</td></tr>
 <tr><td>{{観点}}</td><td>{{短い判定値}}</td><td>{{短い判定値}}</td></tr>
 </tbody>
 </table>
@@ -356,7 +372,7 @@
 <!-- 設問カードは判断材料の直後、範囲の中に置く。
      3 pane では JS が左 pane へ移す。移動なので入力値は保たれる -->
 <details class="qd" data-for="q1" open>
-<summary>設問 1/{{N}} {{設問ラベル}}</summary>
+<summary>設問 1 / {{N}} {{設問ラベル}}<span class="qstat">未回答</span></summary>
 <p class="qtext">{{設問文}}</p>
 <div class="q" id="q1">
   <label class="opt"><input type="radio" name="q1" value="{{選択肢 A}}">
@@ -553,6 +569,14 @@
     var r = build();
     document.getElementById('preview').value = r.text;
     document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+    /* 折り畳んだままでも回答済みが分かるように、カードの状態を更新する。
+       判定は下部バーの進捗と同じで、選択肢を選んだら回答済み（補足欄だけの記入は未回答） */
+    qds.forEach(function (d) {
+      var done = !!ans(d.dataset.for);
+      d.classList.toggle('done', done);
+      var st = d.querySelector('.qstat');
+      if (st) st.textContent = done ? '回答済み' : '未回答';
+    });
   }
   // クリップボードはクリック直後に同期で呼ぶ。await を挟むと Safari / Firefox が
   // user activation を失って NotAllowedError で reject する。
