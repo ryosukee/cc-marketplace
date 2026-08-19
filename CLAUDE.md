@@ -7,7 +7,7 @@ utility 系 (version-check, plugin-update, cache-keepalive, cc-transcript, usage
 dotclaude 系 (doctor/cross-review/registry)、
 session 系 (start/debrief/retrospective/handover/end)、
 impl-spec 系 (requirements/design/test-plan)、github 系 (github-pr)、
-authoring/tooling 系 (markdownlint, mkdocs-setup, security-guards, dotclaude-writer, japanese-text-writing)、
+authoring/tooling 系 (markdownlint, mkdocs-setup, security-guards, dotclaude-writer)、
 communication 系 (claude-user-communication)、meta 系 (claude-known-issues) を提供する。
 加えて user global rules を repo 直下の `rules/` で管理し、
 symlink で `~/.claude/rules/cc-marketplace` に配置する。
@@ -33,7 +33,9 @@ cc-marketplace/
 │   └── rules/                    # プロジェクト固有ルール (設計原則、規約)
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
-├── rules/                        # user global rules (symlink で配布、フラット構成)
+├── rules/                        # user global rules (symlink で配布)
+│   ├── {rule}.md                 # 常時ロード。paths を持つものは条件ロード
+│   └── {rule}/references/        # 詳細規範。paths 除外で常時ロードから外す
 └── plugins/
     └── {plugin-name}/
         ├── .claude-plugin/
@@ -75,7 +77,6 @@ cc-marketplace/
 | mkdocs-setup | 0.2.0 | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | 0.2.0 | tooling | .netrc 等の credentials 保護 hook |
 | dotclaude-writer | 0.4.1 | tooling | .claude/ protected directory への書き込みワークアラウンド |
-| japanese-text-writing | 0.1.5 | authoring | 日本語テキストの執筆規範 (共通原則 + 5 分類の references) |
 | claude-user-communication | 0.22.0 | communication | HTML ページ提示 (claude-html-communication) + 選択肢形式の確認 + 生成ページの機械検査 12 種 + 提示前レビューの page-reviewer agent。雛形は 1 / 2 / 3 pane + 現在地の追従。図は Tailwind 可 (図の中だけ)。要環境変数 (plugin README) |
 | claude-known-issues | 0.2.0 | meta | Claude Code の既知バグ台帳 + 更新検知 SessionStart hook + 突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |

@@ -28,7 +28,10 @@ Script ファイル名:
 Rule ファイル名:
 
 - kebab-case、名詞句
-- `rules/` はフラット構成。ファイル名だけで対象が分かるようにする (例: `markdown-formatting.md`)
+- `rules/` 直下は常時ロード層。ファイル名だけで対象が分かるようにする (例: `markdown-formatting.md`)
+- 詳細規範は `rules/{rule 名}/references/` に置き、frontmatter の `paths` に
+  `never-match-reference-only` を書いて常時ロードから外す。
+  付け忘れると subdir でも再帰的に常時ロードされる (実測)
 
 ## スクリプト設計
 
