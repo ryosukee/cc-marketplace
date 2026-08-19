@@ -8,7 +8,7 @@
 プロジェクトに適した置き場（既存の設計ドキュメント・決定記録・issue・wiki・チケット 等）があればそれを使う。
 無いときは notes 形式（repo 直下 `notes/` の 2 層構造）を既定案としてユーザーに提案し、
 承認を得てから作る。承認前に作らない。形式・場所にユーザーの希望があればそちらに従う。
-作成・運用の前に [notes 形式の運用](./references/notes-format.md) を Read する
+作成・運用の前に [notes 形式の運用](./decision-record/references/notes-format.md) を Read する
 （常時ロードされない参照ファイル）。
 
 `.handover/` をメモ置き場にしない（session plugin の専用 skill が扱う引き継ぎ用ディレクトリ）。
