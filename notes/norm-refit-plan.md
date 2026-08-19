@@ -65,8 +65,8 @@ f018 で確定した `never-match-reference-only` へ直す。
 
 ### PR と変更項目の対応表の作成
 
-台帳にも棚卸しにも存在しない。棚卸しは変更項目を A1〜A11 / B1〜B6 / C1〜C6 の記号で持ち、
-台帳は PR の切り方と順序だけを持つ。両者を突き合わせた表を作る。
+作成済み（2026-08-19）。段階 1 の直下に置いた。棚卸しは変更項目を A1〜A11 / B1〜B6 / C1〜C6 の
+記号で持ち、台帳は PR の切り方と順序だけを持つので、両者を突き合わせた。
 
 ### 逆向きの依存の確認
 
@@ -76,13 +76,52 @@ facet 注入は全系列 100 本が対象で、汎用執筆 52 本も含む。T4
 
 ## 段階 1 コア実装
 
+### PR と変更項目の対応
+
+記号は [norm-refit 実装の変更棚卸し](./artifacts/norm-refit-impl-inventory.md) の定義。
+PR をまたぐ項目は分けて書く。
+
+| 項目 | 対象 | PR |
+| --- | --- | --- |
+| A1 | 入口 rule を約 20 行へ圧縮 | 1 |
+| A2 | 出力形式判定 rule を削除 | 1 |
+| A3 | core.md 新設（引用節を除く） | 1 |
+| A4〜A6 | 参照 / 判断 / 解説・読み物の詳細規範を新設 | 1 |
+| A7(a) | 記法 rule のスコープ宣言 | 1 |
+| A8 | AQ9 を提案 rule へ移設 | 1 |
+| A9 | 一次情報 rule の重複整理 | 1 |
+| A10・A11 | 決定記録 rule のリンクと notes 形式の移設 | 1 |
+| B1・B2 | plugin 全 6 ファイルと marketplace エントリの削除 | 1 |
+| B3 | README の plugin 行・install 行 | 1 |
+| B4〜B6 | CLAUDE.md / coding rule / textlint 計画 | 1 |
+| 追加 | 鉤括弧 2 箇所・名詞構文・経緯注記の条項化・registry の対象外判断・DG14 暫定・文レベル読解不能の判断 | 1 |
+| A3' | core.md の引用・出典・エビデンス節 | 2 |
+| A7(b) | 記法 rule の引用ブロック節 | 2 |
+| C3 | レビュー norm の verbatim 規範 | 2 |
+| 引用 1 | 鉤括弧の残り（dotclaude scanner 2 箇所・cross-review） | 2 |
+| 引用 2 | 引用ブロックの残り（plugin-design rule・曖昧性調査） | 2 |
+| 引用 3 | external-citation の圧縮 | 2 |
+| C1・C2 | 選択肢確認 skill の削除と HTML skill の改稿 | 3 |
+| C4-C6 | plugin README・manifest・版 | 3 |
+| 除去 | AskUserQuestion の全 plugin 除去 | 3 |
+| 台帳 1 | 既知バグ台帳の `askuserquestion-rendering` | 3 |
+| 後始末 1 | session 3 skill の代替手順 | 4 |
+| 台帳 2 | 既知バグ台帳の `task-tools-unavailable` | 4 |
+| B3' | README の rule 表の漏れ 3 件 | 4 |
+
+鉤括弧 4 箇所のうち解説・読み物規範の 1 箇所は、A6 へ実文を移す時点で解消する。
+plugin 削除で原文が消えるため、PR 2 の作業には数えない。
+
+### 順序と依存
+
 直列で、順序を入れ替えられない。反映タイミングが非対称なため（`rules/` は symlink で即時、
 plugin は version bump と更新を経る）。形式判定の rule が ask-with-choices skill を
 指しているので、これを残したまま skill を消すと存在しない skill を指す区間ができる。
 
 ### PR 1 詳細規範の新設と plugin 解体
 
-4 PR で最大。詳細規範 4 ファイル（core / 参照 / 判断 / `narrative-docs.md`）を新設し、
+4 PR で最大。記法 rule は (a) スコープ宣言だけを扱い、(b) 引用ブロック節は PR 2 へ回す。
+詳細規範 4 ファイル（core / 参照 / 判断 / `narrative-docs.md`）を新設し、
 入口 rule を約 20 行へ圧縮、japanese-text-writing plugin を解体、`notes-format.md` を移設する。
 実文をすべて書き上げてから出す（骨格先行にしない）。
 47 グループの処遇明細は `notes/artifacts/norm-refit-t3-detail.md`。
@@ -113,6 +152,10 @@ plugin は version bump と更新を経る）。形式判定の rule が ask-wit
 
 efso-document から取り込んで core.md へ引用節を足す。core.md を触る 2 回目。
 取り込み元が別 repo で単独レビューの価値があるため独立させる。
+
+記法の適用もここに寄せる。記法 rule の引用ブロック節（A7(b)）、レビュー norm の
+verbatim 規範（C3）、鉤括弧と引用ブロックの残り、external-citation の圧縮。
+正と適用を同じ PR に閉じる（ccm-f027 Q2）。
 マージ案は `notes/artifacts/citation-norms-merge.md`。
 
 ### PR 3 AskUserQuestion の全廃
@@ -121,13 +164,18 @@ ask-with-choices skill を削除し、全 plugin から使用指示を除く
 （impl-spec 16 / dotclaude 13 / mkdocs-setup 6 / session 2 / claude-known-issues 5）。
 registry の「あなた」を含む手順ブロックはここで書き換わる。
 
+既知バグ台帳の `askuserquestion-rendering` エントリもここで直す。回避策 2 項目のうち 1 番目と、
+解除手順 4 項目のうち 1・2 番目が、この PR で削除する skill を名指ししている。
+PR 4 まで残すと、その区間だけ台帳が存在しない skill を指す（ccm-f027 Q2）。
+
 version bump は、skill の削除を伴う claude-user-communication が minor、
 記述変更のみの plugin は patch。
 
 ### PR 4 session と後始末
 
-session 3 skill の代替手順を削り、known-issues 台帳 2 エントリと
+session 3 skill の代替手順を削り、known-issues 台帳の `task-tools-unavailable` と
 README の rule 表の漏れ 3 件を片付ける。先行 PR の結果を指す記述なので最後。
+`askuserquestion-rendering` は PR 3 へ移した。
 
 ## 段階 2 T4 のコア
 
