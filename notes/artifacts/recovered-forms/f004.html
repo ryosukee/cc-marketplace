@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>norm-refit: 取捨選択規範の再設計（4 問）</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #1a1a1a; --sub: #555;
+    --border: #d0d0d0;
+    --control-border: #8a8a8a;
+    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
+    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab;
+      --border: #3a3f47; --control-border: #767d87;
+      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
+      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-bottom: 190px; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.7;
+         word-break: auto-phrase;
+         font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", Meiryo, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 170px; }
+  h1, h2, h3 { text-wrap: balance; }
+  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px;
+       scroll-margin-top: 12px; }
+  h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
+         font-family: "SF Mono", Menlo, monospace; }
+  mark { background: var(--hl); color: inherit; padding: 0 2px; }
+  blockquote { margin: 10px 0 14px; padding: 2px 0 2px 14px;
+               border-left: 3px solid var(--control-border); }
+  blockquote p { margin: 4px 0; }
+  a { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+  .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub); padding-bottom: 4px; }
+  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  tr.key td, tr.key th { background: var(--hl); }
+  .fn { font-size: 0.875em; color: var(--sub); margin: 6px 0 0; padding-left: 20px; scroll-margin-top: 16px; }
+  .fn:target { background: var(--accent-bg); border-left: 3px solid var(--accent);
+               padding-left: 17px; border-radius: 0 4px 4px 0; }
+  .fnref { scroll-margin-top: 16px; }
+  .fnref a { text-decoration: none; padding: 0 1px; }
+  .fnref a:hover { text-decoration: underline; }
+  .fnref:target a { background: var(--accent-bg); outline: 2px solid var(--accent); border-radius: 3px; }
+  .fnnum { text-decoration: none; font-weight: 700; }
+  .fnback { text-decoration: none; margin-left: 3px; }
+  .fnback:hover { text-decoration: underline; }
+  /* 脚注の 2 pane 表示。本文カラムの右に十分な余白がある画面幅でだけ発動する。
+     screen 限定なので印刷・狭幅では従来どおり本文末尾に流れる。DOM 順も変えない。
+     348px = main の外縁 (max-width 640px の半分 320px) + 間隔 28px、364px = 348px + 右余白 16px */
+  @media screen and (min-width: 1120px) {
+    #fn-set { position: fixed; top: 24px; left: calc(50% + 348px);
+              width: min(320px, calc(50vw - 364px));
+              max-height: calc(100vh - 240px); overflow-y: auto;
+              padding-right: 8px; }
+    #fn-set h2 { margin-top: 0; font-size: 1em; }
+  }
+  .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
+           border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
+           padding: 7px 12px; margin: 8px 0 14px; }
+  .gloss b { color: var(--fg); font-weight: 700; }
+  .ok { color: var(--ok); } .ng { color: var(--ng); }
+  .d { color: var(--sub); font-size: 0.875em; }
+  label.opt .d { display: block; }
+  .lead { margin-bottom: 6px; }
+  .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
+       padding: 12px 15px; margin: 16px 0; }
+  .q .t { font-weight: 700; margin-bottom: 6px; }
+  label.opt { display: block; background: var(--bg); border: 1px solid var(--control-border);
+              border-radius: 6px; padding: 8px 10px; margin: 6px 0; cursor: pointer; }
+  label.opt:has(input:checked) { outline: 2px solid var(--accent); }
+  .rec { background: var(--accent-fill); color: #fff; font-size: 0.875em; border-radius: 4px;
+         padding: 0 6px; margin-left: 4px; }
+  input.other { width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--control-border);
+                border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 1em; }
+  textarea.note { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--control-border);
+                  border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 0.875em;
+                  min-height: 30px; resize: vertical; }
+  #preview { width: 100%; min-height: 180px; font-family: "SF Mono", Menlo, monospace;
+             font-size: 0.875em; background: var(--code); color: var(--fg);
+             border: 1px solid var(--control-border); border-radius: 6px; padding: 10px; }
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+         border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+         z-index: 100; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  .bar-info { display: flex; align-items: center; gap: 8px; }
+  .bar-info #res { margin-left: auto; text-align: right; }
+  .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  #back { display: inline-block; background: none; border: 1px solid var(--control-border); color: var(--sub);
+          border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #proj { align-self: center; font-size: 0.875em; font-weight: 700;
+          border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
+          padding: 3px 9px; white-space: nowrap; }
+  #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
+          border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
+          color: var(--fg); font-size: 0.875em; resize: vertical; }
+  #free:focus { min-height: 88px; }
+  #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
+          padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 1em; }
+  .subbtn { background: none; border: 1px solid var(--control-border); color: var(--sub); border-radius: 6px;
+            padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
+  .subbtn:hover { border-color: var(--accent); color: var(--accent); }
+  #cnt, #res { font-size: 0.875em; color: var(--sub); white-space: nowrap; }
+  @media print {
+    #bar { display: none; }
+    main { max-width: none; padding: 0; }
+    h1, h2, h3 { break-after: avoid; }
+    table, pre, .q { break-inside: avoid; }
+    @page { margin: 16mm; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>norm-refit: 取捨選択規範の再設計（4 問）</h1>
+
+<p>f001 Q8 の指示（なぜ AI 文書は読みたくならないかを真正面から調査し、
+長さ・簡潔さ指示を置き換える指示文を作り直す）を受けた調査の統合報告と、確認フォーム。
+調査は 4 本（作文の認知科学 / 編集実務 / LLM の機構 / 関連性理論）を並行実施し、
+主要な主張は一次文献で裏取りした。</p>
+
+<p><b>結論</b>: 冗長さの根因は「指示の不足」ではなく、訓練・生成・読者モデルの 3 層にある
+構造的なもの。効くと分かっている介入はすべて「生成の外に工程を足す」形で、指示文の役割は
+その工程の中で使う判定基準と保持規則の提供に絞られる。この整理に基づき、
+判定基準（3 案から選択）・生成前手続き・保持規則・弱モデル読者代理の検証、の 4 点を確認する。</p>
+
+<p class="lead"><b>決めること</b>: 4 件。</p>
+<ul>
+  <li>設問 1 取捨選択の判定基準文（3 案から選ぶ）</li>
+  <li>設問 2 生成前手続きの実文</li>
+  <li>設問 3 保持規則（削らないものリスト）</li>
+  <li>設問 4 弱モデル読者代理の検証の扱い</li>
+</ul>
+
+<p class="d"><b>読み方</b>: 説明 1〜2 は全設問に共通する前提。各設問セクションは
+判断材料 → 設問の順で自己完結する。急ぐなら説明 1 の表と各設問だけで判断できる。
+出典は脚注と参考資料に分離した。</p>
+
+<h2 id="s-e1">説明 1: 冗長さの根因は 3 層で、指示だけでは消えない</h2>
+
+<p class="lead">調査 4 本が特定した根因の整理。決め手は「対処の置き場」列で、
+指示文で対処できるのは一部にとどまる。介入設計の中心になる生成層の行をハイライトした。</p>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-1">
+<table>
+<caption id="cap-1">表 1 冗長さの根因 3 層と対処の置き場</caption>
+<thead>
+<tr><th scope="col">層</th><th scope="col">機構</th><th scope="col">対処の置き場</th></tr>
+</thead>
+<tbody>
+<tr><td>訓練層</td><td>選好・報酬の長さバイアス<sup class="fnref" id="fnref-1-1"><a href="#fn-1">1</a></sup></td><td>出力仕様の明示</td></tr>
+<tr class="key"><td>生成層</td><td>「削る」工程の欠如<sup class="fnref" id="fnref-2-1"><a href="#fn-2">2</a></sup></td><td>工程の外付け</td></tr>
+<tr><td>読者モデル層</td><td>読者モデルの欠如<sup class="fnref" id="fnref-3-1"><a href="#fn-3">3</a></sup></td><td>読者情報の外部化 + 出力後検証</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>訓練層では、選好データと報酬モデルが長い出力を好むため冗長さは最適化の結果で、
+指示の言い回しでは消えない。対処は出力仕様（構成・禁止定型句）の明示になる。
+生成層では、1 パス生成に「削る」工程が構造的に無く、外部基準なしの自己修正は機能しない。
+対処は工程の外付け（生成前の確定 = 設問 2、独立した監視・改稿パス）。
+読者モデル層では、読者を指定するだけでは出力は適応しないため、
+読者情報の外部化（設問 2）と出力後の検証（設問 4）で補う。</p>
+
+<p>人間の書き手の研究が同じ構図を示している。未熟な書き手の生成は「思いついた順に書く」
+knowledge-telling で、LLM の自己回帰生成と同型。冗長・欠落・暗黙前提が同時に出るのはこのため
+<sup class="fnref" id="fnref-4-1"><a href="#fn-4">4</a></sup>。
+読者への配慮は書く工程では働かず（事後の監視でのみ働く）、
+自分の知識を読者が知らない前提で無視することは、指示や報酬があってもできない
+<sup class="fnref" id="fnref-5-1"><a href="#fn-5">5</a></sup>。
+つまり<mark>「読者を意識して書け」型の指示は人間でも機械でも原理的に効かない</mark>。
+効く介入は、生成前の目的・読者の外部化、生成後の独立した文脈での監視、
+意味レベルを指定した改稿、機械化できる談話検査、のどれも「工程を足す」形をとる。</p>
+
+<h2 id="s-e2">説明 2: 編集実務の共通構造は「削除規則 + 保持規則 + 読者側の停止条件」</h2>
+
+<p>Williams・Zinsser・米政府 Plain Language・Google/Microsoft・ロイターの編集実務を
+横断すると、3 点で一致する<sup class="fnref" id="fnref-6-1"><a href="#fn-6">6</a></sup>。</p>
+
+<ul>
+  <li>削減の停止条件を語数側に置く流儀は存在しない。常に読者側で定義される
+    （「読者が自信を持って判断できる最小限」等）。語数の閾値はあるが、超過時の処方は削除ではなく分割</li>
+  <li>削除規則には必ず保持規則が対になる（確信度のヘッジ・読者誘導の道標・前提と範囲の宣言・
+    数値は削らない）。設問 3 はこの対の採用</li>
+  <li>「削る」は診断 → 候補マーク → 除いて読む代理テスト → 確定、の工程に分解されており、
+    診断は語彙リストで機械化できる。機械化できるものは lint（textlint 導入計画）へ、
+    判断を要する基準だけを規範に置く</li>
+</ul>
+
+<p>冗長の害についても実証がある。効果のない情報は中立ではなく、読者に
+「わざわざ書かれた以上は意味があるはず」という誤った推論をさせる
+<sup class="fnref" id="fnref-7-1"><a href="#fn-7">7</a></sup>。
+削る根拠を「短くなるから」でなく「残すと誤読を生むから」に置けるので、
+長さ・簡潔さ指示を置き換える方針（f001 Q8 で置き換え自体は前提として確定。
+根拠は簡潔さ指示による誤情報耐性の低下。最終文面を本フォームで決める）と整合する。</p>
+
+<h2 id="s-q1">設問 1/4 取捨選択の判定基準文</h2>
+
+<p class="lead">現行基準「読者が次に取る行動を変える情報だけ残す」には理論から 3 つの弱点が
+特定された: 行動を変えないが価値のある情報（疑いの解消・誤解の訂正・確信度の較正）を落とす /
+表現・配置のコスト（労力側）の条項が無い / 読者と目的を先に確定しないと空転する。
+置き換え 3 案の比較。決め手は「カバーする範囲」の行。優位のセルは ◎ で示す。</p>
+
+<div class="gloss">
+※ <b>常時 rule</b> = 全セッションの開始時に常に読み込まれる規範の層。分量の制約が最もきつい。
+<b>正典 skill</b> = まとまった文章を書く場面で読み込む詳細規範の置き場。
+この 2 層構成は f001 Q3 で確定済み。
+</div>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-2">
+<table>
+<caption id="cap-2">表 2 判定基準文の 3 案</caption>
+<thead>
+<tr><th scope="col">観点</th><th scope="col">A: 効果の列挙</th><th scope="col">B: 効果 / 労力の 2 軸</th><th scope="col">C: 質問駆動</th></tr>
+</thead>
+<tbody>
+<tr class="key"><td>カバーする範囲</td><td>取捨のみ</td><td class="ok">◎ 取捨 + 表現・配置</td><td>取捨 + 構成</td></tr>
+<tr><td>実文の長さ</td><td class="ok">◎ 短い</td><td>中</td><td>長い（工程 1 段増）</td></tr>
+<tr><td>適する置き場</td><td>正典の詳細</td><td class="ok">◎ 常時 rule の骨子</td><td>レビュー手順</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>案 B の実文のたたき台（理論的裏付けは脚注<sup class="fnref" id="fnref-8-1"><a href="#fn-8">8</a></sup>）:</p>
+
+<blockquote>
+<p>情報の取捨は「読者の判断か、その確信度を変えるか」で決め、
+表現と配置は「読者の処理労力を最小にするか」で決める。この 2 つを混ぜない。
+新情報でなくても、参照の往復を減らす定義の再掲は労力側の理由で残してよい。
+どちらの理由もない情報は無害ではない。読者は「わざわざ書かれた以上は意味がある」と
+推論するので、残すことが誤読を生む。</p>
+</blockquote>
+
+<p>案 C（質問駆動）は、確定した目的から読者が持ち込む質問を列挙し、各段落をどれか
+1 つの質問に割り当てて、答えの確からしさを変えない段落を削除または移動する手順。
+段落単位で機械的に回せるためレビュー工程向き。</p>
+
+<p>3 案は排他ではない。推奨構成は、B を常時 rule の骨子に、A の効果 4 分類
+（判断・行動が変わる / 疑問が解ける / 誤解が正される / 確信度が変わる）を正典 skill の詳細に、
+C の質問駆動手順をレビュー工程（T4: 進行中のレビュー機構再設計タスク）に、それぞれ配置する。
+規範の総量は、置き換え先の統合 rule（f001 Q4 で確定）から削除される長さ・簡潔さ指示と
+重複分の枠内に収め、常時 rule を純増させない（検算は実装時に行い、純増になるなら申告する）。</p>
+
+<div class="q" id="q1">
+  <div class="t">設問 1/4（取捨選択の判定基準）</div>
+  <label class="opt"><input type="radio" name="q1" value="B を常時 rule 骨子に、A を正典詳細に、C をレビュー手順に配置">
+    B を常時 rule 骨子に、A を正典詳細に、C をレビュー手順に配置<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 各案の適所（表 2）に分けると 3 案の長所を全部使える。
+    本タスクで実装するのは B（常時 rule）と A（正典 skill）で、C は T4 への設計入力として
+    申し送り、実文化は T4 側で行う。
+    推奨を覆す条件: 常時 rule をさらに絞りたいなら「B のみ採用」が最小</span></label>
+  <label class="opt"><input type="radio" name="q1" value="B を骨子に、A を正典詳細に採用（C は使わず T4 で判断）">B を骨子に、A を正典詳細に採用（C は使わず T4 で判断）
+    <span class="d">T4 の設計を先取りしない中間構成。C 相当の手順を作るかは T4 が白紙から決める</span></label>
+  <label class="opt"><input type="radio" name="q1" value="B のみ採用（A・C は使わない）">B のみ採用（A・C は使わない）
+    <span class="d">最小構成。効果 4 分類の粒度とレビュー手順への展開は捨てる</span></label>
+  <label class="opt"><input type="radio" name="q1" value="A を骨子にする（現行基準からの差分最小）">A を骨子にする（現行基準からの差分最小）
+    <span class="d">現行の「行動を変えるか」の拡張版。労力側（再掲の保護・誤読の害）は別途書く必要が残る</span></label>
+  <label class="opt"><input type="radio" name="q1" value="__other__">その他
+    <input type="text" class="other" data-for="q1"></label>
+  <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q2">設問 2/4 生成前手続きの実文</h2>
+
+<p class="lead">f001 Q8 のたたき台にあった「書く前の 1 文確定」（Q8 回答では「まだ足りない」と
+差し戻された）を、本調査の裏付けで補強したうえで再提案する。調査の追加分は
+「読者の既知・未知の書き出し」で、人間の熟達者が頭の中に保持する読者表象を
+context に外部化する代替になる<sup class="fnref" id="fnref-9-1"><a href="#fn-9">9</a></sup>。実文のたたき台:</p>
+
+<blockquote>
+<p>まとまった文章を書く前に 2 つ書き出す。(1)「読者はこれを読んで何を判断・実行するか」を 1 文で。
+(2) 読者が既に知っていること・知らないことを数点。本文の取捨はこの 2 つに照らして行い、
+書き出した前提知識の宣言（対象読者・範囲・扱わないこと）は本文の冒頭に残す。</p>
+</blockquote>
+
+<div class="q" id="q2">
+  <div class="t">設問 2/4（生成前手続き）</div>
+  <label class="opt"><input type="radio" name="q2" value="採用（字句は実装時に推敲）">
+    採用（字句は実装時に推敲）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: f001 表 5 の 4 型比較で唯一実証がある手続き
+    （人間の書き手での実証で、LLM への転移は未検証）に、読者表象の外部化を足した形。
+    配置は手続き 2 点を常時 rule に置く（設問 1 と同じく削除枠内に収める）。
+    推奨を覆す条件: (2) が重いと感じるなら (1) のみの縮小版</span></label>
+  <label class="opt"><input type="radio" name="q2" value="(1) の 1 文確定のみ採用">(1) の 1 文確定のみ採用
+    <span class="d">f001 のたたき台と同じ範囲。読者の既知・未知は書き出さない</span></label>
+  <label class="opt"><input type="radio" name="q2" value="__other__">その他
+    <input type="text" class="other" data-for="q2"></label>
+  <textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q3">設問 3/4 保持規則（削らないものリスト）</h2>
+
+<p class="lead">削除規則とセットで置く保持規則。現行 rule の「前提・条件・例外・数値は落とさない」を
+実務・理論の裏付けで拡張したリスト。</p>
+
+<ul>
+  <li>前提・条件・例外・数値（現行どおり）</li>
+  <li>範囲の宣言: 対象読者・扱う範囲・扱わない範囲・前提知識</li>
+  <li>確信度のヘッジ（1 主張 1 つまで。重ね掛けは間引く）</li>
+  <li>読者誘導の道標（接続・対比・帰結の標識）</li>
+  <li>参照の往復を減らす定義の再掲（「新情報でないから」を削除理由にしない）</li>
+  <li>「調べたが問題なかった」「変更なし」の類（読者がその点を疑いうるなら、行動を変えなくても残す）</li>
+</ul>
+
+<div class="q" id="q3">
+  <div class="t">設問 3/4（保持規則）</div>
+  <label class="opt"><input type="radio" name="q3" value="リストを採用（字句は実装時に推敲）">
+    リストを採用（字句は実装時に推敲）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 全編集流儀が削除規則と保持規則を対で持つ（説明 2）。
+    既定配置は全 6 項を常時 rule（削除される長さ・簡潔さ指示の枠内に収める）。
+    推奨を覆す条件: 長いと感じるなら先頭 2 項だけを常時 rule に残し、残りを正典詳細へ</span></label>
+  <label class="opt"><input type="radio" name="q3" value="現行の「前提・条件・例外・数値」のみ維持">現行の「前提・条件・例外・数値」のみ維持
+    <span class="d">拡張しない。ヘッジ・道標・再掲の保護は書かれず、削除規則側の裁量に任される</span></label>
+  <label class="opt"><input type="radio" name="q3" value="__other__">その他
+    <input type="text" class="other" data-for="q3"></label>
+  <textarea class="note" data-note="q3" aria-label="設問 3 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q4">設問 4/4 弱モデル読者代理の検証の扱い</h2>
+
+<p class="lead">Q8 補足の「haiku などに解釈させて理解可能性を検証する」案の評価。
+先行研究があり、設計として妥当<sup class="fnref" id="fnref-10-1"><a href="#fn-10">10</a></sup>。
+ただし 2 つの設計条件が要る: LLM に出来栄えを主観採点させると長い方を選ぶバイアスが
+報告されているため<sup class="fnref" id="fnref-11-1"><a href="#fn-11">11</a></sup>、
+判定は採点ではなく<mark>理解質問への回答</mark>（内容の再現・タスクの遂行）にする。
+毎回は重いので、適用は重量級の成果物（設計文書・長い報告）に限る。
+現行のページレビューは facet（観点別に分担するレビューの単位）を複数走らせる形で、
+この検証はその 1 facet として追加できる。</p>
+
+<div class="q" id="q4">
+  <div class="t">設問 4/4（弱モデル読者代理の検証）</div>
+  <label class="opt"><input type="radio" name="q4" value="T4 のレビュー統一設計に任意 facet として組み込む">
+    T4 のレビュー統一設計に任意 facet として組み込む<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: レビュー機構の再設計（T4）が進行中で、検証工程はそちらの管轄。
+    単独で先に作ると T4 と二重設計になる。
+    推奨を覆す条件: 効果を早く見たいなら次の重量級成果物で 1 回試す</span></label>
+  <label class="opt"><input type="radio" name="q4" value="次の重量級成果物で 1 回試してから判断">次の重量級成果物で 1 回試してから判断
+    <span class="d">実測が先。試行 1 回のコストは haiku 数回の呼び出しで小さい</span></label>
+  <label class="opt"><input type="radio" name="q4" value="見送り">見送り
+    <span class="d">既存の facet レビュー（新規 context の subagent）で足りるとみなす</span></label>
+  <label class="opt"><input type="radio" name="q4" value="__other__">その他
+    <input type="text" class="other" data-for="q4"></label>
+  <textarea class="note" data-note="q4" aria-label="設問 4 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+<p class="d">回答には要らない。調査の全文と一次資料の所在。</p>
+<ul class="d">
+  <li>調査 4 本の全文は本セッションの記録にあり、要点は回答受領後に notes/norm-refit.md へ
+    エントリとして転記する</li>
+  <li>既存の調査台帳（2026-07-29 の 9 本調査）: リポジトリの <code>notes/research-ledger.md</code>。
+    今回の調査はその 4〜7 節と矛盾する発見が無いことを確認済み</li>
+  <li>機械化できる診断（語彙リスト・文長など）の受け皿: <code>textlint-plan.md</code>（導入は未着手）</li>
+</ul>
+
+<div id="fn-set">
+<h2 id="s-fn">脚注</h2>
+<p class="fn" id="fn-1"><a class="fnnum" href="#fnref-1-1">1.</a> Singhal et al. "A Long Way to Go: Investigating Length Correlations in RLHF" (<a href="https://arxiv.org/abs/2310.03716">arXiv:2310.03716</a>)。RLHF の報酬改善の大部分が応答長の増加で説明でき、長さのみの報酬で下流改善の大半を再現できる
+  <a class="fnback" href="#fnref-1-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-2"><a class="fnnum" href="#fnref-2-1">2.</a> Huang et al. "Large Language Models Cannot Self-Correct Reasoning Yet" (<a href="https://arxiv.org/abs/2310.01798">arXiv:2310.01798</a>)。外部信号なしの自己修正は改善せず時に劣化。反復推敲 (Self-Refine) の効果上限は自己批評能力で決まる
+  <a class="fnback" href="#fnref-2-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-3"><a class="fnnum" href="#fnref-3-1">3.</a> "Know Your Audience" (<a href="https://arxiv.org/abs/2312.02065">arXiv:2312.02065</a>)。年齢・教育レベルを指定しても出力の読みやすさは適応しない（4 モデルで実測）
+  <a class="fnback" href="#fnref-3-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-4"><a class="fnnum" href="#fnref-4-1">4.</a> Bereiter &amp; Scardamalia の knowledge-telling / knowledge-transforming モデル（1987。共著者による解説 <a href="https://files.eric.ed.gov/fulltext/ED338725.pdf">ERIC ED338725</a> で一次確認）。cue 駆動の連想検索 + 逐次転記で、目標構造を持たない
+  <a class="fnback" href="#fnref-4-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-5"><a class="fnnum" href="#fnref-5-1">5.</a> Horton &amp; Keysar 1996（読者配慮は初期計画でなく事後監視の工程。abstract 確認）と Camerer et al. 1989（curse of knowledge は金銭インセンティブでも消えない。<a href="https://www.cmu.edu/dietrich/sds/docs/loewenstein/CurseknowledgeEconSet.pdf">原文 PDF</a> で一次確認）
+  <a class="fnback" href="#fnref-5-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-6"><a class="fnnum" href="#fnref-6-1">6.</a> Williams "Style" Lesson 9（原文 PDF）、Zinsser "On Writing Well" ch.2-3（講義用抜粋）、<a href="https://www.plainlanguage.gov/">Federal Plain Language Guidelines</a>（原典 PDF）、<a href="https://developers.google.com/tech-writing">Google Tech Writing Course</a>、Microsoft Style Guide、Reuters Handbook。いずれも一次確認
+  <a class="fnback" href="#fnref-6-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-7"><a class="fnnum" href="#fnref-7-1">7.</a> Kravtchenko &amp; Demberg, Cognition 2022。文脈から自明な情報の明示は無視されず、誤った含意（「普段は違うのかも」）を生成させる。物語文の聞き手実験で、技術文書への外挿は未検証
+  <a class="fnback" href="#fnref-7-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-8"><a class="fnnum" href="#fnref-8-1">8.</a> Sperber &amp; Wilson の関連性理論: 関連性 = 認知効果（判断の変化に加え、疑いの解消・誤解の訂正・確信度の較正を含む）と処理労力の比（<a href="https://www.dan.sperber.fr/wp-content/uploads/2004_wilson_relevance-theory.pdf">Wilson &amp; Sperber 2004</a> で一次確認）
+  <a class="fnback" href="#fnref-8-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-9"><a class="fnnum" href="#fnref-9-1">9.</a> Kellogg 2008 (<a href="https://www.jowr.org/jowr/article/view/759">Journal of Writing Research</a>、一次確認)。熟達した書き手は著者の意図・テキスト・読者の解釈の 3 表象を並走させる。読者表象の外部化はその機械的代替
+  <a class="fnback" href="#fnref-9-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-10"><a class="fnnum" href="#fnref-10-1">10.</a> Kirchner et al. "Prover-Verifier Games improve legibility of LLM outputs" (<a href="https://arxiv.org/abs/2407.13692">arXiv:2407.13692</a>)。小さい verifier が検証できるよう最適化すると、正しい解に対する人間の検証精度も上がる。説明の価値を生徒モデルの成績で測る simulatability (arXiv:2012.00893) も同型
+  <a class="fnback" href="#fnref-10-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-11"><a class="fnnum" href="#fnref-11-1">11.</a> Zheng et al. "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena" (<a href="https://arxiv.org/abs/2306.05685">arXiv:2306.05685</a>) が LLM 評価者の verbosity bias を明記。Saito et al. (<a href="https://arxiv.org/abs/2310.10076">arXiv:2310.10076</a>) も同報告
+  <a class="fnback" href="#fnref-11-1" aria-label="本文へ戻る">&#8617;</a></p>
+</div>
+
+<h2 id="s-preview">付録 回答の preview</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" aria-label="回答の preview" readonly></textarea>
+
+</main>
+
+<div id="bar">
+  <div id="bar-in">
+    <div class="bar-info">
+      <span id="proj">cc-marketplace</span>
+      <span id="cnt"></span>
+      <span id="res"></span>
+    </div>
+    <textarea id="free" aria-label="自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <div class="bar-actions">
+      <a id="back" href="./">一覧に戻る</a>
+      <div class="action-cluster">
+        <button type="button" id="reset" class="subbtn">入力をリセット</button>
+        <button type="button" id="copy">回答をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var THEME = 'norm-refit 取捨選択規範の再設計';
+  var KEY = 'draft:f004';
+  var QS = [
+    { id: 'q1', label: '取捨選択の判定基準' },
+    { id: 'q2', label: '生成前手続き' },
+    { id: 'q3', label: '保持規則' },
+    { id: 'q4', label: '弱モデル読者代理の検証' }
+  ];
+
+  function ans(qid) {
+    var c = document.querySelector('input[name="' + qid + '"]:checked');
+    if (!c) return null;
+    if (c.value === '__other__') {
+      var o = document.querySelector('.other[data-for="' + qid + '"]');
+      return (o && o.value.trim()) ? 'その他: ' + o.value.trim() : 'その他（記述なし）';
+    }
+    return c.value;
+  }
+  function build() {
+    var lines = ['## HTML フォーム回答（' + THEME + '）'], n = 0;
+    QS.forEach(function (q) {
+      var a = ans(q.id);
+      if (a) n++;
+      lines.push('- ' + q.id.toUpperCase() + '（' + q.label + '）: ' + (a || '未回答'));
+      var note = document.querySelector('.note[data-note="' + q.id + '"]');
+      if (note && note.value.trim()) lines.push('    - ' + q.id.toUpperCase() + ' 補足: ' + note.value.trim());
+    });
+    var free = document.getElementById('free').value.trim();
+    lines.push('- 補足: ' + (free || 'なし'));
+    return { text: lines.join('\n'), n: n, total: QS.length };
+  }
+  function saveDraft() {
+    var d = { radios: {}, texts: {} };
+    document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
+    document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
+    var free = document.getElementById('free').value;
+    if (free) d.texts['free'] = free;
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  function applyDraft(d) {
+    Object.keys(d.radios || {}).forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
+      if (el) el.checked = true;
+    });
+    Object.keys(d.texts || {}).forEach(function (k) {
+      if (k === 'free') { document.getElementById('free').value = d.texts[k]; return; }
+      var kind = k.slice(0, 2), id = k.slice(2);
+      var el = kind === 'o:' ? document.querySelector('.other[data-for="' + id + '"]')
+                             : document.querySelector('.note[data-note="' + id + '"]');
+      if (el) el.value = d.texts[k];
+    });
+  }
+  function refresh() {
+    var r = build();
+    document.getElementById('preview').value = r.text;
+    document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+  }
+  function copyText(text) {
+    var res = document.getElementById('res');
+    function ok() { res.textContent = 'コピーしました'; setTimeout(function () { res.textContent = ''; }, 3000); }
+    function ng() {
+      var p = document.getElementById('preview');
+      p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
+      res.textContent = 'コピー不可: preview を手動コピー';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, ng);
+    else ng();
+  }
+
+  document.addEventListener('input', function () { saveDraft(); refresh(); });
+  document.addEventListener('change', function () { saveDraft(); refresh(); });
+  document.getElementById('copy').addEventListener('click', function () { copyText(build().text); });
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
+    document.getElementById('free').value = '';
+    refresh();
+  });
+
+  try { var raw = localStorage.getItem(KEY); if (raw) applyDraft(JSON.parse(raw)); } catch (e) {}
+  refresh();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>規範の配置と強制: 再整理と方針確認（11 問）</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #1a1a1a; --sub: #555;
+    --border: #d0d0d0;
+    --control-border: #8a8a8a;
+    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
+    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab;
+      --border: #3a3f47; --control-border: #767d87;
+      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
+      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-bottom: 190px; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.7;
+         word-break: auto-phrase;
+         font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", Meiryo, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 170px; }
+  h1, h2, h3 { text-wrap: balance; }
+  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px;
+       scroll-margin-top: 12px; }
+  h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
+         font-family: "SF Mono", Menlo, monospace; }
+  pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
+        font-size: 0.875em; line-height: 1.5; }
+  a { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+  .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  table.wide { min-width: 560px; }
+  table.stats td:nth-child(2), table.stats th:nth-child(2) {
+    text-align: right; font-variant-numeric: tabular-nums; }
+  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub); padding-bottom: 4px; }
+  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  tr.key td, tr.key th { background: var(--hl); }
+  .fn { font-size: 0.875em; color: var(--sub); margin: 6px 0 0; padding-left: 20px; scroll-margin-top: 16px; }
+  .fn:target { background: var(--accent-bg); border-left: 3px solid var(--accent);
+               padding-left: 17px; border-radius: 0 4px 4px 0; }
+  .fnref { scroll-margin-top: 16px; }
+  .fnref a { text-decoration: none; padding: 0 1px; }
+  .fnref a:hover { text-decoration: underline; }
+  .fnref:target a { background: var(--accent-bg); outline: 2px solid var(--accent); border-radius: 3px; }
+  .fnnum { text-decoration: none; font-weight: 700; }
+  .fnback { text-decoration: none; margin-left: 3px; }
+  .fnback:hover { text-decoration: underline; }
+  .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
+           border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
+           padding: 7px 12px; margin: 8px 0 14px; }
+  .gloss b { color: var(--fg); font-weight: 700; }
+  .ok { color: var(--ok); } .ng { color: var(--ng); }
+  .d { color: var(--sub); font-size: 0.875em; }
+  label.opt .d { display: block; }
+  .lead { margin-bottom: 6px; }
+  .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
+       padding: 12px 15px; margin: 16px 0; }
+  .q .t { font-weight: 700; margin-bottom: 6px; }
+  label.opt { display: block; background: var(--bg); border: 1px solid var(--control-border);
+              border-radius: 6px; padding: 8px 10px; margin: 6px 0; cursor: pointer; }
+  label.opt:has(input:checked) { outline: 2px solid var(--accent); }
+  .rec { background: var(--accent-fill); color: #fff; font-size: 0.875em; border-radius: 4px;
+         padding: 0 6px; margin-left: 4px; }
+  input.other { width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--control-border);
+                border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 1em; }
+  textarea.note { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--control-border);
+                  border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 0.875em;
+                  min-height: 30px; resize: vertical; }
+  #preview { width: 100%; min-height: 180px; font-family: "SF Mono", Menlo, monospace;
+             font-size: 0.875em; background: var(--code); color: var(--fg);
+             border: 1px solid var(--control-border); border-radius: 6px; padding: 10px; }
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+         border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+         z-index: 100; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  .bar-info { display: flex; align-items: center; gap: 8px; }
+  .bar-info #res { margin-left: auto; text-align: right; }
+  .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  #back { display: inline-block; background: none; border: 1px solid var(--control-border); color: var(--sub);
+          border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #proj { align-self: center; font-size: 0.875em; font-weight: 700;
+          border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
+          padding: 3px 9px; white-space: nowrap; }
+  #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
+          border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
+          color: var(--fg); font-size: 0.875em; resize: vertical; }
+  #free:focus { min-height: 88px; }
+  #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
+          padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 1em; }
+  .subbtn { background: none; border: 1px solid var(--control-border); color: var(--sub); border-radius: 6px;
+            padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
+  .subbtn:hover { border-color: var(--accent); color: var(--accent); }
+  #cnt, #res { font-size: 0.875em; color: var(--sub); white-space: nowrap; }
+  @media print {
+    #bar { display: none; }
+    main { max-width: none; padding: 0; }
+    h1, h2, h3 { break-after: avoid; }
+    table, pre, .q { break-inside: avoid; }
+    @page { margin: 16mm; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>規範の配置と強制: 再整理と方針確認（11 問）</h1>
+
+<p>Claude の日本語出力すべてで情報の取捨選択が劣っているという指摘を起点にした、
+規範の配置・重複解消・違反検知の方針確認。この URL の初版（7 問）は
+「答えられる状態になっていない」として差し戻された。検知の種類の整理・plugin 構成の裏の議題・
+正典（詳細規範の唯一の置き場）の中身の特定が先に要る、という指摘を受け、追加調査 2 本（規範の全数抽出、rule の分離実測）を
+行って観点を組み直したのがこの版。実装は別セッションが行う。
+並行していたセッション 2（HTML 報告のテンプレート + 機械検査の改修）とセッション 3
+（github-pr skill の改修）は 2026-07-31 に実装・release 済みで、残る実装はすべて本セッション系列が担う。</p>
+
+<p><b>結論</b>: 規範を 3 層（汎用の正典 / 媒体固有 / 情報デザイン）に分け、
+規範の重複 47 グループのうち汎用規範の分を正典 1 箇所に集約し、違反検知は出力形式ごとに既存機構を割り当てる
+（ターミナル返答だけ検知タイミングが存在せず、事前規範 + 事後測定で扱う）。
+この線引きの確認 8 問と、前版から変更のない小さい未決 3 問。</p>
+
+<p class="lead"><b>決めること</b>: 11 セクション 11 問（セクション番号 = Q 番号）。</p>
+<ul>
+  <li><a href="#s-q1">設問 1/11 正典の中身: 3 層の線引き（Q1）</a></li>
+  <li><a href="#s-q2">設問 2/11 汎用規範の重複の解消方式（Q2）</a></li>
+  <li><a href="#s-q3">設問 3/11 正典の置き場と参照機構（Q3）</a></li>
+  <li><a href="#s-q4">設問 4/11 常時 rule の統合（Q4）</a></li>
+  <li><a href="#s-q5">設問 5/11 常時層に置く最小規範（Q5）</a></li>
+  <li><a href="#s-q6">設問 6/11 html-communication の転記解消（Q6）</a></li>
+  <li><a href="#s-q7">設問 7/11 違反検知の割り当て（Q7）</a></li>
+  <li><a href="#s-q8">設問 8/11 取捨選択の指示文（Q8）</a></li>
+  <li><a href="#s-q9">設問 9/11 session plugin の代替手順記述（Q9）</a></li>
+  <li><a href="#s-q10">設問 10/11 plugin-release.md への追記（Q10）</a></li>
+  <li><a href="#s-q11">設問 11/11 決定記録の置き場（Q11）</a></li>
+</ul>
+
+<p class="d"><b>読み方</b>: 説明 1 が観点の全体像（差し戻し指摘への対応マップ）、説明 2 が今回の実測。
+設問は Q1 → Q2 → Q3 → Q4・Q5 の順に依存する。Q9〜Q11 の 3 問は前版の最終版から内容を変えていない。Q8 は選択肢に現状維持を追加した。</p>
+
+<h2 id="s-e1">説明 1 観点マップと確定済み事項</h2>
+
+<p class="lead">差し戻しの指摘は、整理すべき観点の全体像と各観点の掘り下げ深度を体系的に整理しろ、というものだった。
+下の一覧が観点の全体像で、各観点をどこまで掘ったかと、どの設問に反映したかを対応させている。</p>
+
+<ul>
+  <li>正典の中身: 規範 321 件を全数抽出・分類し、重複 47 グループを特定（説明 2）→ Q1</li>
+  <li>重複の解消と plugin 構成: 重複マップと plugin 設計原則（自己完結）との緊張を整理 → Q2</li>
+  <li>正典の置き場と参照機構: rule の reference 分離をバイナリ解析 + 実測で確定 → Q3</li>
+  <li>常時層の構成: 前版の設計を Q3 への依存として組み替え → Q4・Q5</li>
+  <li>外部正典との二重化: html-communication の転記箇所を特定 → Q6</li>
+  <li>違反検知: 出力形式 × タイミングのマトリックスを作成 → Q7</li>
+  <li>取捨選択の指示文: 実証済み対策の比較（前版 + 現状維持の選択肢を追加）→ Q8</li>
+  <li>小さい未決 3 件: 前版から変更なし → Q9〜Q11</li>
+  <li>発動測定: 測定は完了済み。運用 4 問は別フォーム「発動検証ハーネスの設計」で回答待ち</li>
+</ul>
+
+<p class="lead">以下は確定済みで、このフォームでは再確認しない。
+確定済み事項を覆す選択肢には、説明文に「確定済みの〜を覆す」と明記してある。</p>
+
+<ul>
+  <li>AskUserQuestion は恒久禁止。波及して ask-with-choices skill（選択肢形式の質問を出す skill）は廃止</li>
+  <li>規範の総量は減らす。常時層（常時ロードされる user rule 群）を圧縮し、正典を 1 箇所に置く</li>
+  <li>共通 reference の共有は同じ plugin 内なら可。別 plugin なら互いを知るべきでない
+    （この確定の裏にある plugin 構成の議題が Q2）</li>
+  <li>output style の新設案は取り下げ済み。毎ターン注入の hook（UserPromptSubmit）も検討済みで除外
+    （定量的裏付けなし・コスト線形蓄積・subagent に発火しない）</li>
+  <li>skill の description は常時の指示としては効かない（実測: 無関係プロンプトで遵守 0/19、
+    skill 発動時のみ 5/5）。rule 層は実測を根拠に残す</li>
+  <li>「検知の機械化はスクリプトのみ。hook はやりすぎ」は、元の文脈が HTML 成果物の lint に
+    限られていたため、適用範囲を Q7 のマトリックスで割り当て直す（差し戻し指摘そのもの）</li>
+</ul>
+
+<div class="gloss">
+※ <b>常時層</b> = セッション開始時にロードされ、全ターンのコンテキストに残り続ける user rule 群
+（<code>~/.claude/rules/</code>）。現在 7 本・合計 11.6 KB（2026-07-31 実測。うち 1 本は 07-31 追加の Bash 運用 rule）。<br>
+※ <b>正典</b> = 詳細規範の唯一の置き場。同じ規範を複数箇所に書かず、他所は参照だけにする。
+</div>
+
+<h2 id="s-e2">説明 2 実測: 規範インベントリと rule 分離の成立</h2>
+
+<p>差し戻し指摘のうち、正典の中身の特定と、rule で reference 分離が取れるかの 2 点を実測で埋めた。</p>
+
+<p class="lead">表 1 は規範の全数抽出の集計。rules/ 3 本と 5 plugin（japanese-text-writing /
+claude-user-communication / github-pr / impl-spec / session）から、指示単位で 321 件を抽出した。
+rules/ の対象 3 本は出力規範を持つもの（japanese-text-writing・user-communication-format・
+paths 付きの markdown-formatting）。常時 7 本の残り 5 本（primary-sources-first・decision-record・
+subagent-delegation・background-task・07-31 追加の bash-state-mutation-isolation）は
+調査・タスク・Bash 運用の rule で、出力規範を含まないため対象外。
+markdown-formatting は paths 付き（.md ファイル編集時のみロード）で常時 7 本に数えず、
+出力規範を持つ常時 rule は 2 本。
+重複（同趣旨 2 箇所以上）は 47 グループ。分類集計と重複マップは
+<code>.handover/todo/2026-07-30-norm-inventory.md</code> に永続化してある
+（321 件の明細は台帳未転記。必要になったら台帳記載の手順で再抽出する）。</p>
+
+<section class="table-wrap" tabindex="0" aria-labelledby="cap-1">
+<table class="stats">
+<caption id="cap-1">表 1 規範 321 件の分類集計（2026-07-30 実測）</caption>
+<thead>
+<tr><th scope="col">分類</th><th scope="col">件数</th><th scope="col">性格</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">文レベル（文体・冗長・事実表現・用語）</th><td>67</td><td>大半が汎用</td></tr>
+<tr><th scope="row">構成・順序（結論先行・地図）</th><td>43</td><td>汎用 + 分類別</td></tr>
+<tr><th scope="row">その他（運用・報告形式）</th><td>38</td><td>plugin 固有</td></tr>
+<tr><th scope="row">表記・記法（markdown・和欧混植・表）</th><td>37</td><td>媒体固有</td></tr>
+<tr><th scope="row">文書種別の構造（テンプレ）</th><td>37</td><td>媒体固有</td></tr>
+<tr><th scope="row">確認・質問の作り方</th><td>37</td><td>媒体固有寄り</td></tr>
+<tr><th scope="row">取捨選択（何を書くか）</th><td>26</td><td>大半が汎用</td></tr>
+<tr><th scope="row">検知・レビュー手順</th><td>22</td><td>媒体固有</td></tr>
+<tr><th scope="row">形式・媒体判定</th><td>10</td><td>入口（常時層）</td></tr>
+<tr><th scope="row">目的・読者の確定</th><td>4</td><td>汎用</td></tr>
+</tbody>
+</table>
+</section>
+
+<p class="d">重複の実例 3 つ。(1) github-pr の PR 本文生成 reference の「一文は短く」は
+正典 skill の同趣旨規範の再実装で、正典を改定しても追従しない。
+(2) impl-spec の 3 skill が AskUserQuestion の使用を必須指定しており、恒久禁止（確定済み）と矛盾する
+（実装セッションで除去が必要な確定バグ）。(3) html-communication の SKILL.md は外部の
+情報デザイン norm ライブラリを正典と宣言しながら、その内容の要約 12 項目（インベントリの HC31〜42）を本文に転記している
+（Q6 で処遇を決める）。</p>
+
+<p>rule の分離の実測（バイナリ解析 v2.1.220 + 使い捨てプロジェクトでの実走）:
+rules/ はサブディレクトリまで再帰ロードされ、対象は <code>.md</code> のみ、名前による除外規約は無い。
+ロード対象外にする手段は 3 つ成立した。(1) <code>.md</code> 以外の拡張子にする、
+(2) 絶対マッチしない <code>paths</code> を付ける（<code>paths: []</code> や <code>["**"]</code> は常時ロード扱いに戻る罠あり）、
+(3) 公式設定 <code>claudeMdExcludes</code>（settings.json）で除外する。
+いずれもロードされないだけで、rule 本文からパスを指せば Read で普通に読める。
+つまり <b>skill の references と同じ二層が rule だけでも作れる</b>（Q3 の選択肢 B）。</p>
+
+<h2 id="s-q1">設問 1/11 正典の中身: 3 層の線引き（Q1）</h2>
+
+<p><b>決めること</b>: 正典に何を書くか。抽出した 321 件を 3 層に分け、
+汎用層（L1）だけを正典 1 箇所に置く線引きの承認。</p>
+
+<p class="lead">表 2 は 3 層の線引き案。決め手は「中身」の列で、
+媒体を問わず効く規範だけが L1 = 正典に入る。</p>
+
+<section class="table-wrap" tabindex="0" aria-labelledby="cap-2">
+<table class="wide">
+<caption id="cap-2">表 2 規範の 3 層と行き先</caption>
+<thead>
+<tr><th scope="col">層</th><th scope="col">中身</th><th scope="col">現在の所在</th><th scope="col">提案の行き先</th></tr>
+</thead>
+<tbody>
+<tr class="key"><th scope="row">L1 汎用規範</th>
+    <td>取捨選択・構成・順序・文レベル・事実の峻別・用語規律（媒体を問わない）</td>
+    <td>正典 skill + rule の要点 + 3 plugin の再実装</td>
+    <td>正典 1 箇所に集約（置き場・参照機構は Q3 で決める）</td></tr>
+<tr><th scope="row">L2 媒体固有規範</th>
+    <td>md 記法・HTML・PR・spec・handover・質問作法</td>
+    <td>各 plugin と markdown-formatting rule</td>
+    <td>各 plugin に残す（L1 と重複する部分だけ削る）</td></tr>
+<tr><th scope="row">L3 情報デザイン</th>
+    <td>構造 S・表 T・フォーム F・視覚 V・明晰 C（100 norm）</td>
+    <td>product-boilerplate の docs/norms/</td>
+    <td>外部正典のまま変更しない</td></tr>
+</tbody>
+</table>
+</section>
+
+<p class="d">L1 と L3 の境界: L1 は「日本語の文章をどう書くか」、L3 は「ページ・表・フォームを
+どう設計するか」。重複領域（表のセルは短く等）は L3 側を正とし、L1 には持たない。
+帰結として md 文書の表の書き方が L3（外部 repo）にしか無くなるため、
+md 向けの最小限（セルは判定値・比較表の向き）は L2 の markdown-formatting rule へ移す。
+これも承認の範囲に含む（移設だけ覆したい場合は Q1 の補足欄に書く）。
+L2 のうち文書種別テンプレ（表 1 の「文書種別の構造」37 件）は各 plugin の管轄のままで、
+HTML 報告のテンプレはセッション 2 の担当。</p>
+
+<div class="q" id="q1">
+  <div class="t">Q1（正典の中身: 3 層の線引き）</div>
+  <label class="opt"><input type="radio" name="q1" value="3 層の線引きを承認（md 表規範の L2 移設を含む）">
+    3 層の線引きを承認（md 表規範の L2 移設を含む）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 全数抽出の分類（表 1）で汎用と媒体固有の境界が実測ベースで引けた。
+    推奨を覆す条件: L1 が広すぎると感じるなら 2 つ目の選択肢（文レベルだけに絞る）が保守的</span></label>
+  <label class="opt"><input type="radio" name="q1" value="L1 を文レベル規範だけに絞る">
+    L1 を文レベル規範だけに絞る
+    <span class="d">構成・順序と取捨選択は媒体別に残す案。結論先行などの構成規範の重複
+    （7 箇所で実測）が残り続ける</span></label>
+  <label class="opt"><input type="radio" name="q1" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q1" aria-label="その他の内容">
+  <textarea class="note" data-note="q1" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q2">設問 2/11 汎用規範の重複の解消方式（Q2）</h2>
+
+<p><b>決めること</b>: 重複 47 グループのうち L1（汎用規範）に関わる分の解消方式。
+github-pr / impl-spec / session が関与する重複・矛盾は 47 中 27 グループ
+（インベントリ台帳で実測。関与数であり、27 の全部が汎用規範ではない）。
+残り 20 グループには、rule の要点と正典 skill の間の重複（これも本設問の解消対象）、
+媒体固有どうしの重複、外部正典との重なり（Q6 が扱う）が混在する。論点は plugin 設計原則
+「plugin は skills / hooks / agents で自己完結する。rule の存在を暗黙前提にしない」
+（<code>.claude/rules/plugin-design.md</code>）との折り合い。
+確定済みの「別 plugin なら互いを知るべきでない」が禁じるのは、plugin 間の明示参照
+（別 plugin のファイルや skill を名指しで読ませる指示）。重複を消すとは、正典 + 常時層（正典の実体と参照機構は Q3 で決める）に寄せて、
+各 plugin 内の再実装を削ることを指す。正典が skill の場合（Q3 = A）でも自己完結原則と
+両立する理由は、他 plugin が正典を名指し参照せず、読むトリガを plugin の外の常時 rule が持つから。
+Q3 = B なら正典は plugin の外に出るため、この論点自体が生じない。</p>
+
+<p class="d">検討して採らない案が 2 つある。(1) marketplace 内 symlink での実体共有
+（plugin 間共有の唯一の公式手段）: install 時に cache へ複製展開されるため正典改定に追従せず、
+--plugin-dir の開発時には壊れる。(2) 部分統合（重複密度の高い組だけ、
+例: japanese-text-writing + claude-user-communication）: 両者の重複は入口判定と要点の再掲で、
+一元化（Q2 推奨案）がそのまま解消し、統合しても github-pr 等との重複は残るため解消手段として不十分。</p>
+
+<div class="q" id="q2">
+  <div class="t">Q2（汎用規範の重複の解消方式）</div>
+  <label class="opt"><input type="radio" name="q2" value="再実装を各 plugin から削除し、正典 + 常時層に一元化">
+    再実装を各 plugin から削除し、正典 + 常時層に一元化<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 正典を改定するたびに複数 plugin を同期する保守は成立しない（plugin 関与の重複 27 グループが実測）。
+    自己完結原則は「機能の自己完結」に限定して再解釈し、plugin-design.md の改定を実装対象に含める。
+    この marketplace は個人用で、rule は全マシンへ symlink 配布済み。
+    推奨を覆す条件: plugin を rule なし環境の第三者へ単体配布する計画があるなら「重複を容認して現状維持」。
+    削除後に事後測定で該当 plugin の出力の遵守低下が実測されたら復元を検討</span></label>
+  <label class="opt"><input type="radio" name="q2" value="重複を容認して現状維持">
+    重複を容認して現状維持（自己完結を優先）
+    <span class="d">確定済みの「規範の総量は減らす」（説明 1）を覆す。正典と再実装のずれは放置される</span></label>
+  <label class="opt"><input type="radio" name="q2" value="関係 plugin を統合して同 plugin 内の共通 reference にする">
+    関係 plugin を統合して同 plugin 内の共通 reference にする
+    <span class="d">対象が 5 plugin（PR・spec・session・communication・執筆規範）に及び、
+    1 つへの統合は単機能 plugin 原則を壊す</span></label>
+  <label class="opt"><input type="radio" name="q2" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q2" aria-label="その他の内容">
+  <textarea class="note" data-note="q2" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q3">設問 3/11 正典の置き場と参照機構（Q3）</h2>
+
+<p><b>決めること</b>: L1 正典の実体をどの機構に置き、どう読ませるか。
+rule の reference 分離が実測で成立した（説明 2）ため、前版に無かった選択肢 B が加わった。
+対象（ターミナル返答・PR 本文・commit message）はファイルパスを持たず
+paths 条件で捕捉できないため、どの案でも入口は paths なしの常時 rule が担う（C を除く）。</p>
+
+<p class="lead">表 3 は参照機構 3 案の比較。決め手は「追加の環境設定」と「機構の安定性」の 2 行。</p>
+
+<section class="table-wrap" tabindex="0" aria-labelledby="cap-3">
+<table class="wide">
+<caption id="cap-3">表 3 正典の置き場と参照機構 3 案</caption>
+<thead>
+<tr><th scope="col">観点</th>
+    <th scope="col">A: skill 正典 + 入口 rule</th>
+    <th scope="col">B: rule 二層（本文 + 除外 refs）</th>
+    <th scope="col">C: skill のみ</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">正典を読む経路</th>
+    <td>rule のトリガ文 → skill を読む</td>
+    <td>rule 本文 → パスで Read</td>
+    <td>description の自律発動</td></tr>
+<tr><th scope="row">発動の確実性</th>
+    <td>常時 + トリガ文で skill 補強（効果未検証）</td>
+    <td>常時 + Read 直（Read 遵守は未検証）</td>
+    <td class="ng">実測 ~50%<sup class="fnref" id="fnref-2-1"><a href="#fn-2">2</a></sup></td></tr>
+<tr class="key"><th scope="row">追加の環境設定</th>
+    <td class="ok">不要</td>
+    <td class="ng">claudeMdExcludes を settings に追加</td>
+    <td class="ok">不要</td></tr>
+<tr class="key"><th scope="row">機構の安定性</th>
+    <td class="ok">公式推奨の型<sup class="fnref" id="fnref-1-1"><a href="#fn-1">1</a></sup>・現行 2 rule で稼働中</td>
+    <td>公式設定・symlink 越えは未実測</td>
+    <td>公式機構</td></tr>
+<tr><th scope="row">subagent への効き</th>
+    <td class="ok">rule も skill も効く</td>
+    <td class="ok">rule が効く</td>
+    <td>skill は発動時のみ</td></tr>
+</tbody>
+</table>
+</section>
+
+<p class="d">B の実現手段は 3 つあり（説明 2）、拡張子方式なら settings 変更は不要。
+それでも表は claudeMdExcludes 方式（公式設定で最も正統な変種）で比較している。
+拡張子方式は markdown ツーリング（lint・エディタ）を失い、paths 空振り方式は非公開実装に依存するため。</p>
+
+<div class="q" id="q3">
+  <div class="t">Q3（正典の置き場と参照機構）</div>
+  <label class="opt"><input type="radio" name="q3" value="A: skill 正典 + 入口 rule">
+    A: skill 正典 + 入口 rule<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 表 3 の決め手の 2 行。現行の japanese-text-writing がこの型で稼働しており、
+    追加設定なしで徹底できる。推奨を覆す条件: skill の名前解決・発動に問題が出たら B へ移行
+    （B の成立自体は実測済み）</span></label>
+  <label class="opt"><input type="radio" name="q3" value="B: rule 二層（本文 + claudeMdExcludes で除外した refs/）">
+    B: rule 二層（本文 + claudeMdExcludes で除外した refs/）
+    <span class="d">正典が rules の symlink 配布 1 系統に閉じるのが利点。
+    全マシンの settings に除外設定が要り、symlink 越えの glob マッチは未実測</span></label>
+  <label class="opt"><input type="radio" name="q3" value="C: skill のみ（入口 rule なし）">
+    C: skill のみ（入口 rule なし）
+    <span class="d">入口を失い自律発動 ~50% に賭ける形。
+    確定済みの「rule 層は実測を根拠に残す」（説明 1）を覆す</span></label>
+  <label class="opt"><input type="radio" name="q3" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q3" aria-label="その他の内容">
+  <textarea class="note" data-note="q3" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q4">設問 4/11 常時 rule の統合（Q4）</h2>
+
+<p><b>決めること</b>: 出力系の常時 rule の本数。</p>
+
+<p class="d">Q4・Q5 は Q3 = A（skill 正典 + 入口 rule）を前提にする。Q3 で B を選んだ場合、
+統合の対象は rule 二層の本文側になり Q4・Q5 の判断はそのまま流用できる。C の場合は再設計するため、Q4・Q5 は未回答のままでよい。</p>
+
+<p>現状、出力の場面で発動する常時 rule は 2 本ある。
+<code>japanese-text-writing.md</code>（29 行。日本語規範の要点 + skill への委譲）と
+<code>user-communication-format.md</code>（30 行。出力形式の判定 + skill への委譲）。
+適用場面が重なる（user-communication-format は「出力を書き出す直前」を明記、
+japanese-text-writing rule は日本語出力の全場面に適用）。
+ask-with-choices skill の廃止（確定済み）で後者の分岐が 1 つ減る。</p>
+
+<p>統合する場合の 1 本の中身の案:</p>
+<ol>
+  <li>形式判定: フリーテキストか HTML ページか（現 user-communication-format の分岐から
+    ask-with-choices を除いたもの）</li>
+  <li>数行返答・進捗報告の最小規範（Q5 で決める）</li>
+  <li>まとまった文章は japanese-text-writing skill（正典）を読めというトリガ</li>
+  <li>日本語共通原則の要点（現 japanese-text-writing.md rule の圧縮版。
+    正典 skill との重複を最小にして残す）</li>
+</ol>
+
+<p class="d">「統合」を選んだ場合、この中身の案の採用を含む（項目 2 の実文は Q5、項目 3 の参照機構は
+Q3 の回答に従う）。項目単位で変えたい場合は Q4 の補足欄に書く。</p>
+
+<div class="q" id="q4">
+  <div class="t">Q4（常時 rule の統合）</div>
+  <label class="opt"><input type="radio" name="q4" value="出力系 2 本を 1 本に統合">
+    出力系 2 本を 1 本に統合<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 発動点が同一の rule が 2 本ある状態は分割の利得が無く、
+    確定済みの「常時層を圧縮」の実行形になる。
+    推奨を覆す条件: 日本語規範と形式判定を別々に配布・無効化したい運用があるなら 2 本維持が妥当</span></label>
+  <label class="opt"><input type="radio" name="q4" value="2 本のまま各圧縮">
+    2 本のまま各圧縮
+    <span class="d">配布単位は現状維持で中身だけ削る。統合よりも変更が小さい</span></label>
+  <label class="opt"><input type="radio" name="q4" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q4" aria-label="その他の内容">
+  <textarea class="note" data-note="q4" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q5">設問 5/11 常時層に置く最小規範（Q5）</h2>
+
+<p><b>決めること</b>: 常時層に規範の実文をどこまで置くか。</p>
+
+<p>背景: 毎ターン起きる場面なのにどの層にも規範が無い欠落が 2 つ特定されている。
+「フリーテキストを選んだ後の書き方」と「進捗報告（tool call 間の 1 行）」で、
+どちらも数行の返答なので skill の発動（まとまった文章が対象）は期待できない。
+一方、既定の system prompt が結論先行・取捨選択・共有文脈なしの読者を前提にした書き方を
+毎ターン指示済みであり、規範を 1 つ足すと既存規範の遵守率が下がる方向に働く<sup class="fnref" id="fnref-5-1"><a href="#fn-5">5</a></sup>。
+足すなら system prompt との差分だけを数行に限る。置く場合の実文のたたき台:</p>
+
+<pre>進捗報告（tool call 間の 1 行）: 作業の実況ではなく、分かったこと・方針が変わったことだけを書く。
+数行返答: 最重要の一文を先頭に置き、次のアクションがあれば明示して終える。</pre>
+
+<p class="d">実装条件: たたき台は既定 system prompt の該当節の実文と突合し、
+重複する項目（結論先行など）を落として真の差分だけを残す。</p>
+
+<div class="q" id="q5">
+  <div class="t">Q5（常時層に置く最小規範）</div>
+  <label class="opt"><input type="radio" name="q5" value="数行返答・進捗報告の最小規範を常時 rule に置く（本文のたたき台 2 行程度）">
+    数行返答・進捗報告の最小規範を常時 rule に置く（本文のたたき台 2 行程度）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: この 2 場面は毎ターン起きるのに skill では捕捉できず、常時層にしか置き場が無い。
+    差分数行なら総量削減と両立する。推奨を覆す条件: system prompt の既定で十分と判断するなら「作らない」が最小</span></label>
+  <label class="opt"><input type="radio" name="q5" value="skill 正典のみに置く">
+    skill 正典のみに置く
+    <span class="d">常時層は最小になるが、数行返答の場面で skill が読まれる見込みは低く、実効性は下がる</span></label>
+  <label class="opt"><input type="radio" name="q5" value="作らない（system prompt の既定に任せる）">
+    作らない（system prompt の既定に任せる）
+    <span class="d">既定 system prompt の書き方指示に任せ、ユーザー側規範は足さない。
+    欠落 2 場面は未対応のまま残る</span></label>
+  <label class="opt"><input type="radio" name="q5" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q5" aria-label="その他の内容">
+  <textarea class="note" data-note="q5" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q6">設問 6/11 html-communication の転記解消（Q6）</h2>
+
+<p><b>決めること</b>: html-communication の SKILL.md が、外部正典（product-boilerplate の
+情報デザイン norm ライブラリ、L3）を正典と宣言しながら、その要約 12 項目（インベントリの HC31〜42）を本文に転記している
+二重化の処遇。正典側の norm を改定しても転記は追従せず、ずれが蓄積する構造。</p>
+
+<div class="q" id="q6">
+  <div class="t">Q6（html-communication の転記解消）</div>
+  <label class="opt"><input type="radio" name="q6" value="転記を削り、参照 + 発動点の指示だけ残す">
+    転記を削り、参照 + 発動点の指示だけ残す<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 二重化は L1 の重複（Q2）と同じ構造の問題で、正典 1 箇所の確定済み方針に沿う。
+    注: セッション 2 分の改修（雛形 + 機械検査）は 0.8.0 として release 済みで、
+    転記の削除は 0.8.0 の SKILL.md を基点に行う。推奨を覆す条件: 転記が「読む量を減らす要点フィルタ」として効いている実感があるなら現状維持</span></label>
+  <label class="opt"><input type="radio" name="q6" value="現状維持（転記を要点フィルタとして残す）">
+    現状維持（転記を要点フィルタとして残す）
+    <span class="d">ずれの蓄積を容認する。確定済みの「正典を 1 箇所に置く」（説明 1）を覆す</span></label>
+  <label class="opt"><input type="radio" name="q6" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q6" aria-label="その他の内容">
+  <textarea class="note" data-note="q6" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q7">設問 7/11 違反検知の割り当て（Q7）</h2>
+
+<p><b>決めること</b>: 違反検知を出力形式ごとに割り当てる整理の承認と、ギャップの扱い。
+差し戻し指摘のとおり、検知には種類（機械 lint / 規範 review / 事後測定）があり、
+形式によって検知タイミングの有無が違う。</p>
+
+<p class="lead">表 4 は出力形式 × 検知のマトリックス。決め手は「検知タイミング」の列で、
+ターミナル返答だけ検知の挟みどころが存在しない（生成がそのまま提示になる）。</p>
+
+<section class="table-wrap" tabindex="0" aria-labelledby="cap-4">
+<table class="wide">
+<caption id="cap-4">表 4 出力形式 × 違反検知の割り当て（現状の実在機構ベース）</caption>
+<thead>
+<tr><th scope="col">出力形式</th>
+    <th scope="col">検知タイミング</th>
+    <th scope="col">機械 lint</th>
+    <th scope="col">規範 review</th>
+    <th scope="col">事後測定</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">HTML ページ</th>
+    <td>提示前</td>
+    <td class="ok">検査スクリプト 3 層（skill 同梱・稼働中）</td>
+    <td class="ok">facet レビュー 4 種（稼働中）</td>
+    <td>可</td></tr>
+<tr><th scope="row">.md 成果物（spec・handover 等）</th>
+    <td>保存直後 + 提示前</td>
+    <td class="ok">markdownlint hook（稼働中）</td>
+    <td>spec / handover の専用 reviewer のみ</td>
+    <td>可</td></tr>
+<tr><th scope="row">PR 本文・コメント</th>
+    <td>作成・更新の前</td>
+    <td class="ng">未設置</td>
+    <td>生成時規範 + 出典の事前検証のみ</td>
+    <td>可</td></tr>
+<tr><th scope="row">commit message</th>
+    <td>Bash 実行前（未設置）</td>
+    <td class="ng">未設置</td>
+    <td class="ng">未設置</td>
+    <td>可</td></tr>
+<tr class="key"><th scope="row">ターミナル返答</th>
+    <td class="ng">存在しない（生成 = 提示）</td>
+    <td class="ng">不可</td>
+    <td class="ng">不可</td>
+    <td>唯一の検証経路</td></tr>
+</tbody>
+</table>
+</section>
+
+<div class="gloss">
+※ <b>機械 lint</b> = 決定論のスクリプト検査（html-validate、markdownlint 等）。<br>
+※ <b>規範 review</b> = LLM subagent による提示前レビュー（facet レビュー、spec-reviewer 等）。<br>
+※ <b>事後測定</b> = 発動検証ハーネス（別フォーム「発動検証ハーネスの設計」）の審査器で
+違反率を統計的に測る。提示は止められないが、規範や配置の効果検証に使える。
+規範遵守の測定に要る rule 注入腕（append_system_prompt へ rule 実文を注入）は実走未確認で、
+実装セッションの最初の確認項目。
+</div>
+
+<p class="d">確定済みの「検知の機械化はスクリプトのみ。hook はやりすぎ」はこの表の「機械 lint」列の
+実装手段の話として維持する（新規 hook を足さない。markdownlint の既存 hook は既設として維持）。
+規範 review は機械化とは別区分で、既に 3 系統が稼働している。</p>
+
+<div class="q" id="q7">
+  <div class="t">Q7（違反検知の割り当て）</div>
+  <label class="opt"><input type="radio" name="q7" value="マトリックスを承認。ギャップは埋めず、ターミナル返答は事前規範 + 事後測定で扱う">
+    マトリックスを承認。ギャップは埋めず、ターミナル返答は事前規範 + 事後測定で扱う<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 検知の追加は規範の追加と同種の負債で、違反が事後測定で実測されてから
+    その形式に足すのが順序。推奨を覆す条件: 特定形式の違反が目視で頻発しているなら、先にその行を埋める</span></label>
+  <label class="opt"><input type="radio" name="q7" value="承認 + 汎用 .md 成果物にも提示前の規範 review を標準化">
+    承認 + 汎用 .md 成果物にも提示前の規範 review を標準化
+    <span class="d">spec / handover 以外の .md（README・調査記録等）の行を先に埋める。
+    レビュー subagent の起動が常態化しコストが増える</span></label>
+  <label class="opt"><input type="radio" name="q7" value="承認 + PR 本文に lint スクリプトを足す">
+    承認 + PR 本文に lint スクリプトを足す
+    <span class="d">リンク切れ・引用不一致の決定論チェックを PR 作成フローに足す。
+    github-pr skill の改修になる（セッション 3 分は 0.3.0 で release 済みのため、
+    その create skill を基点に実装する）</span></label>
+  <label class="opt"><input type="radio" name="q7" value="承認 + 汎用 .md の規範 review と PR lint の両方を足す">
+    承認 + 汎用 .md の規範 review と PR lint の両方を足す
+    <span class="d">2 つのギャップを同時に埋める。コストは上 2 案の合算</span></label>
+  <label class="opt"><input type="radio" name="q7" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q7" aria-label="その他の内容">
+  <textarea class="note" data-note="q7" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q8">設問 8/11 取捨選択の指示文（Q8）</h2>
+
+<p><b>決めること</b>: 長さ・簡潔さ指示を何に置き換えるか
+（旧指示の残し方を含む 1 判断で、各選択肢が両方のセットになっている）。
+廃止対象は、出力全体の分量を抑えさせる散文向けの指示。
+媒体・外部ツール由来の物理制約（コミット subject の長さなど）は対象外。
+一文の長さのような文単位の可読性指示を含むかは実装時に個別判定する
+（例: github-pr の PR 本文生成 reference にある「一文は短く」は文単位の指示で、個別判定の対象）。
+該当指示は説明 2 の全数抽出で特定済み（台帳に個別リストは無いため、実装セッションが明細を再抽出して削除する）。
+廃止自体は表 5 の反証を根拠にした本フォームの提案。
+実文の置き場（正典と常時層の要点）は Q1 = 3 層承認を前提にし、Q1 で「L1 を文レベル規範だけに
+絞る」を選んだ場合は取捨選択の指示を媒体別に置き直す。</p>
+
+<p class="lead">表 5 は指示の型ごとの実証結果。決め手は「目的と読者の 1 文確定」の行で、
+表 5 の 4 型の中で唯一、実験で効果が確認されている手続き。</p>
+
+<section class="table-wrap" tabindex="0" aria-labelledby="cap-5">
+<table>
+<caption id="cap-5">表 5 指示の型と実証結果</caption>
+<thead>
+<tr><th scope="col">指示の型</th><th scope="col">実証結果</th><th scope="col">判定</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">「短くしろ」（簡潔さの強調）</th>
+    <td class="ng">誤情報耐性 −20%<sup class="fnref" id="fnref-3-1"><a href="#fn-3">3</a></sup></td>
+    <td class="ng">廃止</td></tr>
+<tr><th scope="row">「読者を意識せよ」（心構え）</th>
+    <td class="ng">促しだけでは執筆に反映されず<sup class="fnref" id="fnref-4-1"><a href="#fn-4">4</a></sup></td>
+    <td class="ng">採らない</td></tr>
+<tr><th scope="row">文字数・行数の上限</th>
+    <td class="ng">閾値超で追従が崩壊<sup class="fnref" id="fnref-6-1"><a href="#fn-6">6</a></sup></td>
+    <td class="ng">採らない</td></tr>
+<tr class="key"><th scope="row">目的と読者の 1 文確定（手続き）</th>
+    <td class="ok">人間の書き手の実験で効果確認<sup class="fnref" id="fnref-4-2"><a href="#fn-4">4</a></sup></td>
+    <td class="ok">採用候補</td></tr>
+</tbody>
+</table>
+</section>
+
+<p class="d">key 行の条件: 読者の特定は「〜向け」の粒度では不足で、
+「読者が何を判断・実行するか」まで下ろしたときに効く<sup class="fnref" id="fnref-4-3"><a href="#fn-4">4</a></sup>。
+実証は人間の書き手を被験者にした実験で、LLM への指示としての転移は未検証。</p>
+
+<p>推奨案の実文（正典と常時層の要点に置く文言のたたき台。字句は実装時に推敲する）:</p>
+
+<pre>書く前に「読者はこれを読んで何を判断・実行するか」を 1 文で確定する。
+その判断を変えない情報は削り、変える情報（前提・条件・例外・数値）は
+圧縮しても落とさない。長さの上限・下限は定めない。</pre>
+
+<p class="d">判定基準 1 文だけでは抽象的すぎて裁量に戻る、という懸念には、
+基準単体では採らず必ず手続き（書く前の 1 文確定）とセットにすることで答える。
+基準は削るかどうか迷ったときの判定にだけ使う。</p>
+
+<div class="q" id="q8">
+  <div class="t">Q8（取捨選択の指示文）</div>
+  <label class="opt"><input type="radio" name="q8" value="手続き（書く前の 1 文確定）+ 削る基準のセット。散文向けの長さ指示は全廃（対象の区分は本文の定義に従う）">
+    手続き（書く前の 1 文確定）+ 削る基準のセット。散文向けの長さ指示は全廃（対象の区分は本文の定義に従う）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 表 5 で唯一実証がある型（人間の書き手での実証。LLM への転移は未検証）を軸に、
+    基準を補助に回す構成。推奨を覆す条件: 運用して出力が長くなりすぎる、
+    または事後測定で効果が確認できないなら再設計</span></label>
+  <label class="opt"><input type="radio" name="q8" value="削る基準 1 文のみ（手続きなし）。散文向けの長さ指示は全廃（対象の区分は本文の定義に従う）">
+    削る基準 1 文のみ（手続きなし）。散文向けの長さ指示は全廃（対象の区分は本文の定義に従う）
+    <span class="d">最小だが、基準だけでは書き手の裁量に戻りやすい（表 5 の「心構え」型に近づく）</span></label>
+  <label class="opt"><input type="radio" name="q8" value="手続き + 基準 + 長さの目安も残す">
+    手続き + 基準 + 長さの目安も残す
+    <span class="d">長さの数値は実証裏付けが無く、誤情報耐性の低下と同じ副作用を持ち込むリスクがある</span></label>
+  <label class="opt"><input type="radio" name="q8" value="現状維持（既存の長さ・簡潔さ指示を残す）">
+    現状維持（既存の長さ・簡潔さ指示を残す）
+    <span class="d">表 5 の反証（誤情報耐性 −20%）を受け入れて残す判断。
+    確定済みの「規範の総量は減らす」（説明 1）と緊張する</span></label>
+  <label class="opt"><input type="radio" name="q8" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q8" aria-label="その他の内容">
+  <textarea class="note" data-note="q8" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q9">設問 9/11 session plugin の代替手順記述（Q9）</h2>
+
+<p><b>決めること</b>: session plugin の 3 skill（start / handover / retrospective）が
+各々の文言で持つ、TaskCreate 系ツールが使えない環境では draft のタスクボードで代替する、
+という趣旨の手順の処遇（draft = session plugin がセッション中の記録を書き溜める引き継ぎ下書きファイル）。</p>
+
+<p>この記述の根拠だった既知バグ台帳（claude-known-issues plugin の known-issues.yml）のエントリは
+2026-07-29 に削除済み。バイナリ解析と実測で、task ツールが除去されるのは subagent だけで、
+現行バイナリと、task ツールの除去を制御する機能フラグ（tengu_shale_finch）の現在値では、
+トップレベルのセッションは TaskCreate 等を持つと確認された。
+session plugin の skill はトップレベルで実行されるため、この代替手順が発動する環境は実在しない。</p>
+
+<div class="q" id="q9">
+  <div class="t">Q9（session plugin の代替手順記述）</div>
+  <label class="opt"><input type="radio" name="q9" value="記述を削除">
+    記述を削除<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 発動する環境が実在しない手順は、読む側の負荷にしかならない。
+    推奨を覆す条件: 将来の環境差（フラグ変更等）に備えたいなら格下げ案が保険になる</span></label>
+  <label class="opt"><input type="radio" name="q9" value="subagent 向け注記に格下げ">
+    subagent 向け注記に格下げ
+    <span class="d">3 skill の該当段落を「subagent は task ツールを持たない」という正確な制約の
+    1 行に置き換える。保険の対象は、将来 session plugin の subagent（handover-reviewer 等）に
+    タスク管理を持たせる変更</span></label>
+  <label class="opt"><input type="radio" name="q9" value="現状維持">
+    現状維持
+    <span class="d">前提を失った記述が残り続ける。根拠の台帳エントリは既に無い</span></label>
+  <label class="opt"><input type="radio" name="q9" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q9" aria-label="その他の内容">
+  <textarea class="note" data-note="q9" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q10">設問 10/11 plugin-release.md への追記（Q10）</h2>
+
+<p><b>決めること</b>: rule はセッション開始時に一度だけ読まれ、セッション中の変更は効かない、
+という注意をプロジェクト規約 <code>.claude/rules/plugin-release.md</code>（plugin 更新手順）にも並べるか。
+README の rules 節には記載済み。この案が出た経緯: rule と plugin では変更の反映経路が違い
+（rule は次セッション開始時、plugin は update 手順の実行後）、plugin と同じ手順で即反映されると
+誤認しうるため、release 手順の隣に注意書きを置く価値が論点になった。</p>
+
+<div class="q" id="q10">
+  <div class="t">Q10（plugin-release.md への追記）</div>
+  <label class="opt"><input type="radio" name="q10" value="追記しない">
+    追記しない<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: rules/ は plugin ではなく release 手順の関心事の外。README の記載が正典で、
+    本体の重複は更新漏れの温床になる。推奨を覆す条件: rule 変更後の「効かない」誤認が実際に起きたら再検討</span></label>
+  <label class="opt"><input type="radio" name="q10" value="README への 1 行ポインタを追記">
+    README への 1 行ポインタを追記
+    <span class="d">本文は重複させず、参照だけ plugin-release.md に足す折衷</span></label>
+  <label class="opt"><input type="radio" name="q10" value="反映タイミングの説明を追記">
+    反映タイミングの説明を追記
+    <span class="d">説明の本体が README と 2 箇所になり、片方だけ更新される既知のリスクを負う</span></label>
+  <label class="opt"><input type="radio" name="q10" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q10" aria-label="その他の内容">
+  <textarea class="note" data-note="q10" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q11">設問 11/11 決定記録の置き場（Q11）</h2>
+
+<p><b>決めること</b>: この repo でセッションをまたぐ確定事項を積む台帳の置き場。
+前々セッションから未決で、現状は調査台帳（2026-07-29 の調査結論を記録したファイル、
+.handover/todo/ 内）で代用している。置き場の <code>.handover/</code> は
+session plugin の引き継ぎ資料置き場（gitignore 済み）で、その todo/ は未消化の引き継ぎを置き、
+消化後に archive へ移す一時置き場。repo に docs/ は無く、GitHub issue は 0 件。</p>
+
+<p class="lead">表 6 は選択肢 4 案の比較。決め手は「セッションからの読み書き」と「恒久台帳への適合」の
+2 行。常時使う台帳は、探索の最初に引っかかる場所（repo 内・grep 可能）にあるほど参照漏れが減る。</p>
+
+<section class="table-wrap" tabindex="0" aria-labelledby="cap-6">
+<table class="wide">
+<caption id="cap-6">表 6 決定記録の置き場 4 案</caption>
+<thead>
+<tr><th scope="col">観点</th>
+    <th scope="col">docs/decisions.md</th>
+    <th scope="col">GitHub issue</th>
+    <th scope="col">両方</th>
+    <th scope="col">現状維持（.handover 台帳）</th></tr>
+</thead>
+<tbody>
+<tr class="key"><th scope="row">セッションからの読み書き</th>
+    <td class="ok">Read / grep 直接</td>
+    <td>gh CLI 経由</td>
+    <td>2 系統の維持</td>
+    <td class="ok">Read / grep 直接</td></tr>
+<tr><th scope="row">git 履歴に乗るか</th><td class="ok">乗る</td><td class="ng">乗らない</td><td>片方だけ</td><td class="ng">乗らない（gitignore 済み）</td></tr>
+<tr><th scope="row">モバイルから読む</th><td>GitHub UI で可</td><td class="ok">得意</td><td class="ok">得意</td><td class="ng">不可</td></tr>
+<tr><th scope="row">管理物の増加</th><td>ファイル 1 本</td><td>issue 運用の開始</td><td class="ng">最大</td><td class="ok">増加なし</td></tr>
+<tr><th scope="row">並行セッションの競合耐性</th><td class="ng">単一ファイルで競合あり</td><td class="ok">1 決定 1 issue で強い</td><td class="ok">issue 側は強い</td><td>ファイル分担で回避中</td></tr>
+<tr class="key"><th scope="row">恒久台帳への適合</th><td class="ok">適する</td><td class="ok">適する</td><td class="ok">適する</td><td class="ng">todo/ は消化・archive 前提</td></tr>
+</tbody>
+</table>
+</section>
+
+<p class="d">1 決定 1 ファイルの docs/decisions/ ディレクトリ型（いわゆる ADR 型）は競合に最も強いが、
+現状の決定数（数件）ではファイル分割が過剰で一覧性が落ちるため選択肢にしない。
+docs/decisions.md 案は追記専用の運用で競合を緩和し、競合が実際に起きたらディレクトリ型への移行を検討する。
+ファイル名は前々セッションで提示された候補 docs/backlog.md からの変更案（決定記録専用であることを名前に出す）。
+旧名にしたい場合は Q11 の補足欄に書く。</p>
+
+<div class="q" id="q11">
+  <div class="t">Q11（決定記録の置き場）</div>
+  <label class="opt"><input type="radio" name="q11" value="docs/decisions.md（repo 内の台帳ファイル）">
+    docs/decisions.md（repo 内の台帳ファイル）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 表 6 の決め手の行 + git 履歴に乗る（調査で Web より先に repo 内と git 履歴を当たる運用の対象に入る）。
+    競合は追記専用の運用（自分のエントリだけ足す）で緩和する。
+    推奨を覆す条件: 議論の経緯ごと残したい・モバイル起点の運用が主なら issue が妥当</span></label>
+  <label class="opt"><input type="radio" name="q11" value="GitHub issue">
+    GitHub issue
+    <span class="d">1 決定 1 issue でリンクしやすいが、セッションからの参照は gh 経由になる</span></label>
+  <label class="opt"><input type="radio" name="q11" value="両方（確定 = docs、未決 = issue）">
+    両方（確定 = docs、未決 = issue）
+    <span class="d">役割分担は明確だが管理物が最大で、片方だけ更新されるリスクを常に持つ</span></label>
+  <label class="opt"><input type="radio" name="q11" value="現状維持（.handover/todo/ の調査台帳で続ける）">
+    現状維持（.handover/todo/ の調査台帳で続ける）
+    <span class="d">当座は機能しているが、todo/ は消化して archive へ移す運用の置き場で、恒久の台帳とは寿命が合わない</span></label>
+  <label class="opt"><input type="radio" name="q11" value="__other__">その他</label>
+  <input type="text" class="other" data-for="q11" aria-label="その他の内容">
+  <textarea class="note" data-note="q11" aria-label="補足（任意）" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+<p class="d">回答には要らない。調査の生データと集計値の所在の記録。<br>
+・規範インベントリ台帳（321 件の分類集計・重複 47 グループのマップ）:
+<code>.handover/todo/2026-07-30-norm-inventory.md</code><br>
+・調査台帳（2026-07-29 の 9 本調査の結論と出典）: <code>.handover/todo/2026-07-30-research-ledger.md</code><br>
+・rule 分離と description 測定の記録: <code>.handover/todo/merged-2026-07-30-trigger-eval-harness.md</code> と
+本セッションの調査記録 <code>.handover/draft/norm-placement-and-enforcement.md</code><br>
+・表 5 の「閾値超で追従が崩壊」は調査台帳 6 節の記述の要約。
+簡潔さ指示単体では長さ削減も頭打ちになるという記述が台帳 4 節にあるが
+（「Anthropic 自身の実測」とのみ記載）、一次出典 URL が未確認のため表からは外し脚注 3 に注記した。</p>
+
+<h2 id="s-fn">脚注</h2>
+<p class="fn" id="fn-1"><a class="fnnum" href="#fnref-1-1">1.</a> Anthropic 公式ブログ（2026-07-24）:
+"Use progressive disclosure heavily, for example if you have several unique instructions on how to verify
+your work, create a verification skill and reference it from your CLAUDE.md."
+<a href="https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models">claude.com/blog</a>。
+公式 memory doc・best-practices doc にも同旨の記載。
+推奨の直接の対象は CLAUDE.md で、rule への適用は同じ常時ロード層であることからの類推。
+<a class="fnback" href="#fnref-1-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-2"><a class="fnnum" href="#fnref-2-1">2.</a> Scott Spence の実測報告（2025-11、200+ プロンプト）:
+description による skill 自律発動は約 50%。多様なプロンプト全体での値で、
+確定済み測定の 5/5（skill のドメインに一致するプロンプトのみ）とは条件が違い矛盾しない。
+<a href="https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably">scottspence.com</a>
+<a class="fnback" href="#fnref-2-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-3"><a class="fnnum" href="#fnref-3-1">3.</a> Giskard/Phare（arXiv:2505.11365）:
+簡潔さを求める system prompt で誤情報耐性が最大 20% 低下。17 モデル中 11 で統計的に有意。
+台帳 4 節には、簡潔さ指示単体では長さ削減が約 20% で頭打ちになるという記述もある
+（「Anthropic 自身の実測」とのみ記載で、一次出典 URL は未確認）。
+<a href="https://arxiv.org/abs/2505.11365">arxiv.org</a>
+<a class="fnback" href="#fnref-3-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-4"><a class="fnnum" href="#fnref-4-1">4.</a> 「目的と読者の 1 文確定」の効果の実証は
+Bracewell 1978・Atlas 1979（集約は調査台帳 7 節）。同じ Atlas 1979 は、読者を考慮するよう促されても
+その知識が実際の執筆に使われないことも示した（表 5 の心構え行の反証）。処方の原典は Flower の writer-based prose 論
+（「読者と共有する目標を 1 文で書き、階層の最上位に置く」）。
+<a href="https://wacclearinghouse.org/docs/jbw/v3n3/flower.pdf">wacclearinghouse.org (PDF)</a>
+<a class="fnback" href="#fnref-4-1" aria-label="本文へ戻る">&#8617;1</a>
+<a class="fnback" href="#fnref-4-2" aria-label="本文へ戻る">&#8617;2</a>
+<a class="fnback" href="#fnref-4-3" aria-label="本文へ戻る">&#8617;3</a></p>
+<p class="fn" id="fn-5"><a class="fnnum" href="#fnref-5-1">5.</a> 複数の独立調査の収束による（Anthropic 公式ドキュメント
+「CLAUDE.md が長いと Claude は無視する」、指示数の増加で後方の指示のエラー率が上がる
+IFScale 実験 <a href="https://arxiv.org/abs/2507.11538">arXiv:2507.11538</a> ほか）。
+集約は調査台帳（2026-07-29 の 9 本調査の結論集、<code>.handover/todo/2026-07-30-research-ledger.md</code>）の 1 節。
+<a class="fnback" href="#fnref-5-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-6"><a class="fnnum" href="#fnref-6-1">6.</a> 調査台帳 6 節の記述の要約。具体的な閾値の値は
+台帳に記載が無く、一次出典 URL も未確認。なお長さの上限を比較した対照実験は調査の範囲で見つかっていない
+（台帳 9 節がチェックリストの項目数上限について同旨を報告しており、そこからの類推）。
+確度は表 5 の他行より弱い。
+<a class="fnback" href="#fnref-6-1" aria-label="本文へ戻る">&#8617;</a></p>
+
+<h2 id="s-preview">付録 回答の preview</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" readonly aria-label="回答の preview"></textarea>
+
+</main>
+
+<div id="bar">
+  <div id="bar-in">
+    <div class="bar-info">
+      <span id="proj">cc-marketplace</span>
+      <span id="cnt"></span>
+      <span id="res"></span>
+    </div>
+    <textarea id="free" aria-label="気づいた点の自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <div class="bar-actions">
+      <a id="back" href="./">一覧に戻る</a>
+      <div class="action-cluster">
+        <button type="button" id="reset" class="subbtn">入力をリセット</button>
+        <button type="button" id="copy">回答をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var THEME = '規範の配置と強制';
+  var KEY = 'draft:2026-07-30-cc-marketplace-norm-placement-form-v2';
+  var QS = [
+    { id: 'q1', label: '正典の中身: 3 層の線引き' },
+    { id: 'q2', label: '汎用規範の重複の解消方式' },
+    { id: 'q3', label: '正典の置き場と参照機構' },
+    { id: 'q4', label: '常時 rule の統合' },
+    { id: 'q5', label: '常時層に置く最小規範' },
+    { id: 'q6', label: 'html-communication の転記解消' },
+    { id: 'q7', label: '違反検知の割り当て' },
+    { id: 'q8', label: '取捨選択の指示文' },
+    { id: 'q9', label: 'session plugin の代替手順記述' },
+    { id: 'q10', label: 'plugin-release.md への追記' },
+    { id: 'q11', label: '決定記録の置き場' }
+  ];
+
+  function ans(qid) {
+    var c = document.querySelector('input[name="' + qid + '"]:checked');
+    if (!c) return null;
+    if (c.value === '__other__') {
+      var o = document.querySelector('.other[data-for="' + qid + '"]');
+      return (o && o.value.trim()) ? 'その他: ' + o.value.trim() : 'その他（記述なし）';
+    }
+    return c.value;
+  }
+  function build() {
+    var lines = ['## HTML フォーム回答（' + THEME + '）'], n = 0;
+    QS.forEach(function (q) {
+      var a = ans(q.id);
+      if (a) n++;
+      lines.push('- ' + q.id.toUpperCase() + '（' + q.label + '）: ' + (a || '未回答'));
+      var note = document.querySelector('.note[data-note="' + q.id + '"]');
+      if (note && note.value.trim()) lines.push('    - ' + q.id.toUpperCase() + ' 補足: ' + note.value.trim());
+    });
+    var free = document.getElementById('free').value.trim();
+    lines.push('- 補足: ' + (free || 'なし'));
+    return { text: lines.join('\n'), n: n, total: QS.length };
+  }
+  function saveDraft() {
+    var d = { radios: {}, texts: {} };
+    document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
+    document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
+    var free = document.getElementById('free').value;
+    if (free) d.texts['free'] = free;
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  function applyDraft(d) {
+    Object.keys(d.radios || {}).forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
+      if (el) el.checked = true;
+    });
+    Object.keys(d.texts || {}).forEach(function (k) {
+      if (k === 'free') { document.getElementById('free').value = d.texts[k]; return; }
+      var kind = k.slice(0, 2), id = k.slice(2);
+      var el = kind === 'o:' ? document.querySelector('.other[data-for="' + id + '"]')
+                             : document.querySelector('.note[data-note="' + id + '"]');
+      if (el) el.value = d.texts[k];
+    });
+  }
+  function refresh() {
+    var r = build();
+    document.getElementById('preview').value = r.text;
+    document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+  }
+  function copyText(text) {
+    var res = document.getElementById('res');
+    function ok() { res.textContent = 'コピーしました'; setTimeout(function () { res.textContent = ''; }, 3000); }
+    function ng() {
+      var p = document.getElementById('preview');
+      p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
+      res.textContent = 'コピー不可: preview を手動コピー';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, ng);
+    else ng();
+  }
+
+  document.addEventListener('input', function () { saveDraft(); refresh(); });
+  document.addEventListener('change', function () { saveDraft(); refresh(); });
+  document.getElementById('copy').addEventListener('click', function () { copyText(build().text); });
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
+    document.getElementById('free').value = '';
+    refresh();
+  });
+
+  try { var raw = localStorage.getItem(KEY); if (raw) applyDraft(JSON.parse(raw)); } catch (e) {}
+  refresh();
+})();
+</script>
+</body>
+</html>
