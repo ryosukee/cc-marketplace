@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>norm-refit: f001 回答の解釈と実装ロードマップ</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #1a1a1a; --sub: #555;
+    --border: #d0d0d0;          /* 罫線・区切り。装飾なのでコントラスト要件の対象外 */
+    --control-border: #8a8a8a;  /* 入力欄・ボタンの輪郭。WCAG 1.4.11 の 3:1 を満たす値 */
+    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
+    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+  }
+  /* print に適用されないよう screen を明示する（印刷時のスキーム切替は仕様未定義） */
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab;
+      --border: #3a3f47; --control-border: #767d87;
+      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
+      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-bottom: 90px; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.7;
+         word-break: auto-phrase;
+         font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", Meiryo, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 90px; }
+  h1, h2, h3 { text-wrap: balance; }
+  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px;
+       scroll-margin-top: 12px; }
+  h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
+         font-family: "SF Mono", Menlo, monospace; }
+  mark { background: var(--hl); color: inherit; padding: 0 2px; }
+  blockquote { margin: 10px 0 14px; padding: 2px 0 2px 14px;
+               border-left: 3px solid var(--control-border); }
+  blockquote p { margin: 4px 0; }
+  pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
+        font-size: 0.875em; line-height: 1.5; }
+  a { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+  .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub); padding-bottom: 4px; }
+  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  tr.key td, tr.key th { background: var(--hl); }
+  .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
+           border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
+           padding: 7px 12px; margin: 8px 0 14px; }
+  .gloss b { color: var(--fg); font-weight: 700; }
+  .ok { color: var(--ok); } .ng { color: var(--ng); }
+  .d { color: var(--sub); font-size: 0.875em; }
+  .lead { margin-bottom: 6px; }
+  #footer-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+                border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+                z-index: 100; }
+  #footer-nav > div { max-width: 640px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+  #back { display: inline-block; background: none; border: 1px solid var(--control-border); color: var(--sub);
+          border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #proj { align-self: center; font-size: 0.875em; font-weight: 700;
+          border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
+          padding: 3px 9px; white-space: nowrap; }
+  @media print {
+    #footer-nav { display: none; }
+    main { max-width: none; padding: 0; }
+    h1, h2, h3 { break-after: avoid; }
+    table, pre { break-inside: avoid; }
+    @page { margin: 16mm; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>norm-refit: f001 回答の解釈と実装ロードマップ</h1>
+
+<p>フォーム f001「規範の配置と強制: 再整理と方針確認（11 問）」の回答を受領した。
+この文書は回答の解釈・確定と追加検討の切り分け・今後の進め方・想定される変更をまとめた報告で、
+補足で依頼のあった改修プロジェクトの命名案を含む。</p>
+
+<p><b>結論</b>: 11 問すべてで方針が確定した。内訳は、回答どおり実行に移せる確定が
+5 問（Q1・Q4・Q5・Q9・Q10。うち Q5 は実装条件を変更）、確定に調査・設計が併走する
+2 問（Q2 = 推奨を覆して現状維持を基本線に個別判断の調査、Q3 = A 案（skill 正典 + 入口 rule）
++ plugin と rule で配布経路が別なことへの対処の設計）、方針の具体化をゼロベースで再検討する
+4 問（Q6・Q7・Q8・Q11）。派生した追加テーマは計 6 件（T1〜T6）で、
+最重要指定は Q8 起点の T1（なぜ AI 文書は読みたくならないか）。
+実装は T1〜T3 を終えてから一括で行う。</p>
+
+<p class="d"><b>読み方</b>: 急ぎなら説明 1（全体判定）と説明 5（命名）だけでよい。
+説明 2 が実装の扱いが確定した分、説明 3 が追加テーマ 6 件の中身と順序、説明 4 がスコープ。</p>
+
+<h2 id="s-e1">説明 1: 方針は 11 問すべて確定、うち 6 問から追加テーマ 6 件が派生</h2>
+
+<p class="lead">回答の全体判定。決め手は「判定」列で、判定は
+確定 / 確定（T 併走）/ 再検討（T）の 3 値
+（再検討 = 方向は確定済みで、具体化をテーマ T でやり直す）。
+T 番号を持つ 6 行が説明 3 のテーマに対応する。</p>
+
+<div class="gloss">
+※ <b>L1 / L2 / L3</b> = f001 Q1 の規範 3 層。L1 = 媒体を問わない汎用規範（取捨選択・構成・文レベル）、
+L2 = 媒体固有規範（md 記法・HTML・PR 作法など）、L3 = ページ・表・フォームの情報デザイン norm
+（外部 repo product-boilerplate が正典）。<b>常時層</b>は層分類とは別軸で、
+セッション開始時に常にロードされる rule 群を指す（L1 の要点の置き場）。
+</div>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-1">
+<table>
+<caption id="cap-1">表 1 f001 回答の判定一覧</caption>
+<thead>
+<tr><th scope="col">設問</th><th scope="col">主題</th><th scope="col">回答</th><th scope="col">判定</th></tr>
+</thead>
+<tbody>
+<tr><td>Q1</td><td>3 層の線引き</td><td>承認（md 表規範の L2 移設含む）</td><td class="ok">確定</td></tr>
+<tr><td>Q2</td><td>汎用規範の重複</td><td>推奨を覆して現状維持 + 個別判断</td><td class="ok">確定（T3 併走）</td></tr>
+<tr><td>Q3</td><td>正典の置き場</td><td>A: skill 正典 + 入口 rule</td><td class="ok">確定（T2 併走）</td></tr>
+<tr><td>Q4</td><td>常時 rule の統合</td><td>2 本を 1 本に統合</td><td class="ok">確定</td></tr>
+<tr><td>Q5</td><td>常時層の最小規範</td><td>置く（system prompt 非依存で）</td><td class="ok">確定</td></tr>
+<tr><td>Q6</td><td>転記解消</td><td>外部言及自体を無くす方向へ</td><td>再検討（T5）</td></tr>
+<tr><td>Q7</td><td>違反検知の割り当て</td><td>op-review へ統一する方向へ</td><td>再検討（T4）</td></tr>
+<tr class="key"><td>Q8</td><td>取捨選択の指示文</td><td>深掘り調査を指示（最重要）</td><td>再検討（T1）</td></tr>
+<tr><td>Q9</td><td>session の代替手順</td><td>記述を削除</td><td class="ok">確定</td></tr>
+<tr><td>Q10</td><td>plugin-release 追記</td><td>追記しない</td><td class="ok">確定</td></tr>
+<tr><td>Q11</td><td>決定記録の置き場</td><td>2 層メモ構造の設計を指示</td><td>再検討（T6）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="s-e2">説明 2: 実装の扱いが確定したのは 5 件、着手は調査・設計の後ろ</h2>
+
+<p>このリストは、実装の要否と内容がこれ以上の検討なしに確定したもの
+（Q10 は「しない」の確定）。Q2（現状維持 = 変更なし）と Q3（実装内容が T2 の設計に依存）は
+基準に該当しないため含めない。統合 rule の実文が T1（Q8 調査）の成果に、
+正典 skill の名前と置き場が T2 に、同時に実装する plugin 側の重複削除の範囲が T3 に
+依存するため、着手は T1〜T3 の完了後にまとめて行う。</p>
+
+<ul>
+  <li><b>Q1</b>: 3 層の線引きを承認。L1（媒体を問わない汎用規範）を正典 1 箇所へ、
+    L3（情報デザイン norm）は外部正典のまま。付随して md 文書の表の書き方の最小限を
+    L2 の markdown-formatting rule へ移設する</li>
+  <li><b>Q4</b>: 出力系の常時 rule 2 本（日本語執筆要点 + 出力形式判定）を 1 本に統合。
+    フォーム提示の中身 4 項目（形式判定 / 数行返答の最小規範 / 正典を読むトリガ / 共通原則の要点）を採用</li>
+  <li><b>Q5</b>: 数行返答・進捗報告の最小規範を常時 rule に置く。
+    <mark>実装条件を変更</mark>: フォームの案にあった「既定 system prompt と突合して差分だけ残す」は破棄し、
+    system prompt の内容に依存しない自立した実文として書く
+    （system prompt はアップデートで変わりうるため、設計の前提に組み込まない。Q5 補足の指示）</li>
+  <li><b>Q9</b>: session plugin 3 skill の「task ツールが無い環境では draft のタスクボードで代替」
+    記述を削除する（発動する環境が実在しないと確認済みのため）。session の version bump を伴う</li>
+  <li><b>Q10</b>: plugin-release.md への rule 反映タイミングの注意書きは追記しない</li>
+</ul>
+
+<p>フォーム外で確定済みの実装（AskUserQuestion 恒久禁止に伴う ask-with-choices skill の廃止、
+impl-spec 3 skill からの AskUserQuestion 指示除去）も同じ一括実装に含める。</p>
+
+<h2 id="s-e3">説明 3: 追加テーマは 6 件、Q8 の深掘りが先頭</h2>
+
+<p class="lead">回答が指示した追加検討の一覧。決め手は「順序」列で、
+T1 が最優先（Q8 の回答で「一連の改修の中で一番大事な観点」と明示）。</p>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-2">
+<table>
+<caption id="cap-2">表 2 追加調査・設計のテーマと成果物</caption>
+<thead>
+<tr><th scope="col">順序</th><th scope="col">テーマ</th><th scope="col">きっかけ</th><th scope="col">成果物</th></tr>
+</thead>
+<tbody>
+<tr class="key"><td>T1</td><td>AI 文書が読みたくならない根因の深掘り</td><td>Q8</td><td>調査報告 + 指示文の改善案</td></tr>
+<tr><td>T2</td><td>正典 skill + 入口 rule のゼロベース設計と配布協調</td><td>Q3 補足</td><td>設計フォーム</td></tr>
+<tr><td>T3</td><td>重複 27 グループの明細調査と個別判断</td><td>Q2 補足</td><td>明細 + 個別判断フォーム</td></tr>
+<tr><td>T4</td><td>レビュー機構の op-review 一本化設計</td><td>Q7</td><td>設計フォーム + 最終マトリックスの記録</td></tr>
+<tr><td>T5</td><td>外部正典への言及を無くす構成の設計</td><td>Q6</td><td>設計案（T2 に相乗り可）</td></tr>
+<tr><td>T6</td><td>一時メモの 2 層構造の設計</td><td>Q11</td><td>設計案 + 運用 rule 化の判断</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>T1（Q8）: なぜ AI 生成文書は冗長で要領を得ないのか</h3>
+<p>Q8 は成果物の取捨選択を指示する文面（長さ指示の置き換え）を問う設問で、
+回答はその手前の根因調査からやり直す指示だった。
+フォームのたたき台（書く前の 1 文確定 + 削る基準）は「概ね良いがまだ足りない」。
+読者が何も知らない前提での必要十分性や、人間の書き手が無意識・意識的に行っている判断を
+真正面から調査し、根因の説明と改善案を出し直す。既存の調査台帳 5 節（writer-based prose 論、
+読者知識が執筆に反映されない実験）を起点に、そこで扱っていない領域へ広げる。
+Q8 補足の「haiku など低性能モデルに解釈させて理解可能性を検証する」レビュー手段は、
+コストが掛かるため成果物の種類ごとの適用として T1 の改善案に含めて評価する。</p>
+
+<h3>T2（Q3 補足）: 正典 skill + 入口 rule のゼロベース設計</h3>
+<p>参照機構は A 案で確定。ただし命名・配置は現行（japanese-text-writing の skill / rule 名）に
+とらわれず設計し直す。加えて<mark>plugin と rule の配布協調</mark>を議題化する:
+正典 skill は marketplace 経由、入口 rule は repo の rules/ から symlink 配布と、経路が別なので、
+入口 rule が指す skill 名の安定性、両者の版ずれ、plugin 未インストール環境で
+入口 rule だけが残る状態、の扱いを決める必要がある。</p>
+
+<h3>T3（Q2 補足）: 重複の個別判断材料を作る</h3>
+<p>基本線は plugin 独立性を重視した現状維持で確定。そのうえで、重複 47 グループのうち
+plugin が関与する 27 グループの明細（どの指示が、どこで、どう重複しているか）を再抽出し、
+1 グループずつ「独立性のため残す / 基底 rule の管轄として plugin 側から削る」の判断材料を提示する。
+「rule があるから skill には書かない」という個別判断はありうる、が回答の指示。</p>
+
+<h3>T4（Q7）: レビューを facet / norm 定義 + op-review に一本化する</h3>
+<p>検知マトリックスの承認ではなく、ゼロベースの再設計を指示された。方向性は
+「生成側の skill が facet / norm を定義していれば、レビューは op-review
+（成果物を norm と照合して approve / request changes を判定する汎用レビュー skill。
+現在は kanban-agent-orchestrator のプロジェクトローカルにある）で統一でき、
+文書種別ごとの専用 reviewer（spec-reviewer / handover-reviewer）は不要になるのでは」。
+op-review の plugin 化は既存タスク「op-pr-review-assist 設計」の論点に含まれており、
+T4 はそのタスクと合流させる。マトリックス自体は分かりやすいと評価されたので、
+再設計後の<mark>最終形のマトリックスだけ</mark>をどこかの README に恒久記録する（置き場は T4 で決める）。</p>
+
+<h3>T5（Q6）: 外部正典への言及そのものを無くす</h3>
+<p>フォームの選択肢（転記を削って参照を残す）の前提を覆し、「そもそも外部 skill への言及がダメなのでは」
+が指示。html-communication が product-boilerplate の norm ライブラリを名指しする構造をやめ、
+参照せずに成立する構成にするか、関連 plugin として取り込むかを設計する。
+正典の参照構造の話なので T2 と論点が重なり、T2 の設計フォームに相乗りさせる。</p>
+
+<h3>T6（Q11）: 一時メモは 2 層構造で設計し直す</h3>
+<p>repo 内ファイルの方向は承認。ただし単一の decisions ファイルではなく、
+「どのタスクのメモがあるかの一覧」+「タスク・プロジェクトごとのメモ本体」の 2 層にする。
+decisions という名前は仰々しいので、一時メモ置き場として名前・場所を設計する。
+何も決めないと handover に書いてしまう傾向があるため、この運用を rule / CLAUDE.md /
+global rule のどれに書くかの判断も含める。</p>
+
+<h2 id="s-e4">説明 4: スコープは 5 plugin の規範改稿までで、L3 正典の中身は変えない</h2>
+
+<p><b>含む</b>: rules/ の常時層の統合・圧縮（Q4・Q5）、正典 skill の新設（T2 の設計に従う）、
+規範を持つ 5 plugin（claude-user-communication / impl-spec / session / github-pr /
+japanese-text-writing）の規範部分の改稿（T3 の個別判断に従う）、レビュー機構の再設計（T4）、
+一時メモ運用の新設（T6）、散文向けの長さ指示の全廃と置き換え（T1 の成果に従う）。</p>
+
+<p><b>含まない</b>: L3 外部正典（product-boilerplate の norm ライブラリ）の中身の変更、
+発動検証ハーネス（導入済み・PR #2 で別トラック）、PR レビュー支援 skill 本体の設計
+（既存タスク。T4 と接続はする）、Claude Code 本体・system prompt への働きかけ。</p>
+
+<h2 id="s-e5">説明 5: プロジェクト名は norm-refit を推奨</h2>
+
+<p class="lead">今後の html-communication ページの title 先頭に「norm-refit: 」を付け、
+一覧でこの改修の文書だと分かるようにする。候補 3 案の比較。決め手は「短さ」と「範囲の合致」
+（3 案とも repo の kebab 慣例には合う）。</p>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-3">
+<table>
+<caption id="cap-3">表 3 プロジェクト名の候補</caption>
+<thead>
+<tr><th scope="col">観点</th><th scope="col">norm-refit（推奨）</th><th scope="col">norm-slim</th><th scope="col">writing-quality</th></tr>
+</thead>
+<tbody>
+<tr class="key"><td>範囲の合致</td><td class="ok">配置替え + 仕立て直し全般</td><td>削減に偏る</td><td>執筆に偏る</td></tr>
+<tr><td>title 先頭での短さ</td><td class="ok">10 字</td><td class="ok">9 字</td><td>15 字</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>推奨は norm-refit（規範の再配置・仕立て直し）。改修は削減だけでなく、正典の新設計・
+レビュー統一・指示文の作り直しを含むため、範囲の広い refit を採る。
+このページの title には先行して付けてある（別名に決まったら同名上書きで title と index を更新する）。
+覆し可: 名前はどれでも運用は同じなので、しっくりくるものを選んでよい。</p>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+<p class="d">回答の解釈に使った一次資料。読み飛ばしてよい。</p>
+<ul class="d">
+  <li>回答対象フォーム: <a href="./f001.html">f001 規範の配置と強制: 再整理と方針確認（11 問）</a></li>
+  <li>規範インベントリ台帳（321 件・重複 47 グループ）: リポジトリの
+    <code>notes/norm-inventory.md</code>（2026-08-14 に .handover/todo/ から移設）</li>
+  <li>調査台帳（2026-07-29 の 9 本調査）: 同 <code>notes/research-ledger.md</code>（同移設）。
+    T1 の起点は 5 節</li>
+  <li>op-review の現状: kanban-agent-orchestrator リポジトリのプロジェクトローカル skill。
+    cc-marketplace への切り出し論点はタスク「op-pr-review-assist 設計」の引き継ぎ資料に記載</li>
+</ul>
+
+</main>
+
+<div id="footer-nav">
+  <div>
+    <a id="back" href="./">一覧に戻る</a>
+    <span id="proj">cc-marketplace</span>
+  </div>
+</div>
+</body>
+</html>

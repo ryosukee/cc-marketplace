@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>norm-refit: 入口 rule 実文と正典構成・norms 統合（4 問）</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #1a1a1a; --sub: #555;
+    --border: #d0d0d0;
+    --control-border: #8a8a8a;
+    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
+    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab;
+      --border: #3a3f47; --control-border: #767d87;
+      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
+      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-bottom: 190px; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.7;
+         word-break: auto-phrase;
+         font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", Meiryo, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 170px; }
+  h1, h2, h3 { text-wrap: balance; }
+  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px;
+       scroll-margin-top: 12px; }
+  h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
+         font-family: "SF Mono", Menlo, monospace; }
+  mark { background: var(--hl); color: inherit; padding: 0 2px; }
+  blockquote { margin: 10px 0 14px; padding: 2px 0 2px 14px;
+               border-left: 3px solid var(--control-border); }
+  blockquote p { margin: 4px 0; }
+  pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
+        font-size: 0.875em; line-height: 1.5; }
+  a { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+  .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub); padding-bottom: 4px; }
+  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  tbody th { background: transparent; font-weight: normal; }
+  tr.key td, tr.key th { background: var(--hl); }
+  .fn { font-size: 0.875em; color: var(--sub); margin: 6px 0 0; padding-left: 20px; scroll-margin-top: 16px; }
+  .fn:target { background: var(--accent-bg); border-left: 3px solid var(--accent);
+               padding-left: 17px; border-radius: 0 4px 4px 0; }
+  .fnref { scroll-margin-top: 16px; }
+  .fnref a { text-decoration: none; padding: 0 1px; }
+  .fnref a:hover { text-decoration: underline; }
+  .fnref:target a { background: var(--accent-bg); outline: 2px solid var(--accent); border-radius: 3px; }
+  .fnnum { text-decoration: none; font-weight: 700; }
+  .fnback { text-decoration: none; margin-left: 3px; }
+  .fnback:hover { text-decoration: underline; }
+  @media screen and (min-width: 1120px) {
+    #fn-set { position: fixed; top: 24px; left: calc(50% + 348px);
+              width: min(320px, calc(50vw - 364px));
+              max-height: calc(100vh - 240px); overflow-y: auto;
+              padding-right: 8px; }
+    #fn-set h2 { margin-top: 0; font-size: 1em; }
+  }
+  .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
+           border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
+           padding: 7px 12px; margin: 8px 0 14px; }
+  .gloss b { color: var(--fg); font-weight: 700; }
+  .ok { color: var(--ok); } .ng { color: var(--ng); }
+  .d { color: var(--sub); font-size: 0.875em; }
+  label.opt .d { display: block; }
+  .lead { margin-bottom: 6px; }
+  .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
+       padding: 12px 15px; margin: 16px 0; }
+  .q .t { font-weight: 700; margin-bottom: 6px; }
+  label.opt { display: block; background: var(--bg); border: 1px solid var(--control-border);
+              border-radius: 6px; padding: 8px 10px; margin: 6px 0; cursor: pointer; }
+  label.opt:has(input:checked) { outline: 2px solid var(--accent); }
+  .rec { background: var(--accent-fill); color: #fff; font-size: 0.875em; border-radius: 4px;
+         padding: 0 6px; margin-left: 4px; }
+  input.other { width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--control-border);
+                border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 1em; }
+  textarea.note { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--control-border);
+                  border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 0.875em;
+                  min-height: 30px; resize: vertical; }
+  #preview { width: 100%; min-height: 180px; font-family: "SF Mono", Menlo, monospace;
+             font-size: 0.875em; background: var(--code); color: var(--fg);
+             border: 1px solid var(--control-border); border-radius: 6px; padding: 10px; }
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+         border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+         z-index: 100; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  .bar-info { display: flex; align-items: center; gap: 8px; }
+  .bar-info #res { margin-left: auto; text-align: right; }
+  .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  #back { display: inline-block; background: none; border: 1px solid var(--control-border); color: var(--sub);
+          border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #proj { align-self: center; font-size: 0.875em; font-weight: 700;
+          border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
+          padding: 3px 9px; white-space: nowrap; }
+  #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
+          border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
+          color: var(--fg); font-size: 0.875em; resize: vertical; }
+  #free:focus { min-height: 88px; }
+  #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
+          padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 1em; }
+  .subbtn { background: none; border: 1px solid var(--control-border); color: var(--sub); border-radius: 6px;
+            padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
+  .subbtn:hover { border-color: var(--accent); color: var(--accent); }
+  #cnt, #res { font-size: 0.875em; color: var(--sub); white-space: nowrap; }
+  @media print {
+    #bar { display: none; }
+    main { max-width: none; padding: 0; }
+    h1, h2, h3 { break-after: avoid; }
+    table, pre, .q { break-inside: avoid; }
+    @page { margin: 16mm; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>norm-refit: 入口 rule 実文と正典構成・norms 統合（4 問）</h1>
+
+<p>規範改修プロジェクト norm-refit のテーマ T2（執筆規範の正典と入口の設計）の続き。
+前版 f006 で正典の器（rules 層 + japanese-text-writing plugin 解体）とタイプ分類は確定し、
+残る 3 問（入口 rule の中身 / 正典 reference の構成 / 外部正典への言及の解消）が
+情報不足・ゼロベース再考の指示で差し戻された。このフォームは、その差し戻しを受けた再提示で、
+入口 rule の実文ドラフトを含む。確定済み事項の照合先は台帳 <code>notes/norm-refit.md</code>。
+反映した実測はプローブ 1 本と調査 2 本（構成のゼロベース設計・情報デザイン norms の巻き取り調査）。</p>
+
+<p><b>結論</b>: 推奨案は 4 点。(1) 入口 rule は実文ドラフト案 A（6 項・共通原則の再掲なし、
+約 45 行）、(2) rule 名は <code>text-output.md</code>、(3) 正典 reference は core + 種別 3 の
+4 ファイル構成、(4) 情報デザイン norms は上流確定 Q81（後述の設問 4）の分割を実行し、
+汎用執筆分の正をこの正典へ移し、汎用執筆分以外の 48 本の置き場は
+T4（レビュー機構の再設計）で確定する。(4) に伴い、テーマ T5（外部言及の解消）は
+T2 相乗りから T4 合流へ帰属を変更する（f001 Q6 の確定は「外部言及を無くす方向で再設計し、
+その設計は T5 として T2 に相乗りさせる」の 2 点で、覆すのは後者の帰属だけ）。</p>
+
+<p class="lead"><b>決めること</b>: 4 件。各設問が解消する未解決課題（台帳の課題番号）を併記する。</p>
+<ul>
+  <li>設問 1 入口 rule の中身（実文ドラフト。課題「Q3 再提示」）</li>
+  <li>設問 2 入口 rule のファイル名（課題「入口 rule のファイル名確定」）</li>
+  <li>設問 3 正典 reference の構成（課題「Q4 再提示」）</li>
+  <li>設問 4 情報デザイン norms の扱い（課題「Q5 再提示」）</li>
+</ul>
+
+<p class="d"><b>読み方</b>: 説明 1 は f006 以降の確定と新事実の記録で、流し読みでよい。
+設問 1・2 が入口 rule、設問 3・4 が正典側。設問 3 と設問 4 は構成と行数の両面で依存し合い、
+依存はそれぞれの本文に明示した。末尾の参考資料は読み飛ばし可。</p>
+
+<h2 id="s-e1">説明 1 f006 以降の確定と、設計を変えた新事実 3 つ</h2>
+
+<p>f006 と直後のやり取りでの確定（台帳に転記済み）:</p>
+
+<ul>
+  <li>正典の器は rules 層。japanese-text-writing plugin は解体（f006 Q1）</li>
+  <li>タイプ分類は 2 軸（種別 = 何を生成するか / 媒体 = どこへ出すか）に分け、
+    入口の一次分岐は 3 つ・種別の細分は正典内判定表（f006 Q2）</li>
+  <li>reference 系 rule の階層は rule と同名の subdir 形式（f006 補足。
+    例: 入口 rule が <code>text-output.md</code> なら参照は <code>rules/text-output/references/</code>）</li>
+  <li>notes 運用の参照ファイルは <code>rules/decision-record/references/notes-format.md</code> へ移設し、
+    rule の改名はしない（f006 後のターミナル回答）</li>
+</ul>
+
+<p>今回の再設計に効く新事実は 3 つ。</p>
+
+<ul>
+  <li><b>同名 subdir 階層は実測で採用可</b><sup class="fnref" id="fnref-1-1"><a href="#fn-1">1</a></sup>。
+    確認した 4 項目は、paths 除外（rule の frontmatter の paths 指定で常時ロード対象から
+    外す方式）が新階層でも効く / 除外 frontmatter が無いと subdir でも
+    再帰的に常時ロードされる（つまり参照ファイルへの除外 frontmatter は必須）/
+    入口 rule からの相対リンク解決（symlink 解決後の実パス提示を含む）/
+    rule と同名 subdir の並存に副作用なし</li>
+  <li><b>現行の総量は 415 行（実測）</b><sup class="fnref" id="fnref-2-1"><a href="#fn-2">2</a></sup>。
+    内訳は skill 側 356 行（SKILL.md 131 + 種別 5 ファイル 225）+ 常時 rule 2 本 59 行。
+    設問 1・3 の行数比較の基準値になる</li>
+  <li><b>f006 Q5 の推奨案（使用分を plugin 内 references に自立内蔵する案）は前提が崩れた</b>。
+    フォームの facet レビューは情報デザイン norms の全系列 100/100 本を注入しており（実測）、
+    使用分 = 全量だった。さらに上流確定 Q81（設問 4）の存在が判明し、選択肢を組み直した</li>
+</ul>
+
+<div class="gloss">
+※ <b>facet レビュー</b> = HTML ページを提示する前に、観点別（内容整合 / 情報デザイン /
+clarity / 設計妥当性）の独立 subagent でレビューし、全観点 approve まで修正を繰り返す運用。
+このうち情報デザインと clarity の観点定義（norm）が外部の norms ライブラリを参照している。
+</div>
+
+<p>この往復の運用改善として、台帳 <code>notes/norm-refit.md</code> に「未解決課題」節を新設した。
+フォームで出た課題を 1 件 1 行で積み、以後のフォームは各設問が解消する課題を併記する
+（冒頭の「決めること」一覧が最初の適用）。</p>
+
+<h2 id="s-q1">設問 1/4 入口 rule は実文ドラフト案 A（6 項・共通原則の再掲なし）</h2>
+
+<p class="lead">前版 f006 Q3 の再提示。差し戻しの指摘は 3 点（「共通原則の再掲」が指す先の明示 /
+選択肢ごとの帰結の具体的な説明 / 対話で出てくる課題を新設計で拾えるかの検討）だったので、
+まず用語を定義し、実文ドラフトそのものを示す。3 点目への対応は説明 1 末尾の未解決課題の運用。</p>
+
+<div class="gloss">
+※ <b>共通原則の再掲</b> = 現行の常時 rule <code>japanese-text-writing.md</code> が採る形式のこと。
+正典（現行は skill）の共通原則を要約して常時 rule 側にも書いており、同じ規範の実文が
+2 箇所に存在する。norm-refit の起点確定（媒体を問わない共通規範を正典 1 箇所へ、f001 Q1)と衝突しており、
+f001 Q4 はこの形式の維持（統合 rule の中身 4 項目の 1 つ「共通原則の要点」）を確定していたため、
+やめるなら f001 Q4 の一部を覆すことになる。
+</div>
+
+<p>入口 rule は常時ロードされる統合 rule で、現行 2 本
+（<code>japanese-text-writing.md</code> + <code>user-communication-format.md</code>、
+計 59 行<sup class="fnref" id="fnref-2-2"><a href="#fn-2">2</a></sup>）を置き換える。
+案 A の実文ドラフト（約 45 行。字句は実装時に推敲するが、構成と密度はこのまま）:</p>
+
+<pre># テキスト出力の規範
+
+日本語で出力するすべての場面（ファイル・ターミナル返答・HTML）に適用する。
+正典は ./text-output/references/ 配下にあり、この rule は入口だけを担う。
+
+## 1. タイプ判定
+
+出力の種類で読むものを決める。判定は書き出す直前に行う。
+ツールの結果を受け取って、そのまま最終メッセージを書き始めない。
+
+- 数行の応答・進捗報告 → 何も読まずに 5 の最小規範で書く
+- まとまった文章（複数段落の文書・調査まとめ・長い返答）→ 6 の正典を読む。
+  スクロールが必要な重厚な報告・比較表を伴う報告は
+  HTML ページ（html-communication skill）で提示する
+- 確認・質問 → 少数はフリーテキストで聞く。設問が多い・前提説明が長い確認は
+  HTML フォームにする
+
+## 2. 取捨の判定基準
+
+情報の取捨は「読者の判断か確信度を変えるか」（効果）で決め、
+表現と配置は処理労力で決める。効果か労力、どちらかの理由を言えない情報は削る。
+理由なく残した情報は誤読を生む。読者は「わざわざ書かれた以上は意味がある」と受け取り、
+書かれていない含意を探すからだ。
+
+## 3. 生成前手続き
+
+まとまった文章を書く前に 2 点を書き出す。
+
+- 目的の 1 文: 読者はこれを読んで何を判断・実行するか
+- 読者の既知・未知: 既に知っていること / この文書で初めて知ること
+
+## 4. 保持規則
+
+圧縮しても落とさない: 前提・条件・例外・数値。範囲・前提知識の宣言。
+確信度のヘッジ（1 主張 1 つ）。読者誘導の道標。
+
+## 5. 数行返答の最小規範
+
+最重要の一文（何が起きたか・何が分かったか・何をしたか）から始め、
+次のアクションを示して終える。前置き・装飾・同じ内容の言い換えを付けない。
+失敗・未完了を成功と紛れる書き方にしない。
+
+## 6. 正典
+
+まとまった文章を書く・推敲するときは正典 core（./text-output/references/core.md）を読み、
+種別判定表に従って該当種別の規範を重ねる。</pre>
+
+<p>2〜4 項は f004（取捨選択規範のフォーム）で確定した実文の配置。5 項は f001 Q5 の確定
+（数行返答の最小規範を常時 rule に置き、自立した実文で書く）に基づく新規ドラフト。
+2〜5 項は器（rules 層）にも構成（設問 3）にも依存しないが、1 項の分岐先と 6 項のパスは
+設問 2（rule 名）・設問 3（構成）の結果で字句が変わる。
+案の違いは「共通原則（結論先行・冗長排除・関心事の分離・省略の禁止・事実と不確実性の峻別・
+用語規律・AI 口調の禁止）を常時層でどう扱うか」だけ。帰結の比較:</p>
+
+<ul>
+  <li><b>案 A（再掲なし）</b>: 上のドラフトのまま。常時層 約 45 行（現行 59 行から減）。
+    共通原則の実文は正典 core だけにあり、二重管理が消える。
+    トレードオフ: 正典を読まない数行返答では共通原則が想起されない
+    （2〜5 項の実文が取捨・保持・文体の主要部を直接カバーする、という設計判断）</li>
+  <li><b>案 B（案 A + 索引 1 行）</b>: 6 項の後に
+    「共通原則の索引: 結論先行 / 冗長排除 / 関心事の分離 / 省略の禁止 /
+    事実と不確実性の峻別 / 用語規律 / AI 口調の禁止（実文はすべて core）」の 1 行を足す。
+    +2 行で原則名の想起だけ残す折衷。実文の二重管理は発生しない</li>
+  <li><b>案 C（f001 Q4 どおり要約再掲を維持）</b>: 共通原則の要約（現行 rule 相当で
+    +15 行前後・推定）を常時層に残す。二重管理（正典改定のたびに rule 側の要約も
+    追従させる作業）が続く</li>
+</ul>
+
+<div class="q" id="q1">
+  <div class="t">設問 1/4（入口 rule の中身）</div>
+  <label class="opt"><input type="radio" name="q1" value="案 A: 6 項・共通原則の再掲なし（ドラフトの構成で確定）">
+    案 A: 6 項・共通原則の再掲なし（ドラフトの構成で確定）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 正典 1 箇所の起点確定に最も忠実で、常時層も最小
+    （f001 Q4 の「共通原則の要点」の置き換えを含む）。原則の想起を残すなら案 B</span></label>
+  <label class="opt"><input type="radio" name="q1" value="案 B: 案 A + 共通原則の見出し語索引 1 行">
+    案 B: 案 A + 共通原則の見出し語索引 1 行
+    <span class="d">実文を再掲せず原則名だけ想起させる折衷（同じく f001 Q4 の置き換えを含む）</span></label>
+  <label class="opt"><input type="radio" name="q1" value="案 C: f001 Q4 どおり共通原則の要約再掲を維持">
+    案 C: f001 Q4 どおり共通原則の要約再掲を維持
+    <span class="d">確定を覆さない選択。二重管理（正典と要約の追従）が続く</span></label>
+  <label class="opt"><input type="radio" name="q1" value="__other__">その他
+    <input type="text" class="other" data-for="q1"></label>
+  <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意。ドラフト字句への指摘もここへ）"></textarea>
+</div>
+
+<h2 id="s-q2">設問 2/4 入口 rule のファイル名は text-output.md</h2>
+
+<p class="lead">rule 名は reference の置き場（同名 subdir）と連動するため、実装前に確定させる。
+命名規約（kebab-case・ファイル名だけで対象が分かる名詞句）の範囲で 2 候補。</p>
+
+<ul>
+  <li><b>text-output.md</b>: 対象（ファイル・ターミナル・HTML への出力全般 +
+    確認・質問の出し方）と名前が一致する。reference は <code>rules/text-output/references/</code></li>
+  <li><b>japanese-text-writing.md</b>: 現行の常時 rule 名の踏襲。
+    確認・質問の分岐まで含む新しい対象範囲より名前が狭い（writing = 執筆に読める）。
+    現行名との連続性で履歴は追いやすい</li>
+</ul>
+
+<div class="q" id="q2">
+  <div class="t">設問 2/4（入口 rule のファイル名）</div>
+  <label class="opt"><input type="radio" name="q2" value="text-output.md">
+    text-output.md<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 統合後の対象範囲（出力全般）と名前が一致する。
+    覆し可: 現行名の連続性を優先するなら踏襲案</span></label>
+  <label class="opt"><input type="radio" name="q2" value="japanese-text-writing.md">japanese-text-writing.md（現行名の踏襲）
+    <span class="d">reference は rules/japanese-text-writing/references/ になる</span></label>
+  <label class="opt"><input type="radio" name="q2" value="__other__">その他（別名を記入）
+    <input type="text" class="other" data-for="q2"></label>
+  <textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q3">設問 3/4 正典 reference は core + 種別 3 の 4 ファイル</h2>
+
+<p class="lead">前版 f006 Q4 の再提示。ゼロベース再考の指示に従い、設計 subagent が
+現行実測 415 行<sup class="fnref" id="fnref-2-3"><a href="#fn-2">2</a></sup>を基準に 3 案を比較した。
+表 1 が結果で、決め手は「種別間の跨ぎ重複」と「norms 統合の受け皿」（設問 4 との依存）の 2 行。
+跨ぎ重複を決め手に置くのは、規範の削減という norm-refit の狙い（確定分を T2・T3 完了後に
+1 つの PR でまとめて反映する実装工程 = 一括実装のタスクに、常時 rule の総量検算と
+純増時の申告が要件として積まれている）を、書き方の努力でなく構造で
+実現できるかがこの行で決まるため。推奨順に並べる。</p>
+
+<ul>
+  <li><b>案 2（core + 種別 3、4 ファイル）</b>: core.md（種別判定表 + 共通原則 + f004 確定分）+
+    参照 + 判断（末尾に論文の追加適用節）+ 解説・読み物の統合ファイル。
+    論文を判断ファイルへ寄せるのは、現行の論文 reference 自体が判断文書の規範を前提とした
+    追加適用を冒頭で宣言しており、論文執筆はいまも 2 ファイル読みが正規手順のため
+    （別ファイルである必然がない）。解説と読み物の統合で、両者が共有する重複グループ
+    3 つ<sup class="fnref" id="fnref-3-1"><a href="#fn-3">3</a></sup>を 1 ファイル内で
+    1 回書きにでき、判断・論文間の対（DG28 と DG9 の該当対）も同居して刈れる。
+    統合後も種別ファイル間に残る 6 グループ（DG2・DG9・DG11・DG21・DG30・DG33）は
+    T3（重複刈り）で個別処理する。種別 5 分類は core の判定表がそのまま担う
+    （格納の統合であって分類の削減ではない。判定表の行き先列がファイル + 節を指す）</li>
+  <li><b>案 1（core + 種別 5、6 ファイル）</b>: 前版 f006 の推奨案。core.md +
+    現行の種別 5 ファイル（参照 / 判断 / 論文 / 解説 / 読み物）をそのまま移設・圧縮</li>
+  <li><b>案 3（1 ファイル正典）</b>: 判定表 + 共通原則 + 種別 5 節を canon.md 1 本に。
+    総量は最小だが、どの種別でも全文を読む</li>
+</ul>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-1">
+<table>
+<caption id="cap-1">表 1 正典 reference 構成 3 案の比較（行数は norms 統合前の推定。設問 4 で統合案を採る場合、統合後の総量は実装時に検算して申告する<sup class="fnref" id="fnref-2-4"><a href="#fn-2">2</a></sup>）</caption>
+<thead>
+<tr><th scope="col">観点</th><th scope="col">案 2 core + 種別 3</th><th scope="col">案 1 core + 種別 5</th><th scope="col">案 3 1 ファイル</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">ファイル数（正典）</th><td>4</td><td>6</td><td>1</td></tr>
+<tr><th scope="row">正典の総行数（推定）</th><td>305</td><td>323</td><td>270</td></tr>
+<tr><th scope="row">最頻路（判断文書）で読む量（推定）</th><td>190 行</td><td>175 行</td><td class="ng">270 行</td></tr>
+<tr><th scope="row">入口から辿って読むファイル数の最大</th><td>2</td><td class="ng">3（論文）</td><td>1</td></tr>
+<tr class="key"><th scope="row">種別間の跨ぎ重複</th><td class="ok">約半分が消える（残 6 グループは T3）</td><td class="ng">残る</td><td class="ok">消える</td></tr>
+<tr class="key"><th scope="row">norms 統合の受け皿（設問 4 依存）</th><td class="ok">あり</td><td class="ok">あり</td><td class="ng">なし</td></tr>
+<tr><th scope="row">T3（重複刈り）・履歴追跡との相性</th><td>中（移動を伴う）</td><td class="ok">最良（現行と 1:1）</td><td class="ng">低（全面再編）</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>設問 4 との依存: 設問 4 で norms の汎用分をこの正典へ統合する案（推奨）を選ぶ場合、
+案 3 は成立しない。統合分を 1 本に足すと、どの種別を書くときも読む量が
+統合前 270 行 + 統合分に膨らみ、案 3 の利点（総量最小・1 段）が消えるため。
+案 3 を選ぶ場合は設問 4 で「現状維持」を選ぶ必要がある。
+案 1・2 の行数推定も統合分を含まない値である点は表 1 の注記のとおり。</p>
+
+<div class="q" id="q3">
+  <div class="t">設問 3/4（正典 reference の構成）</div>
+  <label class="opt"><input type="radio" name="q3" value="案 2: core + 種別 3 の 4 ファイル">
+    案 2: core + 種別 3 の 4 ファイル<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 最頻路はほぼ据え置き（案 1 比 +15 行前後・推定）のまま、
+    論文の 3 ファイル読みと解説・読み物間の重複が構造ごと消える（f006 推奨からの変更）。
+    現行との 1:1 対応を優先するなら案 1</span></label>
+  <label class="opt"><input type="radio" name="q3" value="案 1: core + 種別 5 の 6 ファイル">案 1: core + 種別 5 の 6 ファイル
+    <span class="d">f006 の推奨案の精緻化。移設が最も素直だが、跨ぎ重複の管理が続く</span></label>
+  <label class="opt"><input type="radio" name="q3" value="案 3: 1 ファイル正典">案 3: 1 ファイル正典
+    <span class="d">総量最小・1 段。設問 4 で現状維持を選ぶ場合だけ成立</span></label>
+  <label class="opt"><input type="radio" name="q3" value="__other__">その他
+    <input type="text" class="other" data-for="q3"></label>
+  <textarea class="note" data-note="q3" aria-label="設問 3 への補足" placeholder="補足（任意。統合ファイルの名前の希望もここへ）"></textarea>
+</div>
+
+<h2 id="s-q4">設問 4/4 情報デザイン norms は Q81 の分割を実行して統合する</h2>
+
+<p class="lead">前版 f006 Q5 の再提示。回答の指示は、norms 自体をこちらの reference へ巻き取って
+統合すべきかのゼロベース検討だった。調査 subagent の実測で判断を変える事実が見つかり、
+選択肢を組み直した。決め手は表 2 の「上流確定 Q81 との整合」と
+「f006 Q1 の狙い（plugin 非依存）との整合」の 2 行。</p>
+
+<div class="gloss">
+※ <b>情報デザイン norms</b> = product-boilerplate repo の <code>docs/norms/</code>。
+文書構成 S 系 21 / 表 T 系 34 / フォーム F 系 18 / 視覚可読性 V 系 12 / 明確さ C 系 15 の
+計 100 norm（実測<sup class="fnref" id="fnref-4-1"><a href="#fn-4">4</a></sup>）。
+各 norm は ID / 規範 / why / 数値目安 / 出典の 5 点セットで、外部出典 44 URL を持つ。
+</div>
+
+<div class="gloss">
+※ <b>idea-hub</b> = このユーザーの別リポジトリ（プロダクト設計の抽出プロジェクト）。
+norms ライブラリは idea-hub の設計セッションで product-boilerplate に作られ、
+その処遇も idea-hub の決定台帳（<code>docs/design/decisions.md</code>、設問番号 Q81）で
+確定している。norms の出自と処遇方針がそこにあるため、この設問の上流にあたる。
+</div>
+
+<div class="gloss">
+※ <b>L1 / L2 / L3</b> = f001 Q1 で確定した規範の層分け。L1 = 媒体を問わず全生成物に共通の
+横断規範（今回の正典の中身）、L2 = 媒体固有の規範（各 plugin が持つ）、
+L3 = 情報デザイン norms（f001 Q1 時点の確定は「外部正典のまま」）。
+本設問はこの L3 処遇の再検討で、f006 Q5 回答のゼロベース指示に基づく。
+</div>
+
+<div class="gloss">
+※ <b>op-review</b> = レビュー観点（facet）を注入して文書・成果物をレビューする共通エンジンの構想。
+f001 Q7 で、生成側 skill が facet / norm を定義しレビューエンジンを op-review に統一する方向の
+ゼロベース再設計（テーマ T4）が確定している。plugin 実体はまだ無い。</div>
+
+<p>調査で判明した事実（詳細は脚注と台帳の作業メモ）:</p>
+
+<ul>
+  <li><b>上流確定 Q81 が存在する</b>: norms の用途 3 分割が確定済みで、行き先は
+    レビュー注入用一式 → op-review plugin のリソース（単一の正 = 唯一の編集元）/
+    作成時指針用 → idea-hub 側の参照知識へ（行き先の詳細はこの設問の判断に不要）/
+    汎用執筆規範 → cc-marketplace。
+    複数用途に該当する norm は「レビュー注入用の一式を単一の正とし」他へは複製せず参照、も
+    確定している。さらに op-review plugin の配置先は cc-marketplace と確定済み
+    （idea-hub 設計総まとめ 4.1）。つまりどの案でも norms の正典は cc-marketplace 側へ来る</li>
+  <li><b>facet レビューの使用分は全量だった</b>: 注入対象は S/T/F/V/C 全系列 = 100/100 本
+    （実測）。f006 の推奨案（使用分を plugin 内 references に自立内蔵する）は部分内蔵の
+    想定だったため不成立となり、選択肢から外した。また html-communication の SKILL.md は
+    norms を正典宣言しつつ、本文に S/T/F 系の要点を転記しており、
+    正典の二重化が現状ある（実測）</li>
+  <li><b>性格分類は行き先判断の材料</b>: 内容の性格で分けると汎用執筆 52 /
+    HTML・フォーム設計固有 41 / プロダクト UI 固有 7
+    （subagent の読解判定<sup class="fnref" id="fnref-4-2"><a href="#fn-4">4</a></sup>）。
+    これは Q81 の用途分割とは別の切り口で、1:1 には対応しない。
+    boilerplate 内に norms の消費者はおらず、参照は移管前提の暫定注記 3 行のみ（実測）</li>
+</ul>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-2">
+<table style="min-width:560px">
+<caption id="cap-2">表 2 norms の扱い 4 案の比較</caption>
+<thead>
+<tr><th scope="col">観点</th><th scope="col">Q81 の分割を実行（推奨）</th><th scope="col">Q81 字義どおり単一正</th><th scope="col">全量をこの正典へ</th><th scope="col">現状維持</th></tr>
+</thead>
+<tbody>
+<tr class="key"><th scope="row">上流確定 Q81 との整合</th><td class="ok">概ね整合（複数用途の正の向きのみ変更）</td><td class="ok">整合（字義どおり）</td><td class="ng">不整合（要 idea-hub 台帳更新）</td><td class="ng">不整合（暫定の単一正が恒久化）</td></tr>
+<tr class="key"><th scope="row">f006 Q1 の狙い（plugin 非依存）との整合</th><td class="ok">整合（汎用分の正は rules 層）</td><td class="ng">不整合（正典が plugin リソース参照に依存）</td><td class="ok">整合（ただし固有 48 本が混入）</td><td class="ng">不整合（外部 repo 参照が残る）</td></tr>
+<tr><th scope="row">f001 Q1 の L3 処遇（外部正典のまま）</th><td class="ng">変更</td><td class="ng">変更</td><td class="ng">変更</td><td class="ok">維持</td></tr>
+<tr><th scope="row">動く量</th><td>汎用 52 本相当の統合編集（残りは T4）</td><td>全 100 本の移設（T4 で実施）</td><td>6 ファイル 915 行</td><td>0</td></tr>
+<tr><th scope="row">正典の二重化の解消</th><td class="ok">解消（T4 完了時）</td><td class="ok">解消（T4 完了時）</td><td class="ok">解消</td><td class="ng">残る</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>推奨案「Q81 の分割を実行」の中身と、含まれる変更点:</p>
+
+<ul>
+  <li>スコープ: norm-refit（一括実装）では汎用執筆分だけをこの正典へ統合する
+    （C 系 15 本は既存の共通原則と重複が濃いため統合編集、S 系ほかの汎用分は
+    T3 の明細判断と合流）。プロダクト UI 固有 7 本を含む残り 48 本の最終的な置き場
+    （op-review plugin のリソースか、生成側 skill の facet / norm 定義か）は
+    T4 の設計で確定する（Q81 の受け皿指定・f001 Q7 の生成側定義・plugin 自己完結原則の
+    三者の調停を含む）。
+    norm 1 本単位の行き先明細もこの設問では決めない（T3 / T4 の作業）</li>
+  <li>変更点 1（Q81 の複数用途条項）: 汎用 52 本も facet レビューに注入されている以上、
+    Q81 の字義では正が op-review リソース側になるが、本案は汎用分の正を執筆正典側へ変える。
+    理由は f006 Q1 との整合（表 2 の決め手行）: 執筆正典の中身が plugin リソースへの参照に
+    依存すると、rules 層化で消したはずの rule から plugin への依存が正典の中身レベルで復活する</li>
+  <li>変更点 2（f001 Q1 の L3 処遇）: 「外部正典のまま」を覆す</li>
+  <li>変更点 3（T5 の帰属）: f001 Q6 で T2 相乗りと確定していた T5（外部言及の解消）は、
+    facet レビューの参照切り替えが T4 の成果と不可分なため T4 に合流する</li>
+  <li>中間期の正: T4 完了までは boilerplate 版が facet 注入の正のまま。
+    boilerplate 側の norms と、正典へ統合した汎用分の両方を T4 完了まで凍結する
+    （編集が必要になったら T4 を先に進める）。
+    作成時指針用（Q81 の第 2 の用途）の受け皿づくりは idea-hub 側の作業で、
+    このフォームのスコープ外</li>
+</ul>
+
+<div class="q" id="q4">
+  <div class="t">設問 4/4（情報デザイン norms の扱い）</div>
+  <label class="opt"><input type="radio" name="q4" value="Q81 の分割を実行（汎用分の正は執筆正典へ、残り 48 本の置き場は T4 で確定）">
+    Q81 の分割を実行（汎用分の正は執筆正典へ、残り 48 本の置き場は T4 で確定）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 上流 Q81 と f006 Q1 の両方に整合する唯一の案。
+    変更 3 点（Q81 複数用途条項の正の向き / f001 Q1 の L3 処遇 / T5 の T4 合流）を含む</span></label>
+  <label class="opt"><input type="radio" name="q4" value="Q81 字義どおり、全 norm を op-review リソースの単一正にし執筆正典からは参照">
+    Q81 字義どおり、全 norm を op-review リソースの単一正にし執筆正典からは参照
+    <span class="d">f001 Q1 の L3 処遇の変更を含む。正典が plugin リソース参照に依存し、
+    f006 Q1 で消した rule から plugin への依存が復活する</span></label>
+  <label class="opt"><input type="radio" name="q4" value="全量をこの正典 reference へ巻き取る">全量をこの正典 reference へ巻き取る
+    <span class="d">Q81 の受け皿指定と f001 Q1 の L3 処遇を覆す（idea-hub 台帳の更新が要る）。
+    HTML・UI 固有 48 本が執筆正典に混ざる</span></label>
+  <label class="opt"><input type="radio" name="q4" value="現状維持（boilerplate の外部正典のまま）">現状維持（boilerplate の外部正典のまま）
+    <span class="d">外部言及を無くす方向で再設計するという f001 Q6 の確定を実質覆す。
+    設問 3 で案 3 を選ぶ場合はこれになる</span></label>
+  <label class="opt"><input type="radio" name="q4" value="__other__">その他
+    <input type="text" class="other" data-for="q4"></label>
+  <textarea class="note" data-note="q4" aria-label="設問 4 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+<p class="d">回答には要らない。経緯と実測の所在。</p>
+<ul class="d">
+  <li>前版 f006（Q1・Q2 確定、Q3〜Q5 が本フォームで再提示）と、その回答（2026-08-14）</li>
+  <li>確定事項の台帳: リポジトリの <code>notes/norm-refit.md</code>（未解決課題の節と、
+    norms 調査の要点を記録した作業メモを含む）</li>
+  <li>プローブ 1 本と調査 2 本（構成のゼロベース設計 / norms 巻き取り調査）の記録は
+    本セッションの transcript。判断に使った数値は本文と脚注に転記済み</li>
+  <li>f004（取捨選択規範）の確定実文は台帳の 2026-08-14 エントリ群が正</li>
+</ul>
+
+<div id="fn-set">
+<h2 id="s-fn">脚注</h2>
+<p class="fn" id="fn-1"><a class="fnnum" href="#fnref-1-1">1.</a> プローブ実測（2026-08-14、
+Claude Code v2.1.232 headless）: rules/probe-subdir-check.md + 同名 subdir 配下の参照 2 ファイルで
+4 項目を検証。paths 除外あり = ロードされない、なし = subdir でもロードされる、
+相対リンク解決 = 成功（ハーネスは rule を symlink 解決後の実パスで提示）、同名並存 = 副作用なし。
+プローブファイルは検証後に削除済み。
+  <a class="fnback" href="#fnref-1-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-2"><a class="fnnum" href="#fnref-2-1">2.</a> 行数は 2026-08-14 の wc -l 実測:
+SKILL.md 131 / 種別 5 ファイル 225（45+35+34+37+74）/ 常時 rule 2 本 59 / 総計 415。
+新構成の行数（案 2: 305、案 1: 323、案 3: 270、入口 rule 約 45）はすべて推定で、
+実装時に総量検算（純増なら申告）を行う。
+  <a class="fnback" href="#fnref-2-1" aria-label="本文へ戻る">&#8617;1</a>
+  <a class="fnback" href="#fnref-2-2" aria-label="本文へ戻る（2 つ目の参照元）">&#8617;2</a>
+  <a class="fnback" href="#fnref-2-3" aria-label="本文へ戻る（3 つ目の参照元）">&#8617;3</a>
+  <a class="fnback" href="#fnref-2-4" aria-label="本文へ戻る（4 つ目の参照元）">&#8617;4</a></p>
+<p class="fn" id="fn-3"><a class="fnnum" href="#fnref-3-1">3.</a> 規範インベントリ
+（notes/norm-inventory.md）より。DG = 複数箇所に重複する規範グループの通し番号。
+個別 norm の ID は種別接頭辞 + 連番（RD = 参照、DD = 判断、AW = 論文、EW = 解説、NW = 読み物）。
+解説と読み物に跨る共有は DG31（概念は困りごと→命名の順）・DG32（列挙の着地）・
+DG34（態度のない議題表の禁止）の 3 グループで、案 2 はこれと判断・論文間の対
+（DG28、DG9 の DD/AW 対）を構造的に解消する。統合後も種別ファイル間に残るのは
+DG2（冒頭の地図、参照×判断）・DG9（参照×判断)・DG11（判断×解説読み物）・
+DG21・DG30（参照×解説読み物）・DG33（問いの回収、AW9/NW4 = 判断×解説読み物）の
+6 グループで、T3 の個別処理に送る。
+  <a class="fnback" href="#fnref-3-1" aria-label="本文へ戻る">&#8617;</a></p>
+<p class="fn" id="fn-4"><a class="fnnum" href="#fnref-4-1">4.</a> norms 調査（2026-08-14 subagent 実測）:
+規模 6 ファイル 915 行・100 norm・出典 44 URL・boilerplate 内参照 3 行は実測。
+性格分類（汎用 52 / HTML・フォーム固有 41 / プロダクト UI 固有 7）は subagent の読解判定で、
+境界が動きやすいのはインタラクティブ表示前提の T 系 5 本と多段フォーム前提の F 系 2 本。
+  <a class="fnback" href="#fnref-4-1" aria-label="本文へ戻る">&#8617;1</a>
+  <a class="fnback" href="#fnref-4-2" aria-label="本文へ戻る（2 つ目の参照元）">&#8617;2</a></p>
+</div>
+
+<h2 id="s-preview">付録 回答の preview</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" aria-label="回答の preview" readonly></textarea>
+
+</main>
+
+<div id="bar">
+  <div id="bar-in">
+    <div class="bar-info">
+      <span id="proj">cc-marketplace</span>
+      <span id="cnt"></span>
+      <span id="res"></span>
+    </div>
+    <textarea id="free" aria-label="自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <div class="bar-actions">
+      <a id="back" href="./">一覧に戻る</a>
+      <div class="action-cluster">
+        <button type="button" id="reset" class="subbtn">入力をリセット</button>
+        <button type="button" id="copy">回答をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var THEME = 'norm-refit 入口 rule 実文と正典構成・norms 統合';
+  var KEY = 'draft:f007';
+  var QS = [
+    { id: 'q1', label: '入口 rule の中身' },
+    { id: 'q2', label: '入口 rule のファイル名' },
+    { id: 'q3', label: '正典 reference の構成' },
+    { id: 'q4', label: '情報デザイン norms の扱い' }
+  ];
+
+  function ans(qid) {
+    var c = document.querySelector('input[name="' + qid + '"]:checked');
+    if (!c) return null;
+    if (c.value === '__other__') {
+      var o = document.querySelector('.other[data-for="' + qid + '"]');
+      return (o && o.value.trim()) ? 'その他: ' + o.value.trim() : 'その他（記述なし）';
+    }
+    return c.value;
+  }
+  function build() {
+    var lines = ['## HTML フォーム回答（' + THEME + '）'], n = 0;
+    QS.forEach(function (q) {
+      var a = ans(q.id);
+      if (a) n++;
+      lines.push('- ' + q.id.toUpperCase() + '（' + q.label + '）: ' + (a || '未回答'));
+      var note = document.querySelector('.note[data-note="' + q.id + '"]');
+      if (note && note.value.trim()) lines.push('    - ' + q.id.toUpperCase() + ' 補足: ' + note.value.trim());
+    });
+    var free = document.getElementById('free').value.trim();
+    lines.push('- 補足: ' + (free || 'なし'));
+    return { text: lines.join('\n'), n: n, total: QS.length };
+  }
+  function saveDraft() {
+    var d = { radios: {}, texts: {} };
+    document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
+    document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
+    var free = document.getElementById('free').value;
+    if (free) d.texts['free'] = free;
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  function applyDraft(d) {
+    Object.keys(d.radios || {}).forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
+      if (el) el.checked = true;
+    });
+    Object.keys(d.texts || {}).forEach(function (k) {
+      if (k === 'free') { document.getElementById('free').value = d.texts[k]; return; }
+      var kind = k.slice(0, 2), id = k.slice(2);
+      var el = kind === 'o:' ? document.querySelector('.other[data-for="' + id + '"]')
+                             : document.querySelector('.note[data-note="' + id + '"]');
+      if (el) el.value = d.texts[k];
+    });
+  }
+  function refresh() {
+    var r = build();
+    document.getElementById('preview').value = r.text;
+    document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+  }
+  function copyText(text) {
+    var res = document.getElementById('res');
+    function ok() { res.textContent = 'コピーしました'; setTimeout(function () { res.textContent = ''; }, 3000); }
+    function ng() {
+      var p = document.getElementById('preview');
+      p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
+      res.textContent = 'コピー不可: preview を手動コピー';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, ng);
+    else ng();
+  }
+
+  document.addEventListener('input', function () { saveDraft(); refresh(); });
+  document.addEventListener('change', function () { saveDraft(); refresh(); });
+  document.getElementById('copy').addEventListener('click', function () { copyText(build().text); });
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
+    document.getElementById('free').value = '';
+    refresh();
+  });
+
+  try { var raw = localStorage.getItem(KEY); if (raw) applyDraft(JSON.parse(raw)); } catch (e) {}
+  refresh();
+})();
+</script>
+</body>
+</html>
