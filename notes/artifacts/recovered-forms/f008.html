@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>norm-refit: T3 処遇の承認（9 問）</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #1a1a1a; --sub: #555;
+    --border: #d0d0d0;
+    --control-border: #8a8a8a;
+    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
+    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab;
+      --border: #3a3f47; --control-border: #767d87;
+      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
+      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-bottom: 190px; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.7;
+         word-break: auto-phrase;
+         font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", Meiryo, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 170px; }
+  h1, h2, h3 { text-wrap: balance; }
+  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px;
+       scroll-margin-top: 12px; }
+  h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
+         font-family: "SF Mono", Menlo, monospace; }
+  mark { background: var(--hl); color: inherit; padding: 0 2px; }
+  pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
+        font-size: 0.875em; line-height: 1.5; }
+  a { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+  .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub); padding-bottom: 4px; }
+  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  tbody th { background: transparent; font-weight: normal; }
+  tr.key td, tr.key th { background: var(--hl); }
+  .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
+           border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
+           padding: 7px 12px; margin: 8px 0 14px; }
+  .gloss b { color: var(--fg); font-weight: 700; }
+  .ok { color: var(--ok); } .ng { color: var(--ng); }
+  .d { color: var(--sub); font-size: 0.875em; }
+  label.opt .d { display: block; }
+  .lead { margin-bottom: 6px; }
+  .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
+       padding: 12px 15px; margin: 16px 0; }
+  .q .t { font-weight: 700; margin-bottom: 6px; }
+  label.opt { display: block; background: var(--bg); border: 1px solid var(--control-border);
+              border-radius: 6px; padding: 8px 10px; margin: 6px 0; cursor: pointer; }
+  label.opt:has(input:checked) { outline: 2px solid var(--accent); }
+  .rec { background: var(--accent-fill); color: #fff; font-size: 0.875em; border-radius: 4px;
+         padding: 0 6px; margin-left: 4px; }
+  input.other { width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--control-border);
+                border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 1em; }
+  textarea.note { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--control-border);
+                  border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 0.875em;
+                  min-height: 30px; resize: vertical; }
+  #preview { width: 100%; min-height: 180px; font-family: "SF Mono", Menlo, monospace;
+             font-size: 0.875em; background: var(--code); color: var(--fg);
+             border: 1px solid var(--control-border); border-radius: 6px; padding: 10px; }
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+         border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+         z-index: 100; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  .bar-info { display: flex; align-items: center; gap: 8px; }
+  .bar-info #res { margin-left: auto; text-align: right; }
+  .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  #back { display: inline-block; background: none; border: 1px solid var(--control-border); color: var(--sub);
+          border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #proj { align-self: center; font-size: 0.875em; font-weight: 700;
+          border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
+          padding: 3px 9px; white-space: nowrap; }
+  #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
+          border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
+          color: var(--fg); font-size: 0.875em; resize: vertical; }
+  #free:focus { min-height: 88px; }
+  #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
+          padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 1em; }
+  .subbtn { background: none; border: 1px solid var(--control-border); color: var(--sub); border-radius: 6px;
+            padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
+  .subbtn:hover { border-color: var(--accent); color: var(--accent); }
+  #cnt, #res { font-size: 0.875em; color: var(--sub); white-space: nowrap; }
+  @media print {
+    #bar { display: none; }
+    main { max-width: none; padding: 0; }
+    h1, h2, h3 { break-after: avoid; }
+    table, pre, .q { break-inside: avoid; }
+    @page { margin: 16mm; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>norm-refit: T3 処遇の承認（9 問）</h1>
+
+<p>規範改修プロジェクト norm-refit のテーマ T3（重複規範の個別判断）の承認フォーム。
+重複グループ全 47 件の処遇明細は別ページ
+<a href="./r012.html">norm-refit: T3 重複規範の処遇明細</a>（r012）にまとめ、
+4 観点の独立レビュー（正確性 / 妥当性 / 網羅性 / 整合性、指摘計 32 件）を反映済み。
+このフォームは、処遇表の一括承認 1 問と、明細とレビューで切り出された個別判断 8 問を確定させる。</p>
+
+<p><b>結論</b>: 9 問すべてに推奨を付けた。一覧は次のとおりで、設問 2〜9 の 8 問が
+台帳の未解決課題の f008 印 6 行に対応する（設問 1 は台帳外の一括承認、
+設問 6〜8 は 1 行に相乗り）。</p>
+
+<ul>
+  <li>設問 1 処遇表の一括承認（推奨: 承認）</li>
+  <li>設問 2 core への新規追加 5 件（推奨: まとめて採用）</li>
+  <li>設問 3 手段変更時の再確認規範の受け皿（推奨: propose-before-implement rule へ追記）</li>
+  <li>設問 4 AskUserQuestion 除去のスコープ（推奨: 除去は全 plugin で確定、実装は分離）</li>
+  <li>設問 5 一括実装 PR のスコープ（推奨: T4 分は別 PR）</li>
+  <li>設問 6 表規範の移設範囲（推奨: セル規範のみ）</li>
+  <li>設問 7 問いの回収の扱い（推奨: 並立残置）</li>
+  <li>設問 8 太字上限の扱い（推奨: 意図的二重化）</li>
+  <li>設問 9 idea-hub 側 Q81 条項更新の帰属（推奨: T4 の随伴作業）</li>
+</ul>
+
+<p class="d"><b>読み方</b>: 設問 1 は r012 を読んでから。設問 2〜9 は、r012 と前設問で
+定義済みの用語を前提に、各設問内で自己完結する。
+設問 5 だけは実装の順序に効くブロッカーで、他は処遇の中身の判断。</p>
+
+<h2 id="s-q1">設問 1/9 処遇表の一括承認</h2>
+
+<p class="lead">r012 の<a href="./r012.html#s-e3">表 3（重複グループ 47 件の処遇）</a>と
+<a href="./r012.html#s-e4">説明 4〜5（重複グループ外の拾い上げ・実装チェックリスト追加分）</a>の
+一括承認。設問 2〜9 で個別に確定する論点は含まない。
+この承認に新しい方針の決定は入っていない。振り分けに使った判断基準はすべて確定済みの事項で、
+今回新しく決めたのは、規範 1 件ずつをどのファイルに置くかという割り当てだけ。</p>
+
+<div class="gloss">
+※ 一括承認の範囲 = 確定済みの原則（詳細規範への集約 / plugin 自己完結による残置 /
+AskUserQuestion 系の削除 / T4 送り）を 47 グループへ適用した割り当て。
+確定を覆す判断はこの設問に含めず、すべて設問 2〜9 に切り出してある。
+</div>
+
+<div class="q" id="q1">
+  <div class="t">設問 1/9（処遇表の一括承認）</div>
+  <label class="opt"><input type="radio" name="q1" value="r012 の表 3 と説明 4〜5 を承認">
+    r012 の表 3 と説明 4〜5 を承認<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 4 観点レビューの指摘を反映済みで、振り分けは全件、
+    確定済みの基準に沿って決めた。個別に覆したい行があれば次の選択肢へ</span></label>
+  <label class="opt"><input type="radio" name="q1" value="概ね承認、例外あり（補足欄に対象と指示）">概ね承認、例外あり（補足欄に対象と指示）
+    <span class="d">例外指定された項目だけ再検討し、残りは承認として進める</span></label>
+  <label class="opt"><input type="radio" name="q1" value="__other__">その他
+    <input type="text" class="other" data-for="q1"></label>
+  <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意。例外は DG 番号か補遺の項目名（例: AQ17）で指定）"></textarea>
+</div>
+
+<h2 id="s-q2">設問 2/9 core に無い汎用規範が 5 件、分散したまま残っている</h2>
+
+<p class="lead">処遇の過程で「現行の共通原則に無いが、core に 1 回書きすれば重複や欠落が
+解消する」規範が 5 件出た。いずれも承認済みの core 構成（現行共通原則 +
+f004 確定分（取捨の判定基準・生成前手続き・保持規則の実文群）+ 種別判定表）への追加になるため、
+まとめて確認する。推奨はまとめて採用。</p>
+
+<ul>
+  <li><b>見出しは内容を特定できる具体的な句にする</b>（DG21）: 現在は参照と解説の
+    2 ファイルに同趣旨が分散。共通句を core へ移し、種別固有分
+    （参照 = 見出しだけで目的の節へ到達できる構成、解説・読み物 = 手順だけの見出しと、
+    結論を言い切って山場を消す見出しの禁止）だけを各所に残す</li>
+  <li><b>読者を「あなた」と呼ばない（役割名で書く）</b>（DG30）: AI 口調の禁止の
+    チャット残留群へ追加。読み物の例外（境界に限り可）は種別側に残る</li>
+  <li><b>引用は原文から verbatim にコピーし、中略を明示する</b>（DG29）: 現在は論文 reference に
+    しかない。facet レビューで非 verbatim 引用が 6 件検出された実績があり、台帳の作業メモでも
+    組み込み候補として確定待ちだった</li>
+  <li><b>出典リンクは貼る前に参照先を確認する</b>（DG28）: 事前検証の規範としては
+    現在 github-pr にしかない（markdown-formatting rule にあるのは出典の記法のみ）。
+    数行の追加で、github-pr 側は再掲として残す</li>
+  <li><b>固有名の原則に例外根拠を併記する</b>（DG13）: 「参照不要な固有名は出さない」の原則に
+    「再開・再現目的の文書では識別子が情報そのもの」という例外判定を 1 文添える
+    （session plugin の引き継ぎ資料規範「具体識別子は省略しない」との方向差の整理）</li>
+</ul>
+
+<div class="q" id="q2">
+  <div class="t">設問 2/9（core への新規追加）</div>
+  <label class="opt"><input type="radio" name="q2" value="5 件すべて core に追加">
+    5 件すべて core に追加<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: いずれも重複解消か既知の事故（非 verbatim 引用）の再発防止に直結し、
+    追加は計 10 行前後の推定。読み込みは まとまった文章の生成時だけ</span></label>
+  <label class="opt"><input type="radio" name="q2" value="一部のみ追加（補足欄に採否）">一部のみ追加（補足欄に採否）
+    <span class="d">採らない項目は現状の分散配置のまま残る</span></label>
+  <label class="opt"><input type="radio" name="q2" value="追加しない（分散のまま）">追加しない（分散のまま）
+    <span class="d">重複グループ DG13・21・28〜30 は並立残置に切り替える</span></label>
+  <label class="opt"><input type="radio" name="q2" value="__other__">その他
+    <input type="text" class="other" data-for="q2"></label>
+  <textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q3">設問 3/9 skill 廃止で、手段変更時の再確認規範が受け皿を失う</h2>
+
+<p class="lead">ask-with-choices skill の廃止（確定済み）で、skill 内の汎用行動規範
+「実行中に手段が変わったら確認に戻る」が受け皿なく消えることが網羅性レビューで判明した。
+実文の骨子: 承認は目的でなく具体的な手段・構成に対して与えられる。実行中にブロッカーへ当たって
+手段を変えるなら、その時点で承認は失効しており、実装・状態変更の前に確認へ戻る。
+実例（2026-07）: 合意済みの構成が環境制約で不可能と判明した際、代替構成を無断で構築し
+永続設定まで書き込んで指摘を受けた。</p>
+
+<p>受け皿の候補は 2 つ。user global rule の propose-before-implement
+（提案と実装の分離。趣旨が最も近く、常時ロードで全プロジェクトに効く）へ 1 節追記するか、
+html-communication skill（確認フォームの運用の一部として）へ移すか。
+執筆規範ではないため詳細規範 core は候補にしない。
+rule への追記は常時層（全セッションに常時ロードされる rule 群）が 5 行前後増える
+トレードオフを持つ（常時層の最小化は f007 Q1 の決め手）。
+それでも rule を推すのは、この規範は確認フォームを開かない場面（実装作業中の手段変更）でこそ
+効く必要があり、skill 配置では届かないため。</p>
+
+<div class="q" id="q3">
+  <div class="t">設問 3/9（手段変更時の再確認規範の受け皿）</div>
+  <label class="opt"><input type="radio" name="q3" value="propose-before-implement rule へ追記">
+    propose-before-implement rule へ追記<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 承認の失効という同じ関心事で、実装作業中にも効く。
+    常時層 5 行前後の増加と引き換え</span></label>
+  <label class="opt"><input type="radio" name="q3" value="html-communication skill へ移設">html-communication skill へ移設
+    <span class="d">常時層は増えないが、skill 発動時にしか読まれない</span></label>
+  <label class="opt"><input type="radio" name="q3" value="捨てる（どこにも残さない）">捨てる（どこにも残さない）
+    <span class="d">2026-07 と同種の失敗の再発防止が rule から消える</span></label>
+  <label class="opt"><input type="radio" name="q3" value="__other__">その他
+    <input type="text" class="other" data-for="q3"></label>
+  <textarea class="note" data-note="q3" aria-label="設問 3 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q4">設問 4/9 AskUserQuestion の使用指示が 3 plugin に 35 箇所残っている</h2>
+
+<p class="lead">AskUserQuestion（Claude Code 組み込みの選択肢提示ツール。レンダリングバグにより
+時限禁止中）の使用指示について、確定済みの除去対象は impl-spec（16 箇所、実測）だけだが、
+レビューの grep で dotclaude（13 箇所）と mkdocs-setup（6 箇所）にも実在すると判明した。
+恒久的に使わないというゴール（フォーム外確定）に対し、ask-with-choices 廃止後は
+時限禁止を宣言している同 skill 冒頭の WARNING が消えるため、
+残すと禁止の根拠が無いまま使用指示だけが残る。</p>
+
+<p>作業量の実態: impl-spec は文言の削除・書き換えで済むが、残り 2 plugin は
+それを超える。mkdocs-setup は frontmatter の allowed-tools 変更と、複数選択
+（multiSelect）前提の 2 段階選択フローの代替設計が要る。dotclaude は
+「4 問ずつに分ける」などツールの仕様に由来する進行規則を含み、確認フローの書き直しになる。
+そこで「除去の確定」と「実装の同梱」を分けた 3 案で確認する。</p>
+
+<div class="q" id="q4">
+  <div class="t">設問 4/9（AskUserQuestion 除去のスコープ）</div>
+  <label class="opt"><input type="radio" name="q4" value="除去は全 plugin で確定し、dotclaude・mkdocs-setup の実装は別タスクに分離">
+    除去は全 plugin で確定し、dotclaude・mkdocs-setup の実装は別タスクに分離<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 恒久禁止の確定と整合しつつ、norm-refit の一括実装 PR に
+    他 plugin の確認フロー再設計を同乗させない。別タスク完了までは使用指示 19 箇所が残るため、
+    その間の禁止の追跡は known-issues エントリを closed 化せず書き換えで維持する</span></label>
+  <label class="opt"><input type="radio" name="q4" value="全 plugin の除去を一括実装に含める">全 plugin の除去を一括実装に含める
+    <span class="d">1 回で片付くが、一括実装に 2 plugin の確認フロー再設計と
+    version bump が加わり、PR が norm-refit の範囲を超えて膨らむ</span></label>
+  <label class="opt"><input type="radio" name="q4" value="impl-spec のみ（残り 2 plugin は現状のまま）">impl-spec のみ（残り 2 plugin は現状のまま）
+    <span class="d">恒久禁止のゴールに対し、禁止根拠のない使用指示 19 箇所が
+    期限なく残る</span></label>
+  <label class="opt"><input type="radio" name="q4" value="__other__">その他
+    <input type="text" class="other" data-for="q4"></label>
+  <textarea class="note" data-note="q4" aria-label="設問 4 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q5">設問 5/9 一括実装 PR のスコープは台帳内で矛盾している</h2>
+
+<p class="lead">整合性レビューが台帳内の矛盾を検出した。「norm-refit 全体は最終的に
+1 つの PR + 提出前メタレビュー」（2026-08-14 確定。メタレビュー = 提出前に複数観点の
+独立レビューを回す規定）と、f007 Q4 の中間期定義
+（一括実装 PR の後、T4 完了までは boilerplate 版が facet 注入の正）は両立しない。
+中間期が存在する以上、一括実装 PR は T4 完了前に出るからだ。両確定は同日のため
+台帳から前後は断定できないが、f007 Q4 は補足質問への回答（詳細は T4 で詰める）まで
+確認済みで、粒度も細かい。どちらを選んでも一方の確定を覆すため、対称に確認する。</p>
+
+<div class="q" id="q5">
+  <div class="t">設問 5/9（一括実装 PR のスコープ）</div>
+  <label class="opt"><input type="radio" name="q5" value="T4 分は別 PR（f007 Q4 の中間期どおり）">
+    T4 分は別 PR（f007 Q4 の中間期どおり）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: T2・T3 の確定分の反映を T4 の完了まで待たせない。
+    「全体で 1 PR」確定（ユーザー指示 2026-08-14）を「一括実装分で 1 PR、T4 は別 PR、
+    メタレビューは両方に適用」へ読み替える形で覆す（台帳に訂正を記録）</span></label>
+  <label class="opt"><input type="radio" name="q5" value="T4 完了まで待って全体を 1 PR にまとめる">T4 完了まで待って全体を 1 PR にまとめる
+    <span class="d">f007 Q4 の中間期定義を覆す。利点はメタレビューを全変更に
+    1 回で適用できることと、中間期の編集凍結運用が不要になること。
+    確定済みの T2・T3 分の反映は T4 完了まで待ちになる</span></label>
+  <label class="opt"><input type="radio" name="q5" value="__other__">その他
+    <input type="text" class="other" data-for="q5"></label>
+  <textarea class="note" data-note="q5" aria-label="設問 5 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q6">設問 6/9 表規範の「最小限」の解釈が 2 通りある</h2>
+
+<p class="lead">f001 Q1 の確定（md 文書の表の書き方の最小限を markdown-formatting rule
+（以下 MF）へ移設する）の「最小限」の解釈が 2 通りある。参照 reference には表の規範が 2 つあり、
+セルの書き方（セルは短い判定値にする = DG23）は文句なく移設対象だが、
+使い分け（比較・対応は表、並列は箇条書き = DG22 の参照側）まで含むかが読み切れない。
+MF は常時ロードの rule なので、広く解釈すると常時層が増える。</p>
+
+<div class="q" id="q6">
+  <div class="t">設問 6/9（表規範の移設範囲）</div>
+  <label class="opt"><input type="radio" name="q6" value="セル規範のみ MF へ（使い分けは参照 reference に残す）">
+    セル規範のみ MF へ（使い分けは参照 reference に残す）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 常時層の最小化（f007 Q1 の決め手）と整合。
+    使い分けは書く場面でだけ要る判断なので詳細規範側が適所</span></label>
+  <label class="opt"><input type="radio" name="q6" value="使い分けも MF へ（T3 原案）">使い分けも MF へ（T3 原案）
+    <span class="d">表に関する規範が 1 rule に揃うが、常時層が 2 行前後増える</span></label>
+  <label class="opt"><input type="radio" name="q6" value="__other__">その他
+    <input type="text" class="other" data-for="q6"></label>
+  <textarea class="note" data-note="q6" aria-label="設問 6 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q7">設問 7/9 問いの回収の規範は、論文と読み物で逆向きの例外を持つ</h2>
+
+<p class="lead">「立てた問い・送った論点は回収する」という同趣旨の規範が、論文
+（全回収・回収しない伏線の禁止）と読み物（明示回収しつつ、最後に一つだけ開いたまま
+残してよい）で逆向きの例外を持つ。共通化すると読み物の例外（緊張の設計の中核）が消えるか、
+論文側に不要な緩和が混入する。T3 は「同趣旨の別規範」として両ファイルに並立残置し、
+「規範の実体は 1 箇所」の例外として台帳に理由を記録する案を推す。</p>
+
+<div class="q" id="q7">
+  <div class="t">設問 7/9（問いの回収の扱い）</div>
+  <label class="opt"><input type="radio" name="q7" value="並立残置を承認（例外として台帳に記録）">
+    並立残置を承認（例外として台帳に記録）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 規範内容が実質分岐しており、無理な共通化は片方を壊す。
+    例外の理由を台帳に残せば 1 箇所原則の運用は保てる</span></label>
+  <label class="opt"><input type="radio" name="q7" value="共通句だけ core へ置き、両ファイルに例外を書く">共通句だけ core へ置き、両ファイルに例外を書く
+    <span class="d">形式上は 1 箇所になるが、共通句単独では規範として弱く、総量も減らない</span></label>
+  <label class="opt"><input type="radio" name="q7" value="__other__">その他
+    <input type="text" class="other" data-for="q7"></label>
+  <textarea class="note" data-note="q7" aria-label="設問 7 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q8">設問 8/9 太字上限の正を 1 箇所にすると、HTML 媒体に届かなくなる</h2>
+
+<p class="lead">太字は論理の要所に限り一節に一、二箇所まで、という上限規範が
+markdown-formatting rule（MF）と読み物 reference の両方にある。MF は md ファイル限定を自称する rule のため、
+MF だけを正にすると、HTML 本文で書く読み物には上限規範が届かなくなる
+（f006 Q2 の 2 軸設計（種別 × 媒体）の媒体軸に穴が開く）。妥当性レビューは、
+読み物側にも数値を残す意図的二重化（その旨を明記）を推した。</p>
+
+<div class="q" id="q8">
+  <div class="t">設問 8/9（太字上限の扱い）</div>
+  <label class="opt"><input type="radio" name="q8" value="意図的二重化（読み物側にも数値を残し、二重化と明記）">
+    意図的二重化（読み物側にも数値を残し、二重化と明記）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 媒体軸の穴を塞ぐ。増分は 1 行で、明記により将来の重複刈りの
+    誤削除も防げる</span></label>
+  <label class="opt"><input type="radio" name="q8" value="MF 単独正（読み物側は演出の趣旨だけ）">MF 単独正（読み物側は演出の趣旨だけ）
+    <span class="d">1 箇所原則には忠実だが、HTML 媒体の読み物に数値上限が効かなくなる</span></label>
+  <label class="opt"><input type="radio" name="q8" value="__other__">その他
+    <input type="text" class="other" data-for="q8"></label>
+  <textarea class="note" data-note="q8" aria-label="設問 8 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q9">設問 9/9 idea-hub 側の Q81 条項更新が、どのスコープにも未割当</h2>
+
+<p class="lead">f007 Q4 で、情報デザイン norms の複数用途条項の「正の向き」を変更する
+（汎用分の正は執筆詳細規範側にする）と確定した。この条項の記録元は idea-hub リポジトリの
+決定台帳（Q81）で、そちらへの反映作業がまだどのスコープ（一括実装 / T4 / 単発作業）にも
+割り当てられていない。他リポジトリの文書の更新は norm-refit の範囲外のため、
+実施はいずれにせよ idea-hub 側のセッションかユーザー経由になる。</p>
+
+<div class="q" id="q9">
+  <div class="t">設問 9/9（Q81 条項更新の帰属）</div>
+  <label class="opt"><input type="radio" name="q9" value="T4 の随伴作業にする（T4 完了時に依頼文を作成してユーザー経由で渡す）">
+    T4 の随伴作業にする（T4 完了時に依頼文を作成してユーザー経由で渡す）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 受け皿の最終形（残り 48 本の置き場）が T4 で決まるため、
+    確定後に 1 回で反映するのが手戻りなし</span></label>
+  <label class="opt"><input type="radio" name="q9" value="今すぐ依頼文を作ってユーザー経由で idea-hub へ渡す">今すぐ依頼文を作ってユーザー経由で idea-hub へ渡す
+    <span class="d">正の向きの変更だけ先に記録でき、忘却リスクが減る。
+    T4 の結論次第で 2 回目の更新が要る</span></label>
+  <label class="opt"><input type="radio" name="q9" value="一括実装のチェックリストに含める">一括実装のチェックリストに含める
+    <span class="d">一括実装の時点では受け皿が未確定のため、暫定内容での記録になる</span></label>
+  <label class="opt"><input type="radio" name="q9" value="__other__">その他
+    <input type="text" class="other" data-for="q9"></label>
+  <textarea class="note" data-note="q9" aria-label="設問 9 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+<p class="d">回答には要らない。記録の予定と所在。</p>
+<ul class="d">
+  <li>処遇明細と経緯: <a href="./r012.html">norm-refit: T3 重複規範の処遇明細</a></li>
+  <li>回答受領後、台帳に T3 完了形エントリを記録する。あわせて記録型の訂正 2 件
+    （f001 Q4 の「共通原則の要点」が f007 Q1 で失効した旨の明記 /
+    f001 Q2 の「27 グループ」は plugin 関与分の数で全体は 47 という限定句）を追記する。
+    これらは確定済み事項からの導出で、新しい判断を含まない</li>
+  <li>確定事項の台帳: リポジトリの <code>notes/norm-refit.md</code></li>
+</ul>
+
+<h2 id="s-preview">付録 回答の preview</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" aria-label="回答の preview" readonly></textarea>
+
+</main>
+
+<div id="bar">
+  <div id="bar-in">
+    <div class="bar-info">
+      <span id="proj">cc-marketplace</span>
+      <span id="cnt"></span>
+      <span id="res"></span>
+    </div>
+    <textarea id="free" aria-label="自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <div class="bar-actions">
+      <a id="back" href="./">一覧に戻る</a>
+      <div class="action-cluster">
+        <button type="button" id="reset" class="subbtn">入力をリセット</button>
+        <button type="button" id="copy">回答をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var THEME = 'norm-refit T3 処遇の承認';
+  var KEY = 'draft:f008';
+  var QS = [
+    { id: 'q1', label: '処遇表の一括承認' },
+    { id: 'q2', label: 'core への新規追加 5 件' },
+    { id: 'q3', label: '手段変更時の再確認規範の受け皿' },
+    { id: 'q4', label: 'AskUserQuestion 除去のスコープ' },
+    { id: 'q5', label: '一括実装 PR のスコープ' },
+    { id: 'q6', label: '表規範の移設範囲' },
+    { id: 'q7', label: '問いの回収の扱い' },
+    { id: 'q8', label: '太字上限の扱い' },
+    { id: 'q9', label: 'Q81 条項更新の帰属' }
+  ];
+
+  function ans(qid) {
+    var c = document.querySelector('input[name="' + qid + '"]:checked');
+    if (!c) return null;
+    if (c.value === '__other__') {
+      var o = document.querySelector('.other[data-for="' + qid + '"]');
+      return (o && o.value.trim()) ? 'その他: ' + o.value.trim() : 'その他（記述なし）';
+    }
+    return c.value;
+  }
+  function build() {
+    var lines = ['## HTML フォーム回答（' + THEME + '）'], n = 0;
+    QS.forEach(function (q) {
+      var a = ans(q.id);
+      if (a) n++;
+      lines.push('- ' + q.id.toUpperCase() + '（' + q.label + '）: ' + (a || '未回答'));
+      var note = document.querySelector('.note[data-note="' + q.id + '"]');
+      if (note && note.value.trim()) lines.push('    - ' + q.id.toUpperCase() + ' 補足: ' + note.value.trim());
+    });
+    var free = document.getElementById('free').value.trim();
+    lines.push('- 補足: ' + (free || 'なし'));
+    return { text: lines.join('\n'), n: n, total: QS.length };
+  }
+  function saveDraft() {
+    var d = { radios: {}, texts: {} };
+    document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
+    document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
+    var free = document.getElementById('free').value;
+    if (free) d.texts['free'] = free;
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  function applyDraft(d) {
+    Object.keys(d.radios || {}).forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
+      if (el) el.checked = true;
+    });
+    Object.keys(d.texts || {}).forEach(function (k) {
+      if (k === 'free') { document.getElementById('free').value = d.texts[k]; return; }
+      var kind = k.slice(0, 2), id = k.slice(2);
+      var el = kind === 'o:' ? document.querySelector('.other[data-for="' + id + '"]')
+                             : document.querySelector('.note[data-note="' + id + '"]');
+      if (el) el.value = d.texts[k];
+    });
+  }
+  function refresh() {
+    var r = build();
+    document.getElementById('preview').value = r.text;
+    document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+  }
+  function copyText(text) {
+    var res = document.getElementById('res');
+    function ok() { res.textContent = 'コピーしました'; setTimeout(function () { res.textContent = ''; }, 3000); }
+    function ng() {
+      var p = document.getElementById('preview');
+      p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
+      res.textContent = 'コピー不可: preview を手動コピー';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, ng);
+    else ng();
+  }
+
+  document.addEventListener('input', function () { saveDraft(); refresh(); });
+  document.addEventListener('change', function () { saveDraft(); refresh(); });
+  document.getElementById('copy').addEventListener('click', function () { copyText(build().text); });
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
+    document.getElementById('free').value = '';
+    refresh();
+  });
+
+  try { var raw = localStorage.getItem(KEY); if (raw) applyDraft(JSON.parse(raw)); } catch (e) {}
+  refresh();
+})();
+</script>
+</body>
+</html>

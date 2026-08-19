@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>HTML 雛形のサイド空間: ハイブリッド案</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #1a1a1a; --sub: #555;
+    --border: #d0d0d0;
+    --control-border: #8a8a8a;
+    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
+    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab;
+      --border: #3a3f47; --control-border: #767d87;
+      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
+      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-bottom: 190px; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.7;
+         word-break: auto-phrase;
+         font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", Meiryo, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 170px; }
+  h1, h2, h3 { text-wrap: balance; }
+  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px;
+       scroll-margin-top: 12px; }
+  h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
+         font-family: "SF Mono", Menlo, monospace; }
+  mark { background: var(--hl); color: inherit; padding: 0 2px; }
+  a { color: var(--accent); }
+  /* 表は本文カラムの中で横スクロールさせる。ビューポート幅を使った張り出しはしない。
+     張り出しはサイド列の下に潜る（幅の計算が独立していて必ずどこかで衝突する）。 */
+  .table-wrap { overflow-x: auto; }
+  .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub); padding-bottom: 4px; }
+  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  tr.key td, tr.key th { background: var(--hl); }
+  .fn { font-size: 0.875em; color: var(--sub); margin: 8px 0 0; padding-left: 18px; scroll-margin-top: 16px; }
+  .fn:target { background: var(--accent-bg); border-left: 3px solid var(--accent);
+               padding-left: 15px; border-radius: 0 4px 4px 0; }
+  .fnref { scroll-margin-top: 16px; }
+  .fnref a { text-decoration: none; padding: 0 1px; }
+  .fnref a:hover { text-decoration: underline; }
+  .fnref:target a { background: var(--accent-bg); outline: 2px solid var(--accent); border-radius: 3px; }
+  .fnnum { text-decoration: none; font-weight: 700; }
+  .fnback { text-decoration: none; margin-left: 3px; }
+  .fnback:hover { text-decoration: underline; }
+  .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
+           border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
+           padding: 7px 12px; margin: 8px 0 14px; }
+  .gloss b { color: var(--fg); font-weight: 700; }
+  .ok { color: var(--ok); } .ng { color: var(--ng); }
+  .d { color: var(--sub); font-size: 0.875em; }
+  label.opt .d { display: block; }
+  .lead { margin-bottom: 6px; }
+  .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
+       padding: 12px 15px; margin: 16px 0; }
+  .q .t { font-weight: 700; margin-bottom: 6px; }
+  label.opt { display: block; background: var(--bg); border: 1px solid var(--control-border);
+              border-radius: 6px; padding: 8px 10px; margin: 6px 0; cursor: pointer; }
+  label.opt:has(input:checked) { outline: 2px solid var(--accent); }
+  .rec { background: var(--accent-fill); color: #fff; font-size: 0.875em; border-radius: 4px;
+         padding: 0 6px; margin-left: 4px; }
+  input.other { width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--control-border);
+                border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 1em; }
+  textarea.note { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--control-border);
+                  border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 0.875em;
+                  min-height: 30px; resize: vertical; }
+  #preview { width: 100%; min-height: 180px; font-family: "SF Mono", Menlo, monospace;
+             font-size: 0.875em; background: var(--code); color: var(--fg);
+             border: 1px solid var(--control-border); border-radius: 6px; padding: 10px; }
+  .vnav { font-size: 0.875em; background: var(--card); border: 1px solid var(--border);
+          border-radius: 6px; padding: 8px 12px; margin: 12px 0 18px; }
+  .vnav b { color: var(--fg); }
+  .vnav a { margin-left: 10px; }
+
+  /* ハイブリッド案の本体。
+     サイド列には、その節の判断の根拠（案 B）と、その節から参照される脚注（案 C）を
+     同じ 1 本の rail にまとめて置く。両者が場所を取り合わないので併存できる。
+     狭幅・印刷では節の直後に流れる。 */
+  .rail { font-size: 0.875em; background: var(--card); border-left: 3px solid var(--accent);
+          border-radius: 0 6px 6px 0; padding: 9px 13px; margin: 10px 0 16px; }
+  .rail .t { font-weight: 700; color: var(--fg); display: block; margin-bottom: 3px; }
+  .rail p { margin: 5px 0; }
+  .rail .fnset { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .rail .fnset .t { font-weight: 700; color: var(--sub); }
+  @media screen and (min-width: 1120px) {
+    /* 本文 640px + 間隔 28px + サイド 310px = 978px。
+       サイド列はグリッドの列として場所を占有するので、表と重なることがない。 */
+    main { max-width: 978px; }
+    main > * { max-width: 640px; }
+    main > .sec { max-width: none; display: grid; grid-template-columns: 640px 310px;
+                  column-gap: 28px; grid-template-areas: "bd rail"; align-items: start; }
+    .sec > .bd { grid-area: bd; min-width: 0; }
+    .sec > .rail { grid-area: rail; margin: 0; position: sticky; top: 24px; }
+  }
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+         border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+         z-index: 100; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  .bar-info { display: flex; align-items: center; gap: 8px; }
+  .bar-info #res { margin-left: auto; text-align: right; }
+  .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  #back { display: inline-block; background: none; border: 1px solid var(--control-border); color: var(--sub);
+          border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #proj { align-self: center; font-size: 0.875em; font-weight: 700;
+          border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
+          padding: 3px 9px; white-space: nowrap; }
+  #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
+          border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
+          color: var(--fg); font-size: 0.875em; resize: vertical; }
+  #free:focus { min-height: 88px; }
+  #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
+          padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 1em; }
+  .subbtn { background: none; border: 1px solid var(--control-border); color: var(--sub); border-radius: 6px;
+            padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
+  .subbtn:hover { border-color: var(--accent); color: var(--accent); }
+  #cnt, #res { font-size: 0.875em; color: var(--sub); white-space: nowrap; }
+  @media print {
+    #bar { display: none; }
+    main, main > *, main > .sec { max-width: none; display: block; }
+    .sec > .rail { position: static; }
+    h1, h2, h3 { break-after: avoid; }
+    table, pre, .q { break-inside: avoid; }
+    @page { margin: 16mm; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>HTML 雛形のサイド空間: ハイブリッド案</h1>
+
+<div class="vnav">
+<b>今見ているのはハイブリッド案</b>（案 B の根拠並置と案 C の脚注を、同じ 1 本の rail に統合）。同じ内容を別の組み方にしたページ:
+<a href="./ccm-f010.html">案 A 設問並置</a><a href="./ccm-f011.html">案 C 脚注維持</a><br>
+設問は 3 ページとも同じ。どのページから答えても構わない。
+</div>
+
+<p>HTML 雛形の作り直しの一環。情報デザインの外部調査で、HTML がターミナル出力や markdown に対して持つ優位は「操作できること」ではなく「本文カラムの外の空間を使えること」だと分かった。現行の雛形はその空間を脚注置き場にしている。使い道を決め直したい。</p>
+
+<p><b>結論</b>: 外の空間に 1 本の rail を置き、その節の判断の根拠とその節から参照される脚注を両方入れる。案 B の弱点だった「脚注の固定表示を失う」がこれで解消する。</p>
+
+<p class="lead"><b>決めること</b>: 3 件。</p>
+<ul>
+  <li>設問 1 サイド空間に何を置くか（ハイブリッド / 案 A / 案 C）</li>
+  <li>設問 2 分離の基準を「判断に使うか」で引き直すことの承認</li>
+  <li>設問 3 op-review 節を今回いじるか、T4 へ送るか</li>
+</ul>
+
+<p class="d"><b>読み方</b>: 3 案を見比べるのが目的なので、まず上のリンクで 3 ページを行き来してほしい。中身は同一で、組み方だけが違う。説明 1 と 2 は 3 ページで共通なので、2 ページ目からは読み飛ばしてよい。</p>
+
+<div class="sec">
+<div class="bd">
+<h2 id="s-e1">説明 1 効くのは配置であって、操作させることではない</h2>
+
+<p class="lead">読解の成績を上げる介入を効果量の大きい順に並べた表。決め手は最上行で、近接が突出している。</p>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-1">
+<table>
+<caption id="cap-1">表 1 介入と効果量（Hedges の g）</caption>
+<thead>
+<tr><th scope="col">介入</th><th scope="col">効果量</th><th scope="col">雛形での実装</th></tr>
+</thead>
+<tbody>
+<tr class="key"><td>関連要素の近接</td><td>g=0.74</td><td>未実装（この設問の対象）</td></tr>
+<tr><td>強調</td><td>g=0.43</td><td>実装済み（<code>tr.key</code>、<code>mark</code>）</td></tr>
+<tr><td>余分の除去</td><td>g=0.33</td><td>実装済み（参考資料への隔離）</td></tr>
+<tr><td>操作を握らせる</td><td class="ng">g=0.05</td><td>投資しない</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<aside class="rail">
+<span class="t">この節の決め手</span>
+<p>静的なページと操作できるページで、理解度に有意差が出なかった<sup class="fnref" id="fnref-1-1"><a href="#fn-1">1</a></sup>。操作機構を足しても読み手の理解は上がらない。</p>
+<p>近接の g=0.74 は強調（g=0.43）の 1.7 倍。雛形で唯一手つかずの介入でもある。</p>
+<div class="fnset">
+<span class="t">出典</span>
+<p class="fn" id="fn-1"><a class="fnnum" href="#fnref-1-1">1.</a> 情報デザインの外部調査（2026-08-15、7 テーマ）。個々の出典は台帳に未記録。
+  <a class="fnback" href="#fnref-1-1" aria-label="本文へ戻る 1">&#8617;1</a>
+  <a class="fnback" href="#fnref-1-2" aria-label="本文へ戻る 2">&#8617;2</a></p>
+</div>
+</aside>
+</div>
+
+<div class="sec">
+<div class="bd">
+<h2 id="s-e2">説明 2 現行雛形は、判断に使う情報を本文から遠ざけている</h2>
+
+<p>現行の skill には、判断の根拠を本文から分離せよという規定が 4 箇所ある。「根拠・詳細は表直下の補足リストか脚注へ出す」「出典・長い補足を本文の括弧書きで埋め込まない」「脚注へ逃がしたら」「参考資料へ隔離」。</p>
+
+<p>加えて雛形は、ワイド画面で脚注 <code>#fn-set</code> を本文カラムの右に固定表示する。分離した情報を、外の空間という<mark>最も目立つ場所</mark>に置いている。近接とは逆向きの設計になっている。</p>
+</div>
+
+<aside class="rail">
+<span class="t">この節の決め手</span>
+<p>判断に使う数値をどこに置くと読まれるかの実測では、本文中に括弧で併記した場合の到達率が 66%、別表が 39%、tooltip が 40%（n=924）<sup class="fnref" id="fnref-1-2"><a href="#fn-1">1</a></sup>。</p>
+<p>現行の指示はこの結果と逆を命じている。脚注へ送るべきは、判断に使わない出典・再現手順・生データだけになる。</p>
+</aside>
+</div>
+
+<div class="sec">
+<div class="bd">
+<h2 id="s-e3">説明 3 3 案の違いは、外の空間を誰のために使うか</h2>
+
+<p class="lead">サイド空間の使い方 3 案の比較。決め手は「report でも効くか」の行で、案 A だけがここで落ちる。</p>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-2">
+<table>
+<caption id="cap-2">表 2 サイド空間の使い方 3 案</caption>
+<thead>
+<tr><th scope="col">観点</th><th scope="col">ハイブリッド</th><th scope="col">案 A 設問並置</th><th scope="col">案 C 脚注維持</th></tr>
+</thead>
+<tbody>
+<tr><td>rail に置くもの</td><td>根拠 + その節の脚注</td><td>設問ブロック</td><td>脚注のみ</td></tr>
+<tr><td>近接させる相手</td><td>主張と根拠・出典</td><td>比較表と設問</td><td>なし</td></tr>
+<tr class="key"><td>report でも効くか</td><td class="ok">効く</td><td class="ng">効かない</td><td class="ok">効く</td></tr>
+<tr><td>form での効き</td><td class="ok">中</td><td class="ok">大</td><td>なし</td></tr>
+<tr><td>雛形の分岐</td><td>増えない</td><td class="ng">form 専用の分岐が増える</td><td>増えない</td></tr>
+<tr><td>脚注の扱い</td><td class="ok">rail 内に同居</td><td>本文末尾へ</td><td class="ok">rail を占有</td></tr>
+<tr><td>失うもの</td><td>なし</td><td>設問が節の直下から離れる</td><td>近接の改善（g=0.74）</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="gloss">
+※ <b>近接</b> = 関連する情報どうしを、視線を動かさずに同時に見える位置に置くこと。ページ内リンクで飛べることは近接に入らない。クリックを挟んだ時点で同時に見えなくなるため。
+</div>
+</div>
+
+<aside class="rail">
+<span class="t">この節の決め手</span>
+<p>案 B 単独では脚注の固定表示を失うのが代償だった。rail に同居させると場所の取り合いが起きないので、その代償が消える。</p>
+<p>案 A は設問と比較表を並べるので form での効きは最大だが、設問の無い report では空間が余り、雛形に form 専用の分岐が増える。</p>
+<p>案 C は変更が skill の文面だけで済む。ただし表 1 で唯一未実装の介入を、未実装のまま残す。</p>
+</aside>
+</div>
+
+<div class="sec">
+<div class="bd">
+<h2 id="s-e4">説明 4 レイアウト崩れの原因と直し方</h2>
+
+<p>表がサイドパネルの下に潜る不具合があった。原因は幅の計算が 2 系統に分かれていることで、<mark>配布中の <code>templates/page.html</code> にも同じ不具合がある</mark>。</p>
+
+<p>表は <code>min(100vw - 432px, 1100px)</code> でビューポート幅から張り出す一方、サイドパネルは <code>left: calc(50% + 348px)</code> に固定されている。表の幅は 1100px で頭打ちになるため、ビューポートが 1532px を超えると表の右端が中央 + 550px まで伸び、中央 + 348px から始まるパネルの下へ約 200px 潜る。</p>
+
+<p>この案では張り出しをやめ、本文 640px とサイド 310px を CSS グリッドの列にした。サイド列が場所を占有するので、構造上重なりようがない。表は本文カラムの中で横スクロールする。</p>
+</div>
+
+<aside class="rail">
+<span class="t">この節の決め手</span>
+<p>ビューポート幅からの張り出しと固定配置の併用は、幅の計算が独立しているため必ずどこかの画面幅で衝突する。片方を直しても別の閾値で再発する。</p>
+<p>グリッドなら列幅の合計が確定するので、画面幅に依存しない。代償は表が 640px に収まることで、広い表は横スクロールになる。</p>
+</aside>
+</div>
+
+<h2 id="s-q1">設問 1/3 サイド空間に何を置くか</h2>
+
+<div class="q" id="q1">
+  <div class="t">設問 1/3（サイド空間の用途）</div>
+  <label class="opt"><input type="radio" name="q1" value="ハイブリッド（根拠 + 脚注を同じ rail に）">
+    ハイブリッド（根拠 + 脚注を同じ rail に）<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: form と report の両方で効き、雛形の分岐が増えず、脚注も失わない。覆し可: 当面 form しか作らないなら案 A、変更を最小にしたいなら案 C。</span></label>
+  <label class="opt"><input type="radio" name="q1" value="案 A 設問並置">案 A 設問並置
+    <span class="d">form での効きは最大。report で空間が余り、雛形に分岐が増える。</span></label>
+  <label class="opt"><input type="radio" name="q1" value="案 C 脚注維持">案 C 脚注維持
+    <span class="d">変更は skill の文面だけ。近接（g=0.74）は改善しない。</span></label>
+  <label class="opt"><input type="radio" name="q1" value="__other__">その他
+    <input type="text" class="other" data-for="q1"></label>
+  <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q2">設問 2/3 分離の基準の引き直し</h2>
+
+<p>現行は「根拠・詳細は脚注へ」と情報の種類で分離している。これを「判断に使うか」で引き直す案。判断に効く数値・根拠は本文中に括弧で併記し、脚注へ送るのは出典・再現手順・生データだけにする。</p>
+
+<div class="q" id="q2">
+  <div class="t">設問 2/3（分離の基準）</div>
+  <label class="opt"><input type="radio" name="q2" value="引き直す">
+    「判断に使うか」で引き直す<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 到達率 66% 対 39% の実測。覆し可: 本文が数値で膨れて読みにくくなるなら、併記する数値の上限を決める方向へ。</span></label>
+  <label class="opt"><input type="radio" name="q2" value="現行維持">現行の基準を維持する
+    <span class="d">情報の種類で分ける。ページの見た目は保たれる。</span></label>
+  <label class="opt"><input type="radio" name="q2" value="__other__">その他
+    <input type="text" class="other" data-for="q2"></label>
+  <textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q3">設問 3/3 op-review 節の扱い</h2>
+
+<p>調査で、LLM による可読性の評価は人間と相関しないと分かった（意味保存の相関 r=0.77 に対し、読みやすさは r=0.28）。この skill の op-review 節が指定する clarity facet は、この結果によると目的を果たしていない。名詞構文と係り受けの多義という実例が 2 件あり、どちらも 4 観点のレビューを通過している。</p>
+
+<div class="q" id="q3">
+  <div class="t">設問 3/3（op-review 節）</div>
+  <label class="opt"><input type="radio" name="q3" value="T4 へ送る">
+    T4 へ送る<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: レビュー機構の再設計は T4 の本題そのもので、先取りすると二重に決めることになる。覆し可: 雛形の作り直しと同じ PR に入れたいなら今回いじる。</span></label>
+  <label class="opt"><input type="radio" name="q3" value="今回いじる">今回いじる
+    <span class="d">この skill の op-review 節だけを先に直す。</span></label>
+  <label class="opt"><input type="radio" name="q3" value="__other__">その他
+    <input type="text" class="other" data-for="q3"></label>
+  <textarea class="note" data-note="q3" aria-label="設問 3 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+
+<p class="d">回答には要らない。実装の差と申し送り。</p>
+
+<ul class="d">
+  <li>ハイブリッドの実装は CSS のみ。1120px 以上で <code>main</code> を 978px（640 + 28 + 310）にし、節を <code>grid-template-areas: "bd rail"</code> の 2 列グリッドにする。rail は <code>position: sticky</code> でその節の高さの範囲だけ追従する</li>
+  <li>DOM 順は本文の直後に rail なので、狭幅・印刷・読み上げでは節の直後に流れる</li>
+  <li>3 ページは下書きの保存キーを共有している。どのページで選んでも選択は 3 ページに残る</li>
+  <li>情報デザインの調査結果は、数値が前セッションの引き継ぎ資料に残っているだけで、台帳に出典が記録されていない。採用する案が決まった時点で出典を台帳へ補う必要がある</li>
+</ul>
+
+<h2 id="s-preview">付録 回答の preview</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" aria-label="回答の preview" readonly></textarea>
+
+</main>
+
+<div id="bar">
+  <div id="bar-in">
+    <div class="bar-info">
+      <span id="proj">cc-marketplace</span>
+      <span id="cnt"></span>
+      <span id="res"></span>
+    </div>
+    <textarea id="free" aria-label="自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <div class="bar-actions">
+      <a id="back" href="./">一覧に戻る</a>
+      <div class="action-cluster">
+        <button type="button" id="reset" class="subbtn">入力をリセット</button>
+        <button type="button" id="copy">回答をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var THEME = 'HTML 雛形のサイド空間';
+  var KEY = 'draft:ccm-f009';
+  var QS = [
+    { id: 'q1', label: 'サイド空間の用途' },
+    { id: 'q2', label: '分離の基準' },
+    { id: 'q3', label: 'op-review 節' }
+  ];
+
+  function ans(qid) {
+    var c = document.querySelector('input[name="' + qid + '"]:checked');
+    if (!c) return null;
+    if (c.value === '__other__') {
+      var o = document.querySelector('.other[data-for="' + qid + '"]');
+      return (o && o.value.trim()) ? 'その他: ' + o.value.trim() : 'その他（記述なし）';
+    }
+    return c.value;
+  }
+  function build() {
+    var lines = ['## HTML フォーム回答（' + THEME + '）'], n = 0;
+    QS.forEach(function (q) {
+      var a = ans(q.id);
+      if (a) n++;
+      lines.push('- ' + q.id.toUpperCase() + '（' + q.label + '）: ' + (a || '未回答'));
+      var note = document.querySelector('.note[data-note="' + q.id + '"]');
+      if (note && note.value.trim()) lines.push('    - ' + q.id.toUpperCase() + ' 補足: ' + note.value.trim());
+    });
+    var free = document.getElementById('free').value.trim();
+    lines.push('- 補足: ' + (free || 'なし'));
+    return { text: lines.join('\n'), n: n, total: QS.length };
+  }
+  function saveDraft() {
+    var d = { radios: {}, texts: {} };
+    document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
+    document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
+    var free = document.getElementById('free').value;
+    if (free) d.texts['free'] = free;
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  function applyDraft(d) {
+    Object.keys(d.radios || {}).forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
+      if (el) el.checked = true;
+    });
+    Object.keys(d.texts || {}).forEach(function (k) {
+      if (k === 'free') { document.getElementById('free').value = d.texts[k]; return; }
+      var kind = k.slice(0, 2), id = k.slice(2);
+      var el = kind === 'o:' ? document.querySelector('.other[data-for="' + id + '"]')
+                             : document.querySelector('.note[data-note="' + id + '"]');
+      if (el) el.value = d.texts[k];
+    });
+  }
+  function refresh() {
+    var r = build();
+    document.getElementById('preview').value = r.text;
+    document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+  }
+  function copyText(text) {
+    var res = document.getElementById('res');
+    function ok() { res.textContent = 'コピーしました'; setTimeout(function () { res.textContent = ''; }, 3000); }
+    function ng() {
+      var p = document.getElementById('preview');
+      p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
+      res.textContent = 'コピー不可: preview を手動コピー';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, ng);
+    else ng();
+  }
+
+  document.addEventListener('input', function () { saveDraft(); refresh(); });
+  document.addEventListener('change', function () { saveDraft(); refresh(); });
+  document.getElementById('copy').addEventListener('click', function () { copyText(build().text); });
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
+    document.getElementById('free').value = '';
+    refresh();
+  });
+
+  try { var raw = localStorage.getItem(KEY); if (raw) applyDraft(JSON.parse(raw)); } catch (e) {}
+  refresh();
+})();
+</script>
+</body>
+</html>

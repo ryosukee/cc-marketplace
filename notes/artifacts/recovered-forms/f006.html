@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>norm-refit: 正典の器とタイプ分類の再設計（5 問）</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fff; --fg: #1a1a1a; --sub: #555;
+    --border: #d0d0d0;
+    --control-border: #8a8a8a;
+    --accent: #0b6bcb; --accent-fill: #0b6bcb; --accent-bg: #eaf3fc; --card: #f7f8fa;
+    --hl: #fff8dc; --code: #eef0f3; --ok: #1a7f37; --ng: #b42318;
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e6e6e6; --sub: #a0a4ab;
+      --border: #3a3f47; --control-border: #767d87;
+      --accent: #5aa2e8; --accent-fill: #2563eb; --accent-bg: #1d2b3a; --card: #1e2127;
+      --hl: #3a3420; --code: #262a31; --ok: #4ac26b; --ng: #f28b82;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-bottom: 190px; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-size: 16px; line-height: 1.7;
+         word-break: auto-phrase;
+         font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", Meiryo, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 170px; }
+  h1, h2, h3 { text-wrap: balance; }
+  h1 { font-size: 1.4em; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  h2 { font-size: 1.15em; margin-top: 1.9em; border-left: 4px solid var(--accent); padding-left: 9px;
+       scroll-margin-top: 12px; }
+  h3 { font-size: 1em; font-weight: 700; margin-top: 1.5em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.875em;
+         font-family: "SF Mono", Menlo, monospace; }
+  mark { background: var(--hl); color: inherit; padding: 0 2px; }
+  blockquote { margin: 10px 0 14px; padding: 2px 0 2px 14px;
+               border-left: 3px solid var(--control-border); }
+  blockquote p { margin: 4px 0; }
+  pre { background: var(--code); padding: 10px 12px; border-radius: 6px; overflow-x: auto;
+        font-size: 0.875em; line-height: 1.5; }
+  a { color: var(--accent); }
+  .table-wrap { overflow-x: auto; }
+  .table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; min-width: 440px; }
+  caption { caption-side: top; text-align: left; font-size: 0.875em; color: var(--sub); padding-bottom: 4px; }
+  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  tr.key td, tr.key th { background: var(--hl); }
+  .gloss { font-size: 0.875em; color: var(--sub); background: var(--card);
+           border-left: 3px solid var(--border); border-radius: 0 6px 6px 0;
+           padding: 7px 12px; margin: 8px 0 14px; }
+  .gloss b { color: var(--fg); font-weight: 700; }
+  .ok { color: var(--ok); } .ng { color: var(--ng); }
+  .d { color: var(--sub); font-size: 0.875em; }
+  label.opt .d { display: block; }
+  .lead { margin-bottom: 6px; }
+  .q { background: var(--accent-bg); border: 1.5px solid var(--accent); border-radius: 8px;
+       padding: 12px 15px; margin: 16px 0; }
+  .q .t { font-weight: 700; margin-bottom: 6px; }
+  label.opt { display: block; background: var(--bg); border: 1px solid var(--control-border);
+              border-radius: 6px; padding: 8px 10px; margin: 6px 0; cursor: pointer; }
+  label.opt:has(input:checked) { outline: 2px solid var(--accent); }
+  .rec { background: var(--accent-fill); color: #fff; font-size: 0.875em; border-radius: 4px;
+         padding: 0 6px; margin-left: 4px; }
+  input.other { width: 100%; margin-top: 4px; padding: 6px 8px; border: 1px solid var(--control-border);
+                border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 1em; }
+  textarea.note { width: 100%; margin-top: 6px; padding: 6px 8px; border: 1px solid var(--control-border);
+                  border-radius: 5px; background: var(--bg); color: var(--fg); font-size: 0.875em;
+                  min-height: 30px; resize: vertical; }
+  #preview { width: 100%; min-height: 180px; font-family: "SF Mono", Menlo, monospace;
+             font-size: 0.875em; background: var(--code); color: var(--fg);
+             border: 1px solid var(--control-border); border-radius: 6px; padding: 10px; }
+  #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+         border-top: 2px solid var(--accent); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+         z-index: 100; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  .bar-info { display: flex; align-items: center; gap: 8px; }
+  .bar-info #res { margin-left: auto; text-align: right; }
+  .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  #back { display: inline-block; background: none; border: 1px solid var(--control-border); color: var(--sub);
+          border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+  #proj { align-self: center; font-size: 0.875em; font-weight: 700;
+          border: 1px solid var(--accent); color: var(--accent); border-radius: 6px;
+          padding: 3px 9px; white-space: nowrap; }
+  #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
+          border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
+          color: var(--fg); font-size: 0.875em; resize: vertical; }
+  #free:focus { min-height: 88px; }
+  #copy { background: var(--accent-fill); color: #fff; border: none; border-radius: 6px;
+          padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 1em; }
+  .subbtn { background: none; border: 1px solid var(--control-border); color: var(--sub); border-radius: 6px;
+            padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
+  .subbtn:hover { border-color: var(--accent); color: var(--accent); }
+  #cnt, #res { font-size: 0.875em; color: var(--sub); white-space: nowrap; }
+  @media print {
+    #bar { display: none; }
+    main { max-width: none; padding: 0; }
+    h1, h2, h3 { break-after: avoid; }
+    table, pre, .q { break-inside: avoid; }
+    @page { margin: 16mm; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>norm-refit: 正典の器とタイプ分類の再設計（5 問）</h1>
+
+<p>規範改修プロジェクト norm-refit のテーマ T2（執筆規範の正典と入口の設計）の再設計フォーム。
+前版 f005 への回答で、正典を skill に置くこと自体の再検討（第 1 回フォーム f001 の Q3 確定の
+見直し）と、形式判定より先に生成物のタイプ分類を構造として整理することが指示された。
+その方向はターミナルで骨格合意済みで、このフォームは具体案の確定を行う。
+確定済み事項の照合先は台帳 <code>notes/norm-refit.md</code>。</p>
+
+<p><b>結論</b>: 推奨案は、(1) 正典を rules 層（正典 reference 群 + 入口 rule）へ移す
+（f001 Q3 = skill 案の覆し。配布協調の問題が構造ごと消える）、(2) それに伴い
+japanese-text-writing plugin は解体、(3) タイプ分類は「種別」と「媒体」の 2 軸に分け、
+入口の一次分岐は 3 つだけ、(4) 入口 rule は共通原則を再掲しない 6 項構成で
+<code>text-output.md</code>、(5) 正典 reference は <code>rules/references/writing/</code> 配下の
+6 ファイル、(6) 外部正典への言及は plugin 内蔵で解消、の 6 点。</p>
+
+<p class="lead"><b>決めること</b>: 5 件。</p>
+<ul>
+  <li>設問 1 正典の器（rules 層への移行と plugin 解体）</li>
+  <li>設問 2 タイプ分類の構造（2 軸・一次分岐 3）</li>
+  <li>設問 3 入口 rule の中身と名前</li>
+  <li>設問 4 正典 reference のファイル構成</li>
+  <li>設問 5 外部正典への言及の解消方式（T5）</li>
+</ul>
+
+<p class="d"><b>読み方</b>: 設問 1・2 が構造の決定で、設問 3〜5 はその具体化。
+各設問セクションは判断材料 → 設問の順で自己完結する。</p>
+
+<h2 id="s-q1">設問 1/5 正典の器: rules 層へ移す（f001 Q3 の覆し）</h2>
+
+<p class="lead">f001 Q3 では「skill 正典 + 入口 rule」（A 案）が「rule 二層」（B 案）に勝って
+確定した。当時の決め手は 2 つ: B 案は <code>claudeMdExcludes</code> というマシンごとの設定を
+要すること、symlink 越えの動作が未実測なこと。この 2 つはテーマ T6（一時メモ運用）の実装で
+両方消えた。paths 除外方式（実在しないパターンを frontmatter に書き、reference を
+常時ロード対象から外す方式）は設定不要でファイルに閉じ、
+symlink 越え・サブディレクトリ・rule からの相対リンク解決まで実測済み。
+比較をやり直した結果が表 1。決め手は「配布協調」の行で、rules 層案では
+rule と正典が同一経路（symlink + git pull）で原子的に更新されるため、問題が構造ごと消える。
+表の記号は、優位 = ◎、劣位 = △、同等 = 無印。</p>
+
+<div class="gloss">
+※ <b>L1 / L2</b> = f001 Q1 で確定した規範の層分け。L1 = 媒体を問わず全生成物に共通の
+横断規範（今回の正典の中身）、L2 = 媒体固有の規範（各 plugin が持つ）。
+</div>
+
+<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-1">
+<table>
+<caption id="cap-1">表 1 正典の器の再比較（2026-08-14 時点の実測に基づく）</caption>
+<thead>
+<tr><th scope="col">観点</th><th scope="col">skill 正典（f001 確定）</th><th scope="col">rules 層正典（再提案）</th></tr>
+</thead>
+<tbody>
+<tr class="key"><td>配布協調</td><td class="ng">△ 経路が 2 つ。不整合 3 種の規約が要る</td><td class="ok">◎ 同一経路で原子的更新。問題が消滅</td></tr>
+<tr><td>追加の環境設定</td><td>不要</td><td>不要（paths 除外は実測済み）</td></tr>
+<tr><td>読み込みの経路</td><td class="ng">△ 入口 rule → Skill 発動</td><td class="ok">◎ 入口 rule → 相対リンクを Read（決定論）</td></tr>
+<tr><td>責務分離</td><td class="ng">△ 横断規範が plugin 側に混在</td><td class="ok">◎ L1 = rules 層 / L2 = 各 plugin</td></tr>
+<tr><td>固有の利点</td><td class="ok">◎ description による自律発動</td><td class="ng">△ なし</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>skill 側に残る固有の利点は description による自律発動だけだが、実測では description は
+常時の指示として効かず（発動時のみ有効）、主経路はどのみち入口 rule のトリガ文になる。
+残るリスクは paths 除外がハーネスの挙動に依存する点（将来壊れると reference が
+常時ロードに戻り、エラーなしで context が太る）。採用時は claude-known-issues 台帳
+（既知バグ・制約の台帳。Claude Code 更新のたびに突合 agent がチェックする）にエントリを立て、
+この無症状故障の検知経路を確保する。</p>
+
+<p>採用した場合の含意: japanese-text-writing plugin は解体する。分類別 references 5 本は
+種別規範（正典の一部）として rules 層へ移設し、plugin・marketplace エントリ・
+関連参照（README / CLAUDE.md / textlint-plan 等）を整理する。</p>
+
+<p>skill 維持を選んだ場合に引き受けるもの（f005 設問 3 で提案し、未回答のまま保留中の
+運用規約 3 点）: (1) skill 名の恒久固定（改名時は旧名を誘導だけの中身で 1 版残す）、
+(2) rule と plugin の対になる変更は同一 PR + release 手順まで一連で実行、
+(3) rule に依存先 plugin 名を明記し、skill 不在に気づいたらユーザーへ指摘。
+対応する不整合は、skill 名変更での空振り / 対変更の版ずれ / 未インストール環境での空トリガ、
+の 3 種。維持を選んだ場合はこの規約案を別フォームで再提示して確定させる。</p>
+
+<div class="q" id="q1">
+  <div class="t">設問 1/5（正典の器）</div>
+  <label class="opt"><input type="radio" name="q1" value="rules 層正典に変更し、japanese-text-writing plugin は解体">
+    rules 層正典に変更し、japanese-text-writing plugin は解体<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 表 1 の決め手行（配布協調の消滅）+ f001 で skill 案が勝った根拠が
+    実測により失効。f001 Q3 確定（A: skill 正典 + 入口 rule）を覆す選択で、
+    f005 Q1 回答の再検討指示に沿う。
+    推奨を覆す条件: paths 除外のハーネス依存リスクを許容できないなら skill 維持</span></label>
+  <label class="opt"><input type="radio" name="q1" value="f001 Q3 どおり skill 正典を維持">f001 Q3 どおり skill 正典を維持
+    <span class="d">配布協調の運用規約（設問 1 本文の 3 点。未確定のため別フォームで再確認）が
+    引き続き必要になる</span></label>
+  <label class="opt"><input type="radio" name="q1" value="__other__">その他
+    <input type="text" class="other" data-for="q1"></label>
+  <textarea class="note" data-note="q1" aria-label="設問 1 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q2">設問 2/5 タイプ分類は 2 軸に分け、入口の一次分岐は 3 つ</h2>
+
+<p class="lead">f005 補足の指示（形式判定の前にタイプの特定と構造整理）への設計。
+生成物の分類を「何を生成するか（種別）」と「どこへ出すか（媒体）」の 2 軸に分ける。
+決め手は、媒体側にはそれぞれ発動主体が既にあり（md = markdown-formatting rule の paths、
+PR = github-pr、spec = impl-spec、handover = session、HTML = html-communication）、
+入口に媒体を列挙すると削ろうとしている重複が入口で再発すること。</p>
+
+<p>種別軸の一次分岐は 3 つに固定する。</p>
+
+<ol>
+  <li><b>数行の応答・進捗報告</b> → 何も読まない。常時 rule の最小規範だけで完結</li>
+  <li><b>まとまった文章</b>（複数段落の文書・調査まとめ・長い返答）→ 正典を読む。
+    種別の細分（参照 / 判断 / 論文 / 解説 / 読み物の現行 5 分類）は正典内の判定表が担う</li>
+  <li><b>確認・質問</b> → 少数ならフリーテキスト（常時 rule の範囲）、
+    多数・入り組む場合は HTML フォーム（html-communication）へ</li>
+</ol>
+
+<p>入口が持つ媒体分岐は HTML 提示の 1 つだけ（ファイルパスを持たない出力で唯一、
+他に発動主体が無いため）。共通 rule は L1 共通原則（取捨・構成・文レベル・用語）で、
+「まとまった文章」の全種別に共通に掛かり、種別規範はその上の差分だけを持つ。</p>
+
+<p>粒度の方針: 一次分岐 3 は固定し、種別の細分は正典内判定表に置いて正典改定だけで
+増減できるようにする。判定表には「迷ったら判断文書の規範」のフォールバックを持たせて
+分類不能を作らない。深い分岐を常時 rule に書かないのは、常時層の総量制約と、
+「規範を 1 つ足すと、既存規範の遵守率が下がる方向に働く」という調査結論
+（<code>notes/research-ledger.md</code> の 1 節）が根拠。</p>
+
+<div class="q" id="q2">
+  <div class="t">設問 2/5（タイプ分類の構造）</div>
+  <label class="opt"><input type="radio" name="q2" value="2 軸・一次分岐 3・細分は正典内判定表の構造を採用">
+    2 軸・一次分岐 3・細分は正典内判定表の構造を採用<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 媒体の発動主体を重複させず、常時層を浅く保ち、
+    種別の増減を正典改定に閉じ込める。ターミナルで骨格合意済みの具体化。
+    推奨を覆す条件: 一次分岐に不足があると感じるなら補足欄で追加分岐を指定</span></label>
+  <label class="opt"><input type="radio" name="q2" value="構造を修正したい（補足欄に指示）">構造を修正したい（補足欄に指示）
+    <span class="d">分岐の数・軸の切り方・細分の置き場のどれを変えたいかを補足欄へ</span></label>
+  <label class="opt"><input type="radio" name="q2" value="__other__">その他
+    <input type="text" class="other" data-for="q2"></label>
+  <textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q3">設問 3/5 入口 rule は共通原則を再掲しない 6 項構成</h2>
+
+<p class="lead">f005 設問 2 の再設問。器が rules 層になっても中身の骨格は変わらないが、
+1 項目めが「形式判定」から「タイプ判定（設問 2 の一次分岐 3）」に置き換わり、
+6 項目めの参照先が skill から正典 reference への相対リンクになる
+（設問 1 で skill 維持を選んだ場合は 6 項目めが skill 発動のトリガに戻るだけで、
+他 5 項は器に依存しない）。統合対象は常時 rule 2 本
+（<code>japanese-text-writing.md</code> と <code>user-communication-format.md</code>）。
+f001 Q4 の確定は「中身 4 項目案（形式判定 / 数行返答の最小規範 / 正典を読むトリガ /
+共通原則の要点）を採用」（台帳の記録）。このうち「共通原則の要点」は
+現行 rule の二重管理を再生産するため、フォーム f004（取捨選択規範の再設計）で確定した
+実文群に置き換えることを提案する。構成案:</p>
+
+<ol>
+  <li>タイプ判定（一次分岐 3。まとまった文章 → 正典へ、確認多数 → HTML フォームへ）</li>
+  <li>取捨の判定基準 B（B は f004 の選択肢ラベル。確定した改稿版で、骨子 =
+    情報の取捨は読者の判断か確信度を変えるかで決め、表現と配置は処理労力で決める。
+    理由なく残した情報は誤読を生む）</li>
+  <li>生成前手続き 2 点（目的の 1 文 = 読者は何を判断・実行するか + 読者の既知・未知の書き出し）</li>
+  <li>保持規則 L1 の 4 項（前提・条件・例外・数値 / 範囲・前提知識の宣言 /
+    確信度のヘッジ（1 主張 1 つ）/ 読者誘導の道標）</li>
+  <li>数行返答・進捗報告の最小規範（f001 Q5 確定。たたき台 2 行程度、自立実文として書き直し）</li>
+  <li>正典 reference への参照（相対リンク。通常の <code>./references/...</code> 形式）</li>
+</ol>
+
+<p>rule のファイル名は、中身をどの案にしても旧 2 名を引き継がず <code>text-output.md</code> を
+既定とする（別名の希望は補足欄へ）。</p>
+
+<div class="q" id="q3">
+  <div class="t">設問 3/5（入口 rule の中身）</div>
+  <label class="opt"><input type="radio" name="q3" value="6 項構成・共通原則の再掲なし">
+    6 項構成・共通原則の再掲なし<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 二重管理の解消が norm-refit の起点（正典 1 箇所）で、
+    f004 実文群が要点の役割を兼ねる。f001 Q4 確定の 4 項目案から
+    「共通原則の要点」を置き換える覆しを含む。
+    推奨を覆す条件: 常時 rule に共通原則の想起が無いと不安が残るなら、次の索引つき折衷</span></label>
+  <label class="opt"><input type="radio" name="q3" value="6 項構成 + 共通原則の見出し語索引 1 行を足す">6 項構成 + 共通原則の見出し語索引 1 行を足す
+    <span class="d">実文は再掲せず、原則名の列挙（結論先行・冗長排除・用語規律 等）だけを残す折衷。
+    こちらも f001 Q4 確定の「共通原則の要点」を置き換える覆しを含む</span></label>
+  <label class="opt"><input type="radio" name="q3" value="__other__">その他
+    <input type="text" class="other" data-for="q3"></label>
+  <textarea class="note" data-note="q3" aria-label="設問 3 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q4">設問 4/5 正典 reference は core + 種別 5 ファイル</h2>
+
+<p class="lead">正典の実体を置く rules 層のファイル構成案。設問 1 で skill 維持を選んだ場合、
+この設問は無効（現行 plugin 内の references を維持する）。方針は、共通層 1 ファイル +
+種別 5 ファイル（現行 japanese-text-writing の references を移設）で、
+notes-format と同じ paths 除外を各ファイルに付ける。</p>
+
+<pre>rules/
+├── text-output.md          # 入口（常時ロード）。設問 3 の 6 項
+└── references/
+    ├── notes-format.md     # 既存（T6）
+    └── writing/
+        ├── core.md         # 共通原則 + 種別判定表 + f004 の効果 4 分類 +
+        │                   # 保持規則の詳細 + 文レベル編集規則 + 再掲の条件
+        ├── reference-docs.md    # 種別: 参照（移設）
+        ├── decision-docs.md     # 種別: 判断（移設 + 検証報告の保持規範を追記）
+        ├── academic-writing.md  # 種別: 論文（移設）
+        ├── explanatory-writing.md  # 種別: 解説（移設）
+        └── narrative-writing.md    # 種別: 読み物（移設）</pre>
+
+<p>読む量の設計: 入口 → core.md（共通 + 判定表）→ 該当種別 1 ファイル、の最大 3 段で、
+skill 案の「SKILL.md → 分類 reference」と同じ深さ。効果 4 分類 = 読者の頭で何が変わるか
+（判断・行動 / 疑問の解消 / 誤解の訂正 / 確信度）の分類で、f004 で正典詳細への配置が確定済み。
+現行 skill の出典 6 件（frontmatter の sources）は core.md へ移す。</p>
+
+<div class="q" id="q4">
+  <div class="t">設問 4/5（正典 reference の構成）</div>
+  <label class="opt"><input type="radio" name="q4" value="core.md + 種別 5 ファイルの構成を採用">
+    core.md + 種別 5 ファイルの構成を採用<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: 現行 skill の実績ある構造（共通 + 分類別 5 本）を器だけ替えて維持し、
+    f004 確定分を core.md に足す形。読む深さも現行と同じ。
+    推奨を覆す条件: ファイル数を減らしたいなら種別 5 本の統合案を補足欄へ</span></label>
+  <label class="opt"><input type="radio" name="q4" value="構成を修正したい（補足欄に指示）">構成を修正したい（補足欄に指示）
+    <span class="d">分割の粒度・ディレクトリ名・core の中身の割り方の希望を補足欄へ</span></label>
+  <label class="opt"><input type="radio" name="q4" value="__other__">その他
+    <input type="text" class="other" data-for="q4"></label>
+  <textarea class="note" data-note="q4" aria-label="設問 4 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-q5">設問 5/5 外部言及は plugin 内蔵で解消する（T5）</h2>
+
+<p class="lead">f005 設問 4 の再設問（未回答だった。器の変更の影響は受けない）。
+外部正典 = product-boilerplate repo の情報デザイン norm ライブラリ（<code>docs/norms/</code>。
+S/T/F/V/C は norm の ID 系列）。
+f001 Q6 の回答は「そもそも外部 skill への言及がダメなのでは」で、参照しないで済む構成か、
+関連 plugin としての組み込みかの再設計が指示された。言及の実測は、html-communication skill
+（HTML ページ提示 skill）の SKILL.md 1 箇所 + 同 skill の references/facet-review-norms.md
+（フォームレビューの norm 定義）3 箇所（repo 名指し 1 + norm ID 経由の参照 2）。
+決め手は、T4（レビュー機構の再設計）が「生成側 skill が facet / norm を定義」する方向で
+進んでおり、norm を plugin 自身に持たせる案がそのまま T4 の前提になること。</p>
+
+<div class="q" id="q5">
+  <div class="t">設問 5/5（外部言及の解消）</div>
+  <label class="opt"><input type="radio" name="q5" value="使用分を plugin 内 references に自立内蔵する">
+    使用分を plugin 内 references に自立内蔵する<span class="rec">推奨</span>
+    <span class="d">推奨の根拠: html-communication が実際に使う norm（S/T/F/V/C 系の該当分 +
+    機械検証手順）を plugin 内の reference として書き起こし、外部への言及を全廃する。
+    plugin の自己完結原則と T4 の方向に一致。norm 実文の確定は T4 の設計に従い、
+    本タスク（T5 分）では外部言及の削除と内蔵の枠組みまでを行う。
+    推奨を覆す条件: 2 つの正典が将来ずれるのを避けたいなら次の「独立 plugin 化」案
+    （ただし plugin 間参照の原則違反を例外として明示する必要がある）</span></label>
+  <label class="opt"><input type="radio" name="q5" value="情報デザイン norms を独立 plugin 化して参照する">情報デザイン norms を独立 plugin 化して参照する
+    <span class="d">norm ライブラリを cc-marketplace の plugin として切り出して参照する。
+    「別 plugin なら互いを知るべきでない」原則（f001 確定）の例外指定が必要で、
+    plugin 間参照の公式機構も無い</span></label>
+  <label class="opt"><input type="radio" name="q5" value="__other__">その他
+    <input type="text" class="other" data-for="q5"></label>
+  <textarea class="note" data-note="q5" aria-label="設問 5 への補足" placeholder="補足（任意）"></textarea>
+</div>
+
+<h2 id="s-ref">参考資料（判断には不要）</h2>
+<p class="d">回答には要らない。経緯と実測の所在。</p>
+<ul class="d">
+  <li>前版 f005（この版で置き換え）: 設問 3 にあった配布協調は、設問 1 採用時に問題ごと
+    消滅するため設問から外した。skill 維持を選んだ場合は f005 の規約 3 点案（設問 1 本文に
+    要旨を再掲）を別フォームで再確認する</li>
+  <li>確定事項の台帳: リポジトリの <code>notes/norm-refit.md</code></li>
+  <li>paths 除外・相対リンク解決の実測記録: 同 notes/norm-refit.md の T6 完了形エントリ
+    （プローブ 4 件、v2.1.226）。symlink 越えのロード実測は
+    <code>notes/research-ledger.md</code> の「rule の実測」節</li>
+</ul>
+
+<h2 id="s-preview">付録 回答の preview</h2>
+<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
+<textarea id="preview" aria-label="回答の preview" readonly></textarea>
+
+</main>
+
+<div id="bar">
+  <div id="bar-in">
+    <div class="bar-info">
+      <span id="proj">cc-marketplace</span>
+      <span id="cnt"></span>
+      <span id="res"></span>
+    </div>
+    <textarea id="free" aria-label="自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"></textarea>
+    <div class="bar-actions">
+      <a id="back" href="./">一覧に戻る</a>
+      <div class="action-cluster">
+        <button type="button" id="reset" class="subbtn">入力をリセット</button>
+        <button type="button" id="copy">回答をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var THEME = 'norm-refit 正典の器とタイプ分類の再設計';
+  var KEY = 'draft:f006';
+  var QS = [
+    { id: 'q1', label: '正典の器' },
+    { id: 'q2', label: 'タイプ分類の構造' },
+    { id: 'q3', label: '入口 rule の中身' },
+    { id: 'q4', label: '正典 reference の構成' },
+    { id: 'q5', label: '外部言及の解消' }
+  ];
+
+  function ans(qid) {
+    var c = document.querySelector('input[name="' + qid + '"]:checked');
+    if (!c) return null;
+    if (c.value === '__other__') {
+      var o = document.querySelector('.other[data-for="' + qid + '"]');
+      return (o && o.value.trim()) ? 'その他: ' + o.value.trim() : 'その他（記述なし）';
+    }
+    return c.value;
+  }
+  function build() {
+    var lines = ['## HTML フォーム回答（' + THEME + '）'], n = 0;
+    QS.forEach(function (q) {
+      var a = ans(q.id);
+      if (a) n++;
+      lines.push('- ' + q.id.toUpperCase() + '（' + q.label + '）: ' + (a || '未回答'));
+      var note = document.querySelector('.note[data-note="' + q.id + '"]');
+      if (note && note.value.trim()) lines.push('    - ' + q.id.toUpperCase() + ' 補足: ' + note.value.trim());
+    });
+    var free = document.getElementById('free').value.trim();
+    lines.push('- 補足: ' + (free || 'なし'));
+    return { text: lines.join('\n'), n: n, total: QS.length };
+  }
+  function saveDraft() {
+    var d = { radios: {}, texts: {} };
+    document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
+    document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
+    var free = document.getElementById('free').value;
+    if (free) d.texts['free'] = free;
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  function applyDraft(d) {
+    Object.keys(d.radios || {}).forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
+      if (el) el.checked = true;
+    });
+    Object.keys(d.texts || {}).forEach(function (k) {
+      if (k === 'free') { document.getElementById('free').value = d.texts[k]; return; }
+      var kind = k.slice(0, 2), id = k.slice(2);
+      var el = kind === 'o:' ? document.querySelector('.other[data-for="' + id + '"]')
+                             : document.querySelector('.note[data-note="' + id + '"]');
+      if (el) el.value = d.texts[k];
+    });
+  }
+  function refresh() {
+    var r = build();
+    document.getElementById('preview').value = r.text;
+    document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+  }
+  function copyText(text) {
+    var res = document.getElementById('res');
+    function ok() { res.textContent = 'コピーしました'; setTimeout(function () { res.textContent = ''; }, 3000); }
+    function ng() {
+      var p = document.getElementById('preview');
+      p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
+      res.textContent = 'コピー不可: preview を手動コピー';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, ng);
+    else ng();
+  }
+
+  document.addEventListener('input', function () { saveDraft(); refresh(); });
+  document.addEventListener('change', function () { saveDraft(); refresh(); });
+  document.getElementById('copy').addEventListener('click', function () { copyText(build().text); });
+  document.getElementById('reset').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
+    document.getElementById('free').value = '';
+    refresh();
+  });
+
+  try { var raw = localStorage.getItem(KEY); if (raw) applyDraft(JSON.parse(raw)); } catch (e) {}
+  refresh();
+})();
+</script>
+</body>
+</html>
