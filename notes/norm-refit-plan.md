@@ -309,7 +309,7 @@ HTML 雛形の op-review 節の 3 件。
 ### 群 4 他 repo の都合を待つもの
 
 - **primary-sources-first の移管**。idea-hub 側の取り込み待ち。依頼文は渡し済み（2026-08-16）。
-  移管先は idea-hub の boilerplate の `process` 軸。先方が取り込んだ時点で
+  移管先は idea-hub の boilerplate の core rule plugin。先方が取り込んだ時点で
   `rules/primary-sources-first.md` を削除する。それまでは cc-marketplace が暫定の単一正。
   f020 で決まっているのは、汎用執筆規範に当たる 1 文だけを core へ取り込み、
   core と 3 重複していた 1 文を削り、残り（探索順序 4 段・git 履歴・why の実例 2 件）は

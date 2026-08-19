@@ -652,7 +652,9 @@
 - 決め手: この rule は開発ワークフローの行動規範で、汎用執筆規範ではない。
   idea-hub の Q81（norm ライブラリの置き場）が定めた 3 分割で cc-marketplace が受け持つのは
   汎用執筆規範だけなので、この rule は該当しない。
-  移管先は idea-hub の boilerplate `process` 軸（Q36 の 5 軸）。
+  移管先は idea-hub の boilerplate の core rule plugin（**訂正 2026-08-19**。
+  元は「`process` 軸（Q36 の 5 軸）」と書いていたが、Q88 が 5 軸の固定タキソノミーを
+  廃止しており、この軸は実在しない。残ったのは universal 対 stack の plugin 分割だけ）。
   Q39 最小ロード原則が `process` を「広い paths が許される例」として名指ししているため、
   移しても常時に近い形で効かせられる。
   即削除しないのは、idea-hub が設計フェーズ完了・実装前で受け皿が無く、
@@ -884,6 +886,19 @@
   PR ごとに何を見るかは変わるので、起動時に指定する
 - 適用範囲: norm-refit とその後続タスクに限る。他の作業には及ばない
 - 出典: ユーザー指示 2026-08-19
+
+### 2026-08-19 一次情報 rule の移管先の軸名が失効していた（訂正）
+
+- 結論: f020 と計画が移管先として書いていた idea-hub の boilerplate の `process` 軸は実在しない。
+  Q88（2026-08）が 5 軸の固定タキソノミー（claude / process / docs / code）を廃止し、
+  残したのは universal 対 stack の plugin 分割だけ。移管先の記述を core rule plugin へ直した
+- Q88 の決め手: 5 軸で rule を整理している抽出元 repo が 1 つも無い。
+  KAO は flat + 接頭辞命名、coin-game はドメイン別 subdir、sf6-lab は frontend / meta
+- 移管そのものの判断は変わらない。受け入れ手順は idea-hub 側の実装計画に入っており、
+  実物はまだ無く `/bp:sync` の稼働待ち
+- 決め手が失効条件でもあることの実例。f020 は「Q81 と同じ扱いで先例に揃う」を決め手にしており、
+  その先例の分類が変わっていた
+- 出典: idea-hub `docs/design/decisions.md` の Q88 を実読（2026-08-19）
 
 ## 未解決課題
 
