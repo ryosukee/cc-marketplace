@@ -174,7 +174,11 @@ function makeRow(e) {
   }
   const date = document.createElement("span");
   date.className = "sub";
-  date.textContent = e.created;
+  // 改稿したページは updated を持つ。初出日だけだと、全面的に書き直したページが
+  // 一覧では手つかずのページと区別できない
+  date.textContent = e.updated && e.updated !== e.created
+    ? e.created + " → " + e.updated
+    : e.created;
   line2.append(date);
 
   // 生成に使った skill のバージョン。メタ行の右端へ寄せ、行は増やさない。
@@ -209,7 +213,8 @@ function render() {
   const awaitingEl = document.getElementById("awaiting");
   const projectsEl = document.getElementById("projects");
   awaitingEl.innerHTML = ""; projectsEl.innerHTML = "";
-  const sorted = [...entries].sort((a, b) => b.created.localeCompare(a.created));
+  const key = (e) => e.updated || e.created;
+  const sorted = [...entries].sort((a, b) => key(b).localeCompare(key(a)));
 
   // 未完了もプロジェクトごとにまとめる
   const awaitingGroups = groupByProject(

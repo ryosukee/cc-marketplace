@@ -82,8 +82,12 @@ description: 調査報告・検証結果・比較表・設計判断の選択肢�
         | index | `questions` | 設問の総数が変わったとき（form のみ） |
         | index | `type` | form と report を入れ替えたとき |
         | index | `status` / `statusChanged` | 状態が変わったとき |
+        | index | `updated` | 内容を書き直したとき必ず（初回は付けない） |
 
-        `file` と `created` は改稿で変えない（URL と初出日は初版のまま維持する）
+        `file` と `created` は改稿で変えない（URL と初出日は初版のまま維持する）。
+        代わりに `updated` へ改稿日を入れる。一覧は `created → updated` の形で両方を出し、
+        並び順も `updated` を優先する。これが無いと、全面的に書き直したページが
+        一覧では手つかずのページと区別できない
     - ページは必ず `templates/page.html` を起点に作る。既存のページをコピーして作らない。
       一度コピーで分岐すると、そのページ系統は以後の雛形更新を受け取らなくなる。
       改稿・続編も同じで、雛形の最新版から作り直す
