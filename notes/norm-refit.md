@@ -983,6 +983,7 @@
 - 設問 5（個別の処置 3 件）: 後続タスク #7 へ統合。対象が 3 件とも
   `.claude/rules/coding.md` と `rules/` 直下で、監査の範囲外だったファイルと重なるため
 - 出典: 計画の改訂（commit `b2e7b7b`）、ccm-f028 の設問を実読して突合（2026-08-20）
+  （実文: notes/artifacts/norm-refit-form-sources.md#ccm-f028）
 
 ### 2026-08-20 段階 2 の 6 件が決着した（ccm-f030）
 
@@ -1012,7 +1013,7 @@
       markdown 固有 17 件は条件ロードのまま
     - 決め手: paths 拡張は常時ロードが 152 行増えて層の設計を崩す。現状追認は
       同じ規範が plugin の数だけ増える。事後検査の 2 案は生成時に効かない
-- 出典: ccm-f030 の回答 2026-08-20
+- 出典: ccm-f030 の回答 2026-08-20（実文: notes/artifacts/norm-refit-form-sources.md#ccm-f030）
 
 ## 未解決課題
 
