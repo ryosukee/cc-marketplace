@@ -1015,6 +1015,20 @@
       同じ規範が plugin の数だけ増える。事後検査の 2 案は生成時に効かない
 - 出典: ccm-f030 の回答 2026-08-20（実文: notes/artifacts/norm-refit-form-sources.md#ccm-f030）
 
+### 2026-08-22 impl-spec からの引き上げ件数の訂正
+
+- 結論: impl-spec から html-communication へ引き上げる確認・質問の規範は **13 件**。
+  内訳は `norm-audit-verdict-lift.md` の 3 件（IS4 / IS34 / IS52）と
+  `norm-audit-verdict-partial.md` の 10 件
+- 別に、core と判断へ統合するのが 8 件ある（`norm-audit-verdict-partial.md`）
+- 残りが「執筆規範ではないので移設先へ同行させる」分
+- 訂正の経緯: セッション中に「引き上げは 3 件に絞った」と報告したが誤り。
+  `lift.md` の 3 件だけを見て、`partial.md` の 10 件と統合 8 件を
+  「同行させる分」に含めてしまっていた。handover のレビューで検出された
+- 判定ファイル側は正しく、計画（`norm-refit-plan.md:280`）も 13 件と書いている。
+  誤っていたのは口頭の報告と handover の記述だけ
+- 出典: `norm-audit-verdict-lift.md` と `norm-audit-verdict-partial.md` の実読（2026-08-22）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
