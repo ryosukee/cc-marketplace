@@ -183,17 +183,6 @@
   .qtext { font-size: 0.875em; margin: 8px 0 0; }
 
   .q { margin: 8px 0 0; }
-  /* 確認だけを取るチェックリスト。設問の総数と進捗に数える。
-     既定を未チェックにするのが要点。既定チェック済みだと、読み飛ばしても
-     「承認」として記録され、合意を取った証拠にならない。
-     関係のない内容を「確認だから」という理由で 1 つのカードにまとめない。
-     設問の順序とトピックのグルーピングを優先し、分けたほうが読めるならカードを分ける */
-  .checks { margin: 8px 0 0; padding: 0; }
-  .checks > li { list-style: none; display: flex; gap: 9px; align-items: baseline;
-                 padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 0.875em; }
-  .checks > li:last-child { border-bottom: none; }
-  .checks input[type="checkbox"] { flex: none; margin: 0; transform: translateY(2px); }
-  .checks label { cursor: pointer; }
   label.opt { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
               padding: 8px 0 8px 2px; border-bottom: 1px solid var(--rule); cursor: pointer;
               font-size: 0.875em; }
@@ -430,19 +419,22 @@
 </div>
 </details>
 
-<!-- 選択肢を持たない「承認するだけ」の確認は 1 枚のカードにまとめる。設問の総数と進捗に数える。
-     .checks の data-for が JS の引き口で、これが無いと進捗にも回答テキストにも入らない。
-     既定チェック済みにしない（読み飛ばしが承認として記録される）。
-     関係のない内容を「確認だから」という理由で 1 枚にまとめない -->
+<!-- 確認だけを取る設問も、選択肢を持たせる。チェックリストは使わない。
+     覆す余地が無いなら設問にしない -->
 <details class="qd" data-for="q2" open>
-<summary>設問 2 / {{N}} 確認事項<span class="qstat">未回答</span></summary>
-<p class="qtext">覆すつもりが無ければチェックしてください。異議があるものは補足欄へ。</p>
-<ul class="checks" data-for="q2">
-  <li><input type="checkbox" id="ck1"><label for="ck1">{{確認事項 1}}</label></li>
-  <li><input type="checkbox" id="ck2"><label for="ck2">{{確認事項 2}}</label></li>
-</ul>
-<textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="異議があれば補足（任意）"></textarea>
+<summary>設問 2 / {{N}} {{設問ラベル}}<span class="qstat">未回答</span></summary>
+<p class="qtext">{{設問文}}</p>
+<div class="q" id="q2">
+  <label class="opt"><input type="radio" name="q2" value="{{選択肢 A}}">{{選択肢 A}}<span class="rec">推奨</span>
+    <span class="d">{{推奨する根拠を 1 文で}}</span></label>
+  <label class="opt"><input type="radio" name="q2" value="{{選択肢 B}}">{{選択肢 B}}
+    <span class="d">{{説明}}</span></label>
+  <label class="opt"><input type="radio" name="q2" value="__other__">その他
+    <input type="text" class="other" data-for="q2"></label>
+  <textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="補足（任意）"></textarea>
+</div>
 </details>
+
 </section>
 
 <h2 id="s-ref">参考資料（判断には不要）</h2>
@@ -518,7 +510,7 @@
   var KEY = 'draft:{{ファイル名（拡張子なし）}}';
   var QS = [
     { id: 'q1', label: '{{設問ラベル}}' },
-    { id: 'q2', label: '確認事項' }
+    { id: 'q2', label: '{{設問ラベル}}' }
   ];
 
   var ranges = [].slice.call(document.querySelectorAll('.rng[data-q]'));
@@ -590,15 +582,6 @@
   relayout();
 
   function ans(qid) {
-    /* 確認チェックリストの設問。全部にチェックが付いて初めて回答済みとする。
-       既定は未チェックなので、読み飛ばしは「未確認」として残る */
-    var list = document.querySelector('.checks[data-for="' + qid + '"]');
-    if (list) {
-      var boxes = [].slice.call(list.querySelectorAll('input[type="checkbox"]'));
-      var done = boxes.filter(function (b) { return b.checked; });
-      if (!boxes.length || done.length < boxes.length) return null;
-      return '確認 ' + done.length + ' 件すべて承認';
-    }
     var c = document.querySelector('input[name="' + qid + '"]:checked');
     if (!c) return null;
     if (c.value === '__other__') {
@@ -615,24 +598,14 @@
       var note = document.querySelector('.note[data-note="' + q.id + '"]');
       var nt = note && note.value.trim();
       lines.push('- Q' + (i + 1) + '（' + q.label + '）: ' + (a || '未回答') + (nt ? '  ※ ' + nt : ''));
-      /* チェックリストは項目ごとの承認・未確認も残す。1 行にまとめると
-         どれを承認したかが記録から落ちる */
-      var list = document.querySelector('.checks[data-for="' + q.id + '"]');
-      if (list) {
-        [].slice.call(list.querySelectorAll('input[type="checkbox"]')).forEach(function (b) {
-          var lb = list.querySelector('label[for="' + b.id + '"]');
-          lines.push('    - ' + (b.checked ? '承認' : '未確認') + ': ' + (lb ? lb.textContent.trim() : b.id));
-        });
-      }
     });
     var free = document.getElementById('free').value.trim();
     lines.push('- 補足: ' + (free || 'なし'));
     return { text: lines.join('\n'), n: n, total: QS.length };
   }
   function saveDraft() {
-    var d = { radios: {}, texts: {}, checks: {} };
+    var d = { radios: {}, texts: {} };
     document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
-    document.querySelectorAll('.checks input[type="checkbox"]').forEach(function (b) { d.checks[b.id] = b.checked; });
     document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
     document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
     var free = document.getElementById('free').value;
@@ -640,10 +613,6 @@
     try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
   }
   function applyDraft(d) {
-    Object.keys(d.checks || {}).forEach(function (id) {
-      var b = document.getElementById(id);
-      if (b) b.checked = !!d.checks[id];
-    });
     Object.keys(d.radios || {}).forEach(function (name) {
       var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
       if (el) el.checked = true;
@@ -689,7 +658,6 @@
   document.getElementById('reset').addEventListener('click', function () {
     try { localStorage.removeItem(KEY); } catch (e) {}
     document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
-    document.querySelectorAll('.checks input[type="checkbox"]').forEach(function (b) { b.checked = false; });
     document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
     document.getElementById('free').value = '';
     refresh();
