@@ -216,6 +216,9 @@ description: 調査報告・検証結果・比較表・設計判断の選択肢�
     - PWA 固定アセットを配置する: `manifest.json`（name = claude-html-communication、start_url = index.html、
       display = standalone）と `icon-192.png` / `icon-512.png`。index の `<head>` に
       `<link rel="manifest">` と theme-color を入れる。「閲覧用 HTML のみ」の例外はこれらと index.html だけ
+    - **版を上げたら index の見出しも書き換える。** `<title>` と `<h1>` の `.ver` に
+      `v{バージョン}` を出し、一覧を開いた人がいまどの版で生成されているかを見られるようにする。
+      値は plugin.json の `version`。エントリの `skillVersion` の最大値ではなく、plugin の版そのものを出す
     - index・PWA アセットが消えていたら、この skill の `templates/`
       （index.html 雛形・manifest.json・icon-192.png・icon-512.png）から再生成する
     - `gallery.html` は [見せ方のパターン集](./references/patterns/README.md) を実物で並べたページ。

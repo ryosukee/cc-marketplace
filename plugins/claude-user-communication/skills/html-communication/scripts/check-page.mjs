@@ -160,7 +160,16 @@ function checkFile(path) {
 
 
   // ---- ここから 6〜12。本文 (#bd) を対象にする ----
-  const bd = src.match(/<div id="bd">([\s\S]*?)\n<\/div>/)?.[1] ?? "";
+  // #bd は入れ子の div を含むので、非貪欲マッチだと最初の </div> で切れる。
+  // 開始位置から最初の <aside までを取り、末尾の </div> を落とす
+  const bd = (() => {
+    const open = src.indexOf('<div id="bd">');
+    if (open < 0) return "";
+    const from = open + '<div id="bd">'.length;
+    const stop = src.indexOf("<aside", from);
+    const seg = src.slice(from, stop < 0 ? undefined : stop);
+    return seg.replace(/\s*<\/div>\s*$/, "");
+  })();
 
   // 6. 1 文 100 字超。code / pre の中は数えない
   const SENTENCE_LIMIT = 100;
@@ -221,11 +230,47 @@ function checkFile(path) {
   }
 
   // 10. 見出しの系統と設問数の突合
-  const h2s = [...bd.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => stripTags(m[1]));
-  for (const h of h2s) {
-    if (!/^(説明 \d+|設問 \d+\/\d+|参考資料|付録)/.test(h)) {
+  // 番号は見出しの中に書かない。説明は直前の .secnum、設問は範囲の .rlabel が持つ。
+  // 末尾の参考資料と付録だけは見出しがラベルを持ち、番号を持たない
+  const secnums = [...bd.matchAll(/<p class="secnum">([\s\S]*?)<\/p>/g)].map((m) => stripTags(m[1]));
+  for (const n of secnums) {
+    if (!/^説明 \d+ \/ \d+$/.test(n.trim())) {
       findings.push({ check: "heading-series", line: null,
-        message: `見出し「${h.slice(0, 24)}」が説明 N / 設問 N/M / 参考資料 / 付録 のどれでもない` });
+        message: `説明の番号「${n.trim().slice(0, 24)}」が「説明 N / M」の形になっていない` });
+    }
+  }
+  const rlabels = [...bd.matchAll(/<p class="rlabel"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => stripTags(m[1]));
+  for (const n of rlabels) {
+    if (!/^設問 \d+ \/ \d+$/.test(n.trim())) {
+      findings.push({ check: "heading-series", line: null,
+        message: `範囲のラベル「${n.trim().slice(0, 24)}」が「設問 N / M」の形になっていない` });
+    }
+  }
+  const h2blocks = [...bd.matchAll(/<h2\b([^>]*)>([\s\S]*?)<\/h2>/g)];
+  for (const m of h2blocks) {
+    const id = /id="([^"]*)"/.exec(m[1])?.[1] ?? "";
+    const text = stripTags(m[2]).trim();
+    if (id === "s-ref" || id === "s-preview") {
+      if (!/^(参考資料|付録)/.test(text)) {
+        findings.push({ check: "heading-series", line: null,
+          message: `末尾の見出し「${text.slice(0, 24)}」が参考資料 / 付録 で始まっていない` });
+      }
+      continue;
+    }
+    if (/^(説明|設問)\s*\d/.test(text)) {
+      findings.push({ check: "heading-series", line: null,
+        message: `見出し「${text.slice(0, 24)}」に番号が入っている。番号は .secnum か .rlabel に置く` });
+    }
+  }
+  // 説明の分母と実数、設問の分母と実数を突き合わせる
+  for (const [kind, list] of [["説明", secnums], ["設問", rlabels]]) {
+    const dens = new Set(list.map((n) => /\/\s*(\d+)/.exec(n)?.[1]).filter(Boolean));
+    if (dens.size > 1) {
+      findings.push({ check: "heading-series", line: null,
+        message: `${kind}の分母が揃っていない (${[...dens].join(" / ")})` });
+    } else if (dens.size === 1 && Number([...dens][0]) !== list.length) {
+      findings.push({ check: "heading-series", line: null,
+        message: `${kind}の分母 ${[...dens][0]} が実数 ${list.length} と合わない` });
     }
   }
   // form 型のページだけを対象にする。回答の preview があるかで判定する
@@ -237,11 +282,11 @@ function checkFile(path) {
     findings.push({ check: "question-count", line: null,
       message: `設問カード ${qCards} 件に対し JS の QS は ${qsLen} 件` });
   }
-  for (const h of h2s) {
-    const d = h.match(/^設問 \d+\/(\d+)/);
-    if (d && Number(d[1]) !== qCards) {
+  for (const n of rlabels) {
+    const d = n.match(/^設問 \d+ \/ (\d+)/);
+    if (d && qCards > 0 && Number(d[1]) !== qCards) {
       findings.push({ check: "question-count", line: null,
-        message: `見出し「${h.slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
+        message: `範囲のラベル「${n.trim().slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
     }
   }
   // index.html が同じディレクトリにあれば questions を突合する。
