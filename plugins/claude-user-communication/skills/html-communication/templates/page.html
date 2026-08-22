@@ -154,6 +154,11 @@
   .rng > .rlabel { font-size: 0.875em; font-weight: 400; color: var(--sub);
                    letter-spacing: 0.02em; margin: 0 0 2px; }
   .rng > h2 { margin-top: 0.2em; }
+  /* 説明セクションの番号。見出しの前の行に出す。設問側は .rlabel が同じ役目を持つ。
+     見出しの中に番号を書かないのは、どこまでが番号でどこからがタイトルか分からなくなるため */
+  .secnum { display: block; font-size: 0.875em; font-weight: 700; color: var(--sub);
+            letter-spacing: 0.08em; margin: 2.4em 0 2px; }
+  .secnum + h2 { margin-top: 0; }
 
   /* 設問カード。読んでいる範囲のものが開く。手で開閉すると自動追従から外れる */
   .qd { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; margin: 0 0 10px; }
@@ -361,10 +366,15 @@
      設問の件数・所在・設問どうしの関係を冒頭に書かない。件数は設問 pane の見出しと
      下部バーの進捗が示す。目次も置かない -->
 
-<section class="rng" data-q="q1" aria-labelledby="rl-q1">
-<p class="rlabel" id="rl-q1">設問 1</p>
+<!-- 設問を持たない読む専用のセクション。番号は見出しの前の行に出し、見出しはタイトルだけにする
+<p class="secnum">説明 1 / {{M}}</p>
+<h2 id="s-e0">{{主張型の見出し}}</h2>
+-->
 
-<h2 id="s-e1">説明 1 {{主張型の見出し。結論を見出しに載せる}}</h2>
+<section class="rng" data-q="q1" aria-labelledby="rl-q1">
+<p class="rlabel" id="rl-q1">設問 1 / {{N}}</p>
+
+<h2 id="s-e1">{{主張型の見出し。結論を見出しに載せる}}</h2>
 
 <!-- 表を語る文は本文に置かない。何の一覧かは caption（表の下）、注目すべき行は
      tr.key のハイライトが担う。前提・条件・読みどころは補足へ出し、セルから参照する -->
