@@ -250,10 +250,10 @@ function checkFile(path) {
   for (const m of h2blocks) {
     const id = /id="([^"]*)"/.exec(m[1])?.[1] ?? "";
     const text = stripTags(m[2]).trim();
-    if (id === "s-ref" || id === "s-preview") {
-      if (!/^(参考資料|付録)/.test(text)) {
+    if (id === "s-ref" || id === "s-gen" || id === "s-preview") {
+      if (!/^(参考資料|生成に関する補足|付録)/.test(text)) {
         findings.push({ check: "heading-series", line: null,
-          message: `末尾の見出し「${text.slice(0, 24)}」が参考資料 / 付録 で始まっていない` });
+          message: `末尾の見出し「${text.slice(0, 24)}」が参考資料 / 生成に関する補足 / 付録 で始まっていない` });
       }
       continue;
     }
@@ -289,6 +289,20 @@ function checkFile(path) {
         message: `範囲のラベル「${n.trim().slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
     }
   }
+  // 13. 表の列見出しが器の語になっていないか（並列列挙の一次スクリーニング）
+  const VESSEL = ["内容", "意味", "理由", "説明", "備考", "詳細", "概要", "コメント"];
+  for (const t of src.matchAll(/<table\b[^>]*>([\s\S]*?)<\/table>/g)) {
+    const head = /<thead\b[^>]*>([\s\S]*?)<\/thead>/.exec(t[1])?.[1] ?? "";
+    const ths = [...head.matchAll(/<th\b[^>]*>([\s\S]*?)<\/th>/g)].map((m) => stripTags(m[1]).trim());
+    // 完全一致だけだと「確定した内容」を逃す。末尾一致まで見る
+    const hit = ths.slice(1).filter((h) => VESSEL.some((v) => h === v || h.endsWith(v)));
+    if (hit.length) {
+      const cap = /<caption\b[^>]*>([\s\S]*?)<\/caption>/.exec(t[1])?.[1] ?? "";
+      findings.push({ check: "vessel-column", line: null,
+        message: `列見出し「${hit.join("」「")}」は何でも入る器の語 (${stripTags(cap).trim().slice(0, 20) || "caption なし"})。並列列挙なら箇条書きにする` });
+    }
+  }
+
   // index.html が同じディレクトリにあれば questions を突合する。
   // 設問カードが 1 つも無いページは記法が違う旧版なので対象外
   try {
