@@ -289,6 +289,19 @@ function checkFile(path) {
         message: `範囲のラベル「${n.trim().slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
     }
   }
+  // 14. 一括承認の設問（複数の判断を 1 つの設問で承認させる形）
+  for (const card of src.matchAll(/<details class="qd"[\s\S]*?<\/details>/g)) {
+    const qtext = /<p class="qtext">([\s\S]*?)<\/p>/.exec(card[0])?.[1] ?? "";
+    const t = stripTags(qtext);
+    const optVals = [...card[0].matchAll(/value="([^"]*)"/g)].map((m) => m[1]);
+    const bulkText = /[0-9０-９]+\s*件[^。]*(よいです|承認)/.test(t);
+    const bulkOpt = optVals.some((v) => /(明細|一覧|全部)どおり/.test(v));
+    if (bulkText || bulkOpt) {
+      findings.push({ check: "bulk-approval", line: null,
+        message: `一括承認の設問「${t.trim().slice(0, 30)}」。判断 1 件につき設問 1 つに分ける` });
+    }
+  }
+
   // 13. 表の列見出しが器の語になっていないか（並列列挙の一次スクリーニング）
   const VESSEL = ["内容", "意味", "理由", "説明", "備考", "詳細", "概要", "コメント"];
   for (const t of src.matchAll(/<table\b[^>]*>([\s\S]*?)<\/table>/g)) {
