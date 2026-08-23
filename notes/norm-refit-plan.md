@@ -239,14 +239,7 @@ main HEAD から抽出した監査に含まれないだけで、内容が否定�
 
 ### PR の切り方
 
-旧版は PR 4 本に固定していた。監査で条項数が 4 倍になったので切り直し、**5 本**にした。
-
-新設 2 ファイルの中身が確定している（ccm-f040 / f041）。どの PR に載せるかは未定。
-
-- `.claude/rules/user-global-rules.md`: フラット構成、symlink 配布、ネスト設計の根拠 3 つ、
-  入口 rule と詳細規範の階層、分岐を知らない原則
-- `rules/rule-authoring.md`（paths = `.claude/rules/**/*.md` と `rules/**/*.md`）:
-  boilerplate 3 候補、参照の判定 3 条項、命名、読み込みタイミング、ロードの使い分け
+旧版は PR 4 本に固定していた。監査で条項数が 4 倍になったので切り直して 5 本にし、2026-08-23 に PR 6 を足して**6 本**にした。
 
 切り方の原則は 2 つ。
 
@@ -257,7 +250,7 @@ main HEAD から抽出した監査に含まれないだけで、内容が否定�
 
 ### PR ごとの中身
 
-直列で、順序を入れ替えられない。
+PR 1〜5 は直列で、順序を入れ替えられない。PR 6 だけ独立で、順序は任意（先に出せる）。
 
 #### PR 1 詳細規範の新設と plugin 解体
 
@@ -334,6 +327,21 @@ session / claude-known-issues）。
 - impl-spec から IS335（入力文書側の修正も指摘する）を両 agent へ引き上げる
 - 呼び出し元（handover skill / html-communication skill）の記述を、
   改善案が返らない前提へ合わせる
+
+#### PR 6 rule の書き方の器（独立）
+
+新設 2 ファイルと、3 箇所からの条項移動（ccm-f040 / f041 で条項単位に確定。
+実文の根拠は台帳の 2026-08-23 のエントリ）。PR 1〜5 と参照の依存が無い。
+
+- `.claude/rules/user-global-rules.md` を新設する: フラット構成、symlink 配布、
+  ネスト設計の根拠 3 つ、入口 rule と詳細規範の階層、分岐を知らない原則
+- `rules/rule-authoring.md` を新設する（paths = `.claude/rules/**/*.md` と `rules/**/*.md`）:
+  boilerplate 3 候補、参照の判定 3 条項、命名、読み込みタイミング、ロードの使い分け
+- `coding.md` の Rule ファイル名の小節を消す（命名は rule-authoring へ、フラット構成は新 rule へ）
+- `plugin-design.md` の Rules 配布の節を「plugin の外で管理する + loader は読まない」の
+  2 文へ縮める（symlink 配布は新 rule へ）
+- README の rules 節から、ネスト設計の根拠 3 つ（新 rule へ）と読み込みタイミングの
+  IMPORTANT（rule-authoring へ）を移し、rule 一覧表に rule-authoring の行を足す
 
 ### PR に入れないもの
 
