@@ -24,7 +24,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| session | 2.11.0 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査 9 種) / end (オーケストレーター) + handover-reviewer agent |
+| session | 2.12.0 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査 9 種) / end (オーケストレーター) + handover-reviewer agent |
 
 ### impl-spec
 
@@ -51,7 +51,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.22.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 12 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.30.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 14 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 
@@ -80,12 +80,6 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 └── {別の配布元}    -> ...
 ```
 
-ディレクトリ名が配布元になるので、次の 3 つが同時に得られる。
-
-- どの rule がどの repo 由来かがパスだけで分かる。配布元が増えても混ざらない
-- repo 側で rule を追加・削除すると自動で反映される。ファイル単位の symlink だと張り直しが要る
-- 配布をやめるときは symlink 1 本を消せば丸ごと外れる。個別に張ると消し残りが出る
-
 | rule | 適用 | 概要 |
 | --- | --- | --- |
 | japanese-text-writing | 常時 | 出力のタイプ判定と数行返答の最小規範。詳細規範は `rules/japanese-text-writing/references/` |
@@ -94,14 +88,10 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | subagent-delegation | 常時 | subagent の起動は原則許可。判断基準はコンテキストの節約 |
 | background-task | 常時 | バックグラウンド起動は `run_in_background` を使う |
 | markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
+| rule-authoring | `.claude/rules/**` `rules/**` | rule の書き方の共通規範。命名・参照・ロード方式の使い分け |
 
 `paths` を持つ rule は、一致するファイルを Claude が読んだときだけロードされる。
 持たない rule はセッション開始時に無条件でロードされる。
-
-> [!IMPORTANT]
-> rule はセッション開始時に一度だけ読まれる。
-> セッション中に追加・変更した rule は、そのセッションでは効かない。
-> commit した直後に「効いている」と扱わず、次のセッションで確認する。
 
 ## インストール
 

@@ -61,6 +61,7 @@ cc-marketplace/
 - `.claude/rules/plugin-design.md`: plugin 設計原則 (自己完結、kernel パターン、hook 宣言等)
 - `.claude/rules/coding.md`: Bash 規約、命名規則、スクリプト設計
 - `.claude/rules/plugin-release.md`: plugin 更新手順
+- `.claude/rules/user-global-rules.md`: 配布用 user global rule の運用 (symlink、フラット構成、入口と詳細規範の階層)
 
 ## Plugin 一覧
 
@@ -71,13 +72,13 @@ cc-marketplace/
 | cache-keepalive | 0.7.3 | utility | prompt cache keepalive の自動発火 |
 | cc-transcript | 0.7.0 | utility | セッションの直近やり取りを jq 整形して vim で開く |
 | dotclaude | 0.14.0 | dotclaude | doctor/cross-review/registry |
-| session | 2.11.0 | session | start/debrief/retrospective/handover/end + handover の機械検査 9 種 + handover-reviewer agent |
+| session | 2.12.0 | session | start/debrief/retrospective/handover/end + handover の機械検査 9 種 + handover-reviewer agent |
 | impl-spec | 0.5.4 | impl-spec | requirements/design/test-plan + spec-reviewer agent |
 | markdownlint | 0.3.2 | authoring | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | 0.2.0 | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | 0.2.0 | tooling | .netrc 等の credentials 保護 hook |
 | dotclaude-writer | 0.4.1 | tooling | .claude/ protected directory への書き込みワークアラウンド |
-| claude-user-communication | 0.22.0 | communication | HTML ページ提示 (claude-html-communication) + 選択肢形式の確認 + 生成ページの機械検査 12 種 + 提示前レビューの page-reviewer agent。雛形は 1 / 2 / 3 pane + 現在地の追従。図は Tailwind 可 (図の中だけ)。要環境変数 (plugin README) |
+| claude-user-communication | 0.30.0 | communication | HTML ページ提示 (claude-html-communication) + 選択肢形式の確認 + 生成ページの機械検査 14 種 + 提示前レビューの page-reviewer agent。雛形は 1 / 2 / 3 pane + 現在地の追従 + 設問のグループ化。セクション番号は見出しの外に出す。図は Tailwind 可 (図の中だけ)。要環境変数 (plugin README) |
 | claude-known-issues | 0.2.0 | meta | Claude Code の既知バグ台帳 + 更新検知 SessionStart hook + 突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | 0.3.0 | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill)。要 `gh` CLI |

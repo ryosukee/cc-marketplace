@@ -108,6 +108,12 @@
                     margin-bottom: 6px; letter-spacing: 0.02em; }
   blockquote p { margin: 6px 0; }
 
+  /* 設問のグループ容器。グループ化しないページでは使わない（3 pane の pane 内専用） */
+  .qgrp { margin: 0 0 14px; }
+  .qgrp-h { font-size: 0.875em; font-weight: 700; color: var(--sub); letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--rule); padding: 0 0 2px; margin: 0 0 8px; }
+  @media (max-width: 1339.98px) { .qgrp { display: none; } }
+
   /* 表。3 pane と干渉するので本文カラムより広げない。横スクロールで逃がす */
   .table-wrap { overflow-x: auto;
     background:
@@ -154,6 +160,11 @@
   .rng > .rlabel { font-size: 0.875em; font-weight: 400; color: var(--sub);
                    letter-spacing: 0.02em; margin: 0 0 2px; }
   .rng > h2 { margin-top: 0.2em; }
+  /* 説明セクションの番号。見出しの前の行に出す。設問側は .rlabel が同じ役目を持つ。
+     見出しの中に番号を書かないのは、どこまでが番号でどこからがタイトルか分からなくなるため */
+  .secnum { display: block; font-size: 0.875em; font-weight: 700; color: var(--sub);
+            letter-spacing: 0.08em; margin: 2.4em 0 2px; }
+  .secnum + h2 { margin-top: 0; }
 
   /* 設問カード。読んでいる範囲のものが開く。手で開閉すると自動追従から外れる */
   .qd { border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; margin: 0 0 10px; }
@@ -178,17 +189,6 @@
   .qtext { font-size: 0.875em; margin: 8px 0 0; }
 
   .q { margin: 8px 0 0; }
-  /* 確認だけを取るチェックリスト。設問の総数と進捗に数える。
-     既定を未チェックにするのが要点。既定チェック済みだと、読み飛ばしても
-     「承認」として記録され、合意を取った証拠にならない。
-     関係のない内容を「確認だから」という理由で 1 つのカードにまとめない。
-     設問の順序とトピックのグルーピングを優先し、分けたほうが読めるならカードを分ける */
-  .checks { margin: 8px 0 0; padding: 0; }
-  .checks > li { list-style: none; display: flex; gap: 9px; align-items: baseline;
-                 padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 0.875em; }
-  .checks > li:last-child { border-bottom: none; }
-  .checks input[type="checkbox"] { flex: none; margin: 0; transform: translateY(2px); }
-  .checks label { cursor: pointer; }
   label.opt { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
               padding: 8px 0 8px 2px; border-bottom: 1px solid var(--rule); cursor: pointer;
               font-size: 0.875em; }
@@ -361,10 +361,18 @@
      設問の件数・所在・設問どうしの関係を冒頭に書かない。件数は設問 pane の見出しと
      下部バーの進捗が示す。目次も置かない -->
 
-<section class="rng" data-q="q1" aria-labelledby="rl-q1">
-<p class="rlabel" id="rl-q1">設問 1</p>
+<!-- 設問を持たない読む専用のセクション。番号は見出しの前の行に出し、見出しはタイトルだけにする
+<p class="secnum">説明 1 / {{M}}</p>
+<h2 id="s-e0">{{主張型の見出し}}</h2>
+-->
 
-<h2 id="s-e1">説明 1 {{主張型の見出し。結論を見出しに載せる}}</h2>
+<!-- グループ化するページの範囲ラベルは「{{グループ名}} {{n}} / {{グループ内総数}}（設問 {{通し}} / {{N}}）」。
+     カードの summary は「{{グループ名の先頭語}} {{n}} / {{グループ内総数}} {{設問ラベル}}」にする。
+     グループ外の設問は下のサンプルどおり「設問 N / {{N}}」のまま -->
+<section class="rng" data-q="q1" aria-labelledby="rl-q1">
+<p class="rlabel" id="rl-q1">設問 1 / {{N}}</p>
+
+<h2 id="s-e1">{{主張型の見出し。結論を見出しに載せる}}</h2>
 
 <!-- 表を語る文は本文に置かない。何の一覧かは caption（表の下）、注目すべき行は
      tr.key のハイライトが担う。前提・条件・読みどころは補足へ出し、セルから参照する -->
@@ -420,23 +428,33 @@
 </div>
 </details>
 
-<!-- 選択肢を持たない「承認するだけ」の確認は 1 枚のカードにまとめる。設問の総数と進捗に数える。
-     .checks の data-for が JS の引き口で、これが無いと進捗にも回答テキストにも入らない。
-     既定チェック済みにしない（読み飛ばしが承認として記録される）。
-     関係のない内容を「確認だから」という理由で 1 枚にまとめない -->
+<!-- 確認だけを取る設問も、選択肢を持たせる。チェックリストは使わない。
+     覆す余地が無いなら設問にしない -->
 <details class="qd" data-for="q2" open>
-<summary>設問 2 / {{N}} 確認事項<span class="qstat">未回答</span></summary>
-<p class="qtext">覆すつもりが無ければチェックしてください。異議があるものは補足欄へ。</p>
-<ul class="checks" data-for="q2">
-  <li><input type="checkbox" id="ck1"><label for="ck1">{{確認事項 1}}</label></li>
-  <li><input type="checkbox" id="ck2"><label for="ck2">{{確認事項 2}}</label></li>
-</ul>
-<textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="異議があれば補足（任意）"></textarea>
+<summary>設問 2 / {{N}} {{設問ラベル}}<span class="qstat">未回答</span></summary>
+<p class="qtext">{{設問文}}</p>
+<div class="q" id="q2">
+  <label class="opt"><input type="radio" name="q2" value="{{選択肢 A}}">{{選択肢 A}}<span class="rec">推奨</span>
+    <span class="d">{{推奨する根拠を 1 文で}}</span></label>
+  <label class="opt"><input type="radio" name="q2" value="{{選択肢 B}}">{{選択肢 B}}
+    <span class="d">{{説明}}</span></label>
+  <label class="opt"><input type="radio" name="q2" value="__other__">その他
+    <input type="text" class="other" data-for="q2"></label>
+  <textarea class="note" data-note="q2" aria-label="設問 2 への補足" placeholder="補足（任意）"></textarea>
+</div>
 </details>
+
 </section>
 
 <h2 id="s-ref">参考資料（判断には不要）</h2>
 <p class="d">回答には要りません。{{何の記録か}}</p>
+
+<!-- ページの作られ方。入れてよいのは 5 つだけ（推定と実測の区別 / 確認できなかった箇所 /
+     調査の範囲と除外条件 / 数値の基準時点 / 改稿である事実）。1 項目 1〜2 文。
+     改稿の回数・subagent の本数・レビューのラウンド数は入れない。書くことが無ければ節ごと置かない
+<h2 id="s-gen">生成に関する補足（判断には不要）</h2>
+<p class="d">読み飛ばしてよい。{{確からしさの判定に要ること}}</p>
+-->
 
 <h2 id="s-preview">付録 回答の preview</h2>
 <p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>
@@ -448,6 +466,11 @@
      3 pane のときだけ表示され、設問カードは JS がここへ移してくる -->
 <aside id="q-pane" aria-label="設問">
 <p class="pane-h">設問 {{N}} 件（読んでいる範囲のものが開く／見出しで開閉）</p>
+<!-- 設問をグループ化するページは、カードに data-grp を付けてここへ容器を置く。
+     グループ名は内容の名詞句だけ（件数・接頭語・動詞句を付けない）。
+     見出しの回答進捗 (n/N) は JS が入れる。グループ外の設問は data-grp 無しで混在できる
+<div class="qgrp" data-grp="{{グループ id}}"><p class="qgrp-h" data-grp-name="{{グループ名}}">{{グループ名}}</p></div>
+-->
 </aside>
 
 <aside id="fn-pane" aria-label="脚注と補足">
@@ -501,7 +524,7 @@
   var KEY = 'draft:{{ファイル名（拡張子なし）}}';
   var QS = [
     { id: 'q1', label: '{{設問ラベル}}' },
-    { id: 'q2', label: '確認事項' }
+    { id: 'q2', label: '{{設問ラベル}}' }
   ];
 
   var ranges = [].slice.call(document.querySelectorAll('.rng[data-q]'));
@@ -520,8 +543,15 @@
     var pane = document.getElementById('q-pane');
     qds.forEach(function (d) {
       if (mq3.matches) {
-        if (d.parentNode !== pane) pane.appendChild(d);
-      } else if (d.parentNode === pane) {
+        /* data-grp を持つカードは対応するグループ容器へ、無ければ pane 直下へ積む */
+        var tgt = pane;
+        if (d.dataset.grp) {
+          var g = pane.querySelector('.qgrp[data-grp="' + d.dataset.grp + '"]');
+          if (g) tgt = g;
+        }
+        if (d.parentNode !== tgt) tgt.appendChild(d);
+      } else if (d.parentNode === pane || (d.parentNode && d.parentNode.classList &&
+                 d.parentNode.classList.contains('qgrp'))) {
         d.__home.parentNode.insertBefore(d, d.__home);
       }
     });
@@ -573,15 +603,6 @@
   relayout();
 
   function ans(qid) {
-    /* 確認チェックリストの設問。全部にチェックが付いて初めて回答済みとする。
-       既定は未チェックなので、読み飛ばしは「未確認」として残る */
-    var list = document.querySelector('.checks[data-for="' + qid + '"]');
-    if (list) {
-      var boxes = [].slice.call(list.querySelectorAll('input[type="checkbox"]'));
-      var done = boxes.filter(function (b) { return b.checked; });
-      if (!boxes.length || done.length < boxes.length) return null;
-      return '確認 ' + done.length + ' 件すべて承認';
-    }
     var c = document.querySelector('input[name="' + qid + '"]:checked');
     if (!c) return null;
     if (c.value === '__other__') {
@@ -598,24 +619,14 @@
       var note = document.querySelector('.note[data-note="' + q.id + '"]');
       var nt = note && note.value.trim();
       lines.push('- Q' + (i + 1) + '（' + q.label + '）: ' + (a || '未回答') + (nt ? '  ※ ' + nt : ''));
-      /* チェックリストは項目ごとの承認・未確認も残す。1 行にまとめると
-         どれを承認したかが記録から落ちる */
-      var list = document.querySelector('.checks[data-for="' + q.id + '"]');
-      if (list) {
-        [].slice.call(list.querySelectorAll('input[type="checkbox"]')).forEach(function (b) {
-          var lb = list.querySelector('label[for="' + b.id + '"]');
-          lines.push('    - ' + (b.checked ? '承認' : '未確認') + ': ' + (lb ? lb.textContent.trim() : b.id));
-        });
-      }
     });
     var free = document.getElementById('free').value.trim();
     lines.push('- 補足: ' + (free || 'なし'));
     return { text: lines.join('\n'), n: n, total: QS.length };
   }
   function saveDraft() {
-    var d = { radios: {}, texts: {}, checks: {} };
+    var d = { radios: {}, texts: {} };
     document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
-    document.querySelectorAll('.checks input[type="checkbox"]').forEach(function (b) { d.checks[b.id] = b.checked; });
     document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
     document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
     var free = document.getElementById('free').value;
@@ -623,10 +634,6 @@
     try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
   }
   function applyDraft(d) {
-    Object.keys(d.checks || {}).forEach(function (id) {
-      var b = document.getElementById(id);
-      if (b) b.checked = !!d.checks[id];
-    });
     Object.keys(d.radios || {}).forEach(function (name) {
       var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
       if (el) el.checked = true;
@@ -651,6 +658,13 @@
       var st = d.querySelector('.qstat');
       if (st) st.textContent = done ? '回答済み' : '未回答';
     });
+    /* グループ見出しの回答進捗。グループ化しないページでは .qgrp が無く何もしない */
+    [].slice.call(document.querySelectorAll('#q-pane .qgrp')).forEach(function (box) {
+      var members = qds.filter(function (d) { return d.dataset.grp === box.dataset.grp; });
+      var done = members.filter(function (d) { return !!ans(d.dataset.for); }).length;
+      var h = box.querySelector('.qgrp-h');
+      if (h) h.textContent = h.getAttribute('data-grp-name') + ' ' + done + '/' + members.length;
+    });
   }
   // クリップボードはクリック直後に同期で呼ぶ。await を挟むと Safari / Firefox が
   // user activation を失って NotAllowedError で reject する。
@@ -672,7 +686,6 @@
   document.getElementById('reset').addEventListener('click', function () {
     try { localStorage.removeItem(KEY); } catch (e) {}
     document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
-    document.querySelectorAll('.checks input[type="checkbox"]').forEach(function (b) { b.checked = false; });
     document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
     document.getElementById('free').value = '';
     refresh();

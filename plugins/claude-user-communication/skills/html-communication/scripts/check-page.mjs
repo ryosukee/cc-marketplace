@@ -160,7 +160,16 @@ function checkFile(path) {
 
 
   // ---- ここから 6〜12。本文 (#bd) を対象にする ----
-  const bd = src.match(/<div id="bd">([\s\S]*?)\n<\/div>/)?.[1] ?? "";
+  // #bd は入れ子の div を含むので、非貪欲マッチだと最初の </div> で切れる。
+  // 開始位置から最初の <aside までを取り、末尾の </div> を落とす
+  const bd = (() => {
+    const open = src.indexOf('<div id="bd">');
+    if (open < 0) return "";
+    const from = open + '<div id="bd">'.length;
+    const stop = src.indexOf("<aside", from);
+    const seg = src.slice(from, stop < 0 ? undefined : stop);
+    return seg.replace(/\s*<\/div>\s*$/, "");
+  })();
 
   // 6. 1 文 100 字超。code / pre の中は数えない
   const SENTENCE_LIMIT = 100;
@@ -221,11 +230,51 @@ function checkFile(path) {
   }
 
   // 10. 見出しの系統と設問数の突合
-  const h2s = [...bd.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => stripTags(m[1]));
-  for (const h of h2s) {
-    if (!/^(説明 \d+|設問 \d+\/\d+|参考資料|付録)/.test(h)) {
+  // 番号は見出しの中に書かない。説明は直前の .secnum、設問は範囲の .rlabel が持つ。
+  // 末尾の参考資料と付録だけは見出しがラベルを持ち、番号を持たない
+  const secnums = [...bd.matchAll(/<p class="secnum">([\s\S]*?)<\/p>/g)].map((m) => stripTags(m[1]));
+  for (const n of secnums) {
+    if (!/^説明 \d+ \/ \d+$/.test(n.trim())) {
       findings.push({ check: "heading-series", line: null,
-        message: `見出し「${h.slice(0, 24)}」が説明 N / 設問 N/M / 参考資料 / 付録 のどれでもない` });
+        message: `説明の番号「${n.trim().slice(0, 24)}」が「説明 N / M」の形になっていない` });
+    }
+  }
+  const rlabels = [...bd.matchAll(/<p class="rlabel"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => stripTags(m[1]));
+  // 素の「設問 N / M」か、グループ付き「{グループ名} n / N（設問 N / M）」のどちらか
+  for (const n of rlabels) {
+    if (!/^設問 \d+ \/ \d+$/.test(n.trim()) &&
+        !/^.+ \d+ \/ \d+（設問 \d+ \/ \d+）$/.test(n.trim())) {
+      findings.push({ check: "heading-series", line: null,
+        message: `範囲のラベル「${n.trim().slice(0, 24)}」が「設問 N / M」または「{グループ名} n / N（設問 N / M）」の形になっていない` });
+    }
+  }
+  const h2blocks = [...bd.matchAll(/<h2\b([^>]*)>([\s\S]*?)<\/h2>/g)];
+  for (const m of h2blocks) {
+    const id = /id="([^"]*)"/.exec(m[1])?.[1] ?? "";
+    const text = stripTags(m[2]).trim();
+    if (id === "s-ref" || id === "s-gen" || id === "s-preview") {
+      if (!/^(参考資料|生成に関する補足|付録)/.test(text)) {
+        findings.push({ check: "heading-series", line: null,
+          message: `末尾の見出し「${text.slice(0, 24)}」が参考資料 / 生成に関する補足 / 付録 で始まっていない` });
+      }
+      continue;
+    }
+    if (/^(説明|設問)\s*\d/.test(text)) {
+      findings.push({ check: "heading-series", line: null,
+        message: `見出し「${text.slice(0, 24)}」に番号が入っている。番号は .secnum か .rlabel に置く` });
+    }
+  }
+  // 説明の分母と実数、設問の分母と実数を突き合わせる
+  for (const [kind, list] of [["説明", secnums], ["設問", rlabels]]) {
+    // 設問はグループ付きラベルがあるので、通し番号側（設問 N / M）の分母を取る
+    const dens = new Set(list.map((n) =>
+      (kind === "設問" ? /設問\s*\d+\s*\/\s*(\d+)/ : /\/\s*(\d+)/).exec(n)?.[1]).filter(Boolean));
+    if (dens.size > 1) {
+      findings.push({ check: "heading-series", line: null,
+        message: `${kind}の分母が揃っていない (${[...dens].join(" / ")})` });
+    } else if (dens.size === 1 && Number([...dens][0]) !== list.length) {
+      findings.push({ check: "heading-series", line: null,
+        message: `${kind}の分母 ${[...dens][0]} が実数 ${list.length} と合わない` });
     }
   }
   // form 型のページだけを対象にする。回答の preview があるかで判定する
@@ -237,13 +286,40 @@ function checkFile(path) {
     findings.push({ check: "question-count", line: null,
       message: `設問カード ${qCards} 件に対し JS の QS は ${qsLen} 件` });
   }
-  for (const h of h2s) {
-    const d = h.match(/^設問 \d+\/(\d+)/);
-    if (d && Number(d[1]) !== qCards) {
+  for (const n of rlabels) {
+    const d = n.match(/設問 \d+ \/ (\d+)/);
+    if (d && qCards > 0 && Number(d[1]) !== qCards) {
       findings.push({ check: "question-count", line: null,
-        message: `見出し「${h.slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
+        message: `範囲のラベル「${n.trim().slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
     }
   }
+  // 14. 一括承認の設問（複数の判断を 1 つの設問で承認させる形）
+  for (const card of src.matchAll(/<details class="qd"[\s\S]*?<\/details>/g)) {
+    const qtext = /<p class="qtext">([\s\S]*?)<\/p>/.exec(card[0])?.[1] ?? "";
+    const t = stripTags(qtext);
+    const optVals = [...card[0].matchAll(/value="([^"]*)"/g)].map((m) => m[1]);
+    const bulkText = /[0-9０-９]+\s*件[^。]*(よいです|承認)/.test(t);
+    const bulkOpt = optVals.some((v) => /(明細|一覧|全部)どおり/.test(v));
+    if (bulkText || bulkOpt) {
+      findings.push({ check: "bulk-approval", line: null,
+        message: `一括承認の設問「${t.trim().slice(0, 30)}」。判断 1 件につき設問 1 つに分ける` });
+    }
+  }
+
+  // 13. 表の列見出しが器の語になっていないか（並列列挙の一次スクリーニング）
+  const VESSEL = ["内容", "意味", "理由", "説明", "備考", "詳細", "概要", "コメント"];
+  for (const t of src.matchAll(/<table\b[^>]*>([\s\S]*?)<\/table>/g)) {
+    const head = /<thead\b[^>]*>([\s\S]*?)<\/thead>/.exec(t[1])?.[1] ?? "";
+    const ths = [...head.matchAll(/<th\b[^>]*>([\s\S]*?)<\/th>/g)].map((m) => stripTags(m[1]).trim());
+    // 完全一致だけだと「確定した内容」を逃す。末尾一致まで見る
+    const hit = ths.slice(1).filter((h) => VESSEL.some((v) => h === v || h.endsWith(v)));
+    if (hit.length) {
+      const cap = /<caption\b[^>]*>([\s\S]*?)<\/caption>/.exec(t[1])?.[1] ?? "";
+      findings.push({ check: "vessel-column", line: null,
+        message: `列見出し「${hit.join("」「")}」は何でも入る器の語 (${stripTags(cap).trim().slice(0, 20) || "caption なし"})。並列列挙なら箇条書きにする` });
+    }
+  }
+
   // index.html が同じディレクトリにあれば questions を突合する。
   // 設問カードが 1 つも無いページは記法が違う旧版なので対象外
   try {

@@ -118,5 +118,4 @@ plugin の skill / hook が環境固有の値 (ホスト名込みの URL、マ�
 
 ## Rules 配布
 
-rule は plugin の外で管理する。plugin loader は plugin 内の `rules/` を読まないため、
-repo 直下の `rules/` に置き、`~/.claude/rules/cc-marketplace` への dir symlink で配布する。
+rule は plugin の外で管理する。plugin loader は plugin 内の `rules/` を読まない。

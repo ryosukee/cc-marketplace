@@ -227,6 +227,8 @@ function checkFile(path) {
     // repo の基準を省いて書かれたパス (`skills/foo/SKILL.md` 等) は suffix で拾う
     const suffix = "/" + clean.replace(/\/$/, "");
     if (tracked(repoRoot).some((f) => f === clean || f.endsWith(suffix) || f.includes(suffix + "/"))) continue;
+    // git の ref (ブランチ名・タグ) はスラッシュを含むがパスではない
+    if (repoRoot && git(repoRoot, ["rev-parse", "--verify", "--quiet", clean]) !== null) continue;
     findings.push({ check: "path-exists", line, message: `パス ${token} が実在しない` });
   }
 

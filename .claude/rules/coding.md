@@ -25,14 +25,6 @@ Script ファイル名:
 - エントリスクリプト: `{verb}-{noun}.sh` (例: `check-update.sh`、`record-version.sh`)
 - hook script: `{event}.sh` or `{action}-{target}.sh` (例: `session-start.sh`、`deny-netrc-write.sh`)
 
-Rule ファイル名:
-
-- kebab-case、名詞句
-- `rules/` 直下は常時ロード層。ファイル名だけで対象が分かるようにする (例: `markdown-formatting.md`)
-- 詳細規範は `rules/{rule 名}/references/` に置き、frontmatter の `paths` に
-  `never-match-reference-only` を書いて常時ロードから外す。
-  付け忘れると subdir でも再帰的に常時ロードされる (実測)
-
 ## スクリプト設計
 
 スクリプトは役割で配置を分ける (詳細は [Plugin 設計原則](./plugin-design.md) の kernel パターン)。
