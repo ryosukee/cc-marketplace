@@ -331,7 +331,7 @@ session / claude-known-issues）。
 
 #### PR 6 rule の書き方の器（独立）
 
-**実装済み。PR #5（draft、2026-08-23、ブランチ `norm-refit/pr6-rule-authoring`）。**
+**完了。PR #5 が approve され squash マージ済み（main `8e7dc54`、2026-08-23）。**
 
 新設 2 ファイルと、3 箇所からの条項移動（ccm-f040 / f041 で条項単位に確定。
 実文の根拠は台帳の 2026-08-23 のエントリ）。PR 1〜5 と参照の依存が無い。
