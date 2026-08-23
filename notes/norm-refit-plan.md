@@ -311,6 +311,9 @@ ask-with-choices skill を廃止し、html-communication へ寄せる。
 - 段階 2 Q4 の決定を反映する。HC の新語の条件付き許可を禁止へ戻す
 - HC92 / HC165（図を語る文 / 表を語る文）の plugin 側を削除し core へ一本化する（f038 Q6。
   到達点 1 の検証条件「plugin 側に汎用の再実装が残らない」の穴を塞ぐ）
+- 「長い本文を HTML ページへそのまま移し替えない」（旧 user-communication-format 由来）を
+  html-communication の SKILL.md へ入れる（PR #6 レビューで decision-docs から skill 側へ変更。
+  2026-08-23 の台帳エントリ）
 
 #### PR 4 AskUserQuestion の除去
 
