@@ -108,6 +108,12 @@
                     margin-bottom: 6px; letter-spacing: 0.02em; }
   blockquote p { margin: 6px 0; }
 
+  /* 設問のグループ容器。グループ化しないページでは使わない（3 pane の pane 内専用） */
+  .qgrp { margin: 0 0 14px; }
+  .qgrp-h { font-size: 0.875em; font-weight: 700; color: var(--sub); letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--rule); padding: 0 0 2px; margin: 0 0 8px; }
+  @media (max-width: 1339.98px) { .qgrp { display: none; } }
+
   /* 表。3 pane と干渉するので本文カラムより広げない。横スクロールで逃がす */
   .table-wrap { overflow-x: auto;
     background:
@@ -360,6 +366,9 @@
 <h2 id="s-e0">{{主張型の見出し}}</h2>
 -->
 
+<!-- グループ化するページの範囲ラベルは「{{グループ名}} {{n}} / {{グループ内総数}}（設問 {{通し}} / {{N}}）」。
+     カードの summary は「{{グループ名の先頭語}} {{n}} / {{グループ内総数}} {{設問ラベル}}」にする。
+     グループ外の設問は下のサンプルどおり「設問 N / {{N}}」のまま -->
 <section class="rng" data-q="q1" aria-labelledby="rl-q1">
 <p class="rlabel" id="rl-q1">設問 1 / {{N}}</p>
 
@@ -457,6 +466,11 @@
      3 pane のときだけ表示され、設問カードは JS がここへ移してくる -->
 <aside id="q-pane" aria-label="設問">
 <p class="pane-h">設問 {{N}} 件（読んでいる範囲のものが開く／見出しで開閉）</p>
+<!-- 設問をグループ化するページは、カードに data-grp を付けてここへ容器を置く。
+     グループ名は内容の名詞句だけ（件数・接頭語・動詞句を付けない）。
+     見出しの回答進捗 (n/N) は JS が入れる。グループ外の設問は data-grp 無しで混在できる
+<div class="qgrp" data-grp="{{グループ id}}"><p class="qgrp-h" data-grp-name="{{グループ名}}">{{グループ名}}</p></div>
+-->
 </aside>
 
 <aside id="fn-pane" aria-label="脚注と補足">
@@ -529,8 +543,15 @@
     var pane = document.getElementById('q-pane');
     qds.forEach(function (d) {
       if (mq3.matches) {
-        if (d.parentNode !== pane) pane.appendChild(d);
-      } else if (d.parentNode === pane) {
+        /* data-grp を持つカードは対応するグループ容器へ、無ければ pane 直下へ積む */
+        var tgt = pane;
+        if (d.dataset.grp) {
+          var g = pane.querySelector('.qgrp[data-grp="' + d.dataset.grp + '"]');
+          if (g) tgt = g;
+        }
+        if (d.parentNode !== tgt) tgt.appendChild(d);
+      } else if (d.parentNode === pane || (d.parentNode && d.parentNode.classList &&
+                 d.parentNode.classList.contains('qgrp'))) {
         d.__home.parentNode.insertBefore(d, d.__home);
       }
     });
@@ -636,6 +657,13 @@
       d.classList.toggle('done', done);
       var st = d.querySelector('.qstat');
       if (st) st.textContent = done ? '回答済み' : '未回答';
+    });
+    /* グループ見出しの回答進捗。グループ化しないページでは .qgrp が無く何もしない */
+    [].slice.call(document.querySelectorAll('#q-pane .qgrp')).forEach(function (box) {
+      var members = qds.filter(function (d) { return d.dataset.grp === box.dataset.grp; });
+      var done = members.filter(function (d) { return !!ans(d.dataset.for); }).length;
+      var h = box.querySelector('.qgrp-h');
+      if (h) h.textContent = h.getAttribute('data-grp-name') + ' ' + done + '/' + members.length;
     });
   }
   // クリップボードはクリック直後に同期で呼ぶ。await を挟むと Safari / Firefox が

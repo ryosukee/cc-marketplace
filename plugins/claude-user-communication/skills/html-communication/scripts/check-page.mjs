@@ -240,10 +240,12 @@ function checkFile(path) {
     }
   }
   const rlabels = [...bd.matchAll(/<p class="rlabel"[^>]*>([\s\S]*?)<\/p>/g)].map((m) => stripTags(m[1]));
+  // 素の「設問 N / M」か、グループ付き「{グループ名} n / N（設問 N / M）」のどちらか
   for (const n of rlabels) {
-    if (!/^設問 \d+ \/ \d+$/.test(n.trim())) {
+    if (!/^設問 \d+ \/ \d+$/.test(n.trim()) &&
+        !/^.+ \d+ \/ \d+（設問 \d+ \/ \d+）$/.test(n.trim())) {
       findings.push({ check: "heading-series", line: null,
-        message: `範囲のラベル「${n.trim().slice(0, 24)}」が「設問 N / M」の形になっていない` });
+        message: `範囲のラベル「${n.trim().slice(0, 24)}」が「設問 N / M」または「{グループ名} n / N（設問 N / M）」の形になっていない` });
     }
   }
   const h2blocks = [...bd.matchAll(/<h2\b([^>]*)>([\s\S]*?)<\/h2>/g)];
@@ -264,7 +266,9 @@ function checkFile(path) {
   }
   // 説明の分母と実数、設問の分母と実数を突き合わせる
   for (const [kind, list] of [["説明", secnums], ["設問", rlabels]]) {
-    const dens = new Set(list.map((n) => /\/\s*(\d+)/.exec(n)?.[1]).filter(Boolean));
+    // 設問はグループ付きラベルがあるので、通し番号側（設問 N / M）の分母を取る
+    const dens = new Set(list.map((n) =>
+      (kind === "設問" ? /設問\s*\d+\s*\/\s*(\d+)/ : /\/\s*(\d+)/).exec(n)?.[1]).filter(Boolean));
     if (dens.size > 1) {
       findings.push({ check: "heading-series", line: null,
         message: `${kind}の分母が揃っていない (${[...dens].join(" / ")})` });
@@ -283,7 +287,7 @@ function checkFile(path) {
       message: `設問カード ${qCards} 件に対し JS の QS は ${qsLen} 件` });
   }
   for (const n of rlabels) {
-    const d = n.match(/^設問 \d+ \/ (\d+)/);
+    const d = n.match(/設問 \d+ \/ (\d+)/);
     if (d && qCards > 0 && Number(d[1]) !== qCards) {
       findings.push({ check: "question-count", line: null,
         message: `範囲のラベル「${n.trim().slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
