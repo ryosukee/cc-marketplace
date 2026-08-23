@@ -1,0 +1,48 @@
+# idea-hub への申し送りの下書き
+
+idea-hub のセッションへ渡す伝達事項を、norm-refit の進行中に追記して貯める。
+idea-hub 側は norm-refit の全完了後に作業を開始する予定なので、
+完了時にこのファイルを依頼文へ編み、ユーザー経由で渡す
+（他 repo の `.handover/` へ直接書かない）。
+
+- 1 エントリ = 1 伝達事項。日付と出典を付ける
+- 追記だけを行い、過去のエントリは書き換えない。失効したら失効と追記する
+
+## 2026-08-23 rule-authoring.md を boilerplate から差分ありで取り込んだ
+
+cc-marketplace が `rules/rule-authoring.md`（paths = `.claude/rules/**/*.md`,
+`rules/**/*.md`）を新設し、symlink 配布で全 repo に効いている。
+boilerplate の `bundles/core/rules/rule-authoring.md` と `authoring.md` から
+最大公約数だけを抽出したもので、**原本との差分が 2 つある**。
+
+- 「他の指示文書への markdown リンクを書かない」（`authoring.md`）は採用していない。
+  代わりに「参照が冗長かで決める」3 条項（自動ロードで載る文書に言及しない /
+  外側の構造に言及しない / 辿らせる責任がある文書は参照を書く）に置き換えた。
+  一律禁止は cc-marketplace の `markdown-formatting.md`（必要になったら必ずリンク）と
+  衝突するため
+- 例外規定「冒頭の地図では記述名（リンクなし）で示す」も採用していない
+
+idea-hub 側で boilerplate を bundle 配布するとき、rule-authoring 系はこの差分を前提に
+統合を設計すること。出典: cc-marketplace `notes/norm-refit.md` の 2026-08-23 の
+ccm-f041 エントリ、PR #5。
+
+## 2026-08-23 primary-sources-first の移管待ちが続いている
+
+`rules/primary-sources-first.md` は idea-hub への移管予定（依頼文はユーザー経由で
+渡し済み）。idea-hub 側で受け入れが完了したら cc-marketplace 側のファイルを削除する。
+それまでは cc-marketplace が暫定の単一正。出典: cc-marketplace `notes/norm-refit.md`
+未解決課題。
+
+## 2026-08-23 impl-spec の条項は norm-refit で触っていない
+
+`移設先` と判定された impl-spec の 200 件超と、内部重複 91 条項（原文完全一致 36 種）の
+解消は idea-hub の実装計画 PR 8（product-workflow への統合）の管轄。判定の語彙と明細は
+cc-marketplace `notes/artifacts/norm-audit-raw/verdict-schema.md` と
+`norm-audit-verdict-*.md` にある。
+
+## 2026-08-23 boilerplate の norms は norm-refit 完了まで編集凍結
+
+product-boilerplate の `docs/norms/` 全体（100 本）と、norm-refit が統合する
+汎用執筆分 52 本は、norm-refit 段階 5（facet 参照の切り替え）まで編集しない。
+基準点は写し元 commit `6dfddfc31b326d86c47d496646321551f07e5206`。
+idea-hub 側の作業開始が凍結解除より先になる場合は、cc-marketplace 側と調整が要る。
