@@ -18,6 +18,8 @@ repo 直下の `rules/` で管理する user global rule の、配布の仕組�
 
 - rule は repo 直下の `rules/` に置き、`~/.claude/rules/cc-marketplace` へ
   ディレクトリごと 1 本の symlink で配布する
+    - repo 側で rule を追加・削除すると、張り直しなしでそのまま配布へ反映される
+    - 配布をやめるときは、この symlink 1 本を消せば丸ごと外れる
 
 ## 構成
 
