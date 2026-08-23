@@ -59,6 +59,7 @@ cc-marketplace/
 - `.claude/rules/plugin-design.md`: plugin 設計原則 (自己完結、kernel パターン、hook 宣言等)
 - `.claude/rules/coding.md`: Bash 規約、命名規則、スクリプト設計
 - `.claude/rules/plugin-release.md`: plugin 更新手順
+- `.claude/rules/user-global-rules.md`: 配布用 user global rule の運用 (symlink、フラット構成、入口と詳細規範の階層)
 
 ## Plugin 一覧
 
