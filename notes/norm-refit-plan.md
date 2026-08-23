@@ -240,7 +240,7 @@ main HEAD から抽出した監査に含まれないだけで、内容が否定�
 
 ### PR の切り方
 
-旧版は PR 4 本に固定していた。監査で条項数が 4 倍になったので切り直して 5 本にし、2026-08-23 に PR 6 を足して**6 本**にした。
+旧版は PR 4 本に固定していた。監査で条項数が 4 倍になったので切り直して 5 本にし、2026-08-23 に PR 6 と PR 7 を足して**7 本**にした。
 
 切り方の原則は 2 つ。
 
@@ -349,6 +349,33 @@ session / claude-known-issues）。
   2 文へ縮める（symlink 配布は新 rule へ）
 - README の rules 節から、ネスト設計の根拠 3 つ（新 rule へ）と読み込みタイミングの
   IMPORTANT（rule-authoring へ）を移し、rule 一覧表に rule-authoring の行を足す
+
+#### PR 7 japanese-text-writing の保守の手引き（PR 1〜5 の後）
+
+再編後の japanese-text-writing は修正・追加が頻繁に入る想定（retrospective の codify、
+外部で話題の規範の取り込みなど）。その際に今回の再編で守った設計を壊さないための
+手引き rule を作る。**最終構成が固まってからでないと書けないので、PR 1〜5 の後に置く。**
+
+中身の骨子（実装時に確定）:
+
+- 変更の入口判定: 足す・直す条項の分類を先に判定する。全 5 分類共通なら core、
+  分類固有なら該当ファイル、2〜4 分類に共通なら該当ファイルへ複製
+  （判定表は core + 分類 1 ファイルしか読ませないため）
+- 複製の同期: 複製された条項を直すときは全複製先を直す。検算は語での grep
+- 外部 source の取り込み: sources frontmatter へ出典を足す。取り込みは丸写しではなく
+  最大公約数の抽出（boilerplate 取り込みで使った方針）。既存条項との重複判定を先に行う
+- 再編で確立した禁止の継承: 逆参照・層の関係への言及を書かない（誘導は入口だけ）、
+  経緯注記を書かない、優先規定（分類別優先）は core だけが持つ、
+  参照専用の paths を忘れない（subdir も再帰ロードされる）
+- 入口 rule は判定と誘導だけ（約 20 行）を維持する
+- 変更後の検算: markdownlint と残骸 grep（旧語・旧参照）
+
+置き場の暫定案: `rules/japanese-text-writing-maintenance.md` に paths =
+`rules/japanese-text-writing.md` と `rules/japanese-text-writing/**/*.md` を付けて置く。
+対象ファイルを編集する場面でだけ自動で載り、発火実績のある機構（user global rules の
+paths は実測済み）に乗る。`rule-authoring.md`（rule 全般の共通規範）には入れない:
+分類ファイル構成・複製・監査語彙は japanese-text-writing 固有で、共通規範を汚す。
+`.claude/rules/` 案は paths の発火が未実測のため採らない。実装時に確定する。
 
 ### PR に入れないもの
 
