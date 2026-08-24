@@ -383,8 +383,8 @@ session / claude-known-issues）。
   参照専用の paths を忘れない（subdir も再帰ロードされる）
 - 入口 rule は判定と誘導だけ（約 20 行）を維持する
 - レビュー指摘の一般化: 指摘を受けたら、その型を規範へ取り込めるかを毎回検討する。
-  取り込むなら指摘箇所の修正とは別 commit。文レベルの指摘は事例集へ逐語で追記する
-  （norm-refit 中は norm-refit-ops が担う条項。完了後は手引き rule へ引き継ぐ）
+  取り込むなら指摘箇所の修正とは別 commit（norm-refit 中は norm-refit-ops が担う条項。完了後は手引き rule へ引き継ぐ）。
+  文レベル指摘の事例集への蓄積は norm-refit 完了までで、手引きへは引き継がない（2026-08-25 決定）
 - 変更後の検算: markdownlint と残骸 grep（旧語・旧参照）
 
 置き場の暫定案: `rules/japanese-text-writing-maintenance.md` に paths =
