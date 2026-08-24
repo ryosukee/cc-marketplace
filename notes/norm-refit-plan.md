@@ -265,6 +265,9 @@ japanese-text-writing plugin を解体する。
 - 段階 2 の決定を実文へ反映する。地図から「読み方」を落とす（Q3）、
   `decision-docs.md` の「決め手の観点を本文で名指しする」を削除する（Q2）
 - 保持規則 L1 へ統合する条項（DG6 / DG9 / DG17）はこの PR で同時に移す
+- `rules/references/notes-format.md` を `rules/decision-record/references/notes-format.md` へ移す
+  （f006 の a 案。reference 系 rule は rule と同名の subdir を切る形式に揃える。
+  `decision-record.md` のリンクも新パスへ直す）
 
 2026-08-22〜23 の決着分（ccm-f031 / f038 / f040 / f041。実文は台帳の各エントリ）。
 

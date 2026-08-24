@@ -1403,7 +1403,9 @@ f007 以降のフォームは、各設問がどの課題を解消するかを明
   効くかの実測（解消済み: 下記 2026-08-14 プローブエントリ。全項目採用可）
 - [x] paths 除外のハーネス依存を known-issues 台帳へエントリ
   （解消済み: エントリ id `rule-paths-exclusion-undocumented`、2026-08-14 登録）
-- [ ] notes-format の a 案移行（rules/decision-record/references/ へ。一括実装に含める）
+- [x] notes-format の a 案移行（rules/decision-record/references/ へ。一括実装に含める）
+  （解消済み: PR #6 の `c745c2d` で移動し `decision-record.md` のリンクも更新。
+  main へは PR #6 のマージで入る。2026-08-25 に記録の抜けを補った）
 - [x] FN 系の参照先を改名し、行参照の失効を記録した（解消済み: 下記の確定エントリ）
 - [x] 文レベルの読解不能を条項にするか（解消済み: PR 1 のスコープ外。段階 4 群 3 の
   「日本語の構造的曖昧性を規範と検知に落とす」へ送る。2026-08-19 確定）:
