@@ -293,7 +293,9 @@ japanese-text-writing plugin を解体する。
 
 Q6 の決定を実装する。`markdown-formatting.md` から媒体非依存分を core へ移す。
 
-- 記法一般 9 件 + 和欧混植 4 件 + HC159 を core へ移す
+- 記法一般 9 件 + 和欧混植 4 件 + HC159 を core へ移す。PR 1 の再編で core に先行して入った分
+  （記号・文字の選択 2 / 和欧混植 5 項目 / 補足 2 / 参照 6、混在の MF5・MF32・MF44 の核）と
+  突き合わせ、残り（MF9 / MF10 折り返し、MF21 太字タイトルほか）だけを移す（2026-08-25 の突合）
 - 混在 6 件（MF5 / MF9 / MF10 / MF21 / MF32 / MF44）は核を割って core へ、
   markdown 固有の値は現在地に残す
 - markdown 固有 17 件は条件ロードのまま
