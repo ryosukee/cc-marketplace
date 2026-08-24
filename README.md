@@ -45,7 +45,6 @@
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.0 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| japanese-text-writing | 0.1.5 | 日本語テキストの執筆規範。共通原則 + 種類別（参照・判断・論文・解説・読み物）の規範 skill |
 
 ### Communication
 
@@ -82,8 +81,7 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 
 | rule | 適用 | 概要 |
 | --- | --- | --- |
-| japanese-text-writing | 常時 | 日本語テキストの執筆要点。正典は同名の skill |
-| user-communication-format | 常時 | 報告・質問の形式をフリーテキスト / HTML から選ぶ |
+| japanese-text-writing | 常時 | 出力のタイプ判定と数行返答の最小規範。詳細規範は `rules/japanese-text-writing/references/` |
 | primary-sources-first | 常時 | 仕様を述べる前に手元の一次情報を当たる |
 | decision-record | 常時 | 複数セッションの調査・設計で確定事項の台帳を持つ |
 | subagent-delegation | 常時 | subagent の起動は原則許可。判断基準はコンテキストの節約 |
@@ -111,7 +109,6 @@ claude plugins install impl-spec@cc-tools
 claude plugins install markdownlint@cc-tools
 claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
-claude plugins install japanese-text-writing@cc-tools
 claude plugins install claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
 claude plugins install claude-known-issues@cc-tools
 claude plugins install usage-line@cc-tools                 # 要セットアップ (plugin README 参照)
