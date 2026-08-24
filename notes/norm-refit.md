@@ -1578,6 +1578,18 @@ f045 Q3 の判断材料として記録する。
 - 反映先: `.claude/rules/norm-refit-ops.md` PR の出し方 / `notes/artifacts/sentence-level-review-cases.md` 冒頭と各事例 /
   `notes/norm-refit-plan.md` PR 7 骨子。plugin・rules への反映なし
 
+### 2026-08-25 user global rule の相対 paths は起動 repo のルートから解決され、他 repo でも効く（実測）
+
+- 観測: このブランチ（PR #8）の rules/ を symlink 経由で載せた状態で、別ディレクトリ
+  （`git init` しただけの probe repo）を cwd に `claude -p` を 2 回実行し、system prompt に載った
+  user rule の見出しを列挙させた。`notes/probe.md` を Read すると常時ロード 8 本に加えて
+  「notes の書き方」（`paths: notes/**`）が載り、`docs/control.md` を Read すると載らなかった
+  （markdown-formatting は `.md` なので載る）
+- 帰結: 条件ロードの user global rule は、この repo のパスではなく効かせたい repo 側の相対パスで書く。
+  `.claude/rules/user-global-rules.md` の構成の節に記載（PR #8、b7f5800）
+- 出典: PR #8 行コメント 3848391482（2026-08-24）、返信 3848428108。probe の手順は返信の実文にある
+
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
