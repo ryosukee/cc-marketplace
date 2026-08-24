@@ -41,15 +41,21 @@ PR 本文を読んだだけでは具体がイメージしづらい変更箇所�
 ```bash
 gh api repos/{owner}/{repo}/pulls/{number}/reviews \
   --method POST \
-  -f event="COMMENT" \
-  -f body="" \
   --input /tmp/review-comments.json
 ```
+
+`event` と `body` は JSON の中に書く。`--input` を使うと `-f` / `-F` の指定は送られないため、
+`-f event="COMMENT"` を併用しても event が無い状態で送られ、レビューが pending（未送信）のまま残る。
+投稿後に `gh api repos/{owner}/{repo}/pulls/{number}/reviews --jq '.[] | "\(.id) \(.state)"'` で
+`COMMENTED` になっていることを確認する。`PENDING` なら
+`gh api repos/{owner}/{repo}/pulls/{number}/reviews/{review_id}/events --method POST -f event=COMMENT` で送信する。
 
 `/tmp/review-comments.json` の形式:
 
 ```json
 {
+  "event": "COMMENT",
+  "body": "",
   "comments": [
     {
       "path": "path/to/file.md",

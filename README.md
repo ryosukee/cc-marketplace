@@ -36,7 +36,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| github-pr | 0.4.3 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。`gh` CLI が必要 |
+| github-pr | 0.4.4 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。`gh` CLI が必要 |
 
 ### Authoring / tooling
 
