@@ -1,98 +1,119 @@
-# Claude Code の既知バグ・制約とワークアラウンドの台帳
-#
-# このファイルは claude-known-issues plugin の初期テンプレート。
-# 実体は ${CLAUDE_PLUGIN_DATA}/known-issues.yml にコピーされ、以後はそちらが正。
-#
-# status: open (未修正・解除ウォッチ対象) | resolved (修正済み・解除完了) | permanent (仕様。解除見込みなし)
-# keywords は changelog 側の英語表現で書く (公式 changelog は issue 番号をほぼ使わない)
-
+---
 entries:
-  - id: claude-dir-write-protection
-    title: .claude/ への書き込み保護
-    kind: 仕様
-    status: resolved
-    summary: |
-      Write/Edit ツールと Bash の書き込み（リダイレクト・cp・mv）は、ディレクトリ名 .claude を含む
-      パスに対して「自動承認されない」扱いになる。保護はディレクトリ名で決まり、プロジェクトの
-      .claude/ と home の ~/.claude/（plugins/data を含む）を区別しない。
-      挙動はモード依存: default / acceptEdits は確認プロンプト（headless では実質ブロック）、
-      auto は classifier、dontAsk は拒否、bypassPermissions は v2.1.126 から許可。
-      登録時の「bypassPermissions でも対象」は v2.1.78〜v2.1.125 の挙動で、登録時点（2026-07-22）で
-      既に古かった（公式ドキュメントの読み取りだけで登録し、実測していなかった）。
-    affected: v2.1.78〜v2.1.125 (bypassPermissions でも確認・拒否)。v2.1.126 以降は bypassPermissions で通る
-    refs:
-      - https://code.claude.com/docs/en/permission-modes#protected-paths
-    keywords:
-      - protected directories
-      - protected paths
-      - writes to `.claude/`
-      - dangerously-skip-permissions
-    workarounds:
-      - (廃止 2026-08-25) dotclaude-writer plugin の dotclaude-writer skill (スクリプト経由の書き込み)。
-        bypassPermissions のセッションでは不要になったため plugin ごと削除した
-    release_criteria: |
-      bypassPermissions で .claude/ 配下（project / home）へ Write / Edit / Bash で書けること。
-      2026-08-25 に v2.1.241 で実測して確認した。
-    release_steps: |
-      (実施済み 2026-08-25) dotclaude-writer plugin を marketplace から削除、evals を削除、
-      README / CLAUDE.md の行を削除、`claude plugins uninstall dotclaude-writer@cc-tools`。
-      非 bypass のセッションで .claude/ を書くときは確認プロンプトに答える。
-    log:
-      - 2026-07-22: 公式ドキュメントで仕様として明記されていることを確認。バグではない
-      - 2026-08-25: efso-document のセッションが ~/.claude/plugins/data/ への追記で dotclaude-writer を経由しようとして失敗したことを起点に実測。bypassPermissions では project / home の .claude/ 全部に Write / Edit / Bash で書けた（v2.1.241）。headless default / acceptEdits では「sensitive file」の確認要求。changelog v2.1.121（2026-04-28）と v2.1.126（2026-05-01）で bypass が対象外になっていた。permanent のため突合対象外で、登録時（07-22）より前の変更だったため diff 突合の窓にも入らず、検知できなかった。resolved にし plugin を廃止
+- id: askuserquestion-rendering
+  title: AskUserQuestion のレンダリングバグ
+  summary: |
+    同一ターン内でツール呼び出しに挟まれた assistant テキストが TUI に表示されない。
+    AskUserQuestion 直前のテキストが最悪ケースで、事前テキストが表示されず質問 UI だけが出る。
+  affected: v2.1.170 頃〜 (v2.1.221 時点で未修正)
+  refs:
+  - https://github.com/anthropics/claude-code/issues/75182
+  - https://github.com/anthropics/claude-code/issues/75034
+  - https://github.com/anthropics/claude-code/issues/67071
+  dependents:
+  - claude-user-communication plugin の ask-with-choices skill (冒頭の AskUserQuestion
+    使用禁止の警告とターン分割節)
+  - claude-user-communication plugin の html-communication skill (複雑な確認を HTML フォームに寄せる適用基準)
+  - '解除時の手順（旧 release_steps）: 1. ask-with-choices skill 冒頭の WARNING (AskUserQuestion
+    使用禁止) を削除する 2. 同 skill の「AskUserQuestion を単独ターンで発行する (レンダリングバグ回避)」節を削除し、 ターン分割への言及を元に戻す
+    3. html-communication skill の適用基準から、レンダリングバグを理由とした注記を外す 4. この台帳エントリの status を
+    resolved にする'
+  how_to_verify: '未作成。全件突合のときに再現手順へ書き直す。旧 release_criteria: 上記 issue のいずれかが closed
+    になり、同一ターン内でツール呼び出しに挟まれた テキストが TUI に表示されることを実機で確認できたら解除する。'
+  log:
+  - 2026-07-23: v2.1.216 時点で 3 件とも open。修正の記載なし
+  - 2026-07-23: full 再突合。v2.1.218 時点で 3 件とも open。changelog にも該当修正なし
+  - '2026-07-26: diff 突合。v2.1.220 の changelog・diff に該当修正なし。3 件とも未確認のまま'
+  - '2026-08-04: diff 突合。v2.1.221 の changelog に該当修正なし。open のまま'
+  - '2026-08-07: diff 突合。v2.1.222 の changelog に該当修正なし。open のまま'
+  - '2026-08-10: diff 突合。v2.1.223/v2.1.224 の changelog に該当修正なし。open のまま'
+  - '2026-08-10: diff 突合。v2.1.225/v2.1.226 の changelog に該当修正なし (v2.1.225 の VSCode
+    Focus view 修正は別件)。open のまま'
+  - '2026-08-14: diff 突合。v2.1.227 の changelog に該当修正なし。open のまま'
+  - '2026-08-14: diff 突合。v2.1.228〜232 の changelog に該当修正なし (v2.1.229 の streaming 表示欠落修正は別件)。refs
+    3 件とも open。open のまま'
+  - '2026-08-15: diff 突合。v2.1.233 の changelog に該当修正なし。refs 3 件とも open。open のまま'
+  - '2026-08-18: diff 突合。v2.1.234 の changelog に該当修正なし (markdown レンダリング系 3 件・Ran 1
+    shell command 行のグルーピング修正は別件)。refs 3 件とも open。open のまま'
+  - '2026-08-19: diff 突合。v2.1.235 の changelog に該当修正なし (nested markdown list の indent・prompt
+    input ハイライトのずれ・slash command の HTML entity は入力側/リスト描画で別件)。refs 3 件とも open。open
+    のまま'
+  - '2026-08-20: diff 突合。v2.1.236 の changelog に該当修正なし (fullscreen renderer のフォールバック・リサイズ後の新着未表示・複数行プロンプト消去後の空白帯・/model
+    picker の高さは描画層で別件)。refs 3 件とも open。open のまま'
+  - '2026-08-20: diff 突合。v2.1.237 の changelog に該当修正なし (LLM gateway の prompt caching
+    修正・Concise output style の追加はいずれも別件)。refs 3 件とも open。open のまま'
+  - '2026-08-22: diff 突合。v2.1.238 の changelog に該当修正なし (Remote Control の web/Desktop
+    送信メッセージが transcript から消える修正・subagent tool result のメモリ解放はいずれも別件)。refs 3 件とも open。open
+    のまま'
+  - '2026-08-23: diff 突合。v2.1.239 の changelog に該当修正なし (dark-ansi の展開ツール結果・fullscreen
+    のスラッシュコマンドパネル・ツール行の長いパス中略・[Pasted text #N] プレースホルダはいずれも描画層の別件)。refs 3 件とも open。open
+    のまま'
+  - '2026-08-24: diff 突合。v2.1.240 / v2.1.241 の changelog はどちらも Bug fixes and reliability
+    improvements の 1 行のみで該当修正なし。refs 3 件とも open。open のまま'
+- id: task-tools-unavailable
+  title: タスク管理ツールが新しいモデルへ提供されない
+  summary: |
+    TaskCreate / TaskGet / TaskUpdate / TaskList と TodoWrite が、一定バージョン以降の
+    モデルのセッションでツール一覧に現れない。Opus 5 のセッションでは ToolSearch でも
+    見つからない (実測)。session plugin の skill 群がタスク登録を手順に含めているため、
+    進行管理を draft のタスクボードへ代替する必要がある。
 
-  - id: askuserquestion-rendering
-    title: AskUserQuestion のレンダリングバグ
-    kind: バグ
-    status: open
-    summary: |
-      同一ターン内でツール呼び出しに挟まれた assistant テキストが TUI に表示されない。
-      AskUserQuestion 直前のテキストが最悪ケースで、事前テキストが表示されず質問 UI だけが出る。
-    affected: v2.1.170 頃〜 (v2.1.216 時点で未修正)
-    refs:
-      - https://github.com/anthropics/claude-code/issues/75182
-      - https://github.com/anthropics/claude-code/issues/75034
-      - https://github.com/anthropics/claude-code/issues/67071
-    keywords:
-      - text between tool uses
-      - assistant text not rendering
-      - tool use rendering
-    workarounds:
-      - claude-user-communication plugin の ask-with-choices skill (冒頭の AskUserQuestion 使用禁止の警告とターン分割節)
-      - claude-user-communication plugin の html-communication skill (複雑な確認を HTML フォームに寄せる適用基準)
-    release_criteria: |
-      上記 issue のいずれかが closed になり、同一ターン内でツール呼び出しに挟まれた
-      テキストが TUI に表示されることを実機で確認できたら解除する。
-    release_steps: |
-      1. ask-with-choices skill 冒頭の WARNING (AskUserQuestion 使用禁止) を削除する
-      2. 同 skill の「AskUserQuestion を単独ターンで発行する (レンダリングバグ回避)」節を削除し、
-         ターン分割への言及を元に戻す
-      3. html-communication skill の適用基準から、レンダリングバグを理由とした注記を外す
-      4. この台帳エントリの status を resolved にする
-    log:
-      - 2026-07-23: v2.1.216 時点で 3 件とも open。修正の記載なし
+    判定は v2.1.233 バイナリの関数 pX() で、次のいずれかが成り立てば提供される。
 
-  - id: task-tools-unavailable
-    title: タスク管理ツールの UI バグと不提供
-    kind: バグ
-    status: open
-    summary: |
-      タスクリストの固定表示が壊れる UI バグ (#80151) に加え、環境によっては
-      ツール一覧に TaskCreate 系が現れない (原因未特定。バージョンではなく提供構成の差の可能性)。
-    affected: UI バグは v2.1.208 の UI 最適化以降 (v2.1.217 時点で未修正)。不提供は条件不明
-    refs:
-      - https://github.com/anthropics/claude-code/issues/80151
-    keywords:
-      - task list
-      - TaskCreate
-      - task panel
-    workarounds:
-      - session plugin の start / handover / retrospective skill (draft のタスクボードで進行管理する代替手順)
-    release_criteria: |
-      #80151 が closed になり、かつ task 系ツールが安定して提供されることを実機で確認できたら解除する。
-    release_steps: |
-      1. session plugin の start / handover / retrospective から、TaskCreate 不提供環境の
-         代替手順の記述を削除するか、注記に格下げする
-      2. この台帳エントリの status を resolved にする
-    log:
-      - 2026-07-23: v2.1.217 時点で #80151 は open。ツール不提供の再現条件は未特定
+      (1) Zx() または Ads() が真 (SDK・非対話系の経路)
+      (2) 現在のモデルがゲート対象リスト G_H に該当しない
+      (3) 環境変数 CLAUDE_CODE_ENABLE_TODO_TOOLS が真
+      (4) GrowthBook flag tengu_rosy_wren が真 (既定 false)
+
+    ゲート対象リスト G_H は [["opus",[4,8]],["sonnet",[5]],["fable",[5]],["mythos",[5]]] で、
+    比較関数 lkr() は「そのバージョン以上」を該当とする。claude-opus-5 は opus 4.8 以上のため該当し、
+    既定では提供されない。claude-opus-4-8 も該当する。
+  affected: |
+    v2.1.233 で新設。2.1.227 / 2.1.232 のバイナリには CLAUDE_CODE_ENABLE_TODO_TOOLS も
+    tengu_rosy_wren も 0 件で、ゲート機構自体が存在しない (2.1.233 は 3 件 / 2 件)。
+    v2.1.232 のセッションでは TaskCreate 系が使えていた (2026-08-15 の前セッションで実使用)。
+    v2.1.233 では Opus 5 のセッションのツール一覧・ToolSearch のどちらにも現れない。
+
+    環境変数の真値は "1" / "true" / "yes" / "on" (小文字化・trim して判定。パーサ Dn())。
+  refs:
+  - https://github.com/anthropics/claude-code/issues/80151
+  dependents:
+  - "~/.claude/settings.json の env に CLAUDE_CODE_ENABLE_TODO_TOOLS=1 (現用。全 scope でゲートを外す)"
+  - session plugin の start / handover / debrief skill (draft のタスクボード節を進行管理の正とする代替手順。環境変数が効かない環境へのフォールバックとして残す)
+  - '解除時の手順（旧 release_steps）: 1. ~/.claude/settings.json の env から CLAUDE_CODE_ENABLE_TODO_TOOLS
+    を削除する 2. session plugin の start / handover / debrief から、TaskCreate 不提供環境の 代替手順の記述を削除するか注記に格下げする
+    3. この台帳エントリの status を resolved にする'
+  how_to_verify: '未作成。全件突合のときに再現手順へ書き直す。旧 release_criteria: Opus 5 のセッションでツール一覧に TaskCreate
+    系が既定で現れることを実測できたら解除する。 判定はバイナリの G_H から opus のエントリが消えたか、または pX() のゲート自体が消えたかで行う。
+    環境変数はゲートを外すだけで、ゲート自体が消えたことの判定材料にはならない。 突合時は環境変数の有無に関わらずバイナリを見る。'
+  log:
+  - '2026-08-15: v2.1.233 のセッションで TaskCreate 系が不提供であることを実測し登録。原因は pX() のモデルゲートで、G_H
+    が opus 4.8 以上・sonnet/fable/mythos 5 以上を対象にしている。CLAUDE_CODE_ENABLE_TODO_TOOLS での回避は未採用'
+  - '2026-08-15: ユーザーが ~/.claude/settings.json の env に CLAUDE_CODE_ENABLE_TODO_TOOLS=1
+    を追加し回避を採用。セッション途中で TaskCreate / TaskList / TaskUpdate / TaskGet が deferred tool
+    として現れることを実測。モデルゲート自体は残っているため open のまま'
+  - '2026-08-15: v2.1.233 での新設であることをバイナリ比較で確認 (2.1.227 / 2.1.232 にゲート機構なし)。以前このエントリが台帳に無かったのは不提供が解消していたためで、今回は再発ではなく別原因の新規ゲート'
+  - '2026-08-15: ユーザー承認のうえ ~/.claude/settings.json の env に CLAUDE_CODE_ENABLE_TODO_TOOLS=1
+    を追加 (dotclaude-writer 経由)。セッション再起動なしで TaskCreate / TaskGet / TaskUpdate / TaskList
+    が deferred tool として復帰することを実測'
+  - '2026-08-18: v2.1.234 のバイナリを grep。ゲート関数は識別子が改名されただけで構造同一 (pX→cJ, G_H→FuH, W_H→$uH)、対象リストは
+    opus 4.8 / sonnet 5 / fable 5 / mythos 5 のまま。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
+    も同数。issue 80151 は open。open のまま'
+  - '2026-08-19: v2.1.235 のバイナリを grep。ゲート対象リストは識別子が改名されただけで内容同一 (FuH→RpS、opus 4.8
+    / sonnet 5 / fable 5 / mythos 5)。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
+    も同数。changelog の ctrl+t タスクリスト修正は表示状態で別件。issue 80151 は open。open のまま'
+  - '2026-08-20: v2.1.236 のバイナリを grep。ゲート関数は識別子が改名されただけで構造同一 (oZ→pZ、RpS→OxS)、対象リストは
+    opus 4.8 / sonnet 5 / fable 5 / mythos 5 のまま。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
+    も同数。issue 80151 は open。open のまま'
+  - '2026-08-20: v2.1.237 のバイナリを grep。ゲート対象リストは識別子が改名されただけで内容同一 (RpS→QxS、opus 4.8
+    / sonnet 5 / fable 5 / mythos 5)。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
+    も同数。issue 80151 は open。open のまま'
+  - '2026-08-22: v2.1.238 のバイナリを grep。ゲート関数は識別子が改名されただけで構造同一 (fZ→ree、QxS→bzv)、対象リストは
+    opus 4.8 / sonnet 5 / fable 5 / mythos 5 のまま。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
+    も同数。changelog の Remote Control tasks パネルの Stop 修正は別件。issue 80151 は open。open のまま'
+  - '2026-08-23: v2.1.239 / v2.1.240 のバイナリを grep。ゲート対象リストは識別子が改名されただけで内容同一 (opus 4.8
+    / sonnet 5 / fable 5 / mythos 5)。CLAUDE_CODE_ENABLE_TODO_TOOLS 3 件 / tengu_rosy_wren
+    2 件も同数。issue 80151 は open。open のまま'
+  - '2026-08-24: v2.1.241 のバイナリを grep。ゲート対象リストは opus 4.8 / sonnet 5 / fable 5 / mythos
+    5 のままで 2 件、CLAUDE_CODE_ENABLE_TODO_TOOLS 3 件 / tengu_rosy_wren 2 件も v2.1.240 と同数。issue
+    80151 は open。open のまま'
