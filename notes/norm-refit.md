@@ -1456,7 +1456,7 @@ norm-refit の計画へどう組み込むかを 8 問で問うた。
   ある。修正されたということ？ まず事実を検証してほしい」→ 検証結果は下の観測エントリ
 - 決め手: Q1 は rule-authoring の「条件ロードは特定の種類のファイルを編集する場面の規範」と、
   user-global-rules.md の「references/ 配下は参照専用」の両方を保てること
-- 出典: ccm-f045 回答 2026-08-25（設問の実文: notes/artifacts/norm-refit-form-sources.md#ccm-f045）。
+- 出典: ccm-f045 回答 2026-08-25（設問の実文: 共通ページディレクトリの `ccm-f045.html`。掃除で削除する前に norm-refit-form-sources.md へ写す）。
   回答の実文:
 
   ```text
