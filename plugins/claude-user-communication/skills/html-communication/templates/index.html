@@ -46,6 +46,7 @@ h2 { font-size: 1.05em; margin: 1.6em 0 0.5em; }
 }
 .badge.awaiting { color: var(--awaiting); background: var(--awaiting-bg); }
 .badge.done { color: var(--done); background: var(--done-bg); }
+.badge.living { color: var(--sub); border: 1px solid var(--rule); }
 .type {
   display: inline-block; font-size: 0.875em; font-weight: 700; border-radius: 6px;
   padding: 1px 8px; margin-right: 8px; white-space: nowrap;
@@ -115,6 +116,7 @@ skill の <code>references/patterns/</code> を更新したら
 // 同プロジェクトの完了 (answered/confirmed) が 10 件を超えていたら、古い順にファイルごと削除する。
 // status 遷移: form = "awaiting"（回答待ち）→ "answered"（回答済み・回答受領時）
 //             report = "unconfirmed"（確認待ち）→ "confirmed"（確認済み・確認応答時）
+//             living = 更新し続けるレポート（進捗レポート等）。確認を求めず、掃除の対象にもしない
 // プロジェクト略号の台帳。ファイル名の接頭辞に使う（例: ccm-f008.html）。
 // 番号空間をプロジェクトごとに閉じ、並行セッションの発番衝突を防ぐ。
 // 新しいプロジェクトの最初のページを作るときにここへ追加する（3〜5 文字、既存と衝突しない値）。
@@ -135,6 +137,7 @@ const entries = [
 const statusLabel = {
   awaiting: "回答待ち", unconfirmed: "確認待ち",
   answered: "回答済み", confirmed: "確認済み",
+  living: "更新中",
 };
 const INCOMPLETE = new Set(["awaiting", "unconfirmed"]);
 
@@ -190,7 +193,7 @@ function makeRow(e) {
 
   meta.append(line1, line2);
   const badge = document.createElement("span");
-  badge.className = "badge " + (INCOMPLETE.has(e.status) ? "awaiting" : "done");
+  badge.className = "badge " + (e.status === "living" ? "living" : INCOMPLETE.has(e.status) ? "awaiting" : "done");
   badge.textContent = statusLabel[e.status] || e.status;
   // 状態バッジと版を右列に縦積みする。版はバッジの下
   const right = document.createElement("div");
