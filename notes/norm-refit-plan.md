@@ -53,7 +53,7 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 - 2026-08-25: PR 6 は PR #5 としてマージ済み。**PR 1 は PR #6 として main `5c0a187` にマージ済み**（レビュー第 4 巡 + 追加 4 件まで対応、squash）。
   第 4 巡で確定が 3 件動いた（媒体の選択は core へ = T6-1/2 の一部上書き / 「rule を書くとき」は rule-authoring へ /
   複数分類の優先規定を core に追加）。文レベル指摘の蓄積は norm-refit 完了までのスコープで出所を区別する（台帳の同日エントリ）。
-  **PR 8 は PR #8、codify 2 件の小 PR は PR #7 として draft で出した**（同日）。次は PR 2
+  **PR 8 は PR #8 として draft で出し、codify 2 件の小 PR は PR #7 として main `54c5975` にマージ済み**（同日）。次は PR 2
   **PR 8（notes 運用 rule の改訂）を新設**（ccm-f044）。PR 8 の中身の残り 2 判断（条項ごとのロード方式・
   戻す範囲）と、PR 8 の外 3 件（dotclaude-writer を直す場所・未コミット 2 件の作業ツリー・
   primary-sources-first の入れ方）は ccm-f045 で決着（台帳の同日エントリ）
