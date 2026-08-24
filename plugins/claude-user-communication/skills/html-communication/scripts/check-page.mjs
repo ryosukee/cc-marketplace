@@ -306,6 +306,19 @@ function checkFile(path) {
     }
   }
 
+  // 15. 設問を含む節の見出しが問いの形か（推奨する答えを見出しにしていないか）
+  //     判定は末尾が「か」で終わるかだけ。「〜をどこに書くか」「〜を採用するか」は通り、
+  //     「範囲は dotclaude-writer 側に書き、台帳ごと直す」のような主張型は落ちる
+  for (const sec of src.matchAll(/<section class="rng"[\s\S]*?<\/section>/g)) {
+    const h2 = /<h2[^>]*>([\s\S]*?)<\/h2>/.exec(sec[0])?.[1];
+    if (h2 == null) continue;
+    const t = stripTags(h2).trim();
+    if (!/か[）)]?$/.test(t)) {
+      findings.push({ check: "question-heading", line: null,
+        message: `設問の節の見出し「${t.slice(0, 30)}」が問いの形でない。何を決めるかを疑問形で書く` });
+    }
+  }
+
   // 13. 表の列見出しが器の語になっていないか（並列列挙の一次スクリーニング）
   const VESSEL = ["内容", "意味", "理由", "説明", "備考", "詳細", "概要", "コメント"];
   for (const t of src.matchAll(/<table\b[^>]*>([\s\S]*?)<\/table>/g)) {
