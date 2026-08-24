@@ -48,7 +48,7 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
 配置は `evals/{plugin}/{case-name}/case.yaml`。
 
 - `plugins:` のパスは**ケースファイル相対**で解決される（repo root 相対ではない）。
-  例: `../../../plugins/dotclaude-writer`
+  例: `../../../plugins/{plugin}`
 - 発動測定は `tool_used` grader（`tool: Skill`、`input_match: <skill 名の正規表現>`）。
   正例は `min: 1` を明示し、負例（発動しないべきケース）は `min: 0, max: 0` を付ける
 - 対象ファイルが実在する前提の依頼（編集・リネーム・削除）には `context.scaffold_script` で
@@ -70,8 +70,8 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
   （直接操作という実運用の失敗モードを選べる状態で測る。ツール枯渇は
   「唯一の行動手段 = Skill」という現実に無い圧力を作る）。読み取り専用の依頼は
   `[Read, Glob, Grep, Skill]` でよい
-- 初期規模の目安は正例 5 + 負例 5 × runs 3 = 30 実行。
-  現行の dotclaude-writer スイートは 15 ケース × 3 = 45 実行
+- 初期規模の目安は正例 5 + 負例 5 × runs 3 = 30 実行
+  （2026-08-25 に廃止した dotclaude-writer のスイートは 15 ケース × 3 = 45 実行だった）
 - 名前は `pos-NN-<内容>` / `neg-NN-<内容>`。境界事例には `boundary` タグを付ける
 
 スキーマの全容・grader 6 種の仕様は

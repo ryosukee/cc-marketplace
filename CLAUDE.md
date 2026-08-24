@@ -7,7 +7,7 @@ utility 系 (version-check, plugin-update, cache-keepalive, cc-transcript, usage
 dotclaude 系 (doctor/cross-review/registry)、
 session 系 (start/debrief/retrospective/handover/end)、
 impl-spec 系 (requirements/design/test-plan)、github 系 (github-pr)、
-authoring/tooling 系 (markdownlint, mkdocs-setup, security-guards, dotclaude-writer, japanese-text-writing)、
+authoring/tooling 系 (markdownlint, mkdocs-setup, security-guards, japanese-text-writing)、
 communication 系 (claude-user-communication)、meta 系 (claude-known-issues) を提供する。
 加えて user global rules を repo 直下の `rules/` で管理し、
 symlink で `~/.claude/rules/cc-marketplace` に配置する。
@@ -75,10 +75,9 @@ cc-marketplace/
 | markdownlint | 0.3.2 | authoring | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | 0.2.0 | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | 0.2.0 | tooling | .netrc 等の credentials 保護 hook |
-| dotclaude-writer | 0.4.1 | tooling | .claude/ protected directory への書き込みワークアラウンド |
 | japanese-text-writing | 0.1.5 | authoring | 日本語テキストの執筆規範 (共通原則 + 5 分類の references) |
 | claude-user-communication | 0.31.0 | communication | HTML ページ提示 (claude-html-communication) + 選択肢形式の確認 + 生成ページの機械検査 15 種 + 提示前レビューの page-reviewer agent。雛形は 1 / 2 / 3 pane + 現在地の追従 + 設問のグループ化。セクション番号は見出しの外に出す。図は Tailwind 可 (図の中だけ)。要環境変数 (plugin README) |
-| claude-known-issues | 0.2.0 | meta | Claude Code の既知バグ台帳 + 更新検知 SessionStart hook + 突合 agent |
+| claude-known-issues | 0.2.1 | meta | Claude Code の既知バグ台帳 + 更新検知 SessionStart hook + 突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | 0.4.0 | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill)。要 `gh` CLI |
 

@@ -45,7 +45,6 @@
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.0 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| dotclaude-writer | 0.4.1 | `.claude/` protected directory への書き込みワークアラウンド |
 | japanese-text-writing | 0.1.5 | 日本語テキストの執筆規範。共通原則 + 種類別（参照・判断・論文・解説・読み物）の規範 skill |
 
 ### Communication
@@ -58,7 +57,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-known-issues | 0.2.0 | Claude Code の既知バグ・制約の台帳。更新検知 → agent が changelog と突合 → 解除手順を提示。`jq` / `gh` が必要 |
+| claude-known-issues | 0.2.1 | Claude Code の既知バグ・制約の台帳。更新検知 → agent が changelog と突合 → 解除手順を提示。`jq` / `gh` が必要 |
 
 ## rules
 
@@ -112,7 +111,6 @@ claude plugins install impl-spec@cc-tools
 claude plugins install markdownlint@cc-tools
 claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
-claude plugins install dotclaude-writer@cc-tools
 claude plugins install japanese-text-writing@cc-tools
 claude plugins install claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
 claude plugins install claude-known-issues@cc-tools

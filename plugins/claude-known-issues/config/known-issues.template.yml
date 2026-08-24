@@ -10,25 +10,36 @@ entries:
   - id: claude-dir-write-protection
     title: .claude/ への書き込み保護
     kind: 仕様
-    status: permanent
+    status: resolved
     summary: |
-      Write/Edit ツール (v2.1.78〜) と Bash の cp/mv (v2.1.86〜) が .claude/ への
-      書き込みをブロックする。公式の permissions ドキュメントに保護対象ディレクトリとして
-      .git/ や .vscode/ と同列で明記されており、bypassPermissions でも対象。
-    affected: v2.1.78 以降 (継続・強化方向)
+      Write/Edit ツールと Bash の書き込み（リダイレクト・cp・mv）は、ディレクトリ名 .claude を含む
+      パスに対して「自動承認されない」扱いになる。保護はディレクトリ名で決まり、プロジェクトの
+      .claude/ と home の ~/.claude/（plugins/data を含む）を区別しない。
+      挙動はモード依存: default / acceptEdits は確認プロンプト（headless では実質ブロック）、
+      auto は classifier、dontAsk は拒否、bypassPermissions は v2.1.126 から許可。
+      登録時の「bypassPermissions でも対象」は v2.1.78〜v2.1.125 の挙動で、登録時点（2026-07-22）で
+      既に古かった（公式ドキュメントの読み取りだけで登録し、実測していなかった）。
+    affected: v2.1.78〜v2.1.125 (bypassPermissions でも確認・拒否)。v2.1.126 以降は bypassPermissions で通る
     refs:
-      - https://code.claude.com/docs/en/iam
+      - https://code.claude.com/docs/en/permission-modes#protected-paths
     keywords:
       - protected directories
+      - protected paths
       - writes to `.claude/`
+      - dangerously-skip-permissions
     workarounds:
-      - dotclaude-writer plugin の dotclaude-writer skill (スクリプト経由の書き込み)
+      - (廃止 2026-08-25) dotclaude-writer plugin の dotclaude-writer skill (スクリプト経由の書き込み)。
+        bypassPermissions のセッションでは不要になったため plugin ごと削除した
     release_criteria: |
-      仕様のため解除見込みなし。保護対象から .claude/ が外れた場合のみ再検討する。
+      bypassPermissions で .claude/ 配下（project / home）へ Write / Edit / Bash で書けること。
+      2026-08-25 に v2.1.241 で実測して確認した。
     release_steps: |
-      (解除見込みなしのため未定義)
+      (実施済み 2026-08-25) dotclaude-writer plugin を marketplace から削除、evals を削除、
+      README / CLAUDE.md の行を削除、`claude plugins uninstall dotclaude-writer@cc-tools`。
+      非 bypass のセッションで .claude/ を書くときは確認プロンプトに答える。
     log:
       - 2026-07-22: 公式ドキュメントで仕様として明記されていることを確認。バグではない
+      - 2026-08-25: efso-document のセッションが ~/.claude/plugins/data/ への追記で dotclaude-writer を経由しようとして失敗したことを起点に実測。bypassPermissions では project / home の .claude/ 全部に Write / Edit / Bash で書けた（v2.1.241）。headless default / acceptEdits では「sensitive file」の確認要求。changelog v2.1.121（2026-04-28）と v2.1.126（2026-05-01）で bypass が対象外になっていた。permanent のため突合対象外で、登録時（07-22）より前の変更だったため diff 突合の窓にも入らず、検知できなかった。resolved にし plugin を廃止
 
   - id: askuserquestion-rendering
     title: AskUserQuestion のレンダリングバグ
