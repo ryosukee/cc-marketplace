@@ -1439,6 +1439,60 @@ norm-refit の計画へどう組み込むかを 8 問で問うた。
   - 補足: なんかこの html の本文の pane の設問部分のセクションタイトルがおかしい。何を問うてるかの設問を書いて欲しいのになぜか推奨回答がセクションタイトルになってる
   ```
 
+### 2026-08-25 ccm-f045: notes 規範の分け方（PR 8 の中身が確定）と、未コミット 2 件の処置
+
+- 結論:
+    - Q1 notes の規範は 2 ファイルに分ける。「書いている最中に効く条項」は新設する条件ロード rule
+      `rules/notes-authoring.md`（paths `notes/**`）へ、「作る前・消す判断で読む条項」は参照専用の
+      `notes-format.md` に残す。分ける基準は「その規範が効いてほしい場面をパスで表せるか」。
+      条項ごとの振り分けは f045 の表 1（実文参照）。project rule に残るのは固有分
+      （重複確認先の dir 名・チケット番号の形式）だけで、作るかは `notes/` の作成時に問う
+    - Q2 正典へ戻す範囲は、冒頭 3 項目 + 既存ドキュメントとの重複回避 + 消すときの手順 +
+      台帳が参照する実文ファイルの削除連動。戻し先は Q1 の条件ロード rule
+    - Q4 未コミット 2 件は実文を保存（pending-codify-2026-08-25.md、commit 2654172）したうえで
+      `git checkout` で作業ツリーから外した（2026-08-25 実行済み）
+    - Q5 primary-sources-first の条項は PR 8 と同時期に、norm-refit の外の独立した小 PR で入れる
+- 差し戻し: Q3（dotclaude-writer を直す場所）。「bypassPermissions でも denied されていたからこの skill が
+  ある。修正されたということ？ まず事実を検証してほしい」→ 検証結果は下の観測エントリ
+- 決め手: Q1 は rule-authoring の「条件ロードは特定の種類のファイルを編集する場面の規範」と、
+  user-global-rules.md の「references/ 配下は参照専用」の両方を保てること
+- 出典: ccm-f045 回答 2026-08-25（設問の実文: notes/artifacts/norm-refit-form-sources.md#ccm-f045）。
+  回答の実文:
+
+  ```text
+  ## HTML フォーム回答（notes 規範の分け方と、差し戻し 4 件の再提示）
+  - Q1（規範の置き場）: A 2 ファイルに分ける（条件ロードの rules/notes-authoring.md を新設、notes-format.md は参照専用のまま条項を減らす）
+  - Q2（戻す範囲）: 3 項目 + 重複回避 + 消す手順 + 実文ファイルの削除連動
+  - Q3（dotclaude-writer を直す場所）: その他: 待って。bypassPermissions でも denied されてたからこの skill があるんだけど。修正されたということ？であれば話が変わってくる。まずここの事実をちゃんと検証してほしい。この dotclaude-writer を使わずに直接 .claude 配下の編集ができるのか、rule, skill も cwd も root も検証してほしい
+  - Q4（作業ツリー）: 保存をコミットしたら git checkout で作業ツリーから外す
+  - Q5（primary-sources-first）: PR 8 と同時期に、norm-refit の外の独立した小 PR で入れる
+  - 補足: なし
+  ```
+
+### 2026-08-25 `.claude/` への書き込み保護はモード依存で、bypassPermissions では v2.1.126 から通る（観測）
+
+norm-refit の外（dotclaude-writer plugin と claude-known-issues の一覧）の事実だが、
+f045 Q3 の判断材料として記録する。
+
+- 観測（2026-08-25、Claude Code v2.1.241）:
+    - bypassPermissions のこのセッション: project の `.claude/rules/` `.claude/skills/` `.claude/` 直下、
+      home の `~/.claude/rules/` `~/.claude/skills/` `~/.claude/` 直下のすべてで Write / Edit /
+      Bash（`>` `>>` cp mv）が成功。プローブは削除済み
+    - headless `--permission-mode default` と `acceptEdits`: project の `.claude/rules/` への Write と
+      Bash `>` が「Claude requested permissions to edit … which is a sensitive file」で止まる。
+      home の `~/.claude/` 直下・`~/.claude/rules/`・`~/.claude/plugins/data/` も同じ文言で止まる
+      （`--add-dir ~/.claude` 付き）。対話セッションなら確認プロンプトになる
+    - headless `--dangerously-skip-permissions`: 両方成功
+- changelog（anthropics/claude-code、tag の commit 日付）: v2.1.78（2026-03-17）「Fixed .git, .claude, and other
+  protected directories being writable without a prompt in bypassPermissions mode」→
+  v2.1.121（2026-04-28）「--dangerously-skip-permissions no longer prompts for writes to .claude/skills/,
+  .claude/agents/, and .claude/commands/」→ v2.1.126（2026-05-01）「--dangerously-skip-permissions now
+  bypasses prompts for writes to .claude/, .git/, .vscode/, shell config files, and other previously-protected
+  paths」。dotclaude-writer plugin の初版は 2026-04-23（9fb62b9）で、この 2 つの版の間に作られた
+- 帰結: 保護はディレクトリ名（`.claude`）で決まり、project と home の区別は無い。bypass では不要、
+  非 bypass では確認要求（headless では実質ブロック）。既知バグ一覧 `claude-dir-write-protection` の
+  「bypassPermissions でも対象」は v2.1.126 以降の実態と食い違う。skill の存廃はユーザー判断待ち
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
