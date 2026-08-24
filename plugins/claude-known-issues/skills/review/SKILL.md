@@ -1,26 +1,22 @@
 ---
 name: review
-description: Claude Code の既知バグ台帳と changelog を突合し、ワークアラウンドを解除できるかを判定する。更新検知の通知 ([known-issues] で始まる通知) を受けたとき、"既知バグ 突合"、"known-issues review"、"台帳チェック" 等で発動。引数 full で全件再突合、status で状態表示。
+description: Claude Code の既知バグ一覧を突合し、ワークアラウンドを解除できるかを判定する。更新検知の通知 ([known-issues] で始まる通知) を受けたとき、"既知バグ 突合"、"known-issues review"、"一覧チェック" 等で発動。引数 full で全件突合。
 ---
 
-# 既知バグ台帳の突合
+# 既知バグ一覧の突合
 
-Claude Code の更新に、台帳の open エントリを解決する修正が含まれているかを判定する。
 判定は known-issues-reviewer agent が行い、この skill は起動と反映を担う。
 
 ## 実行モード
 
-引数で分岐する。
-
-- 引数なし: 差分突合。前回突合済みバージョンから現在までの changelog を見る（通常の経路）
-- `full`: 全件再突合。突合済みの記録を無視し、open エントリ全件を現在のバージョンに対して調べ直す
-- `status`: 状態表示。突合の生存確認だけを行い、agent を起動しない
+- 引数なし: 差分突合。前回突合した版から現在までの changelog に、一覧のエントリを解決する変更があるかを見る。
+  Claude Code の更新を SessionStart hook が検知するたびに通知される通常の経路
+- `full`: 全件突合。changelog ではなく、一覧の全エントリの `how_to_verify` を実行して、
+  期待結果と違うものを解除候補にする。手動で実行する
 
 ## ワークフロー
 
-### ステップ 1: 状態と台帳の解決
-
-Bash で以下を実行し、台帳と状態のパスを解決する（台帳が無ければテンプレートから初期化される）。
+### ステップ 1: 状態と一覧の解決
 
 ```
 CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}" \
@@ -28,39 +24,32 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
     echo "LEDGER=$LEDGER_PATH"; echo "STATE=$STATE_PATH"; cat "$STATE_PATH"'
 ```
 
-### ステップ 2: status モードの場合
+状態を見るだけなら `cat "$STATE_PATH"`、現在の版は `claude --version`、未解決の件数は
+`grep -c '^  - id:' "$LEDGER_PATH"`。
 
-以下を表示して終了する。agent は起動しない。
+### ステップ 2: agent の起動
 
-- 最後に突合した日時（`last_review_at`）と、そのときの結果（`last_result`）
-- 突合済みバージョン（`reviewed_version`）と、現在のバージョン（`claude --version`）
-- 未完了の突合が残っているか（`pending_version` が null でないか）
-- 依存コマンドの有無: `command -v gh` と `command -v jq`
-- 台帳の open エントリ数
+`known-issues-reviewer` agent を **background で** 起動する。プロンプトに渡すもの:
 
-`last_result` が `error` のまま、または `last_review_at` が古いまま更新されていない場合は、
-沈黙が「該当なし」ではなく故障による可能性を明示する。
-
-### ステップ 3: agent の起動
-
-`known-issues-reviewer` agent を **background で** 起動する。
-プロンプトには次を渡す。
-
-- `LEDGER`: ステップ 1 で解決した台帳のパス
-- `FROM`: `reviewed_version`（`full` モードでは不要）
-- `TO`: `pending_version` があればその値、なければ現在のバージョン
+- `LEDGER`: ステップ 1 で解決した一覧のパス
+- `FROM`: `reviewed_version`（`full` では不要）
+- `TO`: `pending_version` があればその値、なければ現在の版
 - `MODE`: `diff` または `full`
 
-agent は read-only で、判定結果と更新案だけを返す。
+agent は一覧と state を編集しない。`how_to_verify` の実行でプローブファイルを作ることはあり、
+自分で消す。
 
-### ステップ 4: 結果の反映
+### ステップ 3: 結果の反映
 
-agent の報告を受けて、次を行う。
-
-1. **台帳の log に追記する**: 各 open エントリの `log` に、agent の追記案の 1 行を加える
-2. **状態ファイルを更新する**: `reviewed_version` を突合した TO に、`pending_version` を null に、
-   `last_review_at` と `last_result` を更新する。
-   `full` モードでは `reviewed_version` を進めない（差分の起点を変えないため）
+1. 各エントリの `log` に、agent の追記案の 1 行を加える
+2. 解除候補があれば、エントリの `dependents` をユーザーに提示し、解除してよいか確認する。
+   承認されたら dependents の各場所を直し、エントリに `resolved_at`（日付）と
+   `resolved_version` を足して `known-issues.resolved.yml` へ移す。
+   最後に `grep -c resolved_at known-issues.yml` が 0 であることを確かめる（移し忘れの検知）
+3. プローブの残存を確かめる: `find ~/.claude "$PWD" -name '.known-issues-probe-*'` が空でなければ消し、
+   log に書く
+4. state を更新する。差分では `reviewed_version` を TO に、`pending_version` を null に。
+   全件では `last_full_review_at` を更新し、`reviewed_version` は進めない
 
 ```
 CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}" \
@@ -69,14 +58,10 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
       "last_review_at=<ISO8601>" "last_result=<no_match|matched|error>"'
 ```
 
-**該当ありの場合**は、エントリの `release_steps` をユーザーに提示し、解除作業を実行してよいか確認する。
-承認されたら手順を実行し、完了後にエントリの `status` を `resolved` に変更する。
-
 agent が `error` を報告した場合は `reviewed_version` を進めない。次回の起動で再試行される。
 
-## 見逃しからの回復
+## 全件突合を回す時期
 
-差分突合は、一度「該当なし」と判定した版を二度と読み返さない。
-判定を誤った可能性を疑うとき、または半年に一度程度の定期点検として `full` モードを実行する。
-`full` は changelog ではなく issue の現在の状態を直接確認するため、
-changelog の記述漏れによる見逃しも拾える。
+- 導入直後（state の `last_full_review_at` が null のあいだ、SessionStart hook が通知する）
+- 前回の全件突合から 180 日を超えたとき（同じく hook が通知する）
+- 差分突合の判定を誤った可能性を疑うとき

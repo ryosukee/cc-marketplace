@@ -37,26 +37,44 @@ emit_and_exit() {
   exit 0
 }
 
-# 初回: 現在バージョンを突合済みとして記録するだけ (過去分は遡らない)
+# 初回: 現在バージョンを突合済みとして記録し、全件突合を促す
+# (差分突合は過去分を遡らないので、既存エントリは全件突合で確かめる)
 if [ -z "$REVIEWED" ] && [ -z "$PENDING" ]; then
   state_set "reviewed_version=$CURRENT_VERSION" "last_result=initialized" \
     "last_review_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  exit 0
+  emit_and_exit \
+    "既知バグ一覧: 導入直後です。全件突合 (review full) を 1 回回してください" \
+    "[known-issues] claude-known-issues を導入した直後です。review skill を full で実行し、一覧の全エントリの how_to_verify を確かめてください。"
 fi
 
 # 未完了の突合が残っている場合は再通知する
 # (前回セッションで agent が起動されなかった / 失敗した場合の救済)
 if [ -n "$PENDING" ]; then
   emit_and_exit \
-    "⚠ 既知バグ台帳: v${REVIEWED:-?} → v${PENDING} の突合が未完了です" \
-    "[known-issues] Claude Code の更新 (v${REVIEWED:-?} → v${PENDING}) が未突合です。known-issues-reviewer agent を background で起動し、台帳の open エントリと changelog を突合してください。"
+    "⚠ 既知バグ一覧: v${REVIEWED:-?} → v${PENDING} の突合が未完了です" \
+    "[known-issues] Claude Code の更新 (v${REVIEWED:-?} → v${PENDING}) が未突合です。known-issues-reviewer agent を background で起動し、一覧のエントリと changelog を突合してください。"
 fi
 
-# 突合済みバージョンと同じなら何も出さない
-[ "$CURRENT_VERSION" = "$REVIEWED" ] && exit 0
-
 # 更新を検知: pending に記録して通知する
-state_set "pending_version=$CURRENT_VERSION"
-emit_and_exit \
-  "⚠ 既知バグ台帳: Claude Code が v${REVIEWED} → v${CURRENT_VERSION} に更新されました" \
-  "[known-issues] Claude Code が v${REVIEWED} → v${CURRENT_VERSION} に更新されました。known-issues-reviewer agent を background で起動し、台帳の open エントリと changelog を突合してください。"
+if [ "$CURRENT_VERSION" != "$REVIEWED" ]; then
+  state_set "pending_version=$CURRENT_VERSION"
+  emit_and_exit \
+    "⚠ 既知バグ一覧: Claude Code が v${REVIEWED} → v${CURRENT_VERSION} に更新されました" \
+    "[known-issues] Claude Code が v${REVIEWED} → v${CURRENT_VERSION} に更新されました。known-issues-reviewer agent を background で起動し、一覧のエントリと changelog を突合してください。"
+fi
+
+# 全件突合の時期: 未実施 (null) か、前回から 180 日を超えていたら促す
+LAST_FULL=$(state_get last_full_review_at)
+if [ -z "$LAST_FULL" ]; then
+  emit_and_exit \
+    "既知バグ一覧: 全件突合 (review full) が未実施です" \
+    "[known-issues] 全件突合が未実施です。review skill を full で実行し、一覧の全エントリの how_to_verify を確かめてください。"
+fi
+LAST_FULL_EPOCH=$(date -u -j -f '%Y-%m-%dT%H:%M:%SZ' "$LAST_FULL" +%s 2>/dev/null \
+  || date -u -d "$LAST_FULL" +%s 2>/dev/null || echo 0)
+NOW_EPOCH=$(date -u +%s)
+if [ "$LAST_FULL_EPOCH" -gt 0 ] && [ $((NOW_EPOCH - LAST_FULL_EPOCH)) -gt $((180 * 86400)) ]; then
+  emit_and_exit \
+    "既知バグ一覧: 前回の全件突合 (${LAST_FULL}) から 180 日を超えました" \
+    "[known-issues] 前回の全件突合から 180 日を超えました。review skill を full で実行し、一覧の全エントリの how_to_verify を確かめてください。"
+fi

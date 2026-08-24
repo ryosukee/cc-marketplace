@@ -13,6 +13,16 @@ plugin の内容 (skills/agents/hooks/scripts) を変更したら、
 手元の plugin cache は update するまで古いバージョンのまま。
 bump + push だけで終わらせない。
 
+## plugin を削除する手順
+
+コードは削除し、archive へは移さない（git 履歴から取り出せる）。
+
+1. plugin ディレクトリ、evals、marketplace.json のエントリ、README.md と CLAUDE.md の行を削除する
+2. 他 plugin・rule・skill からの参照を grep で消す（既知バグ一覧のエントリが指していれば、そのエントリも直す）
+3. `docs/retired-plugins.md` に 1 件足す: 名前・廃止日・最終版・削除 commit・理由・復元コマンド
+4. `git commit` + `git push`、`claude plugins marketplace update cc-tools`、
+   `claude plugins uninstall {plugin}@cc-tools`
+
 ## 規範を変えたら、それを検査している側を一緒に直す
 
 skill / rule の条項を変えたら、その条項を参照している実装を同じ変更で直す。

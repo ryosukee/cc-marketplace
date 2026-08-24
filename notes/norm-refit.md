@@ -1295,6 +1295,10 @@ ccm-f040 のやり直し 2 件への回答。全 14 問が決着し、PR #4 の�
     - `rule-authoring.md`: boilerplate 3 候補（paths の言い直し禁止・改訂で既存記述を
       根拠にしない・アンチパターン 2 カラム表）、参照の判定 3 条項、命名（f040 Q1）、
       読み込みタイミング（f040 Q3）、ロードの使い分け（Q5）
+- 追補（2026-08-23、page-reviewer の指摘による観測の訂正）: ccm-f031 が「逆参照 4 箇所」と
+  一括りにしていた内訳は、実測では呼ばれ方 1（core.md:16）・層の関係 2（decision-docs.md:15 /
+  narrative-docs.md:15-16）・概念の名指し 1（reference-docs.md:34）。加えて記録に無い同型 1 箇所
+  （reference-docs.md:15）を発見した。落とす判定は変えない（行番号は当時のブランチ 22b0cfb 基準）
 - 出典: ccm-f041 の回答 2026-08-23（ページは共通ページディレクトリに現存。掃除で消す前に
   norm-refit-form-sources.md へ写す）
 
@@ -1310,6 +1314,8 @@ ccm-f040 のやり直し 2 件への回答。全 14 問が決着し、PR #4 の�
 
 - 結論: 進捗レポート ccm-r003 を 2026-08-23 に改稿する。f038 Q9 の「再編が終わってから改稿」は
   ユーザー指示で前倒しに変更。次の改稿タイミングは元の決定どおり PR #4 がマージできる状態になった時点
+- 追補（2026-08-24）: PR #4 は close され後継 PR #6 に置き換わった。
+  次の改稿タイミングは PR #6 がマージできる状態になった時点と読み替える
 - 出典: ユーザー指示 2026-08-23（「plan と r003 を最新化して」）
 
 ### 2026-08-23 ネスト設計の根拠 3 つは廃止する（PR #5 レビューによる f040 Q2 の変更）
@@ -1347,6 +1353,177 @@ ccm-f031 脚注 11 が挙げた 3 件（f038 Q3 の個別処置）。2026-08-23 
   代表単位の集計・母数・plugin 側の節の件数で、対象が違う
 - 出典: ccm-f031 脚注 11（発見）、2026-08-23 の再実測（本エントリ）
 
+### 2026-08-23 idea-hub への申し送りの置き場と、期間限定の運用 rule を作った
+
+- 結論: idea-hub へ渡す伝達事項は `notes/idea-hub-handoff.md` へ追記して貯める
+  （norm-refit 完了時に依頼文へ編んでユーザー経由で渡す）。norm-refit の開発運用
+  （PR 運用・セルフレビュー手順・編集凍結・台帳運用）は `.claude/rules/norm-refit-ops.md`
+  として常時ロードの project rule にし、段階 5 の完了時にファイルごと削除する
+- 注: rule はセッション開始時に読まれるため、効き始めるのは次のセッションから
+- 出典: ユーザー依頼 2026-08-23
+
+### 2026-08-23 PR #4 を close し、後継 PR #6 へ作り直した
+
+- 結論: norm-refit PR 1 の実体は PR #6（同じブランチ `norm-refit/pr1-detailed-norms`）。
+  #4 は経緯コメントを残して close した
+- 決め手: 前回レビュー 30 件のスレッドが旧 diff 前提で全件失効し、再編で diff がほぼ
+  組み直しになったため、古い会話が挟まった PR ではレビューの起点が作れない（ユーザー指摘）
+- 運用: 後継 PR には「#4 で何があったか」（初版 → レビュー 30 件 → 判断の決着 → 再実装）を
+  本文に書き、ファイルごとの見どころを file 単位の inline コメントで案内した
+- 出典: ユーザー指摘 2026-08-23、PR #6
+
+### 2026-08-23 PR 7（japanese-text-writing の保守の手引き）を計画へ足した
+
+- 結論: 再編後の japanese-text-writing の修正・追加（retrospective の codify、外部規範の
+  取り込みなど）で今回の設計を壊さないための手引き rule を、PR 7 として PR 1〜5 の後に作る。
+  骨子と置き場の暫定案（`rules/japanese-text-writing-maintenance.md` + 対象ファイルの paths）は
+  計画の PR 7 節に記載
+- 決めなかった範囲: 手引きの実文、置き場の確定（実装時）
+- 出典: ユーザー依頼 2026-08-23
+
+### 2026-08-23 HTML 化の再構成規範は decision-docs でなく html-communication skill へ（f038 Q3 の変更）
+
+- 結論: 「長い本文を HTML ページへそのまま移し替えない」は decision-docs.md から削除し、
+  PR 3 で html-communication skill 側へ入れる
+- 変更した確定: f038 Q3 の個別処置「HTML 化の再構成規範を decision-docs の構成節へ書き戻す」。
+  PR #6 のレビューで「これは html-communication skill に書くべき内容では」と指摘され、
+  HTML への変換作業は媒体固有の運用で skill の管轄、と判断が変わった
+- 出典: PR #6 レビューコメント（2026-08-23）、対応 commit 46ac934
+
+### 2026-08-25 ccm-f044: notes 運用 rule の改訂と codify 3 件の入れ方（4 件決着、4 件差し戻し）
+
+efso-document のセッションから届いた 3 件（notes-format への 2 変更の提案 / 他セッションの
+retrospective が `rules/` へ codify した未コミット変更 2 件 / dotclaude-writer の適用範囲の報告）を
+norm-refit の計画へどう組み込むかを 8 問で問うた。
+
+- 結論（決着 4 件）:
+    - Q1 出典の実文は「repo 内に持つ」。エントリ内の転記、専用の doc、分量が多ければエントリから
+      参照する専用の別ファイル、のいずれも可。未コミットの decision-record.md の節「必ずエントリの中へ転記する」は
+      この形に緩めてから入れる
+    - Q2 各ファイルの冒頭に目的・生存期間・対象タスクの 3 項目を置く条項を採用し、この repo の
+      notes/ の 7 ファイルにも適用する。台帳から参照する専用ファイル（この台帳の
+      norm-refit-form-sources.md のようなもの）があるなら、削除時に一緒に消す条項も仕込む
+    - Q5 notes 運用 rule の改訂は **norm-refit PR 8** として新設し、PR #6 のマージ後に main から分岐する
+    - Q8 dotclaude-writer の修正は norm-refit の外。plugin-release 手順で main へ直接
+      （dotclaude-writer 0.4.2、claude-known-issues 0.2.1）
+- 差し戻し 4 件（ccm-f045 で再提示）:
+    - Q3 規範の届け方: 「どんな規範を paths 指定で読ませるべきか、どんな規範は never match にして
+      元 rule からの参照にしておくべきかを考えろ。それぞれ別々にあるはずだろ」
+    - Q4 戻す範囲: 設問の節だけでは判断材料が足りない（「3 項目って何？ notes-format はどんな
+      ファイルだったっけ？」）
+    - Q6 未コミット 2 件: 「ブランチ退避ではなく、ここで決めた内容のもと保持しておくべき内容を
+      台帳か何かに保存して実際に取り組むときに復元できるようにしろ」→ 実文を
+      [pending-codify-2026-08-25](./artifacts/pending-codify-2026-08-25.md) へ保存した。作業ツリーの扱いは f045 Q4
+    - Q7 dotclaude-writer を直す場所: 「台帳エントリってなんですか？謎の用語を使わないで欲しい」
+      （既知バグ一覧 known-issues.yml のエントリを指していた）
+- 決めなかった範囲: Q3 / Q4 / Q6 の残り / Q7（f045 へ）
+- 決め手: Q1 は norm-refit 台帳の現行運用（実文ファイルへのアンカー参照、出典 46 件）が
+  そのまま適合すること。Q5 は notes-format.md を PR #6 が移動するため、マージ後の分岐でパス衝突を避けること。
+  Q8 は plugin の変更であり `rules/` に触れないこと
+- 副産物（ページの補足 = html-communication 0.31.0 として release 済み、f6f5708）:
+  設問の節の見出しは問いにする / 設問の節は自己完結させる / 汎用語を固有名の代わりに使わない。
+  機械検査 question-heading を追加
+- 出典: ccm-f044 回答 2026-08-25（設問の実文: notes/artifacts/norm-refit-form-sources.md#ccm-f044）。
+  回答の実文:
+
+  ```text
+  ## HTML フォーム回答（notes 運用 rule の改訂と codify 3 件の入れ方）
+  - Q1（出典の実文）: repo 内に実文を持つ（エントリ内か、同 repo の実文ファイルへアンカー付き）  ※ エントリ内でもよいし専用の doc があるならそれでもよいし、分量が多くなるならエントリから参照する専用別ファイルでもよい
+  - Q2（冒頭 3 項目）: 採用（ファイル冒頭に 3 項目の表。この repo の notes/ 7 ファイルにも適用）  ※ 台帳から参照する別途専用ファイルがあるなら削除時にちゃんと全部消すようなルールも仕込みたい
+  - Q3（規範の届け方）: その他: どんな規範を path 指定で読ませるべきか、どんな規範は never match にして元ルールからの参照にしておくべきかを考えろ。それぞれ別々にあるはずだろ。
+  - Q4（戻す範囲）: その他: なんの話？説明不足で判断できない。設問セクションで説明を省くな、サボるな。そもそも説明セクションが複数の設問に影響を与えないなら設問セクションに設問を書くべき。今回はどうだったの？３項目って何？ notes-format はどんなファイルだったっけ？本当に構成がくそ。
+  - Q5（PR の置き場）: norm-refit PR 8 として新設し、PR #6 のマージ後に main から分岐する
+  - Q6（未コミット 2 件）: その他: ブランチ退避ではなく、ここで決めた内容のもと保持しておくべき内容を台帳か何かに保存して実際に取り組むときに復元できるようにしろ
+  - Q7（dotclaude-writer を直す場所）: その他: 台帳エントリってなんですか？謎の用語を使わないで欲しいんだけど。台帳って汎用用語だからね。文脈を共有してないと一意に定められない。
+  - Q8（dotclaude-writer の入れ方）: norm-refit の外。plugin-release 手順で main へ直接（dotclaude-writer 0.4.2、claude-known-issues 0.2.1）
+  - 補足: なんかこの html の本文の pane の設問部分のセクションタイトルがおかしい。何を問うてるかの設問を書いて欲しいのになぜか推奨回答がセクションタイトルになってる
+  ```
+
+### 2026-08-25 ccm-f045: notes 規範の分け方（PR 8 の中身が確定）と、未コミット 2 件の処置
+
+- 結論:
+    - Q1 notes の規範は 2 ファイルに分ける。「書いている最中に効く条項」は新設する条件ロード rule
+      `rules/notes-authoring.md`（paths `notes/**`）へ、「作る前・消す判断で読む条項」は参照専用の
+      `notes-format.md` に残す。分ける基準は「その規範が効いてほしい場面をパスで表せるか」。
+      条項ごとの振り分けは f045 の表 1（実文参照）。project rule に残るのは固有分
+      （重複確認先の dir 名・チケット番号の形式）だけで、作るかは `notes/` の作成時に問う
+    - Q2 正典へ戻す範囲は、冒頭 3 項目 + 既存ドキュメントとの重複回避 + 消すときの手順 +
+      台帳が参照する実文ファイルの削除連動。戻し先は Q1 の条件ロード rule
+    - Q4 未コミット 2 件は実文を保存（pending-codify-2026-08-25.md、commit 2654172）したうえで
+      `git checkout` で作業ツリーから外した（2026-08-25 実行済み）
+    - Q5 primary-sources-first の条項は PR 8 と同時期に、norm-refit の外の独立した小 PR で入れる
+- 差し戻し: Q3（dotclaude-writer を直す場所）。「bypassPermissions でも denied されていたからこの skill が
+  ある。修正されたということ？ まず事実を検証してほしい」→ 検証結果は下の観測エントリ
+- 決め手: Q1 は rule-authoring の「条件ロードは特定の種類のファイルを編集する場面の規範」と、
+  user-global-rules.md の「references/ 配下は参照専用」の両方を保てること
+- 出典: ccm-f045 回答 2026-08-25（設問の実文: notes/artifacts/norm-refit-form-sources.md#ccm-f045）。
+  回答の実文:
+
+  ```text
+  ## HTML フォーム回答（notes 規範の分け方と、差し戻し 4 件の再提示）
+  - Q1（規範の置き場）: A 2 ファイルに分ける（条件ロードの rules/notes-authoring.md を新設、notes-format.md は参照専用のまま条項を減らす）
+  - Q2（戻す範囲）: 3 項目 + 重複回避 + 消す手順 + 実文ファイルの削除連動
+  - Q3（dotclaude-writer を直す場所）: その他: 待って。bypassPermissions でも denied されてたからこの skill があるんだけど。修正されたということ？であれば話が変わってくる。まずここの事実をちゃんと検証してほしい。この dotclaude-writer を使わずに直接 .claude 配下の編集ができるのか、rule, skill も cwd も root も検証してほしい
+  - Q4（作業ツリー）: 保存をコミットしたら git checkout で作業ツリーから外す
+  - Q5（primary-sources-first）: PR 8 と同時期に、norm-refit の外の独立した小 PR で入れる
+  - 補足: なし
+  ```
+
+### 2026-08-25 `.claude/` への書き込み保護はモード依存で、bypassPermissions では v2.1.126 から通る（観測）
+
+norm-refit の外（dotclaude-writer plugin と claude-known-issues の一覧）の事実だが、
+f045 Q3 の判断材料として記録する。
+
+- 観測（2026-08-25、Claude Code v2.1.241）:
+    - bypassPermissions のこのセッション: project の `.claude/rules/` `.claude/skills/` `.claude/` 直下、
+      home の `~/.claude/rules/` `~/.claude/skills/` `~/.claude/` 直下のすべてで Write / Edit /
+      Bash（`>` `>>` cp mv）が成功。プローブは削除済み
+    - headless `--permission-mode default` と `acceptEdits`: project の `.claude/rules/` への Write と
+      Bash `>` が「Claude requested permissions to edit … which is a sensitive file」で止まる。
+      home の `~/.claude/` 直下・`~/.claude/rules/`・`~/.claude/plugins/data/` も同じ文言で止まる
+      （`--add-dir ~/.claude` 付き）。対話セッションなら確認プロンプトになる
+    - headless `--dangerously-skip-permissions`: 両方成功
+- changelog（anthropics/claude-code、tag の commit 日付）: v2.1.78（2026-03-17）「Fixed .git, .claude, and other
+  protected directories being writable without a prompt in bypassPermissions mode」→
+  v2.1.121（2026-04-28）「--dangerously-skip-permissions no longer prompts for writes to .claude/skills/,
+  .claude/agents/, and .claude/commands/」→ v2.1.126（2026-05-01）「--dangerously-skip-permissions now
+  bypasses prompts for writes to .claude/, .git/, .vscode/, shell config files, and other previously-protected
+  paths」。dotclaude-writer plugin の初版は 2026-04-23（9fb62b9）で、この 2 つの版の間に作られた
+- 帰結: 保護はディレクトリ名（`.claude`）で決まり、project と home の区別は無い。bypass では不要、
+  非 bypass では確認要求（headless では実質ブロック）。既知バグ一覧 `claude-dir-write-protection` の
+  「bypassPermissions でも対象」は v2.1.126 以降の実態と食い違う。skill の存廃はユーザー判断待ち
+
+### 2026-08-25 入口 rule のスコープ（T6-1/2）: 入口に残し、skill の名指しをやめる
+
+- 結論: 提示媒体の選択と質問の運用は入口 rule `rules/japanese-text-writing.md` に残す。
+  html-communication skill への言及は外し、「人間が構造を追って読める形式として HTML を選ぶ」
+  だけを書く。他 plugin への言及は依存を増やすので書かない。skill が install された環境なら
+  その記述から発火する。`user-communication-format.md` は復活させない
+- 決めなかった範囲: 入口 rule の中身の書き方と説明順（「再度検討してもいいかも」。
+  4 節構成の案を PR #6 の返信で提示し、要否を待つ）
+- 出典: PR #6 行コメント 3846893590（2026-08-24）、対応 commit 4932185。回答の実文:
+
+  ```text
+  html-communication への言及だけ無くして html-communication skill に必要があれば変更を加えるようにしよう。そもそも他の plugin のことを言及するべきではない。依存が増える。html-communication skill に言及せずに、人間に見やすく構造化できるフォーマットとして html を選ぶことは言及してもよい。そこから html-communication が install されてる環境なら勝手に発火するはず。
+  user-communication-format は作る必要はない。広く日本語テキスト出力時のルールと言える。
+  とはいえこのルールの中身の書き方や説明順は再度検討してもいいかも
+  ```
+
+### 2026-08-25 監査後の確定が共通規範へ反映されない型があった（観測と処置）
+
+- 観測: PR #6 レビューで、表の 2 形 + 縦読み判定（ccm-f035 / f037、2026-08-22）が core.md に
+  反映されていなかった。原因は、台帳のエントリが HTML skill 側の実装だけを記録し、共通規範への
+  反映先を持たなかったこと。再編 commit 4bf222b の入力（f031 / f038 / f040 / f041 と監査判定）に
+  含まれなかった
+- 横展開（2026-08-25、台帳の 2026-08-20 以降の確定 33 件をブランチの執筆規範と突合）:
+  同型の未反映 3 件を PR #6 で直した（c113c6e 図表を語る文 = f034 Q2 / 06fa526 並列列挙のネスト階層 =
+  f035 Q1 / da4c84b 汎用語を固有名の代わりに使わない = f044 副産物）。PR 2 担当 2 件（f038 Q5 の
+  Markdown の caption 相当、f030 Q6 の記法規範。後者は core に一部先行反映あり）。
+  f031 Q7 の横断 48 件は明細が scratchpad にしか無く消えており、個別照合不能
+- 処置（norm-refit-ops へ追加）: 確定エントリに反映先を必須にする / PR 前のセルフレビューに
+  台帳の直近確定との突合を足す / 作業明細を scratchpad に置かず notes/artifacts に残す
+- 出典: PR #6 行コメント 3846686282（2026-08-24）、返信 3846975234
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
@@ -1360,7 +1537,9 @@ f007 以降のフォームは、各設問がどの課題を解消するかを明
   効くかの実測（解消済み: 下記 2026-08-14 プローブエントリ。全項目採用可）
 - [x] paths 除外のハーネス依存を known-issues 台帳へエントリ
   （解消済み: エントリ id `rule-paths-exclusion-undocumented`、2026-08-14 登録）
-- [ ] notes-format の a 案移行（rules/decision-record/references/ へ。一括実装に含める）
+- [x] notes-format の a 案移行（rules/decision-record/references/ へ。一括実装に含める）
+  （解消済み: PR #6 の `c745c2d` で移動し `decision-record.md` のリンクも更新。
+  main へは PR #6 のマージで入る。2026-08-25 に記録の抜けを補った）
 - [x] FN 系の参照先を改名し、行参照の失効を記録した（解消済み: 下記の確定エントリ）
 - [x] 文レベルの読解不能を条項にするか（解消済み: PR 1 のスコープ外。段階 4 群 3 の
   「日本語の構造的曖昧性を規範と検知に落とす」へ送る。2026-08-19 確定）:
@@ -1439,6 +1618,18 @@ f007 以降のフォームは、各設問がどの課題を解消するかを明
   規範 1 件ずつをどのファイルに置くかという割り当てだけ」。
   現行 8 型の「回りくどい繋辞」とは別型（あちらは述語の飾り、こちらは主語の抽象化）。
   4 facet レビューを通過したため、機械検知（textlint の「〜性は」「〜の適用」等）も検討する
+- [ ] 格配置・語順の熟慮と、norm-refit 成果物全体の文レベル再レビュー: PR #6 レビューで
+  語順・読点・係り受けの曖昧文が複数指摘された（「根拠が本文内で確定していることは」等）。
+  述語に対する格の位置の体系的な整理は段階 4 群 3（日本語の構造的曖昧性）で扱い、
+  群 3 の着手時に、その時点までの norm-refit 成果物全体を文レベルで再レビューする工程を含める
+  （ユーザー指示 2026-08-23、PR #6 コメント）。今回は指摘箇所 + 同型スイープまで対応。
+  具体的な事例は [PR #6 レビューの文レベル指摘 事例集](./artifacts/sentence-level-review-cases.md)
+  に逐語で保存した（2026-08-25、9 型 16 件。before / after / 出典付き）
+- [ ] 入口 rule のスコープ外指摘 2 件の処遇（横断 T6-1 / T6-2）: `japanese-text-writing.md` の
+  提示媒体の選択と質問の運用は「日本語の書き方ではない」という指摘。
+  判断の依頼は PR #6 の該当行への inline コメント（id 3838296941）として置いた
+  （#4 の作り直しに伴い置き直し）。
+  選択肢 3 つ（残す・推奨 / 別 rule / PR 3 で skill 側へ）。回答が来たら記録して反映する
 - [ ] 関心事の分離の判断基準「その記述が変わるタイミングは、この文書が変わるタイミングと同じか」の
   実文を直す: 字義どおりだと循環する（記述が変われば文書も変わるので常に「同じ」になる）。
   機能させるには「この文書の他の内容を書き換えさせる出来事と同種か」の読み替えが要る。

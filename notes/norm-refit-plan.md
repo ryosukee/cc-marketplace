@@ -44,12 +44,16 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
   名簿 `norm-audit-roster.md` から ID ごとに判定ファイルを引ける
 - 段階 2 の 6 件が `ccm-f030` で決着した（2026-08-20）。判定への反映も済み。
   残る `保留` は T4 送り 18 件と RD20 の 1 件だけ
-- PR #4 が draft で開いている（`norm-refit/pr1-detailed-norms`、未マージ）
+- PR 1 の実体は PR #6（`norm-refit/pr1-detailed-norms`、draft。#4 はレビュー 30 件の失効に伴い close し作り直した）
 - PR #4 のレビュー 30 件は全件処理済み（2026-08-22）
 - 着手前の判断が決着した（台帳の 2026-08-22〜23 のエントリ）:
   配置基準の見直しと PR #4 内での再編（ccm-f031）、再編の 9 判断（ccm-f038）、
   rule の書き方の記述の置き場（ccm-f040 / f041、条項単位の明細で確定）、
   設問のグルーピング（ccm-f042、実装済み 0.30.0）
+- 2026-08-25: PR 6 は PR #5 としてマージ済み。PR #6 はレビュー第 1 巡対応済みで未決 1 件の回答待ち。
+  **PR 8（notes 運用 rule の改訂）を新設**（ccm-f044）。PR 8 の中身の残り 2 判断（条項ごとのロード方式・
+  戻す範囲）と、PR 8 の外 3 件（dotclaude-writer を直す場所・未コミット 2 件の作業ツリー・
+  primary-sources-first の入れ方）は ccm-f045 で回答待ち
 
 判定の内訳（名簿から実測）。
 
@@ -240,7 +244,7 @@ main HEAD から抽出した監査に含まれないだけで、内容が否定�
 
 ### PR の切り方
 
-旧版は PR 4 本に固定していた。監査で条項数が 4 倍になったので切り直して 5 本にし、2026-08-23 に PR 6 を足して**6 本**にした。
+旧版は PR 4 本に固定していた。監査で条項数が 4 倍になったので切り直して 5 本にし、2026-08-23 に PR 6 と PR 7 を足して**7 本**にした。
 
 切り方の原則は 2 つ。
 
@@ -265,6 +269,9 @@ japanese-text-writing plugin を解体する。
 - 段階 2 の決定を実文へ反映する。地図から「読み方」を落とす（Q3）、
   `decision-docs.md` の「決め手の観点を本文で名指しする」を削除する（Q2）
 - 保持規則 L1 へ統合する条項（DG6 / DG9 / DG17）はこの PR で同時に移す
+- `rules/references/notes-format.md` を `rules/decision-record/references/notes-format.md` へ移す
+  （f006 の a 案。reference 系 rule は rule と同名の subdir を切る形式に揃える。
+  `decision-record.md` のリンクも新パスへ直す）
 
 2026-08-22〜23 の決着分（ccm-f031 / f038 / f040 / f041。実文は台帳の各エントリ）。
 
@@ -286,13 +293,19 @@ japanese-text-writing plugin を解体する。
 
 Q6 の決定を実装する。`markdown-formatting.md` から媒体非依存分を core へ移す。
 
-- 記法一般 9 件 + 和欧混植 4 件 + HC159 を core へ移す
+- 記法一般 9 件 + 和欧混植 4 件 + HC159 を core へ移す。PR 1 の再編で core に先行して入った分
+  （記号・文字の選択 2 / 和欧混植 5 項目 / 補足 2 / 参照 6、混在の MF5・MF32・MF44 の核）と
+  突き合わせ、残り（MF9 / MF10 折り返し、MF21 太字タイトルほか）だけを移す（2026-08-25 の突合）
 - 混在 6 件（MF5 / MF9 / MF10 / MF21 / MF32 / MF44）は核を割って core へ、
   markdown 固有の値は現在地に残す
 - markdown 固有 17 件は条件ロードのまま
 - `markdown-formatting.md:9-10` の参照文を新しい詳細規範のパスへ直す
 - Markdown の表に caption 相当（表の直下の決まった形）を定める条項を足す（f038 Q5。
   図表を語る文の禁止が媒体を問わず core に 1 条項で置ける前提になる。実文は執筆時に提案する）
+- 余白の規範の行き先を決める。旧 core「情報密度の高いブロックの直後に視覚的な余白」は
+  PR 1 の再編で削除され、markdown-formatting 側に実体が無い（横断 T5-13 の
+  「MF を正」は折り返しにしか成立しなかった）。MF に実体を持たせるか、
+  判定基準の無い抽象規範として廃止を確定するか
 
 **PR 1 の後にしか置けない。** 移し先の core が存在してからでないと参照が切れる。
 
@@ -307,6 +320,9 @@ ask-with-choices skill を廃止し、html-communication へ寄せる。
 - 段階 2 Q4 の決定を反映する。HC の新語の条件付き許可を禁止へ戻す
 - HC92 / HC165（図を語る文 / 表を語る文）の plugin 側を削除し core へ一本化する（f038 Q6。
   到達点 1 の検証条件「plugin 側に汎用の再実装が残らない」の穴を塞ぐ）
+- 「長い本文を HTML ページへそのまま移し替えない」（旧 user-communication-format 由来）を
+  html-communication の SKILL.md へ入れる（PR #6 レビューで decision-docs から skill 側へ変更。
+  2026-08-23 の台帳エントリ）
 
 #### PR 4 AskUserQuestion の除去
 
@@ -345,6 +361,66 @@ session / claude-known-issues）。
   2 文へ縮める（symlink 配布は新 rule へ）
 - README の rules 節から、ネスト設計の根拠 3 つ（新 rule へ）と読み込みタイミングの
   IMPORTANT（rule-authoring へ）を移し、rule 一覧表に rule-authoring の行を足す
+
+#### PR 7 japanese-text-writing の保守の手引き（PR 1〜5 の後）
+
+再編後の japanese-text-writing は修正・追加が頻繁に入る想定（retrospective の codify、
+外部で話題の規範の取り込みなど）。その際に今回の再編で守った設計を壊さないための
+手引き rule を作る。**最終構成が固まってからでないと書けないので、PR 1〜5 の後に置く。**
+
+中身の骨子（実装時に確定）:
+
+- 変更の入口判定: 足す・直す条項の分類を先に判定する。全 5 分類共通なら core、
+  分類固有なら該当ファイル、2〜4 分類に共通なら該当ファイルへ複製
+  （判定表は core + 分類 1 ファイルしか読ませないため）
+- 複製の同期: 複製された条項を直すときは全複製先を直す。検算は語での grep
+- 外部 source の取り込み: sources frontmatter へ出典を足す。取り込みは丸写しではなく
+  最大公約数の抽出（boilerplate 取り込みで使った方針）。既存条項との重複判定を先に行う
+- 再編で確立した禁止の継承: 逆参照・層の関係への言及を書かない（誘導は入口だけ）、
+  経緯注記を書かない、優先規定（分類別優先）は core だけが持つ、
+  参照専用の paths を忘れない（subdir も再帰ロードされる）
+- 入口 rule は判定と誘導だけ（約 20 行）を維持する
+- 変更後の検算: markdownlint と残骸 grep（旧語・旧参照）
+
+置き場の暫定案: `rules/japanese-text-writing-maintenance.md` に paths =
+`rules/japanese-text-writing.md` と `rules/japanese-text-writing/**/*.md` を付けて置く。
+対象ファイルを編集する場面でだけ自動で載り、発火実績のある機構（user global rules の
+paths は実測済み）に乗る。`rule-authoring.md`（rule 全般の共通規範）には入れない:
+分類ファイル構成・複製・監査語彙は japanese-text-writing 固有で、共通規範を汚す。
+`.claude/rules/` 案は paths の発火が未実測のため採らない。実装時に確定する。
+
+#### PR 8 notes 運用 rule の改訂（独立、PR #6 のマージ後）
+
+2026-08-25 に新設（ccm-f044 Q5）。efso-document で `notes/` を運用して分かった穴を正典へ戻す。
+PR 1〜5 の直列とは参照の依存が無い。**PR #6 のマージ後に main から分岐する**:
+`notes-format.md` は PR #6 が `rules/decision-record/references/` へ移動するファイルで、
+先に旧パスを編集するとマージ時にリネームと衝突する。
+
+決着済みの中身（台帳の 2026-08-25 エントリ）:
+
+- `decision-record.md` に「出典の実文を repo 内に持つ」条項を足す。エントリ内の転記、専用 doc、
+  エントリから参照する別ファイルのいずれも可。原文は
+  [pending-codify-2026-08-25](./artifacts/pending-codify-2026-08-25.md) にあり、
+  「必ずエントリの中へ」をこの形に緩めてから入れる
+- notes ファイルの冒頭に目的・生存期間（日付でなく終わりの条件）・対象タスクの 3 項目を置く条項
+- 台帳が参照する実文ファイルは、本体を消すときに一緒に消す条項
+
+ccm-f045 で決着した中身（台帳の 2026-08-25 f045 エントリ）:
+
+- 条項ごとのロード方式を分ける。「書いている最中に効く条項」（ファイル内の 2 節・冒頭 3 項目・
+  重複回避・消す手順と実文ファイルの削除連動）は新設する条件ロード rule
+  `rules/notes-authoring.md`（paths `notes/**`、冒頭で「decision-record の台帳としての notes/ にだけ
+  適用」と宣言）へ。「作る前・消す判断で読む条項」（2 層構造・作成はユーザー承認後・完了時の処遇）は
+  参照専用の `notes-format.md` に残す。確定事項のエントリ形式は常時ロードの `decision-record.md` のまま
+- project rule に残るのは固有分（重複確認先の dir 名・チケット番号の形式）だけ。`notes/` の作成時に
+  作るかを問う条項を notes-format.md のライフサイクル節に足す
+- 条件ロードの不発火の検知は、claude-known-issues の `rule-paths-exclusion-undocumented` エントリの
+  監視範囲に条件ロードの発火可否も足す（後処理）
+- 未コミット 2 件は実文を保存して作業ツリーから外した（2026-08-25）。primary-sources-first の条項は
+  PR 8 と同時期に norm-refit の外の独立した小 PR で入れる
+
+マージ後に main で直接行う後処理: この repo の notes/ 7 ファイルへ 3 項目を書く（README 一覧に
+無い `idea-hub-handoff.md` の掲載も）、台帳へ決定を積む、`ccm-r003` を改稿する。
 
 ### PR に入れないもの
 

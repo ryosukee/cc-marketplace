@@ -51,6 +51,7 @@ resolve_state() {
   "reviewed_version": null,
   "pending_version": null,
   "last_review_at": null,
+  "last_full_review_at": null,
   "last_result": null,
   "last_error": null
 }

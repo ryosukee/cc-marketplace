@@ -36,7 +36,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| github-pr | 0.3.0 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。`gh` CLI が必要 |
+| github-pr | 0.4.1 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。`gh` CLI が必要 |
 
 ### Authoring / tooling
 
@@ -45,19 +45,18 @@
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.0 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| dotclaude-writer | 0.4.1 | `.claude/` protected directory への書き込みワークアラウンド |
 
 ### Communication
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.30.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 14 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.31.1 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 15 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-known-issues | 0.2.0 | Claude Code の既知バグ・制約の台帳。更新検知 → agent が changelog と突合 → 解除手順を提示。`jq` / `gh` が必要 |
+| claude-known-issues | 0.3.0 | Claude Code の既知バグ・制約の一覧 (8 項目、未解決と解除済みを別ファイル)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
 
 ## rules
 
@@ -110,7 +109,6 @@ claude plugins install impl-spec@cc-tools
 claude plugins install markdownlint@cc-tools
 claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
-claude plugins install dotclaude-writer@cc-tools
 claude plugins install claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
 claude plugins install claude-known-issues@cc-tools
 claude plugins install usage-line@cc-tools                 # 要セットアップ (plugin README 参照)
