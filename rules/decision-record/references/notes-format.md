@@ -5,12 +5,7 @@ paths:
 
 # notes 形式: タスク別一時メモの運用
 
-[長い調査・設計では確定事項の台帳を持つ](../../decision-record.md) が既定案として提案する台帳の形式。
-
-この frontmatter の `paths` は、どの作業にもマッチしない値を意図的に指定して
-このファイルを常時ロードから外している。`paths: []` や `["**"]` に変えると常時ロードに戻るため変更しない。
-この除外挙動は非公開仕様への依存で、claude-known-issues plugin の台帳エントリ
-`rule-paths-exclusion-undocumented` が Claude Code 更新のたびに監視している。
+確定事項の台帳を repo 直下の `notes/` に置くときの形式。構造と、作るとき・消す判断を定める。
 
 ## 構造
 
