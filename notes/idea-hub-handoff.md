@@ -40,6 +40,8 @@ ccm-f041 エントリ、PR #5。
 渡し済み）。idea-hub 側で受け入れが完了したら cc-marketplace 側のファイルを削除する。
 それまでは cc-marketplace が暫定の単一正。出典: cc-marketplace `notes/norm-refit.md`
 未解決課題。
+2026-08-25 に節「測ったものと本当に測りたかったものが同じかを確かめる」が PR #7 で足された。
+移管するときはこの版を渡す。
 
 ## 2026-08-23 impl-spec の条項は norm-refit で触っていない
 
