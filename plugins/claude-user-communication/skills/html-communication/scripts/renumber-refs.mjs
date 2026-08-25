@@ -27,17 +27,20 @@ const suOrder = [];
 for (const m of body.matchAll(/href="#su-([a-z])"/g)) if (!suOrder.includes(m[1])) suOrder.push(m[1]);
 const suMap = new Map(suOrder.map((old, i) => [old, String.fromCharCode(97 + i)]));
 
-// 一時トークンを挟んでから確定値へ (a→b, b→a のような入れ替えで衝突しないように)
-const T = (k) => ` ${k} `;
+// 一時トークンを挟んでから確定値へ (a→b, b→a のような入れ替えで衝突しないように)。
+// 区切りは本文に現れない制御文字にする。空白で区切ると、外すときの置換が本文の
+// " class=" や " core " にも当たって文字を削る
+const SEP = "\u0001";
+const T = (k) => `${SEP}${k}${SEP}`;
 s = s.replace(/fn-(\d+)/g, (_, n) => fnMap.has(n) ? `fn-${T("n" + fnMap.get(n))}` : _);
 s = s.replace(/fnref-(\d+)-/g, (_, n) => fnMap.has(n) ? `fnref-${T("n" + fnMap.get(n))}-` : _);
-s = s.replace(/(<sup class="fnref"[^>]*><a href="#fn- n(\d+) ">)(\d+)(<\/a>)/g, (_, a, n, _o, b) => `${a}${n}${b}`);
-s = s.replace(/(<a class="fnnum" href="#fnref- n(\d+) -\d+">)(\d+)\./g, (_, a, n) => `${a}${n}.`);
+s = s.replace(/(<sup class="fnref"[^>]*><a href="#fn-\u0001n(\d+)\u0001">)(\d+)(<\/a>)/g, (_, a, n, _o, b) => `${a}${n}${b}`);
+s = s.replace(/(<a class="fnnum" href="#fnref-\u0001n(\d+)\u0001-\d+">)(\d+)\./g, (_, a, n) => `${a}${n}.`);
 s = s.replace(/su-([a-z])\b/g, (_, c) => suMap.has(c) ? `su-${T("c" + suMap.get(c))}` : _);
 s = s.replace(/suref-([a-z])\b/g, (_, c) => suMap.has(c) ? `suref-${T("c" + suMap.get(c))}` : _);
-s = s.replace(/(<sup class="suref"[^>]*><a href="#su- c([a-z]) ">)([a-z])(<\/a>)/g, (_, a, c, _o, b) => `${a}${c}${b}`);
-s = s.replace(/(<a class="sunum" href="#suref- c([a-z]) (?:-\d+)?">)([a-z])\./g, (_, a, c) => `${a}${c}.`);
-s = s.replace(/ [nc]([^ ]+) /g, "$1");
+s = s.replace(/(<sup class="suref"[^>]*><a href="#su-\u0001c([a-z])\u0001">)([a-z])(<\/a>)/g, (_, a, c, _o, b) => `${a}${c}${b}`);
+s = s.replace(/(<a class="sunum" href="#suref-\u0001c([a-z])\u0001(?:-\d+)?">)([a-z])\./g, (_, a, c) => `${a}${c}.`);
+s = s.replace(/\u0001[nc]([^\u0001]+)\u0001/g, "$1");
 
 // pane 内の脚注・補足の段落を番号・英字順に並べ替える
 function sortBlock(cls, keyOf) {
