@@ -44,8 +44,8 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 
 ## 現在地
 
-2026-08-25 時点。**段階 1・2 が完了し、段階 3 は 8 本の PR のうち PR 6・PR 1・PR 8 がマージ済み。
-次は PR 2（着手前の判断 2 件は ccm-f049 で決着済み）。回答待ちの判断はゼロ。**
+2026-08-25 時点。**段階 1・2 が完了し、段階 3 は 8 本の PR のうち PR 6・PR 1・PR 8・PR 2 がマージ済み。
+次は PR 3（確認・質問の一本化）。回答待ちの判断はゼロ。**
 
 - 条項 1349 件の抽出と検算が完了（`norm-audit-raw/` の 6 ファイル）
 - **1349 件すべてに処遇が付いた**（`norm-audit-verdict-*.md` の 8 ファイル）。
@@ -65,7 +65,7 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
   PR 2 の着手前の判断 2 件（caption 相当の形 / 余白規範の行き先）は ccm-f049 で決着（台帳の同日エントリ）。
   計画の見直し（同日）で洗い出した判断 3 件は ccm-f050 で決着し、rule の変更は PR #9（norm-refit の外、draft）、
   pending-codify の削除は main 直接で実施。PR 2 の作業明細は `notes/artifacts/norm-refit-pr2-detail.md`
-  **PR 2 は PR #10 として draft で出した**（同日。5 commit + セルフレビュー 1 commit、行指定コメント 8 件）。レビュー待ち
+  **PR 2 は PR #10 として main `7eb4600` にマージ済み**（同日。レビュー 1 件対応）。PR #9（f050 の rule 変更）も `67aecb0` にマージ済み
   PR 8 は同日に新設（ccm-f044）し、中身を ccm-f045 で決めてから実装した
 
 判定の内訳（名簿から実測）。
@@ -306,7 +306,7 @@ japanese-text-writing plugin を解体する（plugin は `docs/retired-plugins.
 
 #### PR 2 記法規範の分割
 
-**レビュー中。PR #10（2026-08-25、draft）。作業明細は `notes/artifacts/norm-refit-pr2-detail.md`。**
+**完了。PR #10、main 7eb4600（2026-08-25）。作業明細は `notes/artifacts/norm-refit-pr2-detail.md`。**
 
 Q6 の決定を実装する。`markdown-formatting.md` から媒体非依存分を core へ移す。
 
