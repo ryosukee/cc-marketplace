@@ -195,8 +195,14 @@ function checkFile(path) {
       message: `${m[2]} の器が <${m[1]}>。sup にする` });
   }
 
-  // 8. 脚注番号・補足英字は本文の初出順
-  const fnOrder = [...bd.matchAll(/id="fnref-(\d+)-\d+"/g)].map((m) => Number(m[1]));
+  // 8. 脚注番号・補足英字は本文の初出順。起点は最初の説明節 (.secnum) か設問の範囲 (section.rng) で、
+  //    前提・結論ブロックは対象外（renumber-refs.mjs と同じ起点）
+  const orderStart = (() => {
+    const a = bd.indexOf('<p class="secnum">'); const b = bd.indexOf('<section class="rng"');
+    const c = [a, b].filter((x) => x >= 0); return c.length ? Math.min(...c) : 0;
+  })();
+  const orderSrc = bd.slice(orderStart);
+  const fnOrder = [...orderSrc.matchAll(/id="fnref-(\d+)-\d+"/g)].map((m) => Number(m[1]));
   const fnFirst = [...new Set(fnOrder)];
   for (let i = 0; i < fnFirst.length; i++) {
     if (fnFirst[i] !== i + 1) {
@@ -206,7 +212,7 @@ function checkFile(path) {
     }
   }
   // 同じ補足を複数箇所から参照する suref-x-2 の形も初出として数える（renumber-refs.mjs と同じ数え方）
-  const suOrder = [...bd.matchAll(/id="suref-([a-z])(?:-\d+)?"/g)].map((m) => m[1]);
+  const suOrder = [...orderSrc.matchAll(/id="suref-([a-z])(?:-\d+)?"/g)].map((m) => m[1]);
   const suFirst = [...new Set(suOrder)];
   for (let i = 0; i < suFirst.length; i++) {
     if (suFirst[i] !== String.fromCharCode(97 + i)) {
