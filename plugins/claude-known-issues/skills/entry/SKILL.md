@@ -45,7 +45,8 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
 ```
 
 - `dependents`: このエントリに依存している場所の一覧。1 行に「場所: 解除時にどうするか」を書く。
-  ワークアラウンド側にも「詳細はこの一覧の {id}」とポインタを置く（双方向）
+  対応はこの一覧側だけが持つ。ワークアラウンドを担う rule・skill の側には、この plugin や
+  一覧のエントリへの言及を置かない（配布先に plugin が無いこともあり、rule が他 plugin を知る形になる）
 - `how_to_verify`: 全件突合（review skill の `full`）が実行する手順。プローブファイルを作るなら
   名前を `.known-issues-probe-{id}` にし、手順の最後に消す
 - `log`: 突合のたびに 1 行増える。「いつ確認して、まだ直っていなかった」の記録
@@ -62,11 +63,11 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
 
    関係する行があれば summary と affected に反映する。登録より前に挙動が変わっていることがある
 4. how_to_verify を、手順 2 の実測をそのまま手順にして書く
-5. dependents を書き、ワークアラウンドを担う rule・skill の側にポインタを追記する
+5. dependents を書く。ワークアラウンドを担う rule・skill の側には一覧への言及を足さない
 6. 一覧を編集して保存する
 
 ## ワークアラウンド側に書くこと
 
-- rule・skill 側: 制約があること、どう振る舞うか、一覧のエントリ id。
+- rule・skill 側: 制約があること、どう振る舞うか。一覧のエントリ id や plugin 名は書かない。
   一覧を読まないセッションでも振る舞いが再現できる状態にする
 - 一覧側: 再現手順、依存している場所、時系列ログ

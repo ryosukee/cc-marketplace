@@ -56,7 +56,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-known-issues | 0.3.0 | Claude Code の既知バグ・制約の一覧 (8 項目、未解決と解除済みを別ファイル)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
+| claude-known-issues | 0.3.1 | Claude Code の既知バグ・制約の一覧 (8 項目、未解決と解除済みを別ファイル)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
 
 ## rules
 
