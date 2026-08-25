@@ -63,6 +63,8 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
   **PR 8 は PR #8 として main `12967a4` に、codify 2 件の小 PR は PR #7 として `54c5975` にマージ済み**（同日）。
   PR 8 の後処理（notes/ 7 ファイルへ目的・生存期間・対象タスクの表、README 一覧、known-issues の監視範囲、ccm-r003）も同日に実施。
   PR 2 の着手前の判断 2 件（caption 相当の形 / 余白規範の行き先）は ccm-f049 で決着（台帳の同日エントリ）。
+  計画の見直し（同日）で洗い出した判断 3 件は ccm-f050 で決着し、rule の変更は PR #9（norm-refit の外、draft）、
+  pending-codify の削除は main 直接で実施。PR 2 の作業明細は `notes/artifacts/norm-refit-pr2-detail.md`
   PR 8 は同日に新設（ccm-f044）し、中身を ccm-f045 で決めてから実装した
 
 判定の内訳（名簿から実測）。
