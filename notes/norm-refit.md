@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 | --- | --- |
 | 目的 | norm-refit（執筆規範の全条項監査と再配置）の確定事項を、1 件 1 エントリで漏れなく積む台帳 |
-| 生存期間 | norm-refit の段階 5 が完了し、この台帳の処遇（正式な文書への昇格か削除か）を決めて実行するまで |
+| 生存期間 | norm-refit-v2（計画の「norm-refit-v2」の節）まで完了し、この台帳の処遇（正式な文書への昇格か削除か）を決めて実行するまで |
 | 対象タスク | norm-refit。PR #5 / #6 / #7 / #8（マージ済み）と PR 2〜5・7、段階 4・5 |
 
 規範の配置と強制の改修プロジェクト（norm-refit）の確定事項台帳。
@@ -1670,6 +1670,25 @@ f045 Q3 の判断材料として記録する。
 - 反映先: `rules/subagent-delegation.md` / `.claude/rules/user-global-rules.md` / `rules/notes-authoring.md`（小 PR、norm-refit の外）/
   `notes/artifacts/pending-codify-2026-08-25.md` の削除と本エントリ直上の f044 のリンク書き換え（main 直接）/
   claude-known-issues の一覧（`agent-tool-gated-by-system-prompt` の dependents）
+
+
+### 2026-08-25 norm-refit の後続の改善は norm-refit-v2 として、同じ台帳・計画・進捗レポートで続ける
+
+- 結論: norm-refit の段階 5 の後に続く改善（終了条件に含まないものと、実装中に積み上がった後続課題）を
+  norm-refit-v2 と呼び、台帳・計画・進捗レポート `ccm-r003` を切り替えずに続ける。
+  計画に「norm-refit-v2」の節（群 A 規範の運用と保守 / 群 B 日本語の機械検知 / 群 C 情報デザイン norm と HTML 雛形 /
+  群 D 未監査 rule と他 repo との整合、計 14 件）を置き、進捗レポートに続きの節を足す。
+  notes の生存期間と norm-refit-ops の削除条件は v2 の完了までに延ばす
+- 決めなかった範囲: v2 の中の着手順（着手時に未解決課題と突き合わせて選ぶ）。編集凍結は段階 5 で解除し v2 に持ち越さない
+- 決め手: 後続の改善が norm-refit の成果物（台帳・計画・事例集）を入力にするので、切り替えると参照が二重になる（ユーザー）
+- 出典: ユーザー発言 2026-08-25。実文:
+
+  ```text
+  norm-refit が終わった後の後続の改善タスクも延長というか norm-refit-v2 的なものとして引き続きシームレスに続ける予定だからタスクプランも進捗のhtml も続きのはなしとしてセクションわけてもいいから書いてアップデートしてほしい
+  ```
+
+- 反映先: `notes/norm-refit-plan.md` norm-refit-v2 の節と冒頭の表 / 本台帳の冒頭の表 / `.claude/rules/norm-refit-ops.md` 冒頭 /
+  `ccm-r003`。plugin・rules への反映なし
 
 
 ## 未解決課題

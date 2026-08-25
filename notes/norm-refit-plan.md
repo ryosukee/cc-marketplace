@@ -3,7 +3,7 @@
 | 項目 | 内容 |
 | --- | --- |
 | 目的 | norm-refit をどの順で進めるかの正典。到達点・段階・PR の切り方・現在地 |
-| 生存期間 | norm-refit の段階 5 が完了し、台帳と一緒に処遇を決めて実行するまで |
+| 生存期間 | norm-refit-v2（後続の改善。「norm-refit-v2」の節）まで完了し、台帳と一緒に処遇を決めて実行するまで |
 | 対象タスク | norm-refit |
 
 norm-refit をどの順で進めるかの正典。何をどこまでやるか、依存が何か、次に何をするかは
@@ -504,6 +504,54 @@ T4 が 41 本の置き場を決めるとき、このパターン集との関係�
 ### 到達点の検証
 
 到達点 1〜5 が成立していることを確認する。検証方法は「到達点」の表にある。
+
+## norm-refit-v2: norm-refit の後に続く改善
+
+norm-refit の段階 5 が終わったら、同じ台帳・計画・進捗レポートのまま norm-refit-v2 として続ける（ユーザー判断 2026-08-25）。
+v2 は、norm-refit が「終了条件に含まないもの」として外に置いた作業と、実装中に積み上がった後続課題を扱う。
+段階 5 の到達点の検証が v2 の開始条件で、v2 の中の順序は固定しない。着手時に台帳の未解決課題と突き合わせて選ぶ。
+
+### 群 A 規範の運用と保守
+
+- A1 規範の要否の吟味と常時更新の設計（台帳の未解決課題「規範の要否の吟味と常時更新の設計」、f008 Q1 補足）。
+  再配置した規範 1 件ずつの要否を吟味し、retrospective の codify とレビュー指摘の一般化で規範を更新し続ける設計を決める。
+  PR 7（保守の手引き）が入口になる
+- A2 rule の eval 化（task「rule の eval 化」）。reference-docs から削除した「rule を書くとき」由来の 1 条項の仕組み化と、
+  文レベル指摘の事例集を fixture にする案。一次記録は `notes/trigger-eval-harness.md`
+- A3 review 工程のコスト対効果の見直し（task。page-reviewer 4 本の実測: 152k / 163k / 187k / 165k トークン、
+  推奨を変えた指摘は 4 件）。機械検査へ寄せる分と終了条件の絞り方
+- A4 「生成物への指摘は、まず規定を疑う」の置き場（台帳の未解決課題。内容は確定済み）
+- A5 文レベル指摘の事例集の後処理（段階 4 群 3 の入力として使った後、残すか eval の fixture へ移すか。段階 5 の notes の処遇と一緒に決める）
+
+### 群 B 日本語の機械検知
+
+- B1 名詞構文の機械検知（core の AI 口調の型には入った。検知は未着手。`notes/artifacts/prototypes/ja-no-nominalization.js` が試作）
+- B2 係り受けの多義の 2 条件（成立条件と解消法）を DG14 に取り込む（台帳の未解決課題、部分解消）
+- B3 経緯・出典注記の抑制のレビュー観点と機械検知（台帳の未解決課題、部分解消。textlint の日付括弧パターン等）
+- B4 格配置・語順の熟慮（段階 4 群 3 で体系化する分。v2 では検知へ落とす）
+
+### 群 C 情報デザイン norm と HTML 雛形
+
+- C1 配色調査の置き場（`notes/artifacts/html-color-tokens.md` の調査部分。product-boilerplate の visual-readability V7 / V8 / V10 と重なり、
+  こちらの裏付けが強い）と、移した後の html-color-tokens.md の削除（台帳からの参照 3 箇所も外す）
+- C2 「静か + 強調」の言語化（雛形の方針を判定できる規範にする。V6 の強調の総量規制と合わせる）
+- C3 CLAUDE_CODE_ARTIFACT_DELETE の判断と html-communication のアーティファクト化の再検討（task）
+- C4 op-pr-review-assist の設計（段階 4 のレビュー機構の再設計と合流）
+
+### 群 D 未監査 rule と他 repo との整合
+
+- D1 未監査の rule 18 ファイル 955 行の整理（旧「後続タスク #7」。`.claude/rules/` 3 本は user global 側へ取り込めるかの判定を含む。
+  `.claude/rules/coding.md` の機械的修正 5 行の見直しもここ）
+- D2 primary-sources-first の idea-hub への移管（依頼文は渡し済み。先方が取り込んだら cc-marketplace 側を削除。
+  PR #7 で足した節を伝える）
+- D3 idea-hub への申し送り（`notes/idea-hub-handoff.md` を依頼文に編んで渡す。impl-spec の条項移設と内部重複の解消は idea-hub 側）
+
+### v2 で変わる運用
+
+- 台帳 `notes/norm-refit.md`・計画（この文書）・進捗レポート `ccm-r003` は v2 でも同じものを使う。
+  notes の生存期間は「v2 の完了」までに延ばす
+- `.claude/rules/norm-refit-ops.md` は v2 の間も効かせる。削除は v2 の完了時
+- 編集凍結は段階 5 で解除する（v2 には持ち越さない）
 
 ## 編集凍結
 
