@@ -1691,6 +1691,24 @@ f045 Q3 の判断材料として記録する。
   `ccm-r003`。plugin・rules への反映なし
 
 
+### 2026-08-25 rule と known-issues の対応は一覧側の dependents だけが持つ（ccm-f050 Q1 の上書き）
+
+- 結論: project rule `.claude/rules/user-global-rules.md` に対応表は置かない。rule 側にはこの plugin や一覧の
+  エントリへの言及を置かず、対応は claude-known-issues の一覧のエントリの dependents だけが持つ。
+  「rule 側に言及させない」という条項は entry skill にだけ書く（0.3.1）
+- 決めなかった範囲: なし
+- 決め手: 対応表は一覧の dependents と二重管理になる。指示の置き場はそれを実行する側（known-issues）にある（ユーザー）
+- 出典: PR #9 行コメント 3849273866（2026-08-25）、対応 commit 7e441d2、返信 3849293202。実文:
+
+  ```text
+  わざわざこのルール立てる必要はない
+  known issue 側で勝手に管理すればよいし、対象のルールがわに known issue のことを言及させるなという指示も known issue 側にのみ書くべき
+  ```
+
+- 反映先: `.claude/rules/user-global-rules.md`（PR #9）/ claude-known-issues の entry skill（0.3.1）/
+  plugin data の一覧の dependents（agent-tool-gated-by-system-prompt、rule-paths-exclusion-undocumented）
+
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
