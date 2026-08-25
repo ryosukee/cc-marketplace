@@ -1,0 +1,19 @@
+/* progress tree: 直列でない作業群（PR 群とその中身）の進み具合を、入れ子の一覧で示す。
+   各項目は 3 状態（完了 / 現在 / 未着手）を、マーカーの形と語の両方で示す。
+   vertical progress indicator と違い、順序の強制も現在地の一意性も表さない。
+   色は雛形のトークンだけを使う。 */
+.ptree, .ptree ul { list-style: none; margin: 0; padding: 0; }
+.ptree ul { margin: 2px 0 0 10px; padding-left: 14px; border-left: 1px solid var(--rule); }
+.ptree li { position: relative; padding: 3px 0 3px 18px; }
+.ptree li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 9px; height: 9px;
+                    border-radius: 50%; background: var(--bg); border: 2px solid var(--control-border); box-sizing: border-box; }
+.ptree li.done::before { background: var(--rule-strong); border-color: var(--rule-strong); }
+.ptree li.now::before { background: var(--link); border-color: var(--link); box-shadow: 0 0 0 3px var(--surface-now); }
+.ptree li.done > .pt-h { color: var(--sub); }
+.ptree li.now > .pt-h { font-weight: 700; }
+.ptree .pt-h .st { font-size: 0.875em; font-weight: 400; color: var(--sub); margin-left: 6px; }
+.ptree .pt-h .st.now { color: var(--link); }
+.ptree .pt-h .n { font-size: 0.875em; color: var(--sub); margin-left: 6px; }
+.ptree > li { margin-bottom: 6px; }
+.ptree-legend { font-size: 0.875em; color: var(--sub); margin: 6px 0 0; }
+.ptree-legend span { margin-right: 14px; }
