@@ -1596,6 +1596,19 @@ f045 Q3 の判断材料として記録する。
 - 出典: PR #8 行コメント 3848391482（2026-08-24）、返信 3848428108。probe の手順は返信の実文にある
 
 
+### 2026-08-25 known-issues の `rule-paths-exclusion-undocumented` は存在せず、再作成した（観測と処置）
+
+- 観測: notes-format.md・計画・f045 エントリが監視役として指していた claude-known-issues の
+  エントリ `rule-paths-exclusion-undocumented` は、手元の一覧（`known-issues.yml` 未解決 5 件、
+  `known-issues.resolved.yml` 1 件）のどこにも無かった。0.3.0 への移行（2026-08-25）で失われたとみられる
+- 処置: PR 8 の後処理として同 id で再作成した。summary は 2026-08-25 の実測 2 件（一致しない paths による
+  常時ロードからの除外 / user-level の相対パターンが起動 repo のルートから解決される）、
+  how_to_verify はヘッドレスの probe 手順、dependents は cc-marketplace の参照専用 7 ファイルと
+  条件ロード 3 ファイル + `.claude/rules/user-global-rules.md`。ポインタは同 project rule に置いた
+  （参照専用 rule 側には置かない。PR #8 コメント 3848379848）
+- 出典: PR 8 後処理の実施記録（main、2026-08-25）。実測は PR #8 返信 3848428108 と本台帳の同日の観測エントリ
+
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
