@@ -34,5 +34,3 @@ repo 直下の `rules/` で管理する user global rule の、配布の仕組�
 - `paths` の相対パターンは、セッションを起動した repo のルートから解決される。
   配布先のどの repo でも、その repo の同じ相対パス（例: `notes/**`）で条件ロードが効く。
   この repo のパスに合わせて書くのではなく、効かせたい repo 側のパスで書く
-- 参照専用の `paths`（一致しない値）と、相対パターンの起動 repo ルートからの解決は、どちらも非公開仕様。
-  claude-known-issues plugin の一覧のエントリ `rule-paths-exclusion-undocumented` が Claude Code の更新ごとに監視する
