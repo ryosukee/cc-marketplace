@@ -1,5 +1,11 @@
 # 発動検証ハーネス（セッション 4 担当）
 
+| 項目 | 内容 |
+| --- | --- |
+| 目的 | evals ハーネス（`claude plugins eval`）の調査・設計と実測の一次記録 |
+| 生存期間 | rule の eval 化に着手し、内容を evals/README.md か設計文書へ移すまで |
+| 対象タスク | rule の eval 化（norm-refit の外の後続タスク） |
+
 > [!IMPORTANT]
 > **セッション 1 に統合。単独では着手しない。**
 > 2026-07-30 のセッション 4 が 1 節の任務（`claude plugins eval` の調査）と
