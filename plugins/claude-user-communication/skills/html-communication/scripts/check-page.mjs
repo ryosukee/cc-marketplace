@@ -205,7 +205,8 @@ function checkFile(path) {
       break;
     }
   }
-  const suOrder = [...bd.matchAll(/id="suref-([a-z])"/g)].map((m) => m[1]);
+  // 同じ補足を複数箇所から参照する suref-x-2 の形も初出として数える（renumber-refs.mjs と同じ数え方）
+  const suOrder = [...bd.matchAll(/id="suref-([a-z])(?:-\d+)?"/g)].map((m) => m[1]);
   const suFirst = [...new Set(suOrder)];
   for (let i = 0; i < suFirst.length; i++) {
     if (suFirst[i] !== String.fromCharCode(97 + i)) {
