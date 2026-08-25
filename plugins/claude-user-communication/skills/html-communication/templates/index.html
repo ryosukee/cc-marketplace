@@ -139,7 +139,8 @@ const statusLabel = {
   answered: "回答済み", confirmed: "確認済み",
   living: "更新中",
 };
-const INCOMPLETE = new Set(["awaiting", "unconfirmed"]);
+// living（更新し続ける report）も未完了側に出す。完了側に置くと、手つかずのページと区別できない
+const INCOMPLETE = new Set(["awaiting", "unconfirmed", "living"]);
 
 function makeRow(e) {
   const row = document.createElement("div");
