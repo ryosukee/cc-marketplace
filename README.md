@@ -88,6 +88,7 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | background-task | 常時 | バックグラウンド起動は `run_in_background` を使う |
 | markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
 | rule-authoring | `.claude/rules/**` `rules/**` | rule の書き方の共通規範。命名・参照・ロード方式の使い分け |
+| notes-authoring | `notes/**` | 確定事項の台帳として運用する `notes/` を書く最中の規範。冒頭 3 項目・2 節・重複回避・消す手順 |
 
 `paths` を持つ rule は、一致するファイルを Claude が読んだときだけロードされる。
 持たない rule はセッション開始時に無条件でロードされる。
