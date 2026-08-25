@@ -341,8 +341,10 @@ ask-with-choices skill を廃止し、html-communication へ寄せる。
 
 #### PR 4 AskUserQuestion の除去
 
-全 plugin から使用指示を消す。**16 箇所**（impl-spec / dotclaude / mkdocs-setup /
-session / claude-known-issues）。
+全 plugin から使用指示を消す。言及行の実測（2026-08-25、`grep -c`）は impl-spec **16**
+（requirements 5 / design 5 / test-plan 6）に、dotclaude 13 / mkdocs-setup 6 / session 1 /
+claude-known-issues の雛形 5 を加えた 41 行。旧記述の「16 箇所」は impl-spec 分だけを数えていた
+（申し送り 4 と DG46 の 16 も impl-spec の数）。
 
 - 除去対象は AskUserQuestion への言及行に限定する。impl-spec の「質問の原則」
   「品質基準」節には DG17 系の条項が同居しており、節ごと消すと巻き込む
