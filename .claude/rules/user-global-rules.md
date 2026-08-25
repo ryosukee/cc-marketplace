@@ -36,3 +36,14 @@ repo 直下の `rules/` で管理する user global rule の、配布の仕組�
   この repo のパスに合わせて書くのではなく、効かせたい repo 側のパスで書く
 - 参照専用の `paths`（一致しない値）と、相対パターンの起動 repo ルートからの解決は、どちらも非公開仕様。
   claude-known-issues plugin の一覧のエントリ `rule-paths-exclusion-undocumented` が Claude Code の更新ごとに監視する
+
+## rules/ のワークアラウンドと known-issues のエントリの対応
+
+配布する rule には、Claude Code のバグ・制約へのワークアラウンドであっても、claude-known-issues plugin や
+その一覧のエントリへの言及を置かない（配布先には plugin が無いこともあり、rule が他 plugin を知る形になる）。
+対応はこの表が持ち、一覧のエントリ側は dependents にこのファイルを持つ。エントリを解除したら行ごと消す。
+
+| rule | エントリ |
+| --- | --- |
+| `rules/subagent-delegation.md` | `agent-tool-gated-by-system-prompt` |
+| `rules/decision-record/references/notes-format.md` と `rules/japanese-text-writing/references/*.md`（参照専用の paths）、`rules/notes-authoring.md` / `rules/markdown-formatting.md` / `rules/rule-authoring.md`（条件ロードの paths） | `rule-paths-exclusion-undocumented` |
