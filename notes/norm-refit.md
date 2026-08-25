@@ -1419,7 +1419,7 @@ norm-refit の計画へどう組み込むかを 8 問で問うた。
       ファイルだったっけ？」）
     - Q6 未コミット 2 件: 「ブランチ退避ではなく、ここで決めた内容のもと保持しておくべき内容を
       台帳か何かに保存して実際に取り組むときに復元できるようにしろ」→ 実文を
-      [pending-codify-2026-08-25](./artifacts/pending-codify-2026-08-25.md) へ保存した。作業ツリーの扱いは f045 Q4
+      pending-codify-2026-08-25.md（commit 2654172 の同ファイル。反映後に削除、ccm-f050 Q2） へ保存した。作業ツリーの扱いは f045 Q4
     - Q7 dotclaude-writer を直す場所: 「台帳エントリってなんですか？謎の用語を使わないで欲しい」
       （既知バグ一覧 known-issues.yml のエントリを指していた）
 - 決めなかった範囲: Q3 / Q4 / Q6 の残り / Q7（f045 へ）
@@ -1639,6 +1639,37 @@ f045 Q3 の判断材料として記録する。
 
 - 反映先: `rules/markdown-formatting.md`（※ 参照の用途 / 改行の節に空行の実体）/
   `rules/japanese-text-writing/references/core.md` 読み手の負荷。PR 2 で反映する。plugin への反映なし
+
+
+### 2026-08-25 ccm-f050: 配布 rule から他 plugin への言及を消す、pending-codify は削除、明細ファイルは本体の表に従う
+
+- 結論:
+    - Q1 `rules/subagent-delegation.md` の claude-known-issues 台帳への言及を消し、ポインタは
+      `.claude/rules/user-global-rules.md` に「rules/ のワークアラウンドと known-issues のエントリの対応」として置く。
+      一覧側の `agent-tool-gated-by-system-prompt` の dependents にも user-global-rules.md の行を足す
+    - Q2 `notes/artifacts/pending-codify-2026-08-25.md` は削除する。台帳 f044 エントリのリンクを
+      「commit 2654172 の同ファイル」に書き換えてから消す（f045 の言及は commit id 付きのまま）
+    - Q3 `notes/artifacts/` の明細には目的・生存期間・対象タスクの表を置かず、参照元の本体の表に従う。
+      rule には artifacts というディレクトリ名を出さず、「本体が参照する明細を別ファイルに置くとき」と抽象化して書く
+      （ユーザー補足: 「そもそも artifact みたいな構造をルール側で言及してるっけ？してないならもう少し抽象化した言及の方がいいのでは？」）
+- 決めなかった範囲: なし
+- 決め手: Q1 は PR #8 コメント 3848379848 の原則（配布 rule に上位・他 plugin・paths への言及を置かない）との一貫性。
+  Q2 は反映済みで実文が反映前の版になっており、出典の要件は台帳のエントリ本文で満たされていること。
+  Q3 は明細の生存期間が本体と同じで、個別に書く情報が無いこと
+- 出典: ccm-f050 回答 2026-08-25（設問の実文: 共通ページディレクトリの `ccm-f050.html`。掃除で削除する前に
+  norm-refit-form-sources.md へ写す）。回答の実文:
+
+  ```text
+  ## HTML フォーム回答（計画の見直しで残った判断 3 件）
+  - Q1（他 plugin への言及）: A 消して project rule へ移す
+  - Q2（pending-codify の処遇）: A 削除する
+  - Q3（artifacts の 3 項目）: A 置かず、本体に従うと定める  ※ そもそも artifact みたいな構造をルール側で言及してるっけ？してないならもう少し抽象化した言及の方がいいのでは？
+  - 補足: なし
+  ```
+
+- 反映先: `rules/subagent-delegation.md` / `.claude/rules/user-global-rules.md` / `rules/notes-authoring.md`（小 PR、norm-refit の外）/
+  `notes/artifacts/pending-codify-2026-08-25.md` の削除と本エントリ直上の f044 のリンク書き換え（main 直接）/
+  claude-known-issues の一覧（`agent-tool-gated-by-system-prompt` の dependents）
 
 
 ## 未解決課題
