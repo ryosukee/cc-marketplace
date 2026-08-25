@@ -15,5 +15,8 @@
 .ptree .pt-h .st.now { color: var(--link); }
 .ptree .pt-h .n { font-size: 0.875em; color: var(--sub); margin-left: 6px; }
 .ptree > li { margin-bottom: 6px; }
-.ptree-legend { font-size: 0.875em; color: var(--sub); margin: 6px 0 0; }
+/* 凡例とキャプションは図に密着させる。親（工程の本文など）の p の余白が効くと、
+   キャプションだけが図から離れて次の要素の見出しに見える */
+.fig .ptree-legend { font-size: 0.875em; color: var(--sub); margin: 8px 0 0; padding-top: 6px; border-top: 1px solid var(--rule); }
+.fig .ptree + .ptree-legend + .cap { margin-top: 4px; }
 .ptree-legend span { margin-right: 14px; }
