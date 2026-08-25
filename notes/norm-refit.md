@@ -1445,7 +1445,7 @@ norm-refit の計画へどう組み込むかを 8 問で問うた。
   - 補足: なんかこの html の本文の pane の設問部分のセクションタイトルがおかしい。何を問うてるかの設問を書いて欲しいのになぜか推奨回答がセクションタイトルになってる
   ```
 
-- 反映先: `rules/decision-record.md`（出典の実文）/ `rules/notes-authoring.md`（3 項目・削除連動）= PR #8 で反映済み / notes/ 7 ファイル = 後処理済み / dotclaude-writer = main で処置済み（claude-known-issues 0.2.1、廃止は bfbfd25）
+- 反映先: `rules/decision-record.md`（出典の実文）/ `rules/notes-authoring.md`（目的・生存期間・対象タスクの表、実文ファイルの削除連動）= PR #8 で反映済み / notes/ 7 ファイル = 後処理済み / dotclaude-writer = main で処置済み（claude-known-issues 0.2.1、廃止は bfbfd25）
 
 ### 2026-08-25 ccm-f045: notes 規範の分け方（PR 8 の中身が確定）と、未コミット 2 件の処置
 
@@ -1455,7 +1455,7 @@ norm-refit の計画へどう組み込むかを 8 問で問うた。
       `notes-format.md` に残す。分ける基準は「その規範が効いてほしい場面をパスで表せるか」。
       条項ごとの振り分けは f045 の表 1（実文参照）。project rule に残るのは固有分
       （重複確認先の dir 名・チケット番号の形式）だけで、作るかは `notes/` の作成時に問う
-    - Q2 正典へ戻す範囲は、冒頭 3 項目 + 既存ドキュメントとの重複回避 + 消すときの手順 +
+    - Q2 正典へ戻す範囲は、冒頭の目的・生存期間・対象タスク + 既存ドキュメントとの重複回避 + 消すときの手順 +
       台帳が参照する実文ファイルの削除連動。戻し先は Q1 の条件ロード rule
     - Q4 未コミット 2 件は実文を保存（pending-codify-2026-08-25.md、commit 2654172）したうえで
       `git checkout` で作業ツリーから外した（2026-08-25 実行済み）
