@@ -6209,3 +6209,5 @@ boilerplate 側にある候補は 4 つ。指示文書間の markdown リンク�
 - 補足 a. **codify** = セッションで得た学びを rule・skill・CLAUDE.md へ明文化すること。session plugin の retrospective skill が担う工程で、優先度は実害の有無と再現性で決める。
 
 回答の実文: notes/norm-refit.md の「2026-08-22 確認事項のチェックリストを廃止する（ccm-f039）」（設問 3 の回答のみ。設問 1・2・4・5・6 の回答の実文は台帳に無し）
+
+設問 2 の結果（codify「決定はそれを使う前に記録する」は却下）は `.handover/archive/2026-08-22-pr4-review-and-html-skill-overhaul.md` に記録がある。設問 1・4・5・6 の回答は記録が無い。
