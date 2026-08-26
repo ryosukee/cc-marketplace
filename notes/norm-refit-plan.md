@@ -45,8 +45,9 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 ## 現在地
 
 2026-08-25 時点。**段階 1・2 が完了し、段階 3 は 8 本の PR のうち PR 6・PR 1・PR 8・PR 2 がマージ済み。
-PR 3（確認・質問の一本化）は作業明細 `notes/artifacts/norm-refit-pr3-detail.md` を作り、
-着手前の判断 5 件を ccm-f051 で問うている（回答待ち）。回答が揃えば実装に入る。**
+PR 3（確認・質問の一本化）は作業明細を作り、着手前の判断 5 件と補足 2 件が ccm-f051 とその後の会話で決着した。
+媒体非依存の確認規範は html-communication ではなく rule（`rules/user-confirmation.md`）へ置く構成に変えた。
+明細を確定内容で更新し、実装に入るところ。**
 
 - 条項 1349 件の抽出と検算が完了（`norm-audit-raw/` の 6 ファイル）
 - **1349 件すべてに処遇が付いた**（`norm-audit-verdict-*.md` の 8 ファイル）。
@@ -70,7 +71,8 @@ PR 3（確認・質問の一本化）は作業明細 `notes/artifacts/norm-refit
   PR 8 は同日に新設（ccm-f044）し、中身を ccm-f045 で決めてから実装した
 - 2026-08-25（3 セッション目）: PR 3 の作業明細を作った（13 件の計数は一致。未特定 11 件のうちユーザー判断 5 件）。
   5 件（impl-spec 側の原文の扱い / IS52 と AQ36 手順 3 の両立 / HC の description / 既知バグ一覧の AQ 記述の PR /
-  申し送り 13 の扱い）と、PR #10 で範囲外にした rules/ 外の表の caption を ccm-f051 で問うている
+  申し送り 13 の扱い）と、PR #10 で範囲外にした rules/ 外の表の caption を ccm-f051 で問い、同日に決着した
+  （台帳の同日エントリ 4 件）。補足で PR 3 の構成が変わった（媒体非依存の確認規範は rule へ。冒頭ブロックの見出し語）
 
 判定の内訳（名簿から実測）。
 
@@ -330,12 +332,22 @@ Q6 の決定を実装する。`markdown-formatting.md` から媒体非依存分�
 
 #### PR 3 確認・質問の一本化
 
-ask-with-choices skill を廃止し、html-communication へ寄せる。
+ask-with-choices skill を廃止し、確認・質問の規範のうち媒体に依らないものは rule へ、
+HTML フォーム固有のものは html-communication へ置く（ccm-f051 の補足で 2026-08-25 に構成を変えた。
+旧計画は全部を html-communication へ寄せる形だった）。作業明細は `notes/artifacts/norm-refit-pr3-detail.md`。
 
+- 媒体非依存の確認規範（impl-spec から引き上げる 13 件 = 1-2 の 3 件 + 1-3 の 10 件、AQ18 の上流決定の明示、
+  回答後のフロー）は `rules/propose-before-implement.md` を「ユーザーへの確認」の rule に広げた
+  `rules/user-confirmation.md`（改名）へ置く。常時ロードは 8 ファイルのまま。
+  impl-spec 側の原文は消さず複製する（idea-hub への申し送り済み）
 - DG40 の本文化を先に行う。HC の「回答の受け取り」節が AQ を参照しているので、
-  本文化しないと AQ 廃止で手順が消える
-- impl-spec から引き上げる確認の規範 13 件（1-2 の 3 件 + 1-3 の 10 件）を HC へ移す
-- AQ skill と marketplace エントリを消す
+  本文化しないと AQ 廃止で手順が消える。回答後のフローは「解釈のまとめを出し、自明なものは作業に進み、
+  自明でないものは確認を取る」通常のターンへ移る形（f051 Q2）。独立ターンでの最終確認は残さない
+- AQ skill と marketplace エントリを消す。html-communication の description は変えない（f051 Q3）
+- 既知バグ一覧の `askuserquestion-rendering` は、AskUserQuestion を使わない構成に移るので、
+  バグ修正を待たずに resolved 側へ移す。雛形は PR 3（claude-known-issues の bump 同梱）、配布済みは直接（f051 Q4）
+- HTML ページの冒頭ブロックの見出し語を form「推奨案のまとめ」/ report「まとめ」に分ける
+  （f051 の補足。html-communication の構成規定と雛形。別 commit）
 - 段階 2 Q4 の決定を反映する。HC の新語の条件付き許可を禁止へ戻す
 - HC92 / HC165（図を語る文 / 表を語る文）の plugin 側を削除し core へ一本化する（f038 Q6。
   到達点 1 の検証条件「plugin 側に汎用の再実装が残らない」の穴を塞ぐ）
