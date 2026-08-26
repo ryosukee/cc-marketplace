@@ -7,7 +7,7 @@
     - 理由: norm-refit PR 3 で、確認・質問の規範を媒体に依らないもの（user global rule）と
       HTML フォーム固有のもの（html-communication skill）に分けた。AskUserQuestion を使わない構成に移り、
       選択肢形式の確認の運用を skill として持つ理由が無くなった
-    - 復元: `git show a6d21a2^:plugins/claude-user-communication/skills/ask-with-choices/SKILL.md`
+    - 復元: `git show 6ef77e9:plugins/claude-user-communication/skills/ask-with-choices/SKILL.md`（6ef77e9 は削除直前の main の commit）
 - japanese-text-writing（2026-08-25、最終版 0.1.5、削除 commit 5c0a187 = PR #6）
     - 理由: norm-refit PR 1 で、詳細規範を user global rule の `rules/japanese-text-writing/references/` へ移した。
       skill として持つ理由（発動の判定）は入口 rule `rules/japanese-text-writing.md` が担う
