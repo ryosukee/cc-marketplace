@@ -1911,6 +1911,29 @@ f045 Q3 の判断材料として記録する。
   前半は「明細」（`notes/artifacts/norm-refit-pr3-detail.md` を指す略称）を説明なしに使ったことへの指摘
 - 反映先: PR 3（`rules/japanese-text-writing.md` から 2 条項を削り、`rules/user-confirmation.md` の「問い方」に置く）
 
+### 2026-08-26 確認規範の置き場は入口 rule から参照する詳細規範 `references/user-confirmation.md`（同日の案 A の上書き）
+
+- 結論: 確認・質問の規範のうち媒体非依存のもの（何を問わないか / 何を問うか / 問い方 / 回答後のフロー、入口 rule から移す 2 条項）は、
+  `rules/japanese-text-writing/references/user-confirmation.md` に置く（core と並ぶ 7 本目の詳細規範。paths 除外で常時ロードから外れる）。
+  入口 rule `rules/japanese-text-writing.md` の最小規範に「確認・質問を出すときは user-confirmation.md を読む」の 1 行を置き、core を経由しない。
+  `rules/propose-before-implement.md`（いつユーザーに戻るか: 提案と実装を分ける / 手段が変わったら確認に戻る）は改名も拡張もしない。
+  常時ロードは 8 ファイルのまま、到達点 3 の「詳細規範 6 ファイル（core + 分類別 5）」は 7 になる
+- 決めなかった範囲: なし
+- 決め手: 確認を書かないターンにも 60 行前後が毎回載る案 A は、常時ロードを薄く保ち詳細規範を必要な時に読む層の設計と逆向き。
+  「いつ戻るか」は判断の時点で効かせるので常時ロード、「どう問うか」は書く時点で読めばよい（ユーザー提案）
+- 出典: ユーザー発言 2026-08-26。実文:
+
+  ```text
+  user confirmation って入り口ルールから参照するルールにした方がいい説ない？core を経由せずに確認や質問時に読むリファレンスとして
+  ```
+
+  ```text
+  1はok
+  ```
+
+- 反映先: PR 3（`rules/japanese-text-writing/references/user-confirmation.md` の新設、入口 rule の 1 行と 2 条項の移動、
+  `rules/user-global-rules.md` / README の rule 一覧に 7 本目を足す）、`notes/norm-refit-plan.md` の PR 3 節と到達点 3
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
