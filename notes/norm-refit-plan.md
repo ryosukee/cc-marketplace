@@ -367,16 +367,21 @@ HTML フォーム固有のものは html-communication へ置く（ccm-f051 の�
 
 #### PR 4 AskUserQuestion の除去
 
-全 plugin から使用指示を消す。言及行の実測（2026-08-25、`grep -c`）は impl-spec **16**
-（requirements 5 / design 5 / test-plan 6）に、dotclaude 13 / mkdocs-setup 6 / session 1 /
-claude-known-issues の雛形 5 を加えた 41 行。旧記述の「16 箇所」は impl-spec 分だけを数えていた
-（申し送り 4 と DG46 の 16 も impl-spec の数）。
+全 plugin から使用指示を消す。言及行の実測（2026-08-26、main `f4fb82d`、`git grep -n`）は **37 行**。
+impl-spec 16（requirements 5 / design 5 / test-plan 6）、dotclaude 13（doctor 8 / registry 3 /
+cross-review 1 / repo-profiler agent 1）、mkdocs-setup 6、session 1、claude-user-communication 1。
+前日の 41 行との差 4 件は、claude-known-issues の雛形 5 行を PR 3 がエントリごと削除し、
+html-communication に PR 3 が 1 行を新しく書いたため（41 - 5 + 1 = 37）。
+作業手順書は `notes/artifacts/norm-refit-pr4-detail.md`。
 
-- 除去対象は AskUserQuestion への言及行に限定する。impl-spec の「質問の原則」
-  「品質基準」節には DG17 系の条項が同居しており、節ごと消すと巻き込む
+- 除去対象は AskUserQuestion への言及行に限定する。impl-spec の「質問の原則」「禁止事項」節には
+  DG17 系の条項が同居しており、節ごと消すと巻き込む（申し送り 4 の「品質基準」は現行に無く、
+  同居しているのは「禁止事項」節。2026-08-26 の実読）
 - 確認手段を「フリーテキスト。設問が多い確認は HTML フォーム」へ書き換える
-- `SS18` / `SS55` の字句を簡素化する（ツール名指しの否定を落とす）
-- 既知バグ台帳の `askuserquestion-rendering` を更新する
+- `SS18` の字句を簡素化する（ツール名指しの否定を落とす）。申し送り 5 の `SS55` は現存しない
+  （session 2.12.0 の `c77e69c` で消え、現行は既に PR 4 が目指す形になっている。2026-08-26 の実読）
+- 既知バグ一覧の `askuserquestion-rendering` は PR 3 で resolved 側へ移した。PR 4 では
+  配布済みの `known-issues.resolved.yml` の `log` に 1 行足すかだけが残る
 
 #### PR 9 skill / agent の書き方の器（独立。PR 4 の後・PR 5 の前）
 
