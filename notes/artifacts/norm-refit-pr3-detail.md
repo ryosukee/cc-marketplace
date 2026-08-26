@@ -1,13 +1,13 @@
 # norm-refit PR 3 確認・質問の一本化: 作業明細
 
-実装者はこの明細だけを見て `rules/`（propose-before-implement の改名と拡張）、`plugins/claude-user-communication/`、
+実装者はこの明細だけを見て `rules/`（詳細規範 user-confirmation.md の新設と入口 rule の 3 行）、`plugins/claude-user-communication/`、
 `plugins/claude-known-issues/`、marketplace.json・README.md・CLAUDE.md を編集する。
-行番号はすべて main `b9fb206` の実読（`plugins/` と `rules/` は `a51f5a3` から変更なし。初版の実読・実測は 2026-08-25、ccm-f051 以降の確定の反映は 2026-08-26）。
+行番号はすべて main `e5aea00` の実読（`plugins/` と `rules/` は `a51f5a3` から変更なし。初版の実読・実測は 2026-08-25、ccm-f051 以降の確定の反映は 2026-08-26）。
 
 結論。ask-with-choices skill（AQ、56 条項）を消し、確認・質問の規範を 2 つの器に分ける。
-媒体に依らないもの（impl-spec から引き上げる 13 件、AQ18 の上流決定の明示、回答後のフロー）は
-`rules/propose-before-implement.md` を「ユーザーへの確認」の rule に広げた `rules/user-confirmation.md`（改名）へ、
-HTML フォーム固有のものは html-communication skill（HC）に残す。常時ロードは 8 ファイルのまま。
+媒体に依らないもの（impl-spec から引き上げる 13 件、AQ18 の上流決定の明示、回答後のフロー、入口 rule から移す 2 条項）は
+core と並ぶ 7 本目の詳細規範 `rules/japanese-text-writing/references/user-confirmation.md` へ置き、入口 rule から「確認・質問を出すとき（1 問でも）は読む」の 1 行で参照する。
+HTML フォーム固有のものは html-communication skill（HC）に残す。`rules/propose-before-implement.md` は触らない。常時ロードは 8 ファイルのまま。
 AQ から移すのは 2 件（AQ18、AQ36）で、残り 54 件は skill ごと消える。13 件は数えて一致した（C-1）。impl-spec 側の原文は消さず複製する。
 HC 側の削除は HC92 / HC165（図表を語る文）と HC221（新語の条件付き許可）の 3 件で、どれも core が既に同趣旨を持つ。
 HC の書き換えは「回答の受け取り」（1 文に縮める）、冒頭ブロックの見出し語（form「推奨案のまとめ」/ report「まとめ」。別 commit）、
@@ -45,7 +45,7 @@ AQ の ID は監査の名簿（`norm-audit-roster.md:11-66`、原文は `norm-au
 | AQ15 | 30-31 | 前提説明が長い・設問が多い（目安 4 問超）・比較表が必要な確認は、AskUserQuestion ではなく [入り組んだ説明・報告・確認は HTML で行う](../html-communication/SKILL.md) の HTML フォームを使う。 | 削除 | dg18-34:63（DG19「振り分け基準は HC3 が持つ」） | HC:14（HC3）、core:61 | 無し |
 | AQ16 | 32 | AskUserQuestion は軽い確認・少数の設問に使う。 | 削除 | dg18-34:63（DG19） | HC:15（HC4） | 無し |
 | AQ17 | 33-34 | ユーザーから「## HTML フォーム回答」で始まるテキストが貼られたら HTML フォームの回答として扱い、以降は「複数回の質問と回答後のフロー」の解釈まとめ以降と同じ手順で進める。 | 削除 | auto | HC:575（HC265。同文の前半） | 無し（後半のフローは B） |
-| AQ18 | 38 | 複雑な判断を聞く時、選択肢 (option) を列挙する前に、その判断の上流にある **意味的・構造的決定** を先に明示する。 | 移設 | dg35-49:64（DG38「汎用部分（判断を聞く前に上流の決定を明示する）を HC の設問設計節へ。ツール固有記述は捨てる」）。置き先は台帳 `notes/norm-refit.md:1824-1845` で rule 側へ変更 | 無し。HC:376-381（HC202 / HC203）は後続の設問への依存を扱い、上流決定の明示ではない | R-2「問い方」の 2 項目め（rule 側） |
+| AQ18 | 38 | 複雑な判断を聞く時、選択肢 (option) を列挙する前に、その判断の上流にある **意味的・構造的決定** を先に明示する。 | 移設 | dg35-49:64（DG38「汎用部分（判断を聞く前に上流の決定を明示する）を HC の設問設計節へ。ツール固有記述は捨てる」）。置き先は台帳 `notes/norm-refit.md:1914-1933` で詳細規範 `references/user-confirmation.md` へ変更 | 無し。HC:376-381（HC202 / HC203）は後続の設問への依存を扱い、上流決定の明示ではない | R-2「問い方」の 4 項目め |
 | AQ19 | 46 | 対処: AskUserQuestion を呼ぶ前の本文で、判断に関連する上流決定を表・箇条書きで整理し、その上で option を提示する。 | 移設 | dg35-49:64（DG38） | 同上 | R-2 に統合（上流決定の例 5 つを AQ19 の補足から取る） |
 | AQ20 | 56 | 特に「phase 転換直後の命名 / 配置判断」「大規模 refactor の個別選択」など、直前の議論や別 phase で決まった前提に依存する質問は、その前提を明示しないと選択肢の意味が理解できない。 | 削除 | auto | HC:305-307「設問の節は自己完結させる。対象が何か（どのファイル・どの条項・どの提案か）と、選択肢に出る語の実体を、その節の中に書く」 | 無し |
 | AQ21 | 60-62 | 承認は「目的」ではなく「具体的な手段・構成」に対して与えられる。実行中にブロッカーへ当たって手段を変える必要が生じたら、その時点で承認は失効している。代替手段がどれほど妥当に見えても、実装・状態変更に進む前に確認へ戻る。 | 削除 | auto | `rules/propose-before-implement.md` 節「実行中に手段が変わったら確認に戻る」（同文。台帳 `notes/norm-refit.md:1817` AQ9 の受け皿 = f008 Q3） | 無し |
@@ -85,10 +85,10 @@ AQ の ID は監査の名簿（`norm-audit-roster.md:11-66`、原文は `norm-au
 | AQ55 | 163 | **未回答の質問がある場合**: 別の話題の対応を優先しつつ、未回答の質問が作業に必要なら改めて確認する | 削除 | auto | 無し | 無し |
 | AQ56 | 163 | （ただし既に回答済みの質問は再度聞かない） | 削除 | auto | `html-communication/references/review-norms.md:28`「確定と未確定の峻別: 確定事項を無断で再質問・変更しない。」 | 無し |
 
-内訳: 削除 54 / 移設 2（AQ18 + AQ19 を rule の 1 項目に、AQ36 を rule の 1 節と HC の 1 文に）。
+内訳: 削除 54 / 移設 2（AQ18 + AQ19 を user-confirmation.md の 1 項目に、AQ36 を user-confirmation.md の 1 節と HC の 1 文に）。
 性質が「汎用」の 9 件（AQ18 / AQ20〜AQ25 / AQ56）は、AQ18 以外はすべて現行の rule・HC・review-norms に同文か同趣旨があることを上の表で確かめた。
 `norm-audit-verdict-auto.md:52-57` の「実装で条項を触るとき、原文を読んで違和感があれば止めて吟味側へ回す」に従って全 56 件の原文を読み、吟味側へ回すものは無かった。
-汎用の 9 件のうち AQ18 の置き先が HC から rule に変わったのは、判定の変更ではなく台帳 `notes/norm-refit.md:1824-1845`（2026-08-25）の構成変更による。
+汎用の 9 件のうち AQ18 の置き先が HC から詳細規範 user-confirmation.md に変わったのは、判定の変更ではなく台帳 `notes/norm-refit.md:1914-1933`（2026-08-26）の構成変更による。
 
 ### A-2. AQ への参照（廃止で切れる箇所）
 
@@ -136,8 +136,8 @@ AskUserQuestion の使用指示（impl-spec 16 / dotclaude 13 / mkdocs-setup 6 /
 > 「解釈と回答のまとめを出し、自明なものは作業に進み、自明でないものは確認を取る」という通常のターンへ
 > すぐ移る形に書く。AQ36 手順 3（自由入力での最終確認を独立したターンで求める）は残さない
 
-置き場は台帳 `notes/norm-refit.md:1824-1845` が rule 側（`rules/user-confirmation.md`）と定めた。
-DG40 の判定「フロー全文を HC 内へ自己完結で書く」（`norm-audit-verdict-dg35-49.md:71`）は、この構成変更で rule 側の本文化に置き換わる。
+置き場は台帳 `notes/norm-refit.md:1914-1933` が詳細規範 `rules/japanese-text-writing/references/user-confirmation.md`（入口 rule から参照）と定めた。
+DG40 の判定「フロー全文を HC 内へ自己完結で書く」（`norm-audit-verdict-dg35-49.md:71`）は、この構成変更で詳細規範側の本文化に置き換わる。
 
 現行（HC `SKILL.md:573-578`、逐語）:
 
@@ -158,7 +158,7 @@ DG40 の判定「フロー全文を HC 内へ自己完結で書く」（`norm-au
 ユーザーから「## HTML フォーム回答」で始まるテキストが貼られたら HTML フォームの回答として扱う。
 ```
 
-rule 側の文（R-2 の節「回答を受けたら」）:
+user-confirmation.md 側の文（R-2 の節「回答を受けたら」）:
 
 ```markdown
 ## 回答を受けたら
@@ -174,7 +174,7 @@ AQ36 からの変更点は 3 つ。
   独立したターンで最終確認を求める形は残さない（Q2）
 - 道具の名指し（AskUserQuestion）は書かない。道具が消えると意味を失う（申し送り 5 の SS18 / SS55 と同じ扱い、`norm-audit-verdict-dg35-49.md:86`）
 
-HC 側に 1 文だけ残す理由: 回答後の進め方は媒体に依らず、rule が常時ロードで届く。HC に同じ文を再掲すると到達点 1「plugin 側に汎用の再実装を残さない」に反し、
+HC 側に 1 文だけ残す理由: 回答後の進め方は媒体に依らず、入口 rule（常時ロード）が確認・質問を出すときに user-confirmation.md を読ませる（R-3）。HC に同じ文を再掲すると到達点 1「plugin 側に汎用の再実装を残さない」に反し、
 rule への参照を置くことは台帳 `:1824-1845`「plugin 側から rule への参照は置かない」が禁じる。
 代案は HC にも同じ 1 文を再掲する（plugin 自己完結を優先する読み方）。どちらを採るかは未特定 J。
 
@@ -195,8 +195,8 @@ index の `answered` 更新（HC:210-211）はこの節に再記述しない。�
 
 3 + 10 = 13 で一致。同じ 13 件を `notes/idea-hub-handoff.md:60-67`（2026-08-26 のエントリ）が列挙している。
 
-判定の置き先 `plugin`（HC）は、台帳 `notes/norm-refit.md:1824-1845` の構成変更で `rules/user-confirmation.md` に変わった。
-判定ファイルの置き先の語彙（`verdict-schema.md`）に「常時ロードの rule」は無いので、この 13 件の置き先は判定ファイルを直さず、台帳のエントリを正とする。
+判定の置き先 `plugin`（HC）は、台帳 `notes/norm-refit.md:1914-1933` の構成変更で詳細規範 `rules/japanese-text-writing/references/user-confirmation.md` に変わった。
+判定ファイルの置き先の語彙（`verdict-schema.md`）に確認の詳細規範は無い（`core` と分類別の 3 語だけ）ので、この 13 件の置き先は判定ファイルを直さず、台帳のエントリを正とする。
 
 数え合わせで見えた 1 点。「既存なし」節（`is-generic-screening.md:33-203`）で `引き上げ先: 確認` を持つのは IS4 / IS34 / IS52 / IS233 の 4 件だが、
 IS233（確認の工程を飛ばす条件）は lift の判定で `維持` / `移設先`（`norm-audit-verdict-lift.md:33`）に落ちている。
@@ -214,10 +214,10 @@ IS233（確認の工程を飛ばす条件）は lift の判定で `維持` / `�
 | IS34 | `requirements/SKILL.md:115`（他 ID: IS131 = `design:156`、IS226 = `test-plan:156`、IS45 / IS140 = `requirements:125`） | 自明な質問をしない。Phase 2 の調査で判明したことは聞かない | lift:47,58 | 無し。HC:369-371「確認も選択肢を持つ設問にする」は逆に設問を増やす向き | 調査で判明したことは質問しない。自明に決まる判断は質問せず報告にとどめる |
 | IS52 | `requirements/SKILL.md:160` | 終了を判断するのは skill 側。「まだ質問はありますか?」とは聞かない。 | lift:48,59、趣旨は ccm-f051 Q2 | 無し | 設問を出し切ったかは自分で判断する。「まだ質問はありますか」のように、続ける設問の有無だけを尋ねるターンを挟まない |
 | IS15 | `requirements/SKILL.md:59-60` | ユーザーに質問する前に、自分で調べられることは調べる。「コードを読めばわかること」を質問するのは skill の品質に反する。 | partial:112-116、screening「一般化: 要」 | 無し | ユーザーに質問する前に、自分で調べられることは調べる。読めば分かることを聞かない |
-| IS36 | `requirements/SKILL.md:117`（他 ID: IS132 = `design:157`） | 構造的な判断 (分類、グルーピング、カテゴリ分け、適用範囲のマッピング) は skill が勝手に作らない。構造はユーザーとインクリメンタルに合意しながら組み立てる。 | partial:112-116、screening「一般化: 要」 | `rules/propose-before-implement.md:3-6` は 1 回の関門だけ（同ファイルを広げるので同じ rule に並ぶ） | 分類・グルーピング・適用範囲のマッピングは自分で作らず、ユーザーと少しずつ合意しながら組み立てる |
+| IS36 | `requirements/SKILL.md:117`（他 ID: IS132 = `design:157`） | 構造的な判断 (分類、グルーピング、カテゴリ分け、適用範囲のマッピング) は skill が勝手に作らない。構造はユーザーとインクリメンタルに合意しながら組み立てる。 | partial:112-116、screening「一般化: 要」 | `rules/propose-before-implement.md:3-6` は 1 回の関門だけ（据え置き。新ファイルとは別の rule） | 分類・グルーピング・適用範囲のマッピングは自分で作らず、ユーザーと少しずつ合意しながら組み立てる |
 | IS37 | `requirements/SKILL.md:117`（他 ID: IS133 = `design:157`） | 「全部」「統一」「一律」等の方針が来た場合は、全件・全パターンを洗い出して提示し、各々が本当に含まれるか確認する。 | partial:112-116、screening「一般化: 不要」 | `review-norms.md:51` は文書内の列挙の網羅性で、指示の解釈ではない | 「全部」「統一」「一律」の方針が来たら、全件・全パターンを洗い出して提示し、各々が本当に含まれるかを確認する |
 | IS57 | `requirements/SKILL.md:178`（他 ID: IS148 = `design:199`、IS270 = `test-plan:277`） | ユーザーへの再質問が必要なもの: Phase 3 に戻り AskUserQuestion で確認してから修正する | partial:112-116、screening「一般化: 要」 | HC:524-530（反復の終了条件）はユーザーへ戻る枝を持たない | レビュー指摘のうち判断が要るものは、確認の工程へ戻ってユーザーに確認してから直す |
-| IS59 | `requirements/SKILL.md:183`（他 ID: IS150 = `design:204`） | 技術的事実の検証が必要なもの: まず検証し、検証結果をユーザーに提示した上で判断を確認する。検証結果から「自明」に見えても、判断はユーザーに委ねる | partial:112-116、screening「一般化: 不要」 | `propose-before-implement.md:10-11` の判定基準は「選択肢を潰すか」で、自明に見えても省かない歯止めは無い | 技術的な事実の検証が要る判断は、先に検証し、検証結果を提示したうえで判断を問う。検証結果から自明に見えても、判断はユーザーに委ねる |
+| IS59 | `requirements/SKILL.md:183`（他 ID: IS150 = `design:204`） | 技術的事実の検証が必要なもの: まず検証し、検証結果をユーザーに提示した上で判断を確認する。検証結果から「自明」に見えても、判断はユーザーに委ねる | partial:112-116、screening「一般化: 不要」 | `propose-before-implement.md:10-11` の判定基準は「選択肢を潰すか」で、自明に見えても省かない歯止めは無い（据え置き） | 技術的な事実の検証が要る判断は、先に検証し、検証結果を提示したうえで判断を問う。検証結果から自明に見えても、判断はユーザーに委ねる |
 | IS61 | `requirements/SKILL.md:186-187`（他 ID: IS153 = `design:208`、IS273 = `test-plan:285`） | 分類に迷ったら「ユーザーへの再質問が必要」側に倒す。推測で埋めた判断が間違っていた場合のコストは、追加質問のコストより高い。 | partial:112-116、screening「一般化: 要」 | 無し | 問うか自分で決めるかに迷ったら、問う側に倒す。推測で埋めた判断の誤りのコストは、追加の確認のコストより高い |
 | IS79 | `requirements/SKILL.md:241`（他 ID: IS176 = `design:273`、IS295 = `test-plan:344`） | 推測で要件を埋めない。不明な点は必ずユーザーに質問する | partial:112-116、screening「一般化: 要」 | 無し（core:145-146 は「未確認と明示する」まで） | 推測で埋めない。不明な点はユーザーに質問して確定させる |
 | IS94 | `design/SKILL.md:51`（他 ID: IS180 = `design:276`） | 逸脱する場合は理由を明示する | partial:112-116、screening「一般化: 不要」 | 無し | 対象の既存パターンから逸脱するときは、理由を明示して確認する |
@@ -231,14 +231,14 @@ IS234 は原文が「スキップする旨」だけなので、同じ行の前�
 
 ### C-3. 置き場は rule 側。HC には足さない
 
-13 件と AQ18 の置き場は `rules/user-confirmation.md`（R-2）。HC には「設問を立てる前に決めること」の節を立てない。
+13 件と AQ18 の置き場は `rules/japanese-text-writing/references/user-confirmation.md`（R-2）。HC には「設問を立てる前に決めること」の節を立てない。
 HC に残るのは HTML フォーム固有の「確認（設問）を含めるときの作り」（HC:452-486）だけで、変更なし。
 
 ### C-4. impl-spec 側の原文は消さない（確定）
 
 ccm-f051 Q1（台帳 `notes/norm-refit.md:1740-1822`）: 「impl-spec 側の 13 件の原文は消さず、html-communication へ複製する。
 idea-hub への申し送りは「cc-marketplace 側はこう整理した。そちらも整理してほしい」という伝え方にする（「HC が正」とは書かない）」。
-複製先は構成変更で rule 側になった（R-2）。
+複製先は構成変更で詳細規範 user-confirmation.md になった（R-2）。
 
 impl-spec 3 skill は手つかずで移設先へ同行する。C-2 の他 ID 14 箇所もそのまま。
 idea-hub への申し送りは `notes/idea-hub-handoff.md:60-67`（2026-08-26 のエントリ）に追記済み。PR 3 で行う notes の作業は無い。
@@ -246,94 +246,59 @@ idea-hub への申し送りは `notes/idea-hub-handoff.md:60-67`（2026-08-26 �
 ### C-5. IS52 と AQ36 手順 3（決着）
 
 screening（`is-generic-screening.md:138-144`）が「正面から衝突する」と書いた 2 条項は、ccm-f051 Q2 で AQ36 手順 3 を残さないと決まり、衝突は消えた。
-rule 側には IS52 の文（「問い方」）と回答後のフロー（「回答を受けたら」）が並ぶが、どちらも「無駄な 1 ホップを挟まない」向きで揃っている。
+user-confirmation.md には IS52 の文（「問い方」）と回答後のフロー（「回答を受けたら」）が並ぶが、どちらも「無駄な 1 ホップを挟まない」向きで揃っている。
 
-## R. `rules/user-confirmation.md`（propose-before-implement の改名と拡張）
+## R. 詳細規範 `rules/japanese-text-writing/references/user-confirmation.md`（新設）
 
-決定（台帳 `notes/norm-refit.md:1824-1845`、2026-08-26）: 媒体に依らない確認・質問の規範は `rules/propose-before-implement.md` を
-「ユーザーへの確認」の rule に広げてそこへ置き、ファイル名を `rules/user-confirmation.md` に変える。決め手は「ターミナルでの確認に届く器であること
-（候補 C の条件ロードと D の HC skill は届かない）と、常時ロードを増やさないこと（候補 B は 9 になる）。既存の 2 節（提案と実装を分ける / 手段が変わったら確認に戻る）が
-同じ「いつユーザーに戻るか」の主題で、足しても主題が揃う」。回答の実文は「A」。
+決定（台帳 `notes/norm-refit.md:1914-1933`、2026-08-26。同日の案 A = `:1824-1845` を上書き）: 「確認・質問の規範のうち媒体非依存のもの
+（何を問わないか / 何を問うか / 問い方 / 回答後のフロー、入口 rule から移す 2 条項）は、`rules/japanese-text-writing/references/user-confirmation.md` に置く
+（core と並ぶ 7 本目の詳細規範。paths 除外で常時ロードから外れる）。入口 rule `rules/japanese-text-writing.md` の最小規範に「確認・質問を出すときは user-confirmation.md を読む」の 1 行を置き、
+core を経由しない。`rules/propose-before-implement.md`（いつユーザーに戻るか: 提案と実装を分ける / 手段が変わったら確認に戻る）は改名も拡張もしない。
+常時ロードは 8 ファイルのまま、到達点 3 の「詳細規範 6 ファイル（core + 分類別 5）」は 7 になる」。
+決め手は「確認を書かないターンにも 60 行前後が毎回載る案 A は、常時ロードを薄く保ち詳細規範を必要な時に読む層の設計と逆向き。
+「いつ戻るか」は判断の時点で効かせるので常時ロード、「どう問うか」は書く時点で読めばよい」。回答の実文は「1はok」。
 
-### R-1. 現行の `rules/propose-before-implement.md`（32 行、逐語）
+`rules/propose-before-implement.md` は触らない。R-2 に既存 2 節をコピーしない。
 
-```markdown
-# 設計判断を含む作業は提案と実装を分ける
+### R-1. 既存の詳細規範の形と、常時ロードから外れる仕組み（実読）
 
-「考えて」「検討して」「どうするか決めて」型の依頼は、案の提示までが依頼であり、
-実装の許可ではない。設計判断（名前・場所・構造・恒常運用・rule / skill の変更など、
-複数の妥当な選択肢からユーザーが選びうるもの）を含む作業は、
-案を提示して承認を得てから実装する。
+`rules/japanese-text-writing/references/` の 6 ファイル（core / reference / decision / academic / explanatory / narrative）は同じ形（2026-08-26 実読）。
 
-- 系列の進行承認（例: 「順番にやろう」「進めて」）は、その工程の中で新たに生じる
-  個別の設計判断への承認を含まない
-- 判定基準: この変更を実装してしまうと、ユーザーが選びたかったかもしれない選択肢を
-  提示なしで潰すか。潰すなら提案で止める。やり直しが安価な機械的作業なら進めてよい
+- frontmatter に `paths:` の 1 値 `"never-match-reference-only"` と `sources:`（出典の URL・書名の列挙）を持つ
+- `h1` は「〜の規範」（core だけ「日本語テキストの詳細規範: 共通原則」）
+- `h1` の直後に、いつ・何に読むかを 1〜3 行で書く。例: core:15「まとまった文章（複数段落）を書く・推敲するときに読む。」、
+  decision-docs:9-11「読者に判断か行動をさせる文書に適用する。例: …。結論と根拠の距離を最短にする。」
+- 以降は `h2` の節。他の詳細規範や入口 rule への言及は無い（`.claude/rules/user-global-rules.md:31-33`「詳細規範は、入口 rule から分岐されたことも他に規範があることも知らない設計にする」）
 
-## 実行中に手段が変わったら確認に戻る
+常時ロードから外す仕組みは、ディレクトリではなくファイルごとの frontmatter。`rule-authoring.md:39-41`「参照専用 (paths にどのファイルにも一致しない値を置く。例: `never-match-reference-only`):
+自動ロードから外し、他の文書からの参照経由の Read だけで読ませる。サブディレクトリに置くだけでは外れない（`rules/` は subdir まで再帰的に常時ロードされる）」。
+新ファイルにも同じ frontmatter を付ければ同じ仕組みが効く。この用法が非公開仕様であることは claude-known-issues の一覧のエントリ `rule-paths-exclusion-undocumented`
+（配布済み `known-issues.yml:383-`）が持ち、その dependents の 1 行目は `rules/japanese-text-writing/references/*.md` の glob で書かれている（`:400`）ので、新ファイルは書き換えなしで対象に入る。
 
-承認は「目的」ではなく「具体的な手段・構成」に対して与えられる。
-実行中にブロッカーへ当たって手段を変える必要が生じたら、その時点で承認は失効している。
-代替手段がどれほど妥当に見えても、実装・状態変更に進む前に確認へ戻る。
+常時ロードが 8 ファイルのままであることの確認方法は 2 つ。
 
-- 「検証のため」「一時的」でも同じ。プロセス起動・デーモン設定・設定ファイル書き込みなど、
-  会話の外に残る状態を作る操作は実装に含める
-- 読み取りだけの調査・比較検討は対象外。ブロッカーの分析と代替案の整理までは進めてよい
-- 確認時には「何が計画と変わるか」「増える管理物・残る状態」を明記する
+- 静的: `rules/*.md` のうち frontmatter に `paths` を持たないファイルを数える。2026-08-26 の実測は 8
+  （background-task / bash-state-mutation-isolation / decision-record / japanese-text-writing / primary-sources-first / propose-before-implement / skill-invocation / subagent-delegation。
+  subagent-delegation は frontmatter を持つが `paths` は無い）。`paths` 付きは markdown-formatting / notes-authoring / rule-authoring の 3 で条件ロード。
+  新ファイルは `rules/japanese-text-writing/references/` 配下で `paths` に never-match を持つので、この数に入らない
+- 実機: 同エントリの `how_to_verify` 手順 2（`claude -p "… list the top-level '# ' headings of every user rule file included in your system prompt …" --allowedTools Read`）を
+  空の repo で実行し、出る見出しが常時ロードの 8 本だけで、新ファイルの見出し「# ユーザーへの確認の規範」が出ないことを見る。
+  新セッションで実行する（`rule-authoring.md:43-44`。rule はセッション開始時に一度だけ読まれる）
 
-why: 承認は手段に対して与えられているので、手段が変わった時点で承認の根拠が消えている。
-「目的への前進は承認済み」と読み替えると、ユーザーが選ぶはずだった代替手段の選択を
-提示なしに潰し、会話の外に残る状態まで作ってしまう。
+### R-2. `user-confirmation.md` の完成形
 
-## why
-
-「考えて」型の依頼は、選択肢を出してもらってから自分で選ぶための依頼で、
-選ぶ工程そのものをユーザーが持っている。案を出さずに実装まで進めると、
-その工程を奪い、やり直しのコストがユーザー側に移る。
-```
-
-### R-2. `rules/user-confirmation.md` の完成形
-
-`git mv rules/propose-before-implement.md rules/user-confirmation.md` の後に、この内容にする。
-既存 2 節の条項は一字も変えない。変えるのは、冒頭（見出しと導入文）、既存の第 1 節に見出しを付けること、末尾の「## why」を第 1 節の直下へ
-「why:」段落として移すこと（第 2 節と同じ形。節が 6 つになるので、末尾に置くと何の why か分からなくなる）、新しい 4 節の追加。
+R-1 の形に揃える。`sources:` は置かない（既定案。未特定 J。出典は外部文献ではなく監査の判定と impl-spec / ask-with-choices の原文で、frontmatter に書く URL・書名が無い）。
 
 ```markdown
-# ユーザーへの確認
+---
+paths:
+  - "never-match-reference-only"
+---
 
-判断をユーザーに委ねる場面の規範。何を確認に回し何を自分で決めるか、実行中に前提が変わったときの戻り方、
-問う前の取捨と問い方、回答を受けた後の進め方を定める。
+# ユーザーへの確認の規範
 
-## 設計判断を含む作業は提案と実装を分ける
-
-「考えて」「検討して」「どうするか決めて」型の依頼は、案の提示までが依頼であり、
-実装の許可ではない。設計判断（名前・場所・構造・恒常運用・rule / skill の変更など、
-複数の妥当な選択肢からユーザーが選びうるもの）を含む作業は、
-案を提示して承認を得てから実装する。
-
-- 系列の進行承認（例: 「順番にやろう」「進めて」）は、その工程の中で新たに生じる
-  個別の設計判断への承認を含まない
-- 判定基準: この変更を実装してしまうと、ユーザーが選びたかったかもしれない選択肢を
-  提示なしで潰すか。潰すなら提案で止める。やり直しが安価な機械的作業なら進めてよい
-
-why: 「考えて」型の依頼は、選択肢を出してもらってから自分で選ぶための依頼で、
-選ぶ工程そのものをユーザーが持っている。案を出さずに実装まで進めると、
-その工程を奪い、やり直しのコストがユーザー側に移る。
-
-## 実行中に手段が変わったら確認に戻る
-
-承認は「目的」ではなく「具体的な手段・構成」に対して与えられる。
-実行中にブロッカーへ当たって手段を変える必要が生じたら、その時点で承認は失効している。
-代替手段がどれほど妥当に見えても、実装・状態変更に進む前に確認へ戻る。
-
-- 「検証のため」「一時的」でも同じ。プロセス起動・デーモン設定・設定ファイル書き込みなど、
-  会話の外に残る状態を作る操作は実装に含める
-- 読み取りだけの調査・比較検討は対象外。ブロッカーの分析と代替案の整理までは進めてよい
-- 確認時には「何が計画と変わるか」「増える管理物・残る状態」を明記する
-
-why: 承認は手段に対して与えられているので、手段が変わった時点で承認の根拠が消えている。
-「目的への前進は承認済み」と読み替えると、ユーザーが選ぶはずだった代替手段の選択を
-提示なしに潰し、会話の外に残る状態まで作ってしまう。
+ユーザーに確認・質問を出すときに読む。1 問でも読む。
+何を問わず何を問うか、問い方、回答を受けた後の進め方を定める。ターミナルの返答でも HTML フォームでも同じ。
 
 ## 調べれば分かることは問わない
 
@@ -354,6 +319,8 @@ why: 承認は手段に対して与えられているので、手段が変わっ
 
 ## 問い方
 
+- 確認は 1 件ずつ出す。判断が 2 件以上あるなら 1 メッセージに並べず、順に出す
+- 選択肢に出す語は、選択肢より前に実体を書く
 - 質問の粒度と観点は、対象のドメインと構造に合わせる
 - 複雑な判断を問うときは、選択肢を並べる前に、その判断の上流にある決定を先に明示する。
   上流の決定とは、何が A で何が B かという分類、何層構造でどこに何を置くかという構造、
@@ -368,15 +335,9 @@ why: 承認は手段に対して与えられているので、手段が変わっ
 まとめを出した後に、追加の指示を求めるだけのターンを挟まない。
 ```
 
-R-4 で入口 rule の 2 条項を移すと決めた場合は、「問い方」の末尾に次の 2 項目を足す。
-
-```markdown
-- 確認は 1 件ずつ出す。判断が 2 件以上あるなら 1 メッセージに並べず、順に出す
-- 選択肢に出す語は、選択肢より前に実体を書く
-```
-
-新しい 4 節の出所は、「調べれば分かることは問わない」= IS15 / IS34 / IS59、「推測で埋めずに問う」= IS79 / IS61 / IS36 / IS37 / IS94 / IS197 / IS57、
-「問い方」= IS4 / AQ18（+ AQ19 の例）/ IS52 / IS234、「回答を受けたら」= AQ36（ccm-f051 Q2 の形）。文は C-2 の「実装で書く文」と B の文をそのまま使う。
+出所は、「調べれば分かることは問わない」= IS15 / IS34 / IS59、「推測で埋めずに問う」= IS79 / IS61 / IS36 / IS37 / IS94 / IS197 / IS57、
+「問い方」= 入口 rule から移す 2 条項（R-3。ユーザー決定）/ IS4 / AQ18（+ AQ19 の例）/ IS52 / IS234、「回答を受けたら」= AQ36（ccm-f051 Q2 の形）。
+文は C-2 の「実装で書く文」と B の文をそのまま使う。入口から移す 2 条項は、入口の実文（R-3）の句点を落として箇条書きの形に揃えた以外は同文。
 
 上流決定の項目は AQ18 の原文「その判断の上流にある **意味的・構造的決定** を先に明示する」を核に、
 例 5 つを AQ19 の補足（`hc-fn-aq.md` AQ19「分類決定 (何が A カテゴリで何が B カテゴリか)」「構造決定 (何層構造でどこに何を置くか)」
@@ -385,43 +346,77 @@ R-4 で入口 rule の 2 条項を移すと決めた場合は、「問い方」�
 3 つ目の why「option `description` に収まらない長文説明が必要になる」はツール固有なので捨てた（DG38「ツール固有記述は捨てる」）。
 AQ19 の「本文で」「表・箇条書きで整理し」は媒体の値なので落とし、「先に明示する」だけにした。
 
-### R-3. `rules/rule-authoring.md` との照合
+`rules/rule-authoring.md` との照合: 命名（`:14`）は kebab-case の名詞句で適合。冒頭（`:18-19`）は paths が never-match で適用範囲を表さないので、
+いつ読むかを本文に書く（core:15 と同じ形）。条項（`:23-29`）に判定基準は足していない（screening の一般化文に無いものを作らない）。
+参照（`:48-54`）に当たる言及は無い（入口 rule・core・plugin・skill の名前を書かない。台帳 `:1824-1845`「plugin 側から rule への参照は置かない」と対で、こちらからも HC を指さない）。
+why（`:70-72`）は置いていない。
 
-- 命名（`:14`）: kebab-case の名詞句。`user-confirmation.md` は適合
-- 冒頭（`:18-19`）: 何を定めるかを 1〜3 行。paths が無い（常時ロード）ので適用範囲の言い直しは無し。完成形の導入文は 2 行
-- 条項（`:23-29`）: 判定基準は真偽を判定できる形でだけ置く。新しい 4 節に判定基準は足していない（screening の一般化文に無いものを作らない）
-- 参照（`:48-54`）: 自動ロードで載る文書と外側の構造に言及しない。完成形に plugin 名・skill 名・他 rule 名は無い。
-  台帳 `:1824-1845`「plugin 側から rule への参照は置かない」と対で、rule 側からも HC を指さない
-- why の書き方（`:70-72`）: 日付付きの具体事例を書かない。既存の why 2 つはそのまま。新しい節に why は足していない
-- 改訂（`:76-80`）: 既存記述を書き直しの根拠に使わない。既存 2 節は条項を変えないので対象外
+### R-3. 入口 rule `rules/japanese-text-writing.md` の書き換え
 
-### R-4. 参照が切れる箇所と、入口 rule の 2 条項
-
-改名で切れる参照は repo 内に無い（2026-08-26、`propose-before-implement` と「提案と実装を分ける」で grep。ヒットは `rules/propose-before-implement.md:1` 自身だけ。
-`notes/` は対象外で触らない）。`README.md:82-91` の rule 一覧表は propose-before-implement の行をもともと持たない（bash-state-mutation-isolation / skill-invocation も無い）。
-`~/.claude/rules/cc-marketplace` は `rules/` ディレクトリへの symlink（実測）なので、ディレクトリ内の改名で切れない。
-`~/.claude/plugins/data/` と `~/.claude/settings.json` にも言及なし（grep 実測）。
-
-README の rule 一覧表に `user-confirmation` の行を足すかは未特定 J（既定案は足す。表が 3 rule を欠いているのは別の観測）。
-
-入口 rule `rules/japanese-text-writing.md:18-19` の 2 条項（逐語）:
+現行（`:5-19`、逐語。全 19 行のうち `:1-4` はタイトルと適用場面で変更なし）:
 
 ```markdown
+## 出力の長さで適用する規範が変わる
+
+判定は書き出す直前に行う。ツールの結果を受け取って、そのまま最終メッセージを書き始めない。
+調査・比較・検証の依頼など、着手の時点で分量が読めるならそこで決めてよい。
+
+- 数行の応答・進捗報告・少数の確認 → 何も読まずに下の最小規範で書く
+- まとまった文章（複数段落の文書・調査まとめ・長い返答）→ ./japanese-text-writing/references/core.md を読む
+
+## 数行返答の最小規範
+
+最重要の 1 文（何が起きたか・何が分かったか・何をしたか）から始め、
+次のアクションを示して終える。前置き・装飾・同じ内容の言い換えを付けない。
+失敗・未完了を成功と紛れる書き方にしない。
 確認は 1 件ずつ出す。判断が 2 件以上あるなら 1 メッセージに並べず、順に出す。
 選択肢に出す語は、選択肢より前に実体を書く。
 ```
 
-台帳 `:1824-1845` の決めなかった範囲「実装時に条項単位で決める（明細で扱う）」。前提として、台帳 `notes/norm-refit.md:1506-1522` と `:1539-1551`（2026-08-25）は
-「質問の運用（確認は 1 件ずつ・選択肢の語の実体を先に）は入口の最小規範に残す」と決めている。既定案は 2 条項とも新 rule の「問い方」へ移し、入口から消す
-（未特定 J、ユーザーに問う）。
+書き換え後（`:18-19` の 2 条項を削り、最小規範の末尾に参照の 1 行を置く。core の参照行「→ ./japanese-text-writing/references/core.md を読む」と同じ作り）:
 
-- 「確認は 1 件ずつ出す。判断が 2 件以上あるなら 1 メッセージに並べず、順に出す」: 確認の出し方の規範で、新 rule が確認の器になった以上そこが 1 箇所の正。
-  入口の最小規範は「数行返答の書き方」に戻る。どちらも常時ロードなので届く範囲は変わらない。
-  残す側の理由は、台帳 `:1539` の決め手「数行の確認を書く場面で core を読まずに効く」で、これは新 rule でも満たされる
-- 「選択肢に出す語は、選択肢より前に実体を書く」: 選択肢の書き方で、上流決定の明示（R-2「問い方」2 項目め）と同じ「先に実体を示す」型。同じ節に並べると 1 箇所になる。
-  残す側の理由は、これは文の書き方（執筆規範）でもあること
+```markdown
+## 出力の長さで適用する規範が変わる
 
-移す場合、入口 rule は 19 行から 17 行になる。計画の到達点 3「入口 rule 約 20 行」の範囲内。
+判定は書き出す直前に行う。ツールの結果を受け取って、そのまま最終メッセージを書き始めない。
+調査・比較・検証の依頼など、着手の時点で分量が読めるならそこで決めてよい。
+
+- 数行の応答・進捗報告 → 何も読まずに下の最小規範で書く
+- まとまった文章（複数段落の文書・調査まとめ・長い返答）→ ./japanese-text-writing/references/core.md を読む
+
+## 数行返答の最小規範
+
+最重要の 1 文（何が起きたか・何が分かったか・何をしたか）から始め、
+次のアクションを示して終える。前置き・装飾・同じ内容の言い換えを付けない。
+失敗・未完了を成功と紛れる書き方にしない。
+確認・質問を出すとき（1 問でも）→ ./japanese-text-writing/references/user-confirmation.md を読んでから書く。
+```
+
+変更点は 3 つ。
+
+- `:10` の「・少数の確認」を落とす。「少数の確認 → 何も読まずに」のままだと、同じ rule の中で「1 問でも user-confirmation.md を読む」と矛盾する
+- `:18-19` の 2 条項を消す（R-2「問い方」の先頭 2 項目へ）
+- `:19` の位置に参照行を置く。行数は 19 のまま（到達点 3「入口 rule 約 20 行」）
+
+「読んでから書く」の文言は、確認の規範が書き出す前に効く（HC の description「ターミナルに長い報告を書き始める前が発動点で、書き終えてからでは遅い」と同じ向き）ことを表す。
+
+### R-4. 詳細規範の一覧を持つ箇所（7 本目を足す箇所の grep）
+
+`references` / `詳細規範` / `6 ファイル` / `分類別` で repo 内を grep した（2026-08-26。`notes/` を除く）。
+
+- `README.md:84`（rule 一覧表の japanese-text-writing の行）「出力のタイプ判定と数行返答の最小規範。詳細規範は `rules/japanese-text-writing/references/`」:
+  ディレクトリを指すだけで本数は書いていない。既定案は概要に確認を足して
+  「出力のタイプ判定と数行返答の最小規範。詳細規範（共通原則・分類別 5・ユーザーへの確認）は `rules/japanese-text-writing/references/`」にする（未特定 J）。
+  `user-confirmation` の独立した行は足さない（常時ロードの rule ではなく、japanese-text-writing の参照専用ファイル）
+- `.claude/rules/user-global-rules.md:28-33`: 2 層の一般形だけで、ファイルの一覧は無い。変更なし
+- 入口 rule 自身: R-3 の参照行
+- `core.md:28-46`「分類判定」: 分類別 5 ファイルへのリンクの一覧。確認は文書の分類ではなく場面なので足さない。
+  core が他の詳細規範を知らない設計（`user-global-rules.md:31-33`）にも合う。変更なし
+- `CLAUDE.md:38`「`{rule}/references/ # 詳細規範。paths 除外で常時ロードから外す`」: 一般形。変更なし
+- claude-known-issues の一覧の `rule-paths-exclusion-undocumented` の dependents（配布済み `known-issues.yml:400`）: glob `rules/japanese-text-writing/references/*.md` で新ファイルを含む。
+  文言の変更なし。PR の外
+- 台帳 `:1932` の反映先に書かれた `rules/user-global-rules.md` は存在しない（`ls` で確認）。実体は `.claude/rules/user-global-rules.md` で、上記のとおり一覧を持たない
+- 計画の到達点 3（`norm-refit-plan.md:38`）は「詳細規範 7 ファイル（core + 分類別 5 + 確認 1。確認は PR 3 で新設）」に反映済み
 
 ## D. HC5 / HC147 の字句修正（AQ への参照と、レンダリングバグの時限条件を落とす）
 
@@ -869,12 +864,13 @@ html-communication の `SKILL.md` の description（発動条件）は変えな�
 
 ### H-3. rules
 
-- `git mv rules/propose-before-implement.md rules/user-confirmation.md` と R-2 の内容
-- `README.md:82-91` の rule 一覧表に行を足す（未特定 J。既定案は足す）:
-  `| user-confirmation | 常時 | ユーザーへの確認。提案と実装の分離、手段が変わったら確認に戻る、何を問い何を問わないか、回答後の進め方 |`
-- `rules/japanese-text-writing.md:18-19` は R-4 の判断に従う
+- `rules/japanese-text-writing/references/user-confirmation.md` を新設（R-2）
+- `rules/japanese-text-writing.md:10,18-19` を R-3 のとおりに
+- `README.md:84` の japanese-text-writing の行の概要に確認の詳細規範を足す（R-4。未特定 J、既定案は足す）
+- `rules/propose-before-implement.md` は触らない
 
-rule は symlink で即時反映される。改名したファイルはセッション開始時に読まれるので、次のセッションから効く（`rule-authoring.md:43-44`）。
+rule は symlink で即時反映される。入口 rule の変更はセッション開始時に読まれるので次のセッションから効き、
+新設した詳細規範は参照経由の Read なので、入口 rule が新しい参照行を持つセッションからそのまま読める（`rule-authoring.md:39-44`）。
 
 ### H-4. マージ後
 
@@ -915,13 +911,13 @@ ccm-f051 Q5 で PR 5 の対象に足すと決まり、計画 `norm-refit-plan.md
   この明細を書いた時点（2026-08-26、台帳 `notes/norm-refit.md:1506-1894`）で PR 3 を反映先に持つ確定は 5 件
   （`:1740` ccm-f051 = B / C-4 / H / N、`:1824` 構成変更 = R、`:1847` と `:1866` 見出し語 = M、`:1881` resolved 化 = N）。
   他は反映済みか plugin への反映なし。PR を出す時点で再度数える
-- セルフレビュー: markdownlint（`rules/user-confirmation.md`、`plugins/claude-user-communication/README.md`、`SKILL.md`）→ 相対リンクの解決
-  （`SKILL.md` 内の `../ask-with-choices/` が 0 件、`./references/` と `../../agents/` が実在）→ review agent（観点は規範の欠落と実文の改変。
-  R-2 の既存 2 節が R-1 と一字一致することを含める）→ 指摘を直す → PR
+- セルフレビュー: markdownlint（`rules/japanese-text-writing/references/user-confirmation.md`、`rules/japanese-text-writing.md`、`plugins/claude-user-communication/README.md`、`SKILL.md`）→
+  相対リンクの解決（`SKILL.md` 内の `../ask-with-choices/` が 0 件、`./references/` と `../../agents/` が実在。入口 rule の参照行のパスが実在）→
+  常時ロードの数（R-1 の静的な確認で 8）→ review agent（観点は規範の欠落と実文の改変）→ 指摘を直す → PR
 - レビュー指摘の一般化の検討と、文レベルの修正の `sentence-level-review-cases.md` への逐語追記（出所付き）
 - PR に notes を混ぜない。台帳・計画・`ccm-r003` の更新は main へ直接
 - rule の変更を含むので、PR ブランチを checkout している間は自分のセッションに載る規範が変わる（`.claude/rules/norm-refit-ops.md`「作業ブランチの注意」）。
-  改名後の rule はセッション開始時に読まれるので、ブランチ上での動作確認は新しいセッションで行う
+  入口 rule はセッション開始時に読まれるので、ブランチ上での動作確認は新しいセッションで行う
 
 ### I-4. 検査している側
 
@@ -941,37 +937,35 @@ ccm-f051 Q5 で PR 5 の対象に足すと決まり、計画 `norm-refit-plan.md
   C3「`references/review-norms.md` L49-51 の「」前提の verbatim 規範を新記法へ」は旧観測。判定は AQ8 `削除`（DG36）、移設は AQ18 / AQ36、
   表規範は F の 2 件、C3 は FN で T4 保留。棚卸しの値は引かない
 - `README.md:82-91` の rule 一覧表は propose-before-implement / bash-state-mutation-isolation / skill-invocation の 3 行を欠く（2026-08-26 実測）。
-  user-confirmation の行を足すとき（H-3）に、他の 2 行を足すかは PR 3 の範囲外
-- 判定ファイル（lift / partial）の 13 件の置き先 `plugin`（HC）は、台帳 `:1824-1845` の構成変更で rule 側に変わったが、判定ファイルは書き換えない（C-1）
+  japanese-text-writing の行の概要を直すとき（H-3）に、この 3 行を足すかは PR 3 の範囲外
+- 判定ファイル（lift / partial）の 13 件の置き先 `plugin`（HC）は、台帳 `:1914-1933` の構成変更で詳細規範側に変わったが、判定ファイルは書き換えない（C-1）
 
 ## J. 未特定（実装者が決める判断）
 
 「ユーザーに問う」と付けたものは、実装前に 1 つのフォームにまとめて問う（norm-refit-ops）。
-ccm-f051 で決着した 5 件（原文の複製 / 回答後のフロー / description / 既知バグ一覧 / 終了条件）は外した。
+ccm-f051 で決着した 5 件（原文の複製 / 回答後のフロー / description / 既知バグ一覧 / 終了条件）と、入口 rule の 2 条項の移動（ユーザー決定、台帳 `:1914-1933`）は外した。
 
-1. R-4: 入口 rule `japanese-text-writing.md:18-19` の 2 条項を新 rule の「問い方」へ移すか残すか。既定案は 2 条項とも移す。
-   **ユーザーに問う**（台帳 `:1506` / `:1539` で入口に残すと決めた条項の移動）
-2. N-2: 雛形 `known-issues.template.yml` の `askuserquestion-rendering` を削除するか、resolved 側の雛形を新設して移すか。既定案は削除。
+1. N-2: 雛形 `known-issues.template.yml` の `askuserquestion-rendering` を削除するか、resolved 側の雛形を新設して移すか。既定案は削除。
    **ユーザーに問う**（呼び出し元の指示「resolved 側の雛形へ移す」と違う。resolved 側の雛形は存在せず、読むスクリプトも無い）
-3. B: HC「回答の受け取り」を 1 文だけにするか、rule 側と同じ回答後のフローの 1 文を再掲するか。既定案は 1 文だけ（到達点 1 と、台帳 `:1824` の「plugin 側から rule への参照は置かない」）
-4. D: HC147 を「ターミナルの描画の制約を受けない」に直すか、項目ごと消すか。既定案は直す
-5. E: HC219「自分で作った語を説明なしに使わない」の「説明なしに」を落とすか。既定案は落とす（条件付き許可を消した後に残ると、説明すれば作ってよいと読める）
-6. M-2: 雛形の見出し語の出し分けを、form 用を生かして report 用をコメントで並べる形にするか、`assemble-page.mjs --report` で置換するか。既定案は前者（既存の切り替え機構と同じ形）
-7. G: 移し替え禁止の置き場。既定案は「適用基準」の末尾。代案は HC:243（構成の順）の直前の箇条書き
-8. A-3: `docs/retired-plugins.md` に skill 廃止の記録を足すか。既定案は足す（同ファイルは plugin だけでなく version-check の機能廃止も載せている）
-9. H-3: `README.md:82-91` の rule 一覧表に user-confirmation の行を足すか。既定案は足す
-10. F-3: 雛形 `templates/page.html` のコメント 4 箇所（表・図を語る文）を書き換えるか。既定案は触らない
-11. A-2: パターン集の例示データ `progress-tree/example.html:15`「ask-with-choices の廃止」を書き換えるか。既定案は触らない（例示データ。残骸 grep の除外として A-3 に書いた）
-12. R-2: 末尾の「## why」を第 1 節の直下の「why:」段落へ移す形にするか、末尾に残すか。既定案は移す（節が 6 つになり、末尾では何の why か分からない）
+2. B: HC「回答の受け取り」を 1 文だけにするか、user-confirmation.md と同じ回答後のフローの 1 文を再掲するか。既定案は 1 文だけ（到達点 1 と、台帳 `:1824` の「plugin 側から rule への参照は置かない」）
+3. D: HC147 を「ターミナルの描画の制約を受けない」に直すか、項目ごと消すか。既定案は直す
+4. E: HC219「自分で作った語を説明なしに使わない」の「説明なしに」を落とすか。既定案は落とす（条件付き許可を消した後に残ると、説明すれば作ってよいと読める）
+5. M-2: 雛形の見出し語の出し分けを、form 用を生かして report 用をコメントで並べる形にするか、`assemble-page.mjs --report` で置換するか。既定案は前者（既存の切り替え機構と同じ形）
+6. G: 移し替え禁止の置き場。既定案は「適用基準」の末尾。代案は HC:243（構成の順）の直前の箇条書き
+7. A-3: `docs/retired-plugins.md` に skill 廃止の記録を足すか。既定案は足す（同ファイルは plugin だけでなく version-check の機能廃止も載せている）
+8. R-4 / H-3: `README.md:84` の japanese-text-writing の行の概要に確認の詳細規範を足すか。既定案は足す
+9. F-3: 雛形 `templates/page.html` のコメント 4 箇所（表・図を語る文）を書き換えるか。既定案は触らない
+10. A-2: パターン集の例示データ `progress-tree/example.html:15`「ask-with-choices の廃止」を書き換えるか。既定案は触らない（例示データ。残骸 grep の除外として A-3 に書いた）
+11. R-2: user-confirmation.md の frontmatter に `sources:` を置くか。既定案は置かない（既存 6 ファイルは全部持つが、この規範の出典は外部文献ではない）
 
 ## K. PR 3 の編集箇所の一覧
 
-commit の順序: R → B → D / E / F / G → A（削除）→ M（別 commit）→ N → H。R と B が A より前であれば他は任意。
+commit の順序: R → B → D / E / F / G → A（削除）→ M（別 commit）→ N → H。R と B が A より前であれば他は任意。R は新ファイルと入口 rule の変更を同じ commit に入れる（参照行と参照先が同時に存在する）。
 
 | ファイル | 節・行 | 操作 | 項目 |
 | --- | --- | --- | --- |
-| `rules/propose-before-implement.md` → `rules/user-confirmation.md` | 全体 | `git mv` と R-2 の内容（冒頭・見出し・why の位置・新 4 節） | 1、2 |
-| `rules/japanese-text-writing.md` | 18-19 | R-4 の判断で移す（J-1） | 1 |
+| `rules/japanese-text-writing/references/user-confirmation.md` | 新規 | R-2 の内容（frontmatter + 4 節） | 1、2 |
+| `rules/japanese-text-writing.md` | 10、18-19 | 「・少数の確認」を落とし、2 条項を削り、参照行を置く（R-3） | 1 |
 | `plugins/claude-user-communication/skills/html-communication/SKILL.md` | 573-578「回答の受け取り」 | 1 文に縮める（B） | 2 |
 | 同 | 15-16（HC5） | 相対リンクと時限条件を落とす（D） | 3、4 |
 | 同 | 266-267（HC147） | 相対リンクとバグの前提を落とす（D） | 3、4 |
@@ -986,12 +980,12 @@ commit の順序: R → B → D / E / F / G → A（削除）→ M（別 commit�
 | `plugins/claude-user-communication/skills/ask-with-choices/SKILL.md` | 全体 | ディレクトリごと削除（A-3） | 3 |
 | `plugins/claude-user-communication/.claude-plugin/plugin.json` | 3-4 | description と version（H-1） | 3 |
 | `plugins/claude-user-communication/README.md` | 3、5-6、7-8 | 1 skill 化（H-1） | 3 |
-| `plugins/claude-known-issues/config/known-issues.template.yml` | 3-52 | エントリを削除（N-2、J-2 の既定案） | 4 |
+| `plugins/claude-known-issues/config/known-issues.template.yml` | 3-52 | エントリを削除（N-2、J-1 の既定案） | 4 |
 | `plugins/claude-known-issues/.claude-plugin/plugin.json` | 4 | version 0.3.2（H-2） | 4 |
 | `.claude-plugin/marketplace.json` | 64 | description（H-1） | 3 |
 | `CLAUDE.md` | 80、81 | version と概要（H-1、H-2） | 3、4 |
-| `README.md` | 53、59、82-91 | version と概要、rule 一覧の行（H-1、H-2、H-3） | 1、3、4 |
-| `docs/retired-plugins.md` | 末尾 | 1 件足す（A-3、J-8 を採るとき） | 3 |
+| `README.md` | 53、59、84 | version と概要、rule 一覧の japanese-text-writing の行の概要（H-1、H-2、H-3） | 1、3、4 |
+| `docs/retired-plugins.md` | 末尾 | 1 件足す（A-3、J-7 を採るとき） | 3 |
 
 ※ 表 1 PR 3 の編集箇所。「項目」は計画 `norm-refit-plan.md:333-355` の PR 3 節の箇条書きの番号（1 = 媒体非依存の確認規範を rule へ、2 = DG40 の本文化、
 3 = AQ skill の削除、4 = 既知バグ一覧の resolved 化、5 = 冒頭ブロックの見出し語、6 = 段階 2 Q4、7 = HC92 / HC165、8 = HTML への移し替え禁止）
@@ -1000,6 +994,8 @@ PR の外で行う作業（PR に混ぜない）:
 
 - `~/.claude/plugins/data/claude-known-issues-cc-tools/` の `known-issues.yml` → `known-issues.resolved.yml` の移動（N-3。PR 3 のマージ後）
 - `notes/idea-hub-handoff.md` の追記は済み（`:60-67`）。台帳のエントリ（未特定の決着分）、`norm-refit-plan.md` の現在地、`ccm-r003` は main へ直接
+- claude-known-issues の一覧の `rule-paths-exclusion-undocumented`（配布済み `known-issues.yml:400`）の dependents は glob で新ファイルを含むので変更なし（R-4）。
+  同エントリの `how_to_verify` を新セッションで 1 度実行し、常時ロードが 8 本のままで新ファイルの見出しが出ないことを確かめる（R-1）
 
 ## L. PR 3 で触らないもの
 
@@ -1013,8 +1009,8 @@ PR の外で行う作業（PR に混ぜない）:
 - impl-spec の移設分: `移設先` と判定された 200 件超と内部重複 91 条項（`norm-refit-plan.md:468-472`、idea-hub の PR 8）。
   C-2 の 13 件の原文と他 ID 14 箇所もそのまま（C-4）
 - T4 送り: FN（`review-norms.md`）全件を含む 18 件。E で触れた FN の新語 2 条項、`norm-refit-impl-inventory.md:73` の C3
-- core と分類別の詳細規範: PR 3 で `rules/japanese-text-writing/references/` に足す文・消す文は無い。F と E は core が既に持つ文への一本化で、core 側は変更なし。
-  `rules/` の変更は user-confirmation の新設（改名）と、R-4 の判断で入口 rule の 2 行だけ
+- core と分類別 5 ファイル: PR 3 で足す文・消す文は無い。F と E は core が既に持つ文への一本化で、core 側は変更なし。
+  `rules/` の変更は `references/user-confirmation.md` の新設と入口 rule の 3 行（R-3）だけ。`rules/propose-before-implement.md` も触らない
 - HC の「確認（設問）を含めるときの作り」（HC:452-486）: HTML フォーム固有で変更なし
 - HC:297-298 と `page.html:94` の rule タイトルの食い違い（I-5）
 - 既存ページ（共通ページディレクトリ）の見出し語「結論」（M-3）

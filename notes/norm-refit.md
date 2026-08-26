@@ -1932,7 +1932,8 @@ f045 Q3 の判断材料として記録する。
   ```
 
 - 反映先: PR 3（`rules/japanese-text-writing/references/user-confirmation.md` の新設、入口 rule の 1 行と 2 条項の移動、
-  `rules/user-global-rules.md` / README の rule 一覧に 7 本目を足す）、`notes/norm-refit-plan.md` の PR 3 節と到達点 3
+  README の rule 一覧の japanese-text-writing の行に 7 本目を足す。`.claude/rules/user-global-rules.md` は詳細規範の一覧を持たないので変更なし）、
+  `notes/norm-refit-plan.md` の PR 3 節と到達点 3
 
 ## 未解決課題
 
