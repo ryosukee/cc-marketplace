@@ -2163,6 +2163,45 @@ f045 Q3 の判断材料として記録する。
 - 反映先: PR 9（`rules/claude-doc-authoring.md` / `rule-authoring.md` / `skill-authoring.md` / `agent-authoring.md` /
   `claude-md-authoring.md`）と、上の 2 箇所の参照の向け直し
 
+### 2026-08-27 PR 9 の未特定 3 件が決着（ドメイン固有の分離は採らない・依頼形の禁止は共通 rule・「正典の」は語だけ落とす）
+
+- 結論:
+    - `skill-authoring.md:18-22`（作業手順 skill はドメインに依存しない汎用定義にし、ドメイン固有の知識・規約は
+      rule か参照知識 skill へ分離する）は**採らない**。あわせて、抜き出した条項の文面から boilerplate 側の開発の語彙
+      （ドメイン / stack / パイプライン / Guardrail / Harness 等）を落とす
+    - `authoring.md:163-170`（定義形で書き、依頼形を使わない）は `rules/claude-doc-authoring.md` に置く
+    - `plugins/claude-user-communication/skills/html-communication/SKILL.md:350-353` と
+      `plugins/claude-user-communication/agents/page-reviewer.md:63-73` は、PR 9 で「正典の」という語だけを落とす。
+      6 種の列挙は plugin 自己完結のため plugin 側に残す。claude-user-communication を patch 上げする
+- 決めなかった範囲: plugin 側の 6 種の列挙と rule 側の判断フローが食い違わないことを担保する仕組み（検査・注記）は作らない
+- 決め手:
+    - ドメイン固有の分離は `.claude/rules/plugin-design.md`「Plugin 自己完結」と正面から衝突する。
+      cc-marketplace の skill は plugin として配布されるので、rule へ分離すると install した環境で規範が欠ける。
+      採ると既存 22 本すべてが違反になる。「ドメイン」は boilerplate 側の開発の用語で、語自体を持ち込みたくない（ユーザー）
+    - 依頼形の禁止は `rules/japanese-text-writing/references/reference-docs.md:44`（だ体・命令形）に無い条項で重複しない。
+      reference-docs は参照専用なので SKILL.md / agent を書く場面に載らず、共通 rule 側に要る
+    - 「正典の」は指し先が無い語。plugin から rule へリンクできない以上、列挙は残るが、語だけ落とせば存在しない文書への参照が消える
+- 出典: ユーザー発言 2026-08-27。実文:
+
+  ```text
+  とらない。そもそもドメイン云々自体が boilerplate 側の開発に関する用語。ドメインという言葉自体紛れ込むのは基本避けたい
+  ```
+
+  ```text
+  共通 rule
+  ```
+
+  ```text
+  ok
+  ```
+
+- 実測（2026-08-27、v2.1.246、`claude -p`、bypassPermissions）: `paths: CLAUDE.md` の rule は、CLAUDE.md を持つ repo で
+  起動してもセッション開始時には載らない（system prompt に出るのは常時ロードの 8 本だけ）。Read ツールで CLAUDE.md を
+  明示的に読むと載る。よって「常時ロードは 8 本のまま」は保たれ、`claude-md-authoring.md` は CLAUDE.md を編集するために
+  開いた時点で載る。既知バグ一覧の `rule-paths-exclusion-undocumented` の log にも追記した
+- 反映先: PR 9（`notes/artifacts/norm-refit-pr9-detail.md` の未特定 4・9・16 が確定）、`notes/idea-hub-handoff.md`
+  （ドメイン固有の分離を採らなかった差分）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
