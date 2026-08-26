@@ -95,9 +95,9 @@
      ラベルが無くても分かるなら、ラベルごと消して地の文にする */
   .eyebrow { display: block; font-size: 0.875em; font-weight: 700; color: var(--sub);
              letter-spacing: 0.08em; margin: 0 0 2px; }
-  .concl { border-left: 3px solid var(--rule-strong); padding: 2px 0 2px 12px;
+  .summary { border-left: 3px solid var(--rule-strong); padding: 2px 0 2px 12px;
            margin: 0 0 1.8em; }
-  .concl > p { margin: 0; }
+  .summary > p { margin: 0; }
   .ok { color: var(--ok); } .ng { color: var(--ng); }
   /* --ok と --ng の相互コントラストは 1.07 / 1.04。色だけでは WCAG 1.4.1 を満たさないので
      セルには必ず記号かテキストを併記する */
@@ -352,7 +352,7 @@
 {{何の話か・どういう経緯でこの文書が要るか。2〜3 文。ラベルは付けない}}
 </div>
 
-<div class="concl">
+<div class="summary">
 <span class="eyebrow">推奨案のまとめ</span> <!-- report では「まとめ」にする -->
 <p>{{form: 推奨案の要約 / report: 結論か現在地}}</p>
 </div>
