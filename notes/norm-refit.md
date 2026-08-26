@@ -2202,6 +2202,20 @@ f045 Q3 の判断材料として記録する。
 - 反映先: PR 9（`notes/artifacts/norm-refit-pr9-detail.md` の未特定 4・9・16 が確定）、`notes/idea-hub-handoff.md`
   （ドメイン固有の分離を採らなかった差分）
 
+### 2026-08-27 PR 9 で「技術スタック」は残す（boilerplate 語彙の排除の例外）
+
+- 結論: `rules/claude-md-authoring.md` の「プロジェクト概要（1〜2 行）と技術スタック」の「技術スタック」は残す。
+  2026-08-27 の確定「boilerplate 側の開発の語彙（ドメイン / stack / パイプライン / Guardrail / Harness 等）を落とす」の
+  対象外とする
+- 決めなかった範囲: なし
+- 決め手: 落とす対象の `stack` は boilerplate の stack rule（tool の優先順位を定める仕組み）を指す固有語で、
+  「技術スタック」は日本語の一般語。cc-marketplace 自身の `CLAUDE.md:16` が節見出しに使っており、
+  この repo で既に定着している
+- 出典: PR 9 の実装（2026-08-27）で実装者が判断し、セルフレビュー（review agent）が「台帳に無い」と指摘した。
+  原本なし（判断はセッション内の subagent の返答にだけ残る）。指摘の要旨:
+  「台帳にない確定は、次のセッションから見ると根拠が復元できない」
+- 反映先: `rules/claude-md-authoring.md`（PR 9）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
