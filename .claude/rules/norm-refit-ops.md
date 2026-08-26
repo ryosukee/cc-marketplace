@@ -42,8 +42,9 @@ norm-refit-v2 が完了したらこのファイルごと削除する。
 - PR を出す前のセルフレビューを飛ばさない: 機械で確かめられるもの（lint・リンク解決・
   発火の検証）→ review agent（観点は規範の欠落と実文の改変）→ 指摘を直す → PR
 - レビューは PR ごとにゼロベースで行い、前の PR のレビュー結果を前提にしない
-- レビュー指摘に対応するとき、その指摘を一般化して規範（core / 分類別 / rule-authoring）へ
-  取り込めるかを毎回検討する。取り込むなら同じ PR で、指摘箇所の修正とは別 commit にする
+- レビュー指摘に対応するとき、その指摘を一般化して規範（core / 分類別 / claude-doc-authoring、
+  種別別は rule / skill / agent / claude-md の各 authoring）へ取り込めるかを毎回検討する。
+  取り込むなら同じ PR で、指摘箇所の修正とは別 commit にする
 - 文レベルの修正は `notes/artifacts/sentence-level-review-cases.md` へ逐語で追記する。
   対象はレビュー指摘への対応だけでなく、PR 前のセルフレビュー（review agent）の指摘と
   横展開スイープで直した文も含める。各事例に出所（人間のレビュー / review agent / Claude のスイープ）を
