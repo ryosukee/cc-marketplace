@@ -1878,6 +1878,22 @@ f045 Q3 の判断材料として記録する。
   語は「推奨案まとめ」だが、ラベルの語形は「推奨案のまとめ」を採る（f051 の補足「まとめ、推奨案のまとめ、とかじゃない？」の語形）
 - 反映先: PR 3（別 commit。html-communication の SKILL.md の構成規定と `templates/page.html`）
 
+### 2026-08-25 既知バグ一覧の askuserquestion-rendering はバグ修正を待たずに resolved 側へ移す（ccm-f051 Q4 の補足の解釈を確定）
+
+- 結論: PR 3・4 で AskUserQuestion を使わない構成に移るので、エントリ `askuserquestion-rendering` は Claude Code 側のバグ修正を待たずに
+  `known-issues.resolved.yml` へ移す。`resolved_at` は移した日、`resolved_version` はそのときの claude の版、log に
+  「AskUserQuestion を使わない構成へ移行し、依存が消えた」を書く。雛形（plugin 同梱）は PR 3 で、配布済みの一覧は直接直す
+- 決めなかった範囲: なし
+- 決め手: ユーザーの確認
+- 出典: ユーザー発言 2026-08-25。提示した解釈への回答。実文:
+
+  ```text
+  アーカイブはその解釈でおけ
+  ```
+
+- 反映先: PR 3（`plugins/claude-known-issues/config/known-issues.template.yml`、version bump）、配布済み
+  `~/.claude/plugins/data/claude-known-issues-cc-tools/`（直接）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
