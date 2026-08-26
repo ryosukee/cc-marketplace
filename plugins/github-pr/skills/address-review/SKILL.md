@@ -227,12 +227,14 @@ PR に conversation comment として結果を報告する。レビュアーを�
 マージを行うのは [PR のレビューの 2 系統](../create/references/shared/review-flows.md) の系統 A（セルフレビュー）だけ。
 系統 B（他人レビュー）ではマージしない（人間が行う）。
 
-系統 A でマージするのは、次の 2 つが揃ったとき。
+系統 A では、本人の了承は `approve` ラベルで示される。作者は自分の PR に approve を付けられないため、
+GitHub の approve は使わない。マージするのは、次の 2 つが揃ったとき。
 
-- PR に approve のレビューが付いている（`gh pr view {number} --json reviewDecision --jq .reviewDecision` が `APPROVED`）
+- PR に `approve` ラベルが付いている（`gh pr view {number} --json labels --jq '[.labels[].name] | index("approve") != null'` が `true`）
 - 本人からマージの指示を受けている
 
-approve が無いときはマージせず、本人のレビューを待つ。チャットの了承は approve の代わりにならない。
+ラベルが無いときはマージせず、本人のレビューを待つ。チャットの了承はラベルの代わりにならない。
+ラベルの有無だけで判定し、コメントの本文から了承を読み取らない。
 
 ## 1 コメント 1 コミットの原則
 
