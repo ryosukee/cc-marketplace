@@ -1,5 +1,5 @@
 {
   "name": "claude-user-communication",
-  "description": "ユーザーへの確認・提示のコミュニケーション方法。入り組んだ内容の HTML ページ提示 (claude-html-communication) と選択肢形式の確認 (ask-with-choices) の 2 skill + 提示前レビューの page-reviewer agent を提供する",
-  "version": "0.32.6"
+  "description": "ユーザーへの確認・提示のコミュニケーション方法。入り組んだ内容の HTML ページ提示 (claude-html-communication) の 1 skill + 提示前レビューの page-reviewer agent を提供する",
+  "version": "0.33.0"
 }

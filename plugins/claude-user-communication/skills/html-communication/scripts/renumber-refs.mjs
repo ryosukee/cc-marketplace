@@ -5,7 +5,7 @@
 // usage: node renumber-refs.mjs <page.html>
 //
 // 初出順の起点は最初の説明節 (.secnum) か、無ければ最初の設問の範囲 (section.rng)。
-// 結論ブロックは初出順の対象外 (検査と同じ)。同じ脚注・補足を複数箇所から参照している
+// 冒頭のまとめブロックは初出順の対象外 (検査と同じ)。同じ脚注・補足を複数箇所から参照している
 // (fnref-N-1, fnref-N-2 / suref-x-1, suref-x-2) 形もそのまま振り直す。
 // Exit: 0 = 成功, 2 = 前提条件エラー
 import fs from "node:fs";

@@ -50,13 +50,13 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.32.6 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) + 選択肢形式の確認の 2 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 15 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.33.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 15 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-known-issues | 0.3.1 | Claude Code の既知バグ・制約の一覧 (8 項目、未解決と解除済みを別ファイル)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
+| claude-known-issues | 0.3.2 | Claude Code の既知バグ・制約の一覧 (8 項目、未解決と解除済みを別ファイル)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
 
 ## rules
 
@@ -81,7 +81,7 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 
 | rule | 適用 | 概要 |
 | --- | --- | --- |
-| japanese-text-writing | 常時 | 出力のタイプ判定と数行返答の最小規範。詳細規範は `rules/japanese-text-writing/references/` |
+| japanese-text-writing | 常時 | 出力のタイプ判定と数行返答の最小規範。詳細規範（共通原則・分類別 5・ユーザーへの確認）は `rules/japanese-text-writing/references/` |
 | primary-sources-first | 常時 | 仕様を述べる前に手元の一次情報を当たる |
 | decision-record | 常時 | 複数セッションの調査・設計で確定事項の台帳を持つ |
 | subagent-delegation | 常時 | subagent の起動は原則許可。判断基準はコンテキストの節約 |
