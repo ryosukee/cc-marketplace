@@ -961,9 +961,12 @@ project rule の置き場が逆。どちらに揃えるかは未特定 16 で扱
 2. `**/agents/*.md` が `plugins/{plugin}/agents/{name}.md` に一致するか。
    過剰一致の候補（`agents` という名のディレクトリ）は cc-marketplace に無い（`find . -type d -name agents` で実測）
 3. `paths: CLAUDE.md` の rule が、セッション開始時の CLAUDE.md の読み込みで載るか。
-   載るなら `claude-doc-authoring.md` と `claude-md-authoring.md` が実質の常時ロードになり、
-   F の「8 本のまま」が実測と食い違う。新セッションで見出しの一覧を取り、
-   `# Claude 向け文書の書き方` と `# CLAUDE.md の書き方` が出るかを見る
+   **実測済み（2026-08-27、v2.1.246、`claude -p`、bypassPermissions）。載らない。**
+   CLAUDE.md を持つ repo で起動しても system prompt に出るのは常時ロードの 8 本だけで、
+   `paths: CLAUDE.md` を持つプローブ rule の見出しは出なかった。CLAUDE.md を Read ツールで
+   明示的に読むと載る（同時に `**/*.md` の `markdown-formatting` も載る）。
+   よって「常時ロードは 8 本のまま」は保たれ、`claude-md-authoring.md` は CLAUDE.md を
+   編集するために開いた時点で載る。`claude-doc-authoring.md` も同じ
 4. 新規作成（Read せずに Write）の場面で条件ロードが載るか。載らないなら、
    `claude-doc-authoring.md` の判断フローは既存ファイルを開いている場面にしか届かない
    （ccm-f054 Q4 はこの制約を承知のうえで共通 rule を選んでいる）
