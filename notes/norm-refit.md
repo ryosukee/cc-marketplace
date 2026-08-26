@@ -2035,6 +2035,38 @@ f045 Q3 の判断材料として記録する。
   GitHub が塞いでいるのは PR の author で、Copilot だけ「あなたが割り当てた issue の PR は approve できない」と個別に塞がれている
 - 反映先: `plugins/github-pr/skills/create/references/shared/review-flows.md` と同 plugin の 2 skill（github-pr 0.4.9、PR で出す）
 
+### 2026-08-26 ccm-f053: PR 4 は道具名指しを両方落とし、skill を名指しせず、道具由来の数値も同じ PR で消す
+
+- 結論:
+    - Q1 不使用指定の 2 行（session の SS18、html-communication の HC4 / HC5）から道具名指しを落とす。
+      申し送り 5 と判定 DG46 のとおり。落とした後、repo 内に AskUserQuestion の使用可否を指示する記述は無くなる
+      （ツール自体は harness に残る）
+    - Q2 書き換え後の文で html-communication skill を名指ししない。媒体（HTML フォーム）だけを書く
+    - Q3 impl-spec の「4 問 / 5 問」の 4 行（IS41 / IS42 / IS43 / IS138 / IS231）は同じ PR で消す。判定 DG37 のとおり
+- 決めなかった範囲: PreToolUse hook で AskUserQuestion の呼び出しを deny する案（Q1 の選択肢に足したが採らなかった）。
+  置き場（security-guards は credentials 保護の plugin なので domain が違い、新設か claude-user-communication への追加になる）も未定。
+  覆せる条件は、レンダリングバグが未修正のまま AskUserQuestion が実際に呼ばれて事前テキストが消える事故が起きたとき
+- 決め手: Q1 は申し送り 5 と DG46 の指定。hook 案は、直前の PR 3 が ask-with-choices の使用禁止 WARNING と
+  時限措置を畳んだ確定と逆行する。Q2 は plugin 自己完結（他 plugin が入っていない環境で参照先が無い文になる）。
+  実測で、書き換え後に「HTML フォーム」の語を持つ 7 行はすべて claude-user-communication の外にある。
+  Q3 は DG37 が 5 ID とも削除と判定しており、残すと requirements skill の同じ節に 5 問のときの扱いが 2 通り並ぶ
+- 出典: ccm-f053 回答 2026-08-26（設問の実文は共通ページディレクトリの `ccm-f053.html`。掃除で削除する前に
+  `norm-refit-form-sources.md` へ写す）。回答の実文:
+
+  ```text
+  ## HTML フォーム回答（norm-refit PR 4 着手前の判断 3 件）
+  - Q1（不使用指定の道具名）: 両方落とす
+  - Q2（skill の名指し）: 名指ししない（媒体だけ書く）
+  - Q3（道具由来の数値）: 同じ PR で消す
+  - 補足: なし
+  ```
+
+- 観測（PR 4 の作業手順書の作成とレビューで判明、2026-08-26）: 申し送り 5 の `SS55` は現存しない
+  （session 2.12.0 の `c77e69c` で消え、現行は既に PR 4 が目指す形）。申し送り 4 の「品質基準」節も現行に無く、
+  条項が同居しているのは「禁止事項」節。AskUserQuestion の「1 回で 1〜4 問」はツールの仕様
+  （公式ドキュメントの "Asks the user one to four multiple-choice questions."）で、Q3 の数値の出所
+- 反映先: PR 4（`notes/artifacts/norm-refit-pr4-detail.md` の A-2 と未特定 1・2・3 が確定）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
