@@ -57,7 +57,7 @@ product-boilerplate の `docs/norms/` 全体（100 本）と、norm-refit が統
 基準点は写し元 commit `6dfddfc31b326d86c47d496646321551f07e5206`。
 idea-hub 側の作業開始が凍結解除より先になる場合は、cc-marketplace 側と調整が要る。
 
-## 2026-08-25 確認・質問の規範 13 件は cc-marketplace 側で整理した。impl-spec の原文はそのまま
+## 2026-08-26 確認・質問の規範 13 件は cc-marketplace 側で整理した。impl-spec の原文はそのまま
 
 impl-spec 3 skill にある確認・質問の規範のうち汎用の 13 件（IS4 / IS34 / IS52 / IS15 / IS36 / IS37 /
 IS57 / IS59 / IS61 / IS79 / IS94 / IS197 / IS234。名簿は cc-marketplace `notes/artifacts/norm-audit-roster.md`）を、
@@ -65,4 +65,4 @@ cc-marketplace が一般化した文で自分の規範側へ写した（norm-ref
 `notes/artifacts/norm-refit-pr3-detail.md` の C 節）。impl-spec 側の原文は消していない。
 impl-spec を product-workflow へ統合するとき、同じ 13 件をそちらの構成でも整理してほしい
 （cc-marketplace 側の文をそのまま使ってもよいし、統合先の構成に合わせて書き直してもよい）。
-出典: ccm-f051 Q1（2026-08-25）。
+出典: ccm-f051 Q1（2026-08-26）。

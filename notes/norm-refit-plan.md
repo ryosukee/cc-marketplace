@@ -44,7 +44,7 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 
 ## 現在地
 
-2026-08-25 時点。**段階 1・2 が完了し、段階 3 は 8 本の PR のうち PR 6・PR 1・PR 8・PR 2 がマージ済み。
+2026-08-26 時点。**段階 1・2 が完了し、段階 3 は 8 本の PR のうち PR 6・PR 1・PR 8・PR 2 がマージ済み。
 PR 3（確認・質問の一本化）は作業明細を作り、着手前の判断 5 件と補足 2 件が ccm-f051 とその後の会話で決着した。
 媒体非依存の確認規範は html-communication ではなく rule（`rules/user-confirmation.md`）へ置く構成に変えた。
 明細を確定内容で更新し、実装に入るところ。**
@@ -70,9 +70,9 @@ PR 3（確認・質問の一本化）は作業明細を作り、着手前の判�
   **PR 2 は PR #10 として main `7eb4600` にマージ済み**（同日。レビュー 1 件対応）。PR #9（f050 の rule 変更）も `67aecb0` にマージ済み
   PR 8 は同日に新設（ccm-f044）し、中身を ccm-f045 で決めてから実装した
 - 2026-08-25（3 セッション目）: PR 3 の作業明細を作った（13 件の計数は一致。未特定 11 件のうちユーザー判断 5 件）。
-  5 件（impl-spec 側の原文の扱い / IS52 と AQ36 手順 3 の両立 / HC の description / 既知バグ一覧の AQ 記述の PR /
-  申し送り 13 の扱い）と、PR #10 で範囲外にした rules/ 外の表の caption を ccm-f051 で問い、同日に決着した
-  （台帳の同日エントリ 4 件）。補足で PR 3 の構成が変わった（媒体非依存の確認規範は rule へ。冒頭ブロックの見出し語）
+- 2026-08-26: 5 件（impl-spec 側の原文の扱い / IS52 と AQ36 手順 3 の両立 / HC の description / 既知バグ一覧の AQ 記述の PR /
+  申し送り 13 の扱い）と、PR #10 で範囲外にした rules/ 外の表の caption を ccm-f051 で問い、決着した
+  （台帳の同日エントリ 5 件）。補足で PR 3 の構成が変わった（媒体非依存の確認規範は rule へ。冒頭ブロックの見出し語）
 
 判定の内訳（名簿から実測）。
 
@@ -308,7 +308,7 @@ japanese-text-writing plugin を解体する（plugin は `docs/retired-plugins.
   （未解決課題に登録済み）
 - ask-with-choices への導線をこの PR で消す（f031 Q6）
 
-進捗レポート `ccm-r003` は節目ごとに改稿する（norm-refit-ops）。最新は 2026-08-25。
+進捗レポート `ccm-r003` は節目ごとに改稿する（norm-refit-ops）。最新は 2026-08-26。
 
 #### PR 2 記法規範の分割
 
@@ -333,7 +333,7 @@ Q6 の決定を実装する。`markdown-formatting.md` から媒体非依存分�
 #### PR 3 確認・質問の一本化
 
 ask-with-choices skill を廃止し、確認・質問の規範のうち媒体に依らないものは rule へ、
-HTML フォーム固有のものは html-communication へ置く（ccm-f051 の補足で 2026-08-25 に構成を変えた。
+HTML フォーム固有のものは html-communication へ置く（ccm-f051 の補足で 2026-08-26 に構成を変えた。
 旧計画は全部を html-communication へ寄せる形だった）。作業明細は `notes/artifacts/norm-refit-pr3-detail.md`。
 
 - 媒体非依存の確認規範（impl-spec から引き上げる 13 件 = 1-2 の 3 件 + 1-3 の 10 件、AQ18 の上流決定の明示、
@@ -375,7 +375,7 @@ claude-known-issues の雛形 5 を加えた 41 行。旧記述の「16 箇所�
 - 対象に impl-spec の spec-reviewer agent と impl-spec 3 skill（requirements / design / test-plan）を足す。
   agent レビューの終了条件が「指摘がゼロになるか、最大 5 回に達したら終了」の旧方式のままで、
   cuc と session の「指摘 0 件まで繰り返さない。もう 1 度だけ」に揃える
-  （申し送り 13。ccm-f051 Q5、2026-08-25）
+  （申し送り 13。ccm-f051 Q5、2026-08-26）
 
 - `handover-reviewer.md:105` と `page-reviewer.md:112` から「どう直すか」を落とす。
   指摘 1 件の構成は「何が問題か」「なぜそう言えるか」の 2 点になる
