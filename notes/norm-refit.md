@@ -1733,7 +1733,8 @@ f045 Q3 の判断材料として記録する。
   「3 項目の 2 を b-c にしたときに 0001 の B が...」
   ```
 
-- 反映先: `rules/japanese-text-writing/references/core.md` 読み手の負荷（PR #11）。notes と README の「3 項目」は
+- 反映先: `rules/japanese-text-writing/references/core.md` 読み手の負荷（PR #11、main `0739231` にマージ済み 2026-08-26。
+  レビューで対象を「便宜的に付けた呼び名」全般に広げ、番号だけで指せる条件を足した）。notes と README の「3 項目」は
   main 72ff988 で書き直し済み
 
 
