@@ -36,7 +36,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| github-pr | 0.4.8 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。PR の open と approve の 2 系統 (セルフレビュー / 他人レビュー) とマージの条件を定める。`gh` CLI が必要 |
+| github-pr | 0.4.9 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件を定める。`gh` CLI が必要 |
 
 ### Authoring / tooling
 
