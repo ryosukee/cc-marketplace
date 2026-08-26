@@ -48,7 +48,11 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 PR 3（確認・質問の一本化）は PR #12 として同日にマージし、後処理（配布済みの既知バグ一覧の resolved 化、
 `docs/retired-plugins.md` の squash commit への書き換え、plugin cache の更新）も済んだ。
 段階 3 に PR 9（skill / agent の書き方の器）を足し、順序は PR 4 → PR 9 → PR 5 → PR 7。
-次は PR 4（AskUserQuestion の除去）。PR 9 は boilerplate からの抜き出し候補を調査中。**
+**いまは PR 4（AskUserQuestion の除去）で、作業手順書 `notes/artifacts/norm-refit-pr4-detail.md` を作り、
+着手前の判断 3 件を ccm-f053 で問うている。** PR 9 の抜き出し候補の調査は
+`notes/artifacts/norm-refit-pr9-survey.md`（3 案 + 判断 16 件）にある。
+norm-refit の外では、PR のマージの合図を `approve` ラベルにする運用を決め（ccm-f052）、
+github-pr 0.4.9（PR #15）で実装した。以後のマージはラベルの有無で判定する。
 
 - 条項 1349 件の抽出と検算が完了（`norm-audit-raw/` の 6 ファイル）
 - **1349 件すべてに処遇が付いた**（`norm-audit-verdict-*.md` の 8 ファイル）。
