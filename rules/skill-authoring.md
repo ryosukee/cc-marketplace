@@ -1,6 +1,7 @@
 ---
 paths:
-  - "**/skills/*/SKILL.md"
+  - ".claude/skills/*/SKILL.md"
+  - "plugins/*/skills/*/SKILL.md"
 ---
 
 # skill の書き方

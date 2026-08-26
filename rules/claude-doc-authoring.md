@@ -2,8 +2,10 @@
 paths:
   - ".claude/rules/**/*.md"
   - "rules/**/*.md"
-  - "**/skills/*/SKILL.md"
-  - "**/agents/*.md"
+  - ".claude/skills/*/SKILL.md"
+  - "plugins/*/skills/*/SKILL.md"
+  - ".claude/agents/*.md"
+  - "plugins/*/agents/*.md"
   - "CLAUDE.md"
 ---
 

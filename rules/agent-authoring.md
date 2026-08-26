@@ -1,6 +1,7 @@
 ---
 paths:
-  - "**/agents/*.md"
+  - ".claude/agents/*.md"
+  - "plugins/*/agents/*.md"
 ---
 
 # agent の書き方
