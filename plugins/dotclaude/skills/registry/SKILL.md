@@ -66,7 +66,7 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
 4. リポジトリの存在確認:
    - `ghq list --full-path` でローカルクローンを探す
    - なければ `gh api repos/{owner}/{repo}` で GitHub 上の存在を確認
-   - どちらも見つからなければ警告し、それでも追加するか AskUserQuestion で確認
+   - どちらも見つからなければ警告し、それでも追加するかを確認
 5. ワークフロー構成の確認:
    - ローカル or GitHub API で `.claude/agents/` と `.claude/skills/` の有無をチェック
    - どちらも空の場合は「ワークフロー構成がまだないリポジトリです。参考リポジトリとして追加する意味は薄いかもしれません」と案内
@@ -79,7 +79,7 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
      - `fetch_mode`: ローカルクローンがあれば `local` + `base_dir`、なければ `gh-api`
      - `purpose: metadata`
    - 出力として description 候補 (1 行) と note 候補 (2-3 行)、tech stack 推定を受け取る
-7. AskUserQuestion で以下を確認:
+7. 以下の 5 件を HTML フォーム 1 枚にまとめて確認する:
    - **role**: `primary` (手本として主に参考にする) / `reference` (補助的に参考にする)
    - **owned**: あなたの持ち物ですか? (yes/no)。`/dotclaude:cross-review` で改善提案の出力先になるかどうかの判定に使う
    - **name**: 表示名 (デフォルトは repo 名)
@@ -98,7 +98,7 @@ dotclaude plugin の参考リポジトリ一覧 (`${CLAUDE_PLUGIN_DATA}/registry
 2. `${CLAUDE_PLUGIN_DATA}/registry.json` を読む (なければ「登録されていません」と表示して終了)
 3. 該当エントリを検索
 4. 見つからなければエラー表示 (近い名前のエントリがあれば候補として提示)
-5. AskUserQuestion で削除確認
+5. 削除してよいかを確認
 6. registry.json から削除して保存
 7. 完了メッセージを表示
 

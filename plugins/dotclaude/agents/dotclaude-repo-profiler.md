@@ -101,7 +101,7 @@ monorepo_hint が立っている場合は、バケツを `packages/*` や `apps/
 
 #### drift (internal_drift) の明示
 
-バケツ内でパターンが分裂している場合、`internal_drift: true` マークを付けて **両方のパターンを頻度付きで報告**。勝手に「正解はこちら」と決めない。doctor 側で AskUserQuestion により統合 / 両方許容を確定する。
+バケツ内でパターンが分裂している場合、`internal_drift: true` マークを付けて **両方のパターンを頻度付きで報告**。勝手に「正解はこちら」と決めない。doctor 側で統合 / 両方許容を確定する。
 
 fetch_mode=gh-api の場合:
 
