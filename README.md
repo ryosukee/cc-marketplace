@@ -81,7 +81,7 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 
 | rule | 適用 | 概要 |
 | --- | --- | --- |
-| japanese-text-writing | 常時 | 出力のタイプ判定と数行返答の最小規範。詳細規範は `rules/japanese-text-writing/references/` |
+| japanese-text-writing | 常時 | 出力のタイプ判定と数行返答の最小規範。詳細規範（共通原則・分類別 5・ユーザーへの確認）は `rules/japanese-text-writing/references/` |
 | primary-sources-first | 常時 | 仕様を述べる前に手元の一次情報を当たる |
 | decision-record | 常時 | 複数セッションの調査・設計で確定事項の台帳を持つ |
 | subagent-delegation | 常時 | subagent の起動は原則許可。判断基準はコンテキストの節約 |
