@@ -2292,6 +2292,20 @@ f007 以降のフォームは、各設問がどの課題を解消するかを明
 - [ ] `html-communication/SKILL.md:297-298` が入口 rule を旧タイトル「日本語テキストの執筆要点」で指している
   （現行のタイトルは「日本語テキストの執筆規範」）。PR 3 の作業明細の実読で見つけた観測（2026-08-25）。
   PR 3 の 7 項目の外なので、どの PR で直すかは未定
+- [ ] `plugins/session/skills/retrospective/SKILL.md:112` が他 plugin の skill を名指ししている
+  （「項目が 3 件以上: html-communication skill で 1 枚にまとめ」）。ccm-f053 Q2 で「書き換え後の文で
+  他 plugin の skill を名指ししない」と決めたが、この行は言及行ではないので PR 4 の対象外にした。
+  同型が他にもあるかを含めて、どの PR で直すかは未定（PR 4 の実装中に見つけた観測、2026-08-26）
+- [ ] `plugins/dotclaude/skills/doctor/SKILL.md:204` と `:217` で、HTML フォームに寄せる閾値の書き方が割れている
+  （`:204` は無条件に「1 枚にまとめる」、`:217` と impl-spec 3 skill は「4 件（問）を超える場合」）。
+  `:204` は PR 4 の手順書が逐語で指定した文なので PR 4 では触らない。揃えるかは未定
+  （PR 4 のセルフレビューで見つけた観測、2026-08-26）
+- [ ] `plugins/mkdocs-setup/skills/mkdocs-setup/SKILL.md` の frontmatter が効いていない。1 行目が `# mkdocs-setup` で
+  `---` が 5 行目と 15 行目にあるため、`name` / `description` / `user-invocable` / `argument-hint` / `allowed-tools` の
+  全フィールドが解釈されない。SKILL.md 22 本のうち 1 行目が `---` でないのはこの 1 本だけ（実測 2026-08-27）。
+  skill の発動そのものに関わるので PR 9 とは別に直す。直した後は description が効くので evals の実行が要る
+- [ ] `plugins/dotclaude/skills/doctor/SKILL.md:422` が agent の frontmatter のフィールド名を `allowedTools` と書いているが、
+  実配置の agent 7 本はすべて `tools`（実測 2026-08-27）。PR 9 で器を作るときに合わせて直すか、別途かは未定
 - [x] html-communication の「結論」セクション（構成規定「前提 → 結論・概要 → 詳細 → 設問」の 2 つ目）は、フォームでは結論になっていない。
   ユーザー指摘（ccm-f051 補足、2026-08-26）「html comunication の最初の結論のセクションが全然結論じゃない。まとめ、推奨案のまとめ、とかじゃない？」
   （解消済み: 同日の確定エントリ「冒頭ブロックの見出し語は form / report とも「まとめ」」）
