@@ -86,17 +86,8 @@ mcp__github__create_pull_request(
 
 ## PR を作った後の流れ（open と approve）
 
-PR は draft で作る。draft を open（ready for review）にする時期は、レビューの系統で決まる。
-
-- 系統 A（セルフレビュー・セルフマージ）: レビュアーが作者本人だけの repo。作成直後に `gh pr ready {number}` で open し、
-  本人のレビュー（approve か comment）を待つ
-- 系統 B（他人にレビューしてもらう repo）: 作者本人が draft のままレビューし、その指摘に対応する。
-  open は本人の確認が済んだ合図として本人が行う（本人の指示があれば代わりに行う）。
-  open は他人にレビューを依頼する公開の操作なので、指示なしに行わない
-- 判定: repo の所有者が本人のアカウント（組織ではない）で、他のレビュアーがいなければ A。
-  組織の repo か、他のレビュアーがいれば B。迷ったら B
-
-マージの条件は [PR レビュー対応スキル](../address-review/SKILL.md) の「マージの条件」に従う。
+PR は draft で作る。その後の open・レビュー・マージの流れは [PR のレビューの 2 系統](references/shared/review-flows.md) に従う。
+系統 A（セルフレビュー）なら作成直後に open し、系統 B（他人レビュー）なら open しない。
 
 ## パラメータ
 

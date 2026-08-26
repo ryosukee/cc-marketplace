@@ -224,16 +224,15 @@ PR に conversation comment として結果を報告する。レビュアーを�
 
 ## マージの条件
 
-マージは、PR に approve のレビューが付いていることを条件にする。
-チャットで「マージしてよい」と言われても、approve が無ければマージしない。
+マージを行うのは [PR のレビューの 2 系統](../create/references/shared/review-flows.md) の系統 A（セルフレビュー）だけ。
+系統 B（他人レビュー）ではマージしない（人間が行う）。
 
-- 確認は `gh pr view {number} --json reviewDecision --jq .reviewDecision` が `APPROVED` であること
-- approve が無いときは、系統 A（セルフレビュー）なら open して本人の approve を依頼し、
-  系統 B（他人レビュー）なら open と他人へのレビュー依頼を本人に委ねる。
-  系統の判定は [PR 作成スキル](../create/SKILL.md) の「PR を作った後の流れ（open と approve）」にある
-- マージの実行も指示を受けてから行う。approve は必要条件で、十分条件ではない
+系統 A でマージするのは、次の 2 つが揃ったとき。
 
-why: 会話の表現（「そろそろマージできる」等）は、まだマージできない状態を含む。approve は GitHub 上の状態なので判定が一意になる。
+- PR に approve のレビューが付いている（`gh pr view {number} --json reviewDecision --jq .reviewDecision` が `APPROVED`）
+- 本人からマージの指示を受けている
+
+approve が無いときはマージせず、本人のレビューを待つ。チャットの了承は approve の代わりにならない。
 
 ## 1 コメント 1 コミットの原則
 
