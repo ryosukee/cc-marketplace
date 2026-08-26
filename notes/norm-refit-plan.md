@@ -44,13 +44,11 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 
 ## 現在地
 
-2026-08-26 時点。**段階 1・2 が完了し、段階 3 は 9 本の PR のうち PR 6・PR 1・PR 8・PR 2・PR 3 がマージ済み。
-PR 3（確認・質問の一本化）は PR #12 として同日にマージし、後処理（配布済みの既知バグ一覧の resolved 化、
-`docs/retired-plugins.md` の squash commit への書き換え、plugin cache の更新）も済んだ。
-段階 3 に PR 9（skill / agent の書き方の器）を足し、順序は PR 4 → PR 9 → PR 5 → PR 7。
-**いまは PR 4（AskUserQuestion の除去）で、作業手順書 `notes/artifacts/norm-refit-pr4-detail.md` を作り、
-着手前の判断 3 件を ccm-f053 で問うている。** PR 9 の抜き出し候補の調査は
-`notes/artifacts/norm-refit-pr9-survey.md`（3 案 + 判断 16 件）にある。
+2026-08-26 時点。**段階 1・2 が完了し、段階 3 は 9 本の PR のうち 6 本（PR 6・1・8・2・3・4）がマージ済み。
+PR 4（AskUserQuestion の除去）は PR #16 として同日にマージし、5 plugin の cache 更新も済んだ。
+残りは PR 9 → PR 5 → PR 7 の 3 本で、次は PR 9（skill / agent の書き方の器）。
+着手前に、抜き出し候補の調査 `notes/artifacts/norm-refit-pr9-survey.md`（3 案 + 判断 16 件）を材料に、
+器の構成（1 本か 2 本か、名前、paths、rule-authoring との統合）を確認する。**
 norm-refit の外では、PR のマージの合図を `approve` ラベルにする運用を決め（ccm-f052）、
 github-pr 0.4.9（PR #15）で実装した。以後のマージはラベルの有無で判定する。
 
@@ -370,6 +368,10 @@ HTML フォーム固有のものは html-communication へ置く（ccm-f051 の�
   2026-08-23 の台帳エントリ）
 
 #### PR 4 AskUserQuestion の除去
+
+**完了。PR #16、main 24519c5（2026-08-26）。作業手順書は `notes/artifacts/norm-refit-pr4-detail.md`。
+着手前の判断 3 件は ccm-f053 で決着（道具名指しを両方落とす / 他 plugin の skill を名指ししない /
+道具由来の数値も同じ PR で消す）。触った 5 plugin を patch 上げ。**
 
 全 plugin から使用指示を消す。言及行の実測（2026-08-26、main `f4fb82d`、`git grep -n`）は **37 行**。
 impl-spec 16（requirements 5 / design 5 / test-plan 6）、dotclaude 13（doctor 8 / registry 3 /

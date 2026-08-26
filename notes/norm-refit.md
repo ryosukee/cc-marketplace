@@ -2067,6 +2067,18 @@ f045 Q3 の判断材料として記録する。
   （公式ドキュメントの "Asks the user one to four multiple-choice questions."）で、Q3 の数値の出所
 - 反映先: PR 4（`notes/artifacts/norm-refit-pr4-detail.md` の A-2 と未特定 1・2・3 が確定）
 
+### 2026-08-26 PR 4 は PR #16 として main 24519c5 にマージ（観測）
+
+- 結論: PR 4（AskUserQuestion の除去）は 7 commit・17 ファイルでマージ。レビュー指摘は 0 件で、
+  セルフレビュー（review agent）の指摘 1 件（`registry/SKILL.md:86` の「Other」がこの PR の書き換えで意味を失う）を
+  同じ PR で直した（`7380022`）。触った 5 plugin を patch 上げ（impl-spec 0.5.5 / dotclaude 0.14.1 /
+  mkdocs-setup 0.2.1 / session 2.12.1 / claude-user-communication 0.33.1）。cache 更新も同日
+- 実測: 使用指示は `plugins` から全部消えた（残るのは `cc-transcript/.../extract.sh:66` の jq の分岐だけで、
+  これは transcript の整形。`rules` と `docs` に残るのは `docs/retired-plugins.md:7-8` の廃止理由の説明だけ）
+- 新フローの 2 回目: `approve` ラベルを確認してからマージした
+- 出典: PR #16（2026-08-26）
+- 反映先: `notes/norm-refit-plan.md` の現在地と PR 4 の節、ccm-r003
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
