@@ -92,7 +92,7 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
 | rule-authoring | `.claude/rules/**` `rules/**` | rule ファイルの冒頭とロード方式の使い分け |
 | notes-authoring | `notes/**` | 確定事項の台帳として運用する `notes/` を書く最中の規範。冒頭の目的・生存期間・対象タスク、確定事項と作業メモの 2 節、重複回避、消す手順 |
-| claude-doc-authoring | `.claude/rules/**` `rules/**` `.claude/skills/**` `plugins/*/skills/**` `.claude/agents/*` `plugins/*/agents/*` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・条項・参照・why・改訂 |
+| claude-doc-authoring | `.claude/rules/**` `rules/**` `.claude/skills/**` `plugins/*/skills/**` `.claude/agents/*` `plugins/*/agents/*` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・指示項目・参照・why・改訂 |
 | skill-authoring | `.claude/skills/**` `plugins/*/skills/**` | SKILL.md の書き方。2 種別の判定・frontmatter と description・スクリプト化・文体 |
 | agent-authoring | `.claude/agents/*` `plugins/*/agents/*` | agent 定義の書き方。ファイル形式・frontmatter・冒頭に書く 6 つの責務・入出力 |
 | claude-md-authoring | `CLAUDE.md` | CLAUDE.md の書き方。役割とサイズ・書くもの / 書かないもの・rule との重複・更新の時期 |
