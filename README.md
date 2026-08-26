@@ -18,19 +18,19 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| dotclaude | 0.14.0 | `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビュー。doctor / cross-review / registry の 3 skill |
+| dotclaude | 0.14.1 | `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビュー。doctor / cross-review / registry の 3 skill |
 
 ### session
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| session | 2.12.0 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査 9 種) / end (オーケストレーター) + handover-reviewer agent |
+| session | 2.12.1 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査 9 種) / end (オーケストレーター) + handover-reviewer agent |
 
 ### impl-spec
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| impl-spec | 0.5.4 | 実装のための仕様策定。requirements / design / test-plan の 3 skill + spec-reviewer agent |
+| impl-spec | 0.5.5 | 実装のための仕様策定。requirements / design / test-plan の 3 skill + spec-reviewer agent |
 
 ### GitHub
 
@@ -43,14 +43,14 @@
 | plugin | version | 概要 |
 | --- | --- | --- |
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
-| mkdocs-setup | 0.2.0 | mkdocs-material のセットアップ手順とテンプレート |
+| mkdocs-setup | 0.2.1 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
 
 ### Communication
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.33.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 15 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.33.1 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 15 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 
