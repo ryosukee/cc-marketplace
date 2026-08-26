@@ -66,3 +66,27 @@ cc-marketplace が一般化した文で自分の規範側へ写した（norm-ref
 impl-spec を product-workflow へ統合するとき、同じ 13 件をそちらの構成でも整理してほしい
 （cc-marketplace 側の文をそのまま使ってもよいし、統合先の構成に合わせて書き直してもよい）。
 出典: ccm-f051 Q1（2026-08-26）。
+
+## 2026-08-27 skill / agent / CLAUDE.md の書き方の器を差分ありで取り込んだ
+
+cc-marketplace が `rules/claude-doc-authoring.md`（共通）/ `skill-authoring.md` / `agent-authoring.md` /
+`claude-md-authoring.md` を新設し、`rule-authoring.md` を rule 固有だけに削った（norm-refit PR 9）。
+boilerplate の `bundles/core/rules/`（authoring / skill-authoring / agent-authoring / claude-component-authoring /
+claudemd）から最大公約数を抜き出したもので、**原本との差分が 3 つある**。
+
+- `skill-authoring.md:18-22`「作業手順 skill はドメインに依存しない汎用定義にする。ドメイン固有の知識・規約は
+  rule か参照知識 skill に分離し、作業手順 skill には入れない」は採用していない。
+  cc-marketplace の skill は plugin として配布されるので、rule へ分離すると install した環境で規範が欠ける
+  （`.claude/rules/plugin-design.md`「Plugin 自己完結」と衝突）。採ると既存 22 本すべてが違反になる
+- 抜き出した条項の文面から、boilerplate 側の開発の語彙（ドメイン / stack / パイプライン / Guardrail / Harness 等）を
+  落とした。語そのものを持ち込まない方針（ユーザー判断 2026-08-27）
+- 種別を選ぶ判断フロー（`claude-component-authoring.md:39-45` の 6 分岐）は、参照知識 skill ではなく
+  共通 rule `claude-doc-authoring.md` に置いた。cc-marketplace に参照知識 skill の実績が 0 本で、
+  plugin にすると更新のたびに release 手順がかかるため
+
+`ref-` prefix と `references/` ディレクトリは公式に無い慣習だが、ユーザーのテンプレートとして踏襲した
+（rule には独自の慣習であることを明示）。skill の 2 種別は公式の Reference content / Task content に基づく。
+
+boilerplate を bundle 配布するとき、authoring 系はこの差分を前提に統合を設計すること。
+出典: cc-marketplace `notes/norm-refit.md` の 2026-08-27 のエントリ 3 件、`notes/artifacts/norm-refit-pr9-detail.md`、PR 9。
+
