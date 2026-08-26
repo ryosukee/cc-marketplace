@@ -3,7 +3,7 @@
 廃止した plugin の記録。コードは削除し、git 履歴から取り出す。
 廃止するときは [Plugin 更新手順](../.claude/rules/plugin-release.md) の削除手順に従い、ここへ 1 件足す。
 
-- claude-user-communication の ask-with-choices skill（2026-08-26、最終版 0.32.6、削除 commit a6d21a2）
+- claude-user-communication の ask-with-choices skill（2026-08-26、最終版 0.32.6、削除 commit 207932c = PR #12）
     - 理由: この skill の中身は、AskUserQuestion（選択肢 UI）を使う運用と、そのレンダリングバグを避ける
       時限措置が大半だった。AskUserQuestion を使わない構成に移り、確認・質問の規範は媒体に依らないものを
       user global rule の詳細規範 `user-confirmation.md` へ、HTML フォーム固有のものを html-communication skill へ
