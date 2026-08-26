@@ -1894,6 +1894,23 @@ f045 Q3 の判断材料として記録する。
 - 反映先: PR 3（`plugins/claude-known-issues/config/known-issues.template.yml`、version bump）、配布済み
   `~/.claude/plugins/data/claude-known-issues-cc-tools/`（直接）
 
+### 2026-08-26 入口 rule の質問 2 条項は user-confirmation.md へ移す（2026-08-25「質問の運用は入口に残す」の上書き）
+
+- 結論: `rules/japanese-text-writing.md` の最小規範にある「確認は 1 件ずつ出す。判断が 2 件以上あるなら 1 メッセージに並べず、順に出す」
+  「選択肢に出す語は、選択肢より前に実体を書く」の 2 条項を、新 rule `rules/user-confirmation.md` の「問い方」へ移す。
+  入口 rule には残さない（入口は数行返答の書き方だけになる）
+- 決めなかった範囲: なし
+- 決め手: 質問の規範が新 rule の 1 箇所に揃う。入口も新 rule も常時ロードなので効き方は変わらない
+- 出典: ユーザー発言 2026-08-26（`norm-refit-pr3-detail.md` J-1 への回答）。実文:
+
+  ```text
+  明細とは？謎の用語を使うな
+  移すのはok
+  ```
+
+  前半は「明細」（`notes/artifacts/norm-refit-pr3-detail.md` を指す略称）を説明なしに使ったことへの指摘
+- 反映先: PR 3（`rules/japanese-text-writing.md` から 2 条項を削り、`rules/user-confirmation.md` の「問い方」に置く）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
