@@ -2079,6 +2079,43 @@ f045 Q3 の判断材料として記録する。
 - 出典: PR #16（2026-08-26）
 - 反映先: `notes/norm-refit-plan.md` の現在地と PR 4 の節、ccm-r003
 
+### 2026-08-27 ccm-f054: PR 9 の器は共通 1 本 + 種別別 3 本、追従は別 PR（一部は継続確認）
+
+- 結論（確定した分）:
+    - Q1 共通条項は案 3。`rules/claude-doc-authoring.md`（共通）を新設し、`rules/rule-authoring.md` を rule 固有だけに削り、
+      `rules/skill-authoring.md` と `rules/agent-authoring.md` を新設する
+    - Q2 skill と agent は 2 本に分ける
+    - Q3 skill の 2 種別（作業手順 / 参照知識）の分類を持ち込む
+    - Q6 paths は定義ファイル本体だけ（`**/skills/*/SKILL.md`、`**/agents/*.md`）。参照資材は対象にしない
+    - Q7 CLAUDE.md の書き方も範囲に含め、`claudemd-authoring.md`（名前は未確定。`claude-md-authoring.md` も候補）を同時に新設する
+    - Q8 この PR は器の新設だけを行い、既存 11 本の追従は別 PR
+- 決めなかった範囲（回答が「その他」または補足付きで、継続して確認する）:
+    - Q3 の補足: 2 種別の分類が Claude Code の公式の仕様かを確かめる。公式への参照は rule 本文ではなく frontmatter あたりの補足に置く案
+      （理由: 公式ドキュメントは頻繁に書き換わるので本文に入れ込まない）
+    - Q4 判断フローの置き場: 参照知識 skill にする案が出た。`ref-` skill の配布実績の有無と、plugin にするかを調べてから決める
+    - Q5 agent の冒頭の形: 義務化を基点に、既存の記述を見ながらゼロベースで組み直す。義務を足すか緩めるかを提案する
+    - Q6 の補足: 参照資材向けの rule は今は作らない（判定基準になる条項が書けず、必要になる兆候は同型の指摘が 2 回出ること）
+    - Q7 のファイル名
+- 決め手: Q1 は複製を作らず `rules/` の本数を増やす形が、boilerplate との名前の対応を保ちながら常時ロードを増やさない。
+  Q8 は器と追従を分けるとレビュー単位が小さくなる
+- 出典: ccm-f054 回答 2026-08-27（設問の実文は共通ページディレクトリの `ccm-f054.html`。掃除で削除する前に
+  `norm-refit-form-sources.md` へ写す）。回答の実文:
+
+  ```text
+  ## HTML フォーム回答（norm-refit PR 9 skill / agent の書き方の器）
+  - Q1（共通条項の置き場とファイル名）: 案 3 共通 claude-doc-authoring.md + rule/skill/agent-authoring.md
+  - Q2（skill と agent の分け方）: 2 本に分ける（skill-authoring.md / agent-authoring.md）
+  - Q3（skill の 2 種別の分類）: 持ち込む（作業手順 skill と参照知識 skill を分ける）  ※ そもそも claude-code-guide 公式ヘルプでこういう分類がされていたはず。今もその分類が言及されているかは不明だが、仕様上は存在する。公式への参照は frontmatter あたりに補足を書くのがいいかな？公式側のドキュメントは割と頻繁に書き換わるから rule 本文にはあんまり入れ込みたくない
+  - Q4（判断フローの置き場）: その他: ref skill はどう？ref-skill の配布実績ってないんだっけ？plugin にするのがいいのかな？
+  - Q5（agent の冒頭の義務化の粒度）: その他: 義務化ベースに、既存の記述も確認しながら改めてゼロベースでルールを作るならどんな指示にするのがよさそう？義務を追加？緩和？
+  - Q6（paths の範囲）: 定義ファイル本体だけ（**/skills/*/SKILL.md、**/agents/*.md）  ※ もし参照資材向けのルールが必要だという判断なら専用の rule を作ってもいいかも。必要そうかどうか、どう思う？
+  - Q7（CLAUDE.md の扱い）: 含める（claudemd-authoring.md も同時に新設）  ※ claude-md-authoring も作れるし
+  - Q8（既存 11 本の追従の時期）: 器の新設だけをこの PR で行い、11 本の追従は別 PR
+  - 補足: なし
+  ```
+
+- 反映先: PR 9（`notes/norm-refit-plan.md` の PR 9 節。継続確認の 5 件が決着してから実装に入る）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
