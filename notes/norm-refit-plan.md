@@ -44,11 +44,11 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 
 ## 現在地
 
-2026-08-26 時点。**段階 1・2 が完了し、段階 3 は 8 本の PR のうち PR 6・PR 1・PR 8・PR 2 がマージ済み。
-PR 3（確認・質問の一本化）は着手前の判断が ccm-f051 とその後の会話で決着し、PR #12（draft、11 commit）として出した。
-媒体非依存の確認規範は html-communication ではなく詳細規範（`references/user-confirmation.md`、入口 rule から参照）へ置く構成。
-レビュー待ち。マージ後の後処理は、配布済みの既知バグ一覧の `askuserquestion-rendering` を resolved へ移す、
-`docs/retired-plugins.md` の削除 commit を squash commit に書き換える、plugin cache の更新、の 3 つ。**
+2026-08-26 時点。**段階 1・2 が完了し、段階 3 は 9 本の PR のうち PR 6・PR 1・PR 8・PR 2・PR 3 がマージ済み。
+PR 3（確認・質問の一本化）は PR #12 として同日にマージし、後処理（配布済みの既知バグ一覧の resolved 化、
+`docs/retired-plugins.md` の squash commit への書き換え、plugin cache の更新）も済んだ。
+段階 3 に PR 9（skill / agent の書き方の器）を足し、順序は PR 4 → PR 9 → PR 5 → PR 7。
+次は PR 4（AskUserQuestion の除去）。PR 9 は boilerplate からの抜き出し候補を調査中。**
 
 - 条項 1349 件の抽出と検算が完了（`norm-audit-raw/` の 6 ファイル）
 - **1349 件すべてに処遇が付いた**（`norm-audit-verdict-*.md` の 8 ファイル）。
@@ -75,7 +75,9 @@ PR 3（確認・質問の一本化）は着手前の判断が ccm-f051 とその
   申し送り 13 の扱い）と、PR #10 で範囲外にした rules/ 外の表の caption を ccm-f051 で問い、決着した
   （台帳の同日エントリ 5 件）。補足で PR 3 の構成が変わった（媒体非依存の確認規範は rule へ。冒頭ブロックの見出し語）。
   置き場は同日に「入口 rule から参照する詳細規範」へ上書き。手順書を確定内容で更新し、worktree の subagent で実装、
-  セルフレビュー（規範の欠落 1 件 = 入口 rule の参照を回答受領時にも効かせる、を反映）を経て **PR #12** を出した
+  セルフレビュー（規範の欠落 1 件 = 入口 rule の参照を回答受領時にも効かせる、を反映）を経て **PR #12** を出した。
+  レビュー 9 件 + チャット 2 件に対応して同日に main `207932c` へマージ。後処理 3 つも同日に実施。
+  同日、skill / agent の書き方の器（PR 9）を段階 3 に足した（ユーザー提案。PR 6 と同じ形の独立 PR）
 
 判定の内訳（名簿から実測）。
 
@@ -266,7 +268,7 @@ main HEAD から抽出した監査に含まれないだけで、内容が否定�
 
 ### PR の切り方
 
-旧版は PR 4 本に固定していた。監査で条項数が 4 倍になったので切り直して 5 本にし、2026-08-23 に PR 6 と PR 7 を足し、2026-08-25 に PR 8 を足して**8 本**にした。
+旧版は PR 4 本に固定していた。監査で条項数が 4 倍になったので切り直して 5 本にし、2026-08-23 に PR 6 と PR 7 を足し、2026-08-25 に PR 8 を足して 8 本にし、2026-08-26 に PR 9（skill / agent の書き方の器）を足して**9 本**にした。
 
 切り方の原則は 2 つ。
 
@@ -278,6 +280,8 @@ main HEAD から抽出した監査に含まれないだけで、内容が否定�
 ### PR ごとの中身
 
 PR 1〜5 は直列で、順序を入れ替えられない。PR 6 と PR 8 は独立で、順序は任意（PR 6 は最初に、PR 8 は PR 1 の直後にマージした）。
+PR 9 は独立だが、PR 4 の後・PR 5 の前に置く。PR 5 と段階 4 の T4 が agent の本文を書き直すので、その前に器を用意する
+（PR 6 が rule の書き換えの前に器を用意したのと同じ理由）。
 
 #### PR 1 詳細規範の新設と plugin 解体
 
@@ -335,6 +339,8 @@ Q6 の決定を実装する。`markdown-formatting.md` から媒体非依存分�
 
 #### PR 3 確認・質問の一本化
 
+**完了。PR #12、main 207932c（2026-08-26）。作業手順書は `notes/artifacts/norm-refit-pr3-detail.md`。**
+
 ask-with-choices skill を廃止し、確認・質問の規範のうち媒体に依らないものは rule へ、
 HTML フォーム固有のものは html-communication へ置く（ccm-f051 の補足で 2026-08-26 に構成を変えた。
 旧計画は全部を html-communication へ寄せる形だった）。作業明細は `notes/artifacts/norm-refit-pr3-detail.md`。
@@ -371,6 +377,21 @@ claude-known-issues の雛形 5 を加えた 41 行。旧記述の「16 箇所�
 - 確認手段を「フリーテキスト。設問が多い確認は HTML フォーム」へ書き換える
 - `SS18` / `SS55` の字句を簡素化する（ツール名指しの否定を落とす）
 - 既知バグ台帳の `askuserquestion-rendering` を更新する
+
+#### PR 9 skill / agent の書き方の器（独立。PR 4 の後・PR 5 の前）
+
+skill（SKILL.md）と agent の書き方の規範を user global rule に新設する。rule の書き方の器（PR 6 = `rule-authoring.md`）の
+skill / agent 版で、作り方も同じ。product-boilerplate の `bundles/core/rules/`（skill-authoring / agent-authoring /
+claude-component-authoring / authoring）から、どのプロジェクトにも効く最大公約数だけを抜き出す。
+採らなかった差分は idea-hub への申し送りに書く（PR 6 のときと同じ）。
+
+- 動機: PR #12 のレビューで、skill の条項に過去の事例の語り・ツール固有の記述が残っていた。
+  core は文の規範を持つが、skill / agent という文書の作り（description と発動条件、frontmatter、手順の書き方、
+  agent の責務の書き方）の規範は無い
+- 入力: 抜き出し候補の調査（subagent、2026-08-26 起動）。決めること: 1 本にまとめるか 2 本か、名前、paths、
+  rule-authoring と共通の条項（判定基準・why・改訂）を「Claude 向け文書」全般へ一般化して 1 本にするか
+- 後続との関係: PR 5 と T4 の agent の書き直しはこの器に従う。v2 群 D1 の `.claude/rules/` 3 本（plugin-design など）の
+  user global への取り込み判定は、この器と突き合わせて行う
 
 #### PR 5 review agent の責務統一
 
@@ -573,6 +594,7 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
 ### 群 D 未監査 rule と他 repo との整合
 
 - D1 未監査の rule 18 ファイル 955 行の整理（旧「後続タスク #7」。`.claude/rules/` 3 本は user global 側へ取り込めるかの判定を含む。
+  3 本のうち plugin-design の skill / agent の設計原則は、PR 9 の器と突き合わせて判定する。
   `.claude/rules/coding.md` の機械的修正 5 行の見直しもここ）
 - D2 primary-sources-first の idea-hub への移管（依頼文は渡し済み。先方が取り込んだら cc-marketplace 側を削除。
   PR #7 で足した節を伝える）

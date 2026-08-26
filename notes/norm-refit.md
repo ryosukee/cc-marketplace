@@ -1949,6 +1949,50 @@ f045 Q3 の判断材料として記録する。
   「回答後のフローへ辿る誘導が、回答を受けた時点に無い」
 - 反映先: PR 3（`rules/japanese-text-writing.md` の参照行、commit `5311859`）
 
+### 2026-08-26 段階 3 に PR 9「skill / agent の書き方の器」を足し、PR 4 の後・PR 5 の前に置く
+
+- 結論: skill（SKILL.md）と agent の書き方の規範を user global rule に新設する PR 9 を段階 3 に足す。
+  rule-authoring（PR 6）と同じ手順で、product-boilerplate の `bundles/core/rules/`（skill-authoring / agent-authoring /
+  claude-component-authoring / authoring）から最大公約数だけを抜き出す。順序は PR 4 → PR 9 → PR 5 → PR 7。
+  norm-refit の PR は 9 本になる
+- 決めなかった範囲: 器の中身（1 本か 2 本か、名前、paths、rule-authoring との統合）は調査の結果を受けて別途決める。
+  v2 群 D1 の `.claude/rules/` 3 本の判定は PR 9 の器と突き合わせる、とだけ決めた
+- 決め手: PR 5 と段階 4 の T4 が agent の本文を書き直すので、その前に器を用意する（PR 6 の前例と同じ役割）。
+  v2 群 D1（`.claude/rules/` 3 本の user global への取り込み判定）と重なる部分は、器が先にあれば D1 が突き合わせるだけになる
+- 出典: ユーザー発言 2026-08-26。実文:
+
+  ```text
+  path にskillを足すというより、skill authoring, meta authoring を作るべきかな
+  これも idea-hub product boiler plate でまとめてる内容からさらにグローバルに抜き出せるものだけもってくるイメージ、rule authoring のときにやったかんじ
+  ```
+
+  ```text
+  タスク計画の適したところには位置してプランを練り直して、とりあえずで入れないで、綺麗な順序になるようにちゃんと考えて
+  ```
+
+  ```text
+  計画は推奨案で進めて
+  ```
+
+  提示した案は「段階 3 の独立 PR として PR 4 の後・PR 5 の前に置く（推奨）」。
+  起点は PR #12 のレビュー指摘「過去の事例の話をするな」で、これ自体は core「経緯・出典注記の抑制」で規範済み（適用漏れ）。
+  rule-authoring の paths を skill へ広げる案は取り下げた
+- 反映先: `notes/norm-refit-plan.md`（現在地、PR の切り方、PR 9 の節、v2 群 D1）、ccm-r003、task #17
+
+### 2026-08-26 PR 3 は PR #12 として main 207932c にマージ（観測）
+
+- 結論: PR 3（確認・質問の一本化）は PR #12 として同日にマージ。レビュー 9 件 + チャット 2 件に対応（文レベル 3 件は事例集 4-4 / 4-5 / 5-9）。
+  レビューで変わったこと: 入口 rule の user-confirmation.md への誘導は「出力の長さで適用する規範が変わる」の一覧に置く /
+  user-confirmation.md の冒頭に読む条件を書かない / 冒頭ブロックの CSS クラス名は `.summary`、placeholder と構成規定は
+  form「推奨案のまとめ」・report「報告のまとめ」/ html-communication の SKILL.md から過去の事例の語り 6 箇所を消した
+- 後処理（同日）: claude-user-communication 0.33.0 と claude-known-issues 0.3.2 を cache 更新（要再起動）/
+  `docs/retired-plugins.md` の削除 commit を `207932c` に書き換え（main `4a2b354`）/ 配布済みの既知バグ一覧で
+  `askuserquestion-rendering` を `known-issues.resolved.yml` へ移した（`resolved_at` 2026-08-26、`resolved_version` 2.1.246。
+  未解決 5 件・解除済み 2 件）
+- 未実施: 新セッションで常時ロードが 8 のままで、user-confirmation.md が自動ロードされないことの実機確認
+- 出典: PR #12 のレビューコメントと会話（2026-08-26）
+- 反映先: `notes/norm-refit-plan.md` の現在地と PR 3 の節、ccm-r003
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
