@@ -222,6 +222,18 @@ PR に conversation comment として結果を報告する。レビュアーを�
 コード変更なし（返信のみ）: {指摘内容の 1 文要約}（[コメント]({コメント URL})）
 ```
 
+## マージの条件
+
+マージを行うのは [PR のレビューの 2 系統](../create/references/shared/review-flows.md) の系統 A（セルフレビュー）だけ。
+系統 B（他人レビュー）ではマージしない（人間が行う）。
+
+系統 A でマージするのは、次の 2 つが揃ったとき。
+
+- PR に approve のレビューが付いている（`gh pr view {number} --json reviewDecision --jq .reviewDecision` が `APPROVED`）
+- 本人からマージの指示を受けている
+
+approve が無いときはマージせず、本人のレビューを待つ。チャットの了承は approve の代わりにならない。
+
 ## 1 コメント 1 コミットの原則
 
 レビュアーは commit 単位で「このコメントをどう直したか」を確認する。
