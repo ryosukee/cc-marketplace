@@ -11,7 +11,7 @@ description: >
   "mkdocs theme"、"documentation site setup" 等で発動。
 user-invocable: true
 argument-hint: "mkdocs.yml のパス（省略時はカレントディレクトリの mkdocs.yml）"
-allowed-tools: Read, Edit, Write, Bash, Glob, AskUserQuestion
+allowed-tools: Read, Edit, Write, Bash, Glob
 ---
 
 本スキルはセットアップとテンプレート管理の複合スキル。ステップ 1〜8 がプロジェクトへの設定注入、ステップ 9 がテンプレートへの逆反映（プロジェクト固有設定の共通化検討）を担う。
@@ -34,7 +34,7 @@ allowed-tools: Read, Edit, Write, Bash, Glob, AskUserQuestion
 
 #### 3a. 未設定オプションの有効化（該当がある場合のみ）
 
-現在無効なオプションがある場合、AskUserQuestion（multiSelect）で有効にしたいものを選択させる。質問文の前に現在の状態を提示する:
+現在無効なオプションがある場合、有効にしたいものを複数選択で選ばせる。質問文の前に現在の状態を提示する:
 
 ```
 現在の状態: tabs ✓ / monorepo ✓ / github-edit ✗
@@ -44,13 +44,13 @@ allowed-tools: Read, Edit, Write, Bash, Glob, AskUserQuestion
 
 #### 3b. 有効中オプションの無効化（該当がある場合のみ）
 
-現在有効なオプションがある場合、AskUserQuestion（multiSelect）で無効にしたいものを選択させる:
+現在有効なオプションがある場合、無効にしたいものを複数選択で選ばせる:
 
 ```
 有効中のオプションのうち、無効にしたいものを選択してください（選択しなければ現状維持）:
 ```
 
-全て無効 or 全て有効の場合は該当するステップのみ実行する。新規セットアップ（mkdocs.yml が存在しない場合）は従来通り全オプションを multiSelect で一括選択する。
+全て無効 or 全て有効の場合は該当するステップのみ実行する。新規セットアップ（mkdocs.yml が存在しない場合）は従来通り全オプションを複数選択で一括して選ばせる。
 
 #### オプション一覧
 
@@ -126,7 +126,7 @@ allowed-tools: Read, Edit, Write, Bash, Glob, AskUserQuestion
 
 - **セクションが存在しない場合**: テンプレートの内容をそのまま追加する（確認不要）
 - **セクションが存在し、テンプレートと同一の場合**: 変更なし（スキップ）
-- **セクションが存在し、テンプレートと異なる場合**: AskUserQuestion で既存の内容とテンプレートの内容を両方提示し、以下の選択肢を出す:
+- **セクションが存在し、テンプレートと異なる場合**: 既存の内容とテンプレートの内容を両方提示し、以下の選択肢を出す:
   - **不足分を追加**: テンプレートにあってプロジェクトにない項目を追加（既存の設定はそのまま残る）
   - **既存を維持**: 変更しない
   - **マージ（手動確認）**: 両方の内容を見せてユーザーに最終的な内容を決めてもらう
@@ -156,7 +156,7 @@ allowed-tools: Read, Edit, Write, Bash, Glob, AskUserQuestion
 
 #### 7b. ユーザーへの提案と確認
 
-調査結果をもとに AskUserQuestion で以下を確認する:
+調査結果をもとに、以下の 5 件を HTML フォーム 1 枚にまとめて確認する:
 
 - `site_name`（推定値をデフォルトとして提示）
 - `site_description`（推定値をデフォルトとして提示）
@@ -228,7 +228,7 @@ allowed-tools: Read, Edit, Write, Bash, Glob, AskUserQuestion
 - `plugins`
 - `markdown_extensions`
 
-該当する設定がある場合、AskUserQuestion で以下を提示する:
+該当する設定がある場合、以下を提示する:
 
 - プロジェクト固有の設定一覧（セクション名と具体的な項目）
 - 各項目について**その設定が何をするものか**を1行で説明する（例: 「pymdownx.tasklist — チェックボックス付きタスクリストを Markdown で使えるようにする」）
