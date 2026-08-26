@@ -15,4 +15,4 @@
 最重要の 1 文（何が起きたか・何が分かったか・何をしたか）から始め、
 次のアクションを示して終える。前置き・装飾・同じ内容の言い換えを付けない。
 失敗・未完了を成功と紛れる書き方にしない。
-確認・質問を出すとき（1 問でも）→ ./japanese-text-writing/references/user-confirmation.md を読んでから書く。
+確認・質問を出すとき（1 問でも）と、回答を受けて次へ進むとき → ./japanese-text-writing/references/user-confirmation.md を読む。
