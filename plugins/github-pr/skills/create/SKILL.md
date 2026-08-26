@@ -84,9 +84,9 @@ mcp__github__create_pull_request(
 - ブランチ: `<head> → <base>`
 - 差分コメント数（行指定 + ファイル）
 
-## PR を作った後の流れ（open と approve）
+## PR を作った後の流れ（open とマージ）
 
-PR は draft で作る。その後の open・レビュー・マージの流れは [PR のレビューの 2 系統](references/shared/review-flows.md) に従う。
+PR は draft で作る。その後の open・レビュー・マージの流れは [PR のレビューの 2 系統](./references/shared/review-flows.md) に従う。
 系統 A（セルフレビュー）なら作成直後に open し、系統 B（他人レビュー）なら open しない。
 
 ## パラメータ
