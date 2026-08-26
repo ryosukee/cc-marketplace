@@ -360,6 +360,11 @@ claude-known-issues の雛形 5 を加えた 41 行。旧記述の「16 箇所�
 
 段階 2 Q5 の決定を実装する。
 
+- 対象に impl-spec の spec-reviewer agent と impl-spec 3 skill（requirements / design / test-plan）を足す。
+  agent レビューの終了条件が「指摘がゼロになるか、最大 5 回に達したら終了」の旧方式のままで、
+  cuc と session の「指摘 0 件まで繰り返さない。もう 1 度だけ」に揃える
+  （申し送り 13。ccm-f051 Q5、2026-08-25）
+
 - `handover-reviewer.md:105` と `page-reviewer.md:112` から「どう直すか」を落とす。
   指摘 1 件の構成は「何が問題か」「なぜそう言えるか」の 2 点になる
 - impl-spec から IS335（入力文書側の修正も指摘する）を両 agent へ引き上げる

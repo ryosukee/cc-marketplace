@@ -1737,6 +1737,132 @@ f045 Q3 の判断材料として記録する。
   main 72ff988 で書き直し済み
 
 
+### 2026-08-25 ccm-f051: PR 3 着手前の判断 5 件（原文は複製で残す・回答後は通常のターンへ・description は変えない・既知バグ一覧は PR 3・終了条件は PR 5）と、既存の表に caption は付けない
+
+- 結論:
+    - Q1 impl-spec 側の 13 件の原文は消さず、html-communication へ複製する。idea-hub への申し送りは
+      「cc-marketplace 側はこう整理した。そちらも整理してほしい」という伝え方にする（「HC が正」とは書かない）
+    - Q2 IS52（続ける設問があるかを尋ねない）の趣旨は「ターミナルの会話で無駄な 1 ホップを挟まない」こと。
+      HTML フォームには自由記述欄があるので同じ問題は起きない。回答後のフロー（AQ36 の本文化）は
+      「解釈と回答のまとめを出し、自明なものは作業に進み、自明でないものは確認を取る」という通常のターンへ
+      すぐ移る形に書く。AQ36 手順 3（自由入力での最終確認を独立したターンで求める）は残さない
+    - Q3 html-communication の description は変えない
+    - Q4 既知バグ一覧の `askuserquestion-rendering` にある ask-with-choices への記述は PR 3 で直す
+      （雛形は PR で、claude-known-issues の version bump を同じ PR に入れる。配布済みの一覧は直接直す）。
+      エントリ自体は、AskUserQuestion を使わない構成に移るので「解決」として resolved 側へアーカイブする
+      （ユーザー補足の解釈。呼び出し元が確認中）
+    - Q5 impl-spec の agent レビュー終了条件の統一は PR 5 の対象に足す（spec-reviewer と impl-spec 3 skill）
+    - Q6 rules/ の外の既存の表に `※ 表 N` は付けない。付けるのは新しく書く表と書き換える表だけ
+- 決めなかった範囲: Q2 の補足 2 件（html-communication の「結論」セクションの名前、HTML に限らない確認・質問の規範の置き場）は
+  別途（未解決課題に積む）。Q4 の「解決としてアーカイブ」の解釈の確認
+- 決め手: Q1 は伝え方の指定（ユーザー補足「正というか、こっちはすでにこう整理したからそっちも整理よろって感じの伝え方にしたい」）。
+  Q2 は禁止の趣旨の説明（ユーザー補足。ターミナルで無駄なワンホップを挟まず次に進んでほしかった。HTML なら自由記述欄があるので問題ない）。
+  Q3 は回答のとおり（補足なし）。Q4 は「そもそもその機能を使わない設定値を使うので解決としてアーカイブする」（ユーザー補足）。
+  Q5 は回答のとおり（補足なし）。Q6 は回答のとおり（補足なし）
+- 出典: ccm-f051 回答 2026-08-25（設問の実文: 共通ページディレクトリの `ccm-f051.html`。掃除で削除する前に
+  norm-refit-form-sources.md へ写す）。回答の実文:
+
+  ```text
+  ## HTML フォーム回答（norm-refit PR 3 着手前の判断 5 件 + 表の caption）
+  - Q1（impl-spec 側の原文）: 残す（複製）: impl-spec は手つかずで移設先へ同行。申し送りに「13 件は html-communication が正」を足す  ※ 正というか、こっちはすでにこう整理したからそっちも整理よろって感じの伝え方にしたい
+  - Q2（IS52 と AQ36 手順 3）: その他: html ならそとそも自由記述欄があるから問題ない。禁止してたのはターミナルのコミュニケーションにおいてむだなワンホップを挟まずに次ぎにすすんでほしかったから。今のように解釈や回答のまとめを出した上で自明なものは作業をし、自明でないものは確認をとるという普通のやりとりのターンにすぐに移行してほしいということ。
+  - Q3（description の変更）: 変えない
+  - Q4（既知バグ一覧の記述）: PR 3 で直す（雛形 + 配布済みの一覧。claude-known-issues の version bump を同じ PR に入れる）  ※ そもそもその機能を使わない設定値を使うので解決としてアーカイブする
+  - Q5（レビュー終了条件）: PR 5 の対象に spec-reviewer と impl-spec 3 skill を足す
+  - Q6（表の caption）: 付けない（新しく書く表と書き換える表にだけ付ける）
+  - 補足: あと html comunication の最初の結論のセクションが全然結論じゃない。
+  まとめ、推奨案のまとめ、とかじゃない？
+
+  あと質問確認の規範のうち html に限らない内容はそれこそ共通規範として別のルールかなにかにしておきたい
+  ```
+
+  設問の実文（各設問の見出し・問い・選択肢。［推奨］はページの推奨バッジ）:
+    - 設問 1 / 6「html-communication へ引き上げる 13 件の、impl-spec 側の原文を PR 3 で消すか」。
+      問い: html-communication へ引き上げる 13 件の、impl-spec 側の原文をどう扱うか。対象は requirements の 13 行と、design / test-plan の同文 12 行。
+        - 残す（html-communication へ複製）。impl-spec は手つかずで移設先へ同行させ、idea-hub への申し送りに「13 件は html-communication が正」と足す［推奨］
+        - 残す（複製）が、impl-spec 側の該当行の削除を idea-hub の移設 PR に委ねる。申し送りに削除対象 25 行を列挙する
+        - 消す（移す）。PR 3 で requirements の 13 行と同文の 12 行を消し、PR 4 の作業明細を作り直す
+        - その他
+    - 設問 2 / 6「「続ける設問があるかを尋ねない」と「回答後に自由入力で最終確認する」を両方 html-communication に置くか」。
+      問い: IS52（続ける設問があるかを尋ねない）と AQ36 の手順 3（回答後に自由入力で最終確認する）を html-communication にどう置くか。
+        - 両立させる。文面で対象を分け、両方を html-communication に置く［推奨］
+        - IS52 を落とし、AQ36 の手順を正とする
+        - AQ36 の手順 3 を落とし、解釈と次の作業の説明を示して作業に進む
+        - その他
+    - 設問 3 / 6「html-communication skill の description（発動条件）を PR 3 で変えるか」。
+      問い: html-communication skill の description（発動条件）を、ask-with-choices の廃止と同じ PR で変えるか。変えるなら evals のケース新設と実行が同じ PR に入る。
+        - 変えない［推奨］
+        - 変える。ask-with-choices の発動点「1 問でも、判断を委ねる問いを書き始める時点」を description に足す。evals のケース新設と実行を PR 3 に含める
+        - 変えない。代わりに少数の質問向けの最小規範（調べれば分かることを聞かない・推測で埋めない）を入口 rule に足す。rules/ の変更なので PR 3 とは別の PR
+        - その他
+    - 設問 4 / 6「既知バグ一覧の askuserquestion-rendering にある ask-with-choices への記述を PR 3 で直すか」。
+      問い: 既知バグ一覧のエントリ askuserquestion-rendering（配布済みの一覧と plugin 同梱の雛形）にある ask-with-choices への記述を、どの時点で直すか。
+        - PR 4 に任せる（計画どおり）［推奨］
+        - PR 3 で直す。雛形と配布済みの一覧の両方を直し、claude-known-issues の version bump を同じ PR に入れる
+        - 配布済みの一覧だけ PR 3 のマージ直後に entry skill で直し、雛形は PR 4 に任せる
+        - その他
+    - 設問 5 / 6「impl-spec の agent レビュー終了条件が旧方式のままなのを、どこで揃えるか」。
+      問い: impl-spec 3 skill の spec-reviewer の終了条件「指摘がゼロになるか、最大 5 回に達したら終了する」を、どこで cuc / session の形に揃えるか。
+        - norm-refit では触らず、idea-hub への申し送り（`notes/idea-hub-handoff.md`）に「impl-spec の終了条件は cuc / session と不揃い。統合時に揃える」を足す［推奨］
+        - PR 3 で impl-spec 3 skill を「指摘 0 件まで繰り返さない。もう 1 度だけ」へ揃える。spec-reviewer の指摘の返し方は変えない
+        - PR 5（review agent の責務統一）の対象に spec-reviewer と impl-spec 3 skill を足す
+        - その他
+    - 設問 6 / 6「rules/ の外にある既存の Markdown の表に「※ 表 N 何の表か」を付けるか」。
+      問い: rules/ と notes/artifacts/ を除いた既存の Markdown の表 84 件（表 2）のうち、どこまでに「※ 表 N 何の表か」を付けるか。
+        - 付けない。既存の表には遡らず、新しく書く表と書き換える表にだけ付ける
+        - README.md と CLAUDE.md の 11 表にいま付ける。他は書き換えるときに付ける［推奨］
+        - README.md・CLAUDE.md に加えて notes/*.md の 27 表（冒頭の表 7 を含む）にも付ける
+        - 対象すべて（84 表）に付ける。plugins/ の 10 plugin は version bump と update を伴う
+        - その他
+
+- 反映先: Q1 は PR 3（明細 C-4 の既定案）と `notes/idea-hub-handoff.md` / Q2 は PR 3（明細 B の「回答の受け取り」の文案を書き直す）/
+  Q3 は反映なし / Q4 は PR 3、`plugins/claude-known-issues/config/known-issues.template.yml`、
+  配布済み `~/.claude/plugins/data/claude-known-issues-cc-tools/known-issues.yml` /
+  Q5 は `notes/norm-refit-plan.md` の PR 5 節（呼び出し元が直す）/ Q6 は反映なし（rules の変更なし）
+
+
+### 2026-08-25 媒体非依存の確認・質問の規範は propose-before-implement を広げた rule へ（PR 3 の構成変更）
+
+- 結論: PR 3 で html-communication へ一本化する予定だった確認・質問の規範のうち、媒体に依らないもの
+  （明細 C-3「設問を立てる前に決めること」の全項目 = 問わないもの 3 / 問うもの 7 / 問い方 4、AQ18 の上流決定の明示、
+  回答後のフロー（ccm-f051 Q2 の形））は、`rules/propose-before-implement.md` を「ユーザーへの確認」の rule に広げてそこへ置く。
+  ファイル名は `rules/user-confirmation.md` に変える。html-communication に残るのは HTML フォーム固有の「確認（設問）を含めるときの作り」だけ。
+  常時ロードは 8 ファイルのまま（到達点 3）
+- 決めなかった範囲: 入口 rule `japanese-text-writing.md` の最小規範にある「確認は 1 件ずつ出す」「選択肢に出す語は、選択肢より前に実体を書く」を
+  新 rule へ移すか残すかは、実装時に条項単位で決める（明細で扱う）。plugin 側から rule への参照は置かない（plugin 自己完結の原則と、
+  到達点 1「plugin 側に汎用の再実装を残さない」の両方に従う）
+- 決め手: ターミナルでの確認に届く器であること（候補 C の条件ロードと D の HC skill は届かない）と、常時ロードを増やさないこと（候補 B は 9 になる）。
+  既存の 2 節（提案と実装を分ける / 手段が変わったら確認に戻る）が同じ「いつユーザーに戻るか」の主題で、足しても主題が揃う
+- 出典: ccm-f051 の補足「質問確認の規範のうち html に限らない内容はそれこそ共通規範として別のルールかなにかにしておきたい」と、
+  その後の会話（2026-08-25）。提示した候補は A（propose-before-implement を広げる。推奨）/ B（新しい常時ロード rule）/
+  C（japanese-text-writing の references）/ D（html-communication のまま）+ 作業手順 skill / agent / hook / CLAUDE.md は落とす。回答の実文:
+
+  ```text
+  A
+  ```
+
+- 反映先: PR 3（明細の更新。`rules/user-confirmation.md` の新設 = propose-before-implement の改名と拡張、html-communication の C-3 節は置かない）、
+  `notes/norm-refit-plan.md` の PR 3 節と到達点 3
+
+### 2026-08-25 HTML ページの冒頭ブロックの見出し語は form / report とも「まとめ」
+
+- 結論: html-communication の雛形の冒頭ブロック（`.concl`、見出し語「結論」）は、form では推奨の要約、report では現状の要約で、
+  結論と呼べる中身は選定レポートのような答えを 1 つ出す場合だけ。見出し語を form / report とも「まとめ」に統一する。
+  skill の構成規定「前提 → 結論・概要 → 詳細 → 設問」は「前提 → まとめ（報告では結論や現在地、フォームでは推奨の要約）→ 詳細 → 設問」に書き換え、
+  skill 内の「結論ブロック」の呼び方も揃える。CSS のクラス名 `.concl` は変えない
+- 決めなかった範囲: 機械検査に「結論」を見ている項目があるかは実装時に確かめる
+- 決め手: 共通ページディレクトリの report 4 本の実物（ih-r002「配布の中核は 2 本の PR に分かれ…」、eidp-r001「クリティカルパス上で止まっているのは…」、
+  ccm-r003 は見出し語が「現在地」、答えを出しているのはボイスレコーダー選定の 1 本だけ）と、ユーザーの判断
+- 出典: ccm-f051 の補足「html comunication の最初の結論のセクションが全然結論じゃない。まとめ、推奨案のまとめ、とかじゃない？」と、
+  その後の会話（2026-08-25）。提示した案は「form は『推奨のまとめ』、report は『結論』のまま（推奨）」と「form も『まとめ』」。回答の実文:
+
+  ```text
+  report でどちらが適してるのか現状の html を確認してみて、直感経験的にはまとめのが適してると思った
+  ```
+
+- 反映先: PR 3（別 commit。`plugins/claude-user-communication/skills/html-communication/SKILL.md` の構成規定と「結論ブロック」の呼び方、
+  `templates/page.html` の見出し語）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
@@ -1950,6 +2076,12 @@ f007 以降のフォームは、各設問がどの課題を解消するかを明
 - [ ] `html-communication/SKILL.md:297-298` が入口 rule を旧タイトル「日本語テキストの執筆要点」で指している
   （現行のタイトルは「日本語テキストの執筆規範」）。PR 3 の作業明細の実読で見つけた観測（2026-08-25）。
   PR 3 の 7 項目の外なので、どの PR で直すかは未定
+- [x] html-communication の「結論」セクション（構成規定「前提 → 結論・概要 → 詳細 → 設問」の 2 つ目）は、フォームでは結論になっていない。
+  ユーザー指摘（ccm-f051 補足、2026-08-25）「html comunication の最初の結論のセクションが全然結論じゃない。まとめ、推奨案のまとめ、とかじゃない？」
+  （解消済み: 同日の確定エントリ「冒頭ブロックの見出し語は form / report とも「まとめ」」）
+- [x] 確認・質問の規範のうち HTML に限らない内容の置き場。ユーザー指摘（同上）「質問確認の規範のうち html に限らない内容は
+  それこそ共通規範として別のルールかなにかにしておきたい」（解消済み: 同日の確定エントリ「媒体非依存の確認規範は
+  propose-before-implement を広げた rule へ」）
 
 ## 作業メモ
 
