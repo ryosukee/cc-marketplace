@@ -44,11 +44,10 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 
 ## 現在地
 
-2026-08-26 時点。**段階 1・2 が完了し、段階 3 は 9 本の PR のうち 6 本（PR 6・1・8・2・3・4）がマージ済み。
-PR 4（AskUserQuestion の除去）は PR #16 として同日にマージし、5 plugin の cache 更新も済んだ。
-残りは PR 9 → PR 5 → PR 7 の 3 本で、次は PR 9（skill / agent の書き方の器）。
-着手前に、抜き出し候補の調査 `notes/artifacts/norm-refit-pr9-survey.md`（3 案 + 判断 16 件）を材料に、
-器の構成（1 本か 2 本か、名前、paths、rule-authoring との統合）を確認する。**
+2026-08-27 時点。**段階 1・2 が完了し、段階 3 は 9 本の PR のうち 7 本（PR 6・1・8・2・3・4・9）がマージ済み。
+PR 9（skill / agent / CLAUDE.md の書き方の器）は PR #17 としてマージし、cache 更新も済んだ。
+残りは PR 5（review agent の責務統一）と PR 7（japanese-text-writing の保守の手引き）の 2 本で、次は PR 5。
+PR 9 で `rules/` は 15 本になった（常時ロード 8 + 条件ロード 7）。**
 norm-refit の外では、PR のマージの合図を `approve` ラベルにする運用を決め（ccm-f052）、
 github-pr 0.4.9（PR #15）で実装した。以後のマージはラベルの有無で判定する。
 
@@ -390,6 +389,12 @@ html-communication に PR 3 が 1 行を新しく書いたため（41 - 5 + 1 = 
   配布済みの `known-issues.resolved.yml` の `log` に 1 行足すかだけが残る
 
 #### PR 9 skill / agent の書き方の器（独立。PR 4 の後・PR 5 の前）
+
+**完了。PR #17、main 7e563fc（2026-08-27）。作業手順書は `notes/artifacts/norm-refit-pr9-detail.md`、
+抜き出し候補の調査は `notes/artifacts/norm-refit-pr9-survey.md`。
+`rules/claude-doc-authoring.md`（共通 + 判断フロー）を新設し、`rule-authoring.md` を rule 固有に削り、
+`skill-authoring.md` / `agent-authoring.md` / `claude-md-authoring.md` を新設した。
+既存 11 本の追従は別 PR。**
 
 skill（SKILL.md）と agent の書き方の規範を user global rule に新設する。rule の書き方の器（PR 6 = `rule-authoring.md`）の
 skill / agent 版で、作り方も同じ。product-boilerplate の `bundles/core/rules/`（skill-authoring / agent-authoring /
