@@ -36,7 +36,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| github-pr | 0.4.9 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件を定める。`gh` CLI が必要 |
+| github-pr | 0.4.10 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件を定める。`gh` CLI が必要 |
 
 ### Authoring / tooling
 
@@ -50,7 +50,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.33.1 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 15 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.33.2 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。雛形は 1 / 2 / 3 pane のレスポンシブと、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 15 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 
@@ -86,9 +86,16 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | decision-record | 常時 | 複数セッションの調査・設計で確定事項の台帳を持つ |
 | subagent-delegation | 常時 | subagent の起動は原則許可。判断基準はコンテキストの節約 |
 | background-task | 常時 | バックグラウンド起動は `run_in_background` を使う |
+| propose-before-implement | 常時 | 設計判断を含む作業は案の提示で止め、承認を得てから実装する |
+| skill-invocation | 常時 | 発動条件に一致する skill は、記憶で代替せず Skill ツールで発動する |
+| bash-state-mutation-isolation | 常時 | 状態変更と復旧を 1 つのシェルコマンドに連結しない |
 | markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
-| rule-authoring | `.claude/rules/**` `rules/**` | rule の書き方の共通規範。命名・参照・ロード方式の使い分け |
+| rule-authoring | `.claude/rules/**` `rules/**` | rule ファイルの冒頭とロード方式の使い分け |
 | notes-authoring | `notes/**` | 確定事項の台帳として運用する `notes/` を書く最中の規範。冒頭の目的・生存期間・対象タスク、確定事項と作業メモの 2 節、重複回避、消す手順 |
+| claude-doc-authoring | `.claude/rules/**` `rules/**` `.claude/skills/**` `plugins/*/skills/**` `.claude/agents/*` `plugins/*/agents/*` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・frontmatter・指示項目・参照・why・改訂 |
+| skill-authoring | `.claude/skills/**` `plugins/*/skills/**` | SKILL.md の書き方。2 種別の判定・frontmatter と description・スクリプト化・文体 |
+| agent-authoring | `.claude/agents/*` `plugins/*/agents/*` | agent 定義の書き方。ファイル形式・frontmatter・冒頭に書く 6 つの責務・入出力 |
+| claude-md-authoring | `CLAUDE.md` | CLAUDE.md の書き方。役割とサイズ・書くもの / 書かないもの・rule との重複・更新の時期 |
 
 `paths` を持つ rule は、一致するファイルを Claude が読んだときだけロードされる。
 持たない rule はセッション開始時に無条件でロードされる。

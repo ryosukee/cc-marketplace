@@ -89,8 +89,8 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments \
   -f subject_type="file" \
   -f commit_id="$(gh api repos/{owner}/{repo}/pulls/{number} --jq '.head.sha')" \
   -f body="内容を各 authoring rule に統合したため削除。移行先:
-- rule-authoring.md のファイル命名セクション
-- skill-authoring.md のファイル命名セクション"
+- claude-doc-authoring.md の命名セクション
+- skill-authoring.md の frontmatter セクション"
 ```
 
 複数のファイルコメントがある場合は、それぞれ個別に API を呼ぶ。
