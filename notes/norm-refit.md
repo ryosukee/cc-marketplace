@@ -1993,6 +1993,48 @@ f045 Q3 の判断材料として記録する。
 - 出典: PR #12 のレビューコメントと会話（2026-08-26）
 - 反映先: `notes/norm-refit-plan.md` の現在地と PR 3 の節、ccm-r003
 
+### 2026-08-26 セルフレビュー repo のマージの前提は `approve` ラベル（ccm-f052）
+
+- 結論: 個人 repo（作者 = 本人）では GitHub の approve が構造的に付けられないので、マージの前提を
+  PR に付ける `approve` ラベルにする。GitHub 側の設定（ruleset / branch protection）は入れない。
+  PR の作者を bot にする案（GitHub App）も採らない。判定は
+  `gh pr view {number} --json labels --jq '[.labels[].name] | index("approve")'` が null でないことで、
+  コメント本文の読解に委ねない。規範の書き直しは系統 A（セルフレビュー）だけで、系統 B（他人レビュー）は
+  本物の approve のまま。記録先は `plugins/github-pr/skills/create/references/shared/review-flows.md` と この台帳
+- 決めなかった範囲: ラベルの付け忘れを検知する仕組み（後から `gh pr list --state merged --json number,labels` で
+  洗い出せることは書くが、定期の仕組みにするかは決めていない）。既知バグ一覧のエントリは作らない
+  （対象が Claude Code ではなく GitHub の仕様なので、changelog 突合の対象にならない）
+- 決め手: 未確認の前提が 0 件で、増える管理物も 0 件（ラベル 1 つだけ）。
+  bot 案は未確認が 3 件（`gh pr create` の作者表示、ruleset の bypass の実効、App token の approve のカウント）残り、
+  秘密鍵の保管と 1 時間で失効する token の再取得が要る。
+  approvals 0 + check 案は、GitHub 側の設定が `.claude/rules/norm-refit-ops.md` の「notes は main へ直接入れる」と衝突する
+- 出典: ccm-f052 回答 2026-08-26（設問の実文は共通ページディレクトリの `ccm-f052.html`。掃除で削除する前に
+  `norm-refit-form-sources.md` へ写す）。回答の実文:
+
+  ```text
+  ## HTML フォーム回答（セルフレビュー repo の PR マージ前提の置き方）
+  - Q1（マージの前提の置き場）: GitHub 設定なし・PR 上の合図
+  - Q2（GitHub 側の強制設定）: 設定を入れない
+  - Q3（GitHub App の準備）: やらない
+  - Q4（レビュー完了の合図）: ラベル
+  - Q5（規範の書き直しの範囲）: 系統 A だけ
+  - Q6（決定の記録先）: 参照ファイル + 台帳
+  - 補足: なし
+  ```
+
+  ラベル名は会話で決めた。実文:
+
+  ```text
+  approve の方が良くないか？
+  ```
+
+  既定案の `reviewed` に対する上書きで、系統 B の本物の approve と同じ意味を担うので名前も揃えた。
+  ラベルは同日に作成済み（説明「本人のレビューが済み、マージしてよい PR。GitHub の approve が作者本人には付けられないための代替の合図」、色 0E8A16）
+- 調査の出所: 4 本の subagent（2026-08-26）。決定的だったのは、bot が作者の PR は依頼者本人が approve できるという実測
+  （Devin の `exa-labs/flyte#23`。作者 `devin-ai-integration[bot]`、`Requested by: @jld-adriano`、同じ人が APPROVED してマージ）。
+  GitHub が塞いでいるのは PR の author で、Copilot だけ「あなたが割り当てた issue の PR は approve できない」と個別に塞がれている
+- 反映先: `plugins/github-pr/skills/create/references/shared/review-flows.md` と同 plugin の 2 skill（github-pr 0.4.9、PR で出す）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
