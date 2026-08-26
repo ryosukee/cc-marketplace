@@ -60,8 +60,9 @@ PR 4 に残るのは配布済みファイルの `log` への 1 行だけ、か�
 書き換え後の文は rule を参照しない。37 行を 1 件ずつ確かめた結果は次の 2 点になる。
 
 - 型 1〜5 のどの文にも `rules/` のパス・rule 名・詳細規範 `user-confirmation.md` への言及は無い。書くのは道具（フリーテキスト）と媒体（HTML フォーム）だけ
-- 他 plugin の skill 名も新たに書かない。`plugin-design.md`「Plugin 自己完結」に従い、html-communication skill への参照は作らない
-  （既存の `plugins/session/skills/retrospective/SKILL.md:112` は言及行ではないので触らない。名指しの可否は未特定 2）
+- 他 plugin の skill 名を新たに書くかは未決（未特定 2、ccm-f053 の設問 2 で確認中）。既定案は書かない
+  （`plugin-design.md`「Plugin 自己完結」に従い、html-communication skill への参照を作らない）。
+  既存の `plugins/session/skills/retrospective/SKILL.md:112` は言及行ではないので触らない
 
 ### A-3. impl-spec（16 行）
 
