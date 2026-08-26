@@ -1,11 +1,10 @@
 # claude-user-communication
 
-ユーザーへの確認・提示のコミュニケーション方法を定める plugin。2 つの skill を提供する。
+ユーザーへの確認・提示のコミュニケーション方法を定める plugin。1 つの skill を提供する。
 
 - html-communication: 入り組んだ説明・報告・確認を self-contained な HTML ページ（claude-html-communication）で提示する運用一式。
-  index 管理・serve URL 提示・下書きプロトコル・PWA アセットの再生成（`templates/` に雛形を同梱）
-- ask-with-choices: 選択肢形式の確認の運用。質問の分割・上流決定の明示・回答後のフロー
-  （AskUserQuestion のレンダリングバグが直るまでの使用禁止の時限措置を含む）
+  index 管理・serve URL 提示・下書きプロトコル・PWA アセットの再生成（`templates/` に雛形を同梱）・
+  HTML フォームの設問の作りと回答の受け取り
 
 ## 必要な環境変数
 
