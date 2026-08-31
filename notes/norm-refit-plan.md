@@ -104,7 +104,7 @@ github-pr 0.4.9（PR #15）で実装した。以後のマージはラベルの�
 | --- | --- | --- |
 | 1 | 判定を閉じる | 1349 条項すべてに処遇が付く |
 | 2 | 決着が要る 6 件 | 実装に着手できる。ユーザー判断を含む |
-| 3-1 | 実装（PR 群） | 到達点 1・2・3・5 が成立する。**完了** |
+| 3-1 | 実装（PR 群） | 到達点 1・2・3・5 が成立する。**PR 群は完了**（追従の残務は別節） |
 | R | レビュー機構の最適化 | レビュー 1 回の消費と反復回数が、決めた終了条件のもとで測れる |
 | 3-2 | japanese-text-writing の保守の手引き | 再編後の構成を壊さずに規範を足せる |
 | 4 | T4 の設計と実装 | 到達点 4 が成立し、保留 18 件が解ける |
@@ -653,6 +653,29 @@ ccm-f056 Q1 が決めたのは段階 3 の残りの扱いまでで、以下は�
 paths は実測済み）に乗る。`rule-authoring.md`（rule 全般の共通規範）には入れない:
 分類ファイル構成・複製・監査語彙は japanese-text-writing 固有で、共通規範を汚す。
 `.claude/rules/` 案は paths の発火が未実測のため採らない。実装時に確定する。
+
+## 追従の残務
+
+段階 3-1 の PR がもたらした食い違いのうち、PR に含めきれなかったもの。
+段階に属さず、いつでも着手できる。段階 3-1 の「完了」は PR 群を出し切ったことを指し、
+この残務が片付いたことは指さない。
+
+すべて 2026-09-01 に実物で確認して、まだ残っていることを確かめた。
+
+- PR 9 の既存 agent への追従。`description` の書き方に反する 5 本、呼び出し元を書く agent 4 本、
+  日付付き経緯を持つ agent 2 本。対象の一覧は
+  [PR 9 の作業手順書](./artifacts/norm-refit-pr9-detail.md) の J 節
+- `plugins/dotclaude/skills/doctor/SKILL.md` の 422・427 行が agent の frontmatter を
+  `allowedTools` と書いている。実配置の agent 7 本はすべて `tools`
+- `plugins/session/skills/retrospective/SKILL.md` の 111 行が html-communication skill を
+  名指ししている。plugin から他 plugin を名指ししない原則（ccm-f053 Q2）に反する
+- `plugins/dotclaude/skills/doctor/SKILL.md` の 204 行が無条件、217 行が「4 件を超える場合」で、
+  HTML フォームにまとめる閾値の書き方が割れている
+- `plugins/claude-user-communication/skills/html-communication/SKILL.md` の 329 行が
+  旧タイトル「日本語テキストの執筆要点」を参照している。PR 1 で改名済み
+- 完了した確認フォーム 9 本（ccm-f046〜f054）の実文が
+  [確認フォームの実文](./artifacts/norm-refit-form-sources.md) に未収録。
+  掃除でページを消さなくなったので失われる恐れは無いが、出典の実文を repo 内に持つ規定は残る
 
 ## 段階 4 T4
 

@@ -11,6 +11,7 @@
 //   7. 参照マーカーの器が sup 以外
 //   8. 脚注番号・補足英字が本文の初出順になっていない
 //   9. 識別子 (Q1 / PR 3 / foo.md) が本文に出るのに、その段落から補足へ飛べない
+//      図のキャプションの番号が 1 からの連番でない
 //  10. 見出しの系統 (説明 N / 設問 N/M / 参考資料 / 付録)、設問の分母と QS 配列長、
 //      index の questions との突合
 //  11. 一括承認の設問 (複数の判断を 1 設問で承認させる形)
@@ -21,8 +22,8 @@
 //
 // 6〜15 は op-review の facet が繰り返し指摘していたものを機械へ移したもの
 // (2026-08-18。ih-f007 の実測で clarity facet の指摘 58 件の大半がこの形だった)。
-// 上の 15 項目に対して check の値は 16 種ある。見出しの系統と設問の分母は
-// heading-series と question-count の 2 つに分かれているため (項目 10)。
+// 上の 15 項目に対して check の値は 17 種ある。項目 9 が identifier-gloss と figure-order、
+// 項目 10 が heading-series と question-count に分かれているため。
 // 数を書き換えるときは grep -o 'check: "[a-z-]*"' scripts/check-page.mjs | sort -u で数え直す。
 //
 // 正規表現ベース。対象は自前の雛形から生成したページに限る (一般の HTML には使えない)。
@@ -224,6 +225,16 @@ function checkFile(path) {
     if (suFirst[i] !== String.fromCharCode(97 + i)) {
       findings.push({ check: "ref-order", line: null,
         message: `補足の英字が本文の初出順でない (${suFirst.join(", ")})` });
+      break;
+    }
+  }
+
+  // 図のキャプションの番号は 1 から連番。同じ番号が 2 度出ると、本文からどちらを指すか決まらない
+  const figNums = [...bd.matchAll(/class="cap"[^>]*>\s*図\s*(\d+)/g)].map((m) => Number(m[1]));
+  for (let i = 0; i < figNums.length; i++) {
+    if (figNums[i] !== i + 1) {
+      findings.push({ check: "figure-order", line: null,
+        message: `図番号が 1 からの連番になっていない (${figNums.join(", ")})` });
       break;
     }
   }
