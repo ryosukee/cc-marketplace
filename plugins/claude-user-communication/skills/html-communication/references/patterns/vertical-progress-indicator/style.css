@@ -17,6 +17,9 @@
 .phase > .h { font-weight: 700; margin: 4px 0 2px; }
 .phase > .h .tag { font-size: 0.875em; font-weight: 400; color: var(--sub); margin-left: 8px; }
 .phase p { margin: 4px 0 14px; }
+/* 段の中の内訳。段が何をするかの箇条書きに限る（状態を持つ下位項目は progress tree の担当） */
+.phase ul { margin: 4px 0 14px; padding-left: 1.2em; }
+.phase li { margin: 2px 0; }
 /* 工程の切れ目に置く到達点。ここで何が終わるかを 1 行で示す */
 .milestone { border-left: 2px solid var(--rule); padding: 8px 0 8px 18px; margin: 0 0 6px;
              position: relative; font-weight: 700; }
