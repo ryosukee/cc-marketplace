@@ -8,7 +8,7 @@
 調査・比較・検証の依頼など、着手の時点で分量が読めるならそこで決めてよい。
 
 - 数行の応答・進捗報告 → 何も読まずに下の最小規範で書く
-- 確認・質問を出すとき（1 問でも）と、回答を受けて次へ進むとき → ./japanese-text-writing/references/user-confirmation.md を読む
+- 確認・質問を出すとき（1 問でも）と、回答や指摘を受けて次へ進むとき → ./japanese-text-writing/references/user-confirmation.md を読む
 - まとまった文章（複数段落の文書・調査まとめ・長い返答）→ ./japanese-text-writing/references/core.md を読む
 
 ## 数行返答の最小規範
