@@ -12,7 +12,9 @@ Claude Code のバグ・制約に対してワークアラウンドを作った�
 
 未解決のエントリは `${CLAUDE_PLUGIN_DATA}/known-issues.yml`、解除したエントリは
 同じディレクトリの `known-issues.resolved.yml`。エントリに status は無く、どちらのファイルにあるかが状態。
-無ければ `${CLAUDE_PLUGIN_ROOT}/config/known-issues.template.yml` から初期化される。
+どちらも無ければ空（`entries: []`）で作られる。エントリの書き方の例は
+`${CLAUDE_PLUGIN_ROOT}/config/known-issues.template.yml` と、同じディレクトリの
+`known-issues.resolved.template.yml` にある。例の中身が一覧へ入ることはない。
 
 ```
 CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}" \

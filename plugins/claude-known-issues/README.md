@@ -20,7 +20,10 @@ Claude Code の更新を検知したら changelog と突合し、たまに全エ
 | 未解決の一覧 | `${CLAUDE_PLUGIN_DATA}/known-issues.yml` |
 | 解除済みの一覧 | `${CLAUDE_PLUGIN_DATA}/known-issues.resolved.yml` |
 | 突合の状態 | `${CLAUDE_PLUGIN_DATA}/state.json` |
-| 一覧のテンプレート | `config/known-issues.template.yml`（plugin 同梱） |
+| エントリの書き方の例 | `config/known-issues.template.yml` と `config/known-issues.resolved.template.yml`（plugin 同梱） |
+
+一覧はどちらも空（`entries: []`）で作られる。`config/` の 2 つは書き方の例で、
+この中身が一覧へ入ることはない。
 
 `${CLAUDE_PLUGIN_DATA}` は plugin 更新をまたいで残る永続ディレクトリで、
 実体は `~/.claude/plugins/data/claude-known-issues-cc-tools/`。

@@ -8,11 +8,11 @@
 
 set -euo pipefail
 
-# 台帳のパスを解決する。無ければ同梱テンプレートから初期化する
+# 台帳のパスを解決する。無ければ空で作る
+# config/ の 2 つの yml はエントリの書き方の例で、ここへは入れない
 # 出力: LEDGER_PATH
 resolve_ledger() {
   local data_dir="${CLAUDE_PLUGIN_DATA:-}"
-  local plugin_root="${CLAUDE_PLUGIN_ROOT:-}"
 
   if [ -z "$data_dir" ]; then
     echo "CLAUDE_PLUGIN_DATA が未設定" >&2
@@ -22,13 +22,8 @@ resolve_ledger() {
   LEDGER_PATH="$data_dir/known-issues.yml"
 
   if [ ! -f "$LEDGER_PATH" ]; then
-    local template="$plugin_root/config/known-issues.template.yml"
-    if [ ! -f "$template" ]; then
-      echo "テンプレートが見つからない: $template" >&2
-      return 2
-    fi
     mkdir -p "$data_dir"
-    cp "$template" "$LEDGER_PATH"
+    printf -- '---\nentries: []\n' > "$LEDGER_PATH"
   fi
 }
 

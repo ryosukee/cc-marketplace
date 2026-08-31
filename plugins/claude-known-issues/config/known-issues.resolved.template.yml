@@ -1,0 +1,23 @@
+---
+# 解除済みエントリの書き方の例。この内容が一覧へ入ることはない。
+# 解除済みの一覧も空 (entries: []) で作られ、review skill が未解決の側から 1 件ずつ移す。
+# 未解決の 8 項目に resolved_at と resolved_version を足した形。
+entries:
+- id: example-resolved-entry
+  title: 例 1 行のタイトル。何が起きていたかを書く
+  summary: |
+    例 未解決だったときの記述をそのまま残す。解除後に書き換えない。
+    ここは書き方の例なので、中身に意味は無い。
+  affected: 例 v2.1.100〜v2.1.130
+  refs:
+  - https://github.com/anthropics/claude-code/issues/00000
+  dependents:
+  - '例 {ワークアラウンドを担っていた場所}: {解除時に何をしたか}'
+  how_to_verify: |
+    例 解除の判定に使った再現手順と期待結果。解除後も消さない。
+    同じ挙動が戻ったときに、ここを実行して未解決へ差し戻す。
+  log:
+  - '例 YYYY-MM-DD: 突合の結果'
+  - '例 YYYY-MM-DD: 解除。何をもって解除としたかを書く'
+  resolved_at: '例 YYYY-MM-DD'
+  resolved_version: 例 2.1.130

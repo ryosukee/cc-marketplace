@@ -1,69 +1,21 @@
 ---
+# 未解決エントリの書き方の例。この内容が一覧へ入ることはない。
+# 一覧は空 (entries: []) で作られ、entry skill が 1 件ずつ追記する。
+# 8 項目は増やさない。各項目の意味は skills/entry/SKILL.md の「エントリの型」にある。
 entries:
-- id: task-tools-unavailable
-  title: タスク管理ツールが新しいモデルへ提供されない
+- id: example-unresolved-entry
+  title: 例 1 行のタイトル。何が起きるかを書く
   summary: |
-    TaskCreate / TaskGet / TaskUpdate / TaskList と TodoWrite が、一定バージョン以降の
-    モデルのセッションでツール一覧に現れない。Opus 5 のセッションでは ToolSearch でも
-    見つからない (実測)。session plugin の skill 群がタスク登録を手順に含めているため、
-    進行管理を draft のタスクボードへ代替する必要がある。
-
-    判定は v2.1.233 バイナリの関数 pX() で、次のいずれかが成り立てば提供される。
-
-      (1) Zx() または Ads() が真 (SDK・非対話系の経路)
-      (2) 現在のモデルがゲート対象リスト G_H に該当しない
-      (3) 環境変数 CLAUDE_CODE_ENABLE_TODO_TOOLS が真
-      (4) GrowthBook flag tengu_rosy_wren が真 (既定 false)
-
-    ゲート対象リスト G_H は [["opus",[4,8]],["sonnet",[5]],["fable",[5]],["mythos",[5]]] で、
-    比較関数 lkr() は「そのバージョン以上」を該当とする。claude-opus-5 は opus 4.8 以上のため該当し、
-    既定では提供されない。claude-opus-4-8 も該当する。
-  affected: |
-    v2.1.233 で新設。2.1.227 / 2.1.232 のバイナリには CLAUDE_CODE_ENABLE_TODO_TOOLS も
-    tengu_rosy_wren も 0 件で、ゲート機構自体が存在しない (2.1.233 は 3 件 / 2 件)。
-    v2.1.232 のセッションでは TaskCreate 系が使えていた (2026-08-15 の前セッションで実使用)。
-    v2.1.233 では Opus 5 のセッションのツール一覧・ToolSearch のどちらにも現れない。
-
-    環境変数の真値は "1" / "true" / "yes" / "on" (小文字化・trim して判定。パーサ Dn())。
+    例 実測した事実だけを書く。公式ドキュメントの記述は summary ではなく refs に置く。
+    ここは書き方の例なので、中身に意味は無い。
+  affected: 例 v2.1.100〜（changelog で確認した範囲。不明なら「不明、v{現在} で実測」）
   refs:
-  - https://github.com/anthropics/claude-code/issues/80151
+  - https://github.com/anthropics/claude-code/issues/00000
   dependents:
-  - "~/.claude/settings.json の env に CLAUDE_CODE_ENABLE_TODO_TOOLS=1 (現用。全 scope でゲートを外す)"
-  - session plugin の start / handover / debrief skill (draft のタスクボード節を進行管理の正とする代替手順。環境変数が効かない環境へのフォールバックとして残す)
-  - '解除時の手順（旧 release_steps）: 1. ~/.claude/settings.json の env から CLAUDE_CODE_ENABLE_TODO_TOOLS
-    を削除する 2. session plugin の start / handover / debrief から、TaskCreate 不提供環境の 代替手順の記述を削除するか注記に格下げする
-    3. この台帳エントリの status を resolved にする'
-  how_to_verify: '未作成。全件突合のときに再現手順へ書き直す。旧 release_criteria: Opus 5 のセッションでツール一覧に TaskCreate
-    系が既定で現れることを実測できたら解除する。 判定はバイナリの G_H から opus のエントリが消えたか、または pX() のゲート自体が消えたかで行う。
-    環境変数はゲートを外すだけで、ゲート自体が消えたことの判定材料にはならない。 突合時は環境変数の有無に関わらずバイナリを見る。'
+  - '例 {ワークアラウンドを担う plugin / skill / rule とファイル・節}: {解除時にそこをどうするか}'
+  how_to_verify: |
+    例 誰が実行しても同じ結果が出る再現手順と、期待結果を書く。
+    期待結果と違う結果が出たら解除候補になる。
+    プローブファイルを作るなら名前を .known-issues-probe-{id} にし、手順の最後に消す。
   log:
-  - '2026-08-15: v2.1.233 のセッションで TaskCreate 系が不提供であることを実測し登録。原因は pX() のモデルゲートで、G_H
-    が opus 4.8 以上・sonnet/fable/mythos 5 以上を対象にしている。CLAUDE_CODE_ENABLE_TODO_TOOLS での回避は未採用'
-  - '2026-08-15: ユーザーが ~/.claude/settings.json の env に CLAUDE_CODE_ENABLE_TODO_TOOLS=1
-    を追加し回避を採用。セッション途中で TaskCreate / TaskList / TaskUpdate / TaskGet が deferred tool
-    として現れることを実測。モデルゲート自体は残っているため open のまま'
-  - '2026-08-15: v2.1.233 での新設であることをバイナリ比較で確認 (2.1.227 / 2.1.232 にゲート機構なし)。以前このエントリが台帳に無かったのは不提供が解消していたためで、今回は再発ではなく別原因の新規ゲート'
-  - '2026-08-15: ユーザー承認のうえ ~/.claude/settings.json の env に CLAUDE_CODE_ENABLE_TODO_TOOLS=1
-    を追加 (dotclaude-writer 経由)。セッション再起動なしで TaskCreate / TaskGet / TaskUpdate / TaskList
-    が deferred tool として復帰することを実測'
-  - '2026-08-18: v2.1.234 のバイナリを grep。ゲート関数は識別子が改名されただけで構造同一 (pX→cJ, G_H→FuH, W_H→$uH)、対象リストは
-    opus 4.8 / sonnet 5 / fable 5 / mythos 5 のまま。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
-    も同数。issue 80151 は open。open のまま'
-  - '2026-08-19: v2.1.235 のバイナリを grep。ゲート対象リストは識別子が改名されただけで内容同一 (FuH→RpS、opus 4.8
-    / sonnet 5 / fable 5 / mythos 5)。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
-    も同数。changelog の ctrl+t タスクリスト修正は表示状態で別件。issue 80151 は open。open のまま'
-  - '2026-08-20: v2.1.236 のバイナリを grep。ゲート関数は識別子が改名されただけで構造同一 (oZ→pZ、RpS→OxS)、対象リストは
-    opus 4.8 / sonnet 5 / fable 5 / mythos 5 のまま。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
-    も同数。issue 80151 は open。open のまま'
-  - '2026-08-20: v2.1.237 のバイナリを grep。ゲート対象リストは識別子が改名されただけで内容同一 (RpS→QxS、opus 4.8
-    / sonnet 5 / fable 5 / mythos 5)。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
-    も同数。issue 80151 は open。open のまま'
-  - '2026-08-22: v2.1.238 のバイナリを grep。ゲート関数は識別子が改名されただけで構造同一 (fZ→ree、QxS→bzv)、対象リストは
-    opus 4.8 / sonnet 5 / fable 5 / mythos 5 のまま。CLAUDE_CODE_ENABLE_TODO_TOOLS / tengu_rosy_wren
-    も同数。changelog の Remote Control tasks パネルの Stop 修正は別件。issue 80151 は open。open のまま'
-  - '2026-08-23: v2.1.239 / v2.1.240 のバイナリを grep。ゲート対象リストは識別子が改名されただけで内容同一 (opus 4.8
-    / sonnet 5 / fable 5 / mythos 5)。CLAUDE_CODE_ENABLE_TODO_TOOLS 3 件 / tengu_rosy_wren
-    2 件も同数。issue 80151 は open。open のまま'
-  - '2026-08-24: v2.1.241 のバイナリを grep。ゲート対象リストは opus 4.8 / sonnet 5 / fable 5 / mythos
-    5 のままで 2 件、CLAUDE_CODE_ENABLE_TODO_TOOLS 3 件 / tengu_rosy_wren 2 件も v2.1.240 と同数。issue
-    80151 は open。open のまま'
+  - '例 YYYY-MM-DD: 確認したことと結果'
