@@ -7,7 +7,7 @@
 //   4. 脚注の双方向対応 (fn-N と fnref-N-M のペアリング。リンク先の存在は linkinator が見る)
 //   5. main 内の class / id が Readability の削除・減点正規表現に当たらないか
 //      (当たると Firefox Reader View 等で本文が削られる。main 外の固定バーは対象外)
-//   6. 本文の 1 文が 100 字を超える
+//   6. 本文の 1 文が 100 字を超える (code / pre / blockquote 内は除外)
 //   7. 参照マーカーの器が sup 以外
 //   8. 脚注番号・補足英字が本文の初出順になっていない
 //   9. 識別子 (Q1 / PR 3 / foo.md) が本文に出るのに、その段落から補足へ飛べない
@@ -180,7 +180,9 @@ function checkFile(path) {
 
   // 6. 1 文 100 字超。code / pre の中は数えない
   const SENTENCE_LIMIT = 100;
-  const proseSrc = bd.replace(/<(pre|code)\b[\s\S]*?<\/\1>/g, " ");
+  // 引用は原文のまま転記する規定なので、長さを書き手が選べない。blockquote は文長の対象外にする
+  const proseSrc = bd.replace(/<(pre|code)\b[\s\S]*?<\/\1>/g, " ")
+                     .replace(/<blockquote\b[\s\S]*?<\/blockquote>/g, " ");
   let longSentences = 0, worstS = { len: 0, text: "" };
   for (const m of proseSrc.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)) {
     for (const sent of stripTags(m[1]).split(/(?<=。)/)) {
