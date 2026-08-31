@@ -3,10 +3,10 @@
 # 3 層の検査を順に実行し、指摘を JSON で stdout に集約する。
 #   1. html-validate@11 (構文・a11y・document。ルールは同梱の htmlvalidate.json)
 #   2. linkinator@8 --check-fragments (リンク・同一ページ fragment の存在)
-#   3. check-page.mjs (雛形固有の検査 17 種: フォント段階・セル長・caption 対応・脚注対応・
+#   3. check-page.mjs (雛形固有の検査 18 種: フォント段階・セル長・caption 対応・脚注対応・
 #      Readability・文長・参照マーカーの器・参照の初出順・識別子の補足・図番号の連番・
-#      見出しの系統・設問数の突合・一括承認・設問見出しの形・列見出しの器の語・
-#      既定 checked・前景色の opacity)
+#      見出しの系統・設問数の突合・回答済みマーカー・一括承認・設問見出しの形・
+#      列見出しの器の語・既定 checked・前景色の opacity)
 #      + grep (div/span onclick)
 # Exit: 0=指摘なし, 1=指摘あり, 2=前提条件エラー
 set -euo pipefail

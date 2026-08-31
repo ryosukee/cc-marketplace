@@ -19,10 +19,11 @@
 //  13. 表の列見出しが何でも入る器の語になっていないか
 //  14. チェックボックスの既定 checked
 //  15. 前景色に opacity を重ねている (コントラストが下がる。値はトークンで決める)
+//  16. 設問カードの summary に回答済みマーカー (.qstat) が無い
 //
 // 6〜15 は op-review の facet が繰り返し指摘していたものを機械へ移したもの
 // (2026-08-18。ih-f007 の実測で clarity facet の指摘 58 件の大半がこの形だった)。
-// 上の 15 項目に対して check の値は 17 種ある。項目 9 が identifier-gloss と figure-order、
+// 上の 16 項目に対して check の値は 18 種ある。項目 9 が identifier-gloss と figure-order、
 // 項目 10 が heading-series と question-count に分かれているため。
 // 数を書き換えるときは grep -o 'check: "[a-z-]*"' scripts/check-page.mjs | sort -u で数え直す。
 //
@@ -319,6 +320,18 @@ function checkFile(path) {
         message: `範囲のラベル「${n.trim().slice(0, 20)}」の分母 ${d[1]} が設問カード数 ${qCards} と違う` });
     }
   }
+  // 設問カードの回答済みマーカー。折り畳んだままでも進捗が分かるように、
+  // summary に .qstat を置くと SKILL.md が定めている。
+  // 検査が無いあいだに、マーカーを持たないページが 4 枚続けて出た（2026-09-01）
+  if (qCards > 0) {
+    const withStat = [...src.matchAll(/<details class="qd"[\s\S]*?<\/summary>/g)]
+      .filter((m) => /class="qstat"/.test(m[0])).length;
+    if (withStat !== qCards) {
+      findings.push({ check: "qstat", line: null,
+        message: `設問カード ${qCards} 件に対し回答済みマーカー (.qstat) は ${withStat} 件` });
+    }
+  }
+
   // 14. 一括承認の設問（複数の判断を 1 つの設問で承認させる形）
   for (const card of src.matchAll(/<details class="qd"[\s\S]*?<\/details>/g)) {
     const qtext = /<p class="qtext">([\s\S]*?)<\/p>/.exec(card[0])?.[1] ?? "";
