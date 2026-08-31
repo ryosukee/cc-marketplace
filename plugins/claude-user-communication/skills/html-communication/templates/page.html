@@ -13,6 +13,12 @@
   それ未満は DOM 順のまま 本文 → 設問 → 脚注 の 1 列で流れる。
   DOM 順をこの並びにするのは、狭幅で読み終えた直後に答えられるようにするため。
 
+  幅の段は 5 つ。列幅は 設問 / 本文 / 脚注 の順。
+    〜1023px  1 列（本文 640px） / 1024px〜  2 pane（— / 640 / 300）
+    1340px〜  3 pane（300 / 640 / 300） / 1700px〜（320 / 960 / 320） / 2100px〜（360 / 1240 / 360）
+  広い段で伸ばすのは表・図・コードだけ。地の文には上限を掛ける（720px / 800px）。
+  列と一緒に伸ばすと 1 行が長くなりすぎ、行の頭へ視線を戻せなくなる。
+
   色の役割は 3 つに固定する。増やさない。
     青 --link      = 操作できるもの + 現在地
     地の濃淡        = 構造（見出しの罫・表の罫・区切り）
@@ -271,6 +277,29 @@
     #fn-pane { max-height: calc(100vh - 240px); }
   }
 
+  /* 3 pane のワイド段。本文の列と両 pane を広げ、表と図を大きく見せる。
+     地の文だけは伸ばさない。640px は全角 40 字で、列と一緒に伸ばすと
+     1 行が長くなりすぎて視線の戻りが効かなくなる。伸ばすのは表・図・コードだけ。
+     列の合計 320 + 24 + 960 + 24 + 320 = 1648px に main の左右 padding 40px を足して 1688px。
+     発動は 1700px 以上（1688px が収まる最小の幅） */
+  @media screen and (min-width: 1700px) {
+    main { max-width: 1688px; grid-template-columns: 320px 960px 320px; }
+    /* 地の文の行長の上限。全角 45 字 */
+    #bd > p, #bd > ul, #bd > ol, #bd > blockquote, #bd > h1, #bd > h2, #bd > h3,
+    #bd > .vnav, #bd > .summary,
+    .rng > p, .rng > ul, .rng > ol, .rng > blockquote, .rng > h2, .rng > h3 { max-width: 720px; }
+  }
+
+  /* 3 pane のウルトラワイド段。
+     列の合計 360 + 24 + 1240 + 24 + 360 = 2008px に padding 40px を足して 2048px */
+  @media screen and (min-width: 2100px) {
+    main { max-width: 2048px; grid-template-columns: 360px 1240px 360px; }
+    /* 地の文の行長の上限。全角 50 字 */
+    #bd > p, #bd > ul, #bd > ol, #bd > blockquote, #bd > h1, #bd > h2, #bd > h3,
+    #bd > .vnav, #bd > .summary,
+    .rng > p, .rng > ul, .rng > ol, .rng > blockquote, .rng > h2, .rng > h3 { max-width: 800px; }
+  }
+
   /* 本文中に置かれた設問カードは、範囲の判断材料の直後に来るので折り畳まない */
   .rng > .qd { margin-top: 18px; }
 
@@ -330,6 +359,15 @@
        ボタンの合計 298px（実測）。折り返させない */
     .bar-actions, .action-cluster { flex-wrap: nowrap; gap: 6px; }
     #back, .subbtn { padding: 8px; }
+  }
+  /* ワイド段の bar。上の 1340px の上書きより後ろに置く（同じ詳細度なので後勝ち）。
+     右列の左端 = 画面中央 - (1688 / 2) + 左 padding 20 + 320 + 24 + 960 + 24 = 50% + 504px */
+  @media screen and (min-width: 1700px) {
+    #bar { left: calc(50% + 504px); }
+  }
+  /* 右列の左端 = 画面中央 - (2048 / 2) + 左 padding 20 + 360 + 24 + 1240 + 24 = 50% + 644px */
+  @media screen and (min-width: 2100px) {
+    #bar { left: calc(50% + 644px); }
   }
   @media print {
     #bar, #footer-nav { display: none; }

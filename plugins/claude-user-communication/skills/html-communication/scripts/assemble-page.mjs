@@ -41,7 +41,9 @@ if (!fs.existsSync(tplPath)) { console.error(`雛形が無い: ${tplPath}`); pro
 const version = JSON.parse(fs.readFileSync(path.join(here, "..", "..", "..", ".claude-plugin", "plugin.json"), "utf8")).version;
 
 const tpl = fs.readFileSync(tplPath, "utf8");
-let body = fs.readFileSync(bodyPath, "utf8");
+// 本文にも版のプレースホルダが出る（下部バーの #ver、report の #footer-nav）。
+// head と同じ値で埋める。埋めないと本文側だけ書き手の直書きになり、版が古いまま残る
+let body = fs.readFileSync(bodyPath, "utf8").replaceAll("{{skill のバージョン}}", version);
 let head = tpl.slice(0, tpl.indexOf("<body>") + "<body>".length);
 head = head.replace("{{タイトル}}", opt.title).replace("{{skill のバージョン}}", version);
 if (opt.css.length) {
