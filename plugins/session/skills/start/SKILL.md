@@ -54,8 +54,8 @@ archive は全件保持の移動であり、見返す必要が出たら archive/
 ステップ 5 までの報告に含める。黙って移動・登録しない。
 
 TaskCreate 系ツールが提供されていない環境では、登録の代わりに draft にタスクボード節を作り、
-進行管理の正とする（この制約の追跡は claude-known-issues plugin の台帳エントリ
-`task-tools-unavailable` が管理する）。
+進行管理の正とする。提供されない環境は 2 つある。subagent（環境変数を設定しても提供されない。
+2026-09-01 の実測）と、`CLAUDE_CODE_ENABLE_TODO_TOOLS` を設定していないマシン。
 
 ### ステップ 4: draft の作成
 
