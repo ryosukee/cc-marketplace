@@ -53,6 +53,6 @@ session:end
   ↓ ユーザー確認 (スキップ可)
   → session:handover
       draft を最終化 → draft/ から todo/ に移動 (★ draft → todo)
-  → check-handover.mjs (機械検査 10 種)
+  → check-handover.mjs (機械検査)
   → handover-reviewer (意味の一貫性と外部突合)
 ```
