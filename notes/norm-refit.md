@@ -2334,6 +2334,45 @@ f045 Q3 の判断材料として記録する。
   `notes/artifacts/norm-loading-audit.md` と `notes/artifacts/rule-volume-and-conflicts.md` と
   `notes/artifacts/prev-session-tail-2026-08-31.md`（新設。明細と逐語）、ccm-r003
 
+### 2026-09-01 ccm-f063: エイリアスは検出を 2 か所（レビュー手順・引き継ぎ検査）に置き、条項と入口 rule も直す
+
+- 結論: 5 件を確定した。
+    1. HTML ページの機械検査 `check-page.mjs` には、この語形を拾う条項を**足さない**
+    2. 提示前レビュー `page-reviewer` の手順に、ユーザー発言に遡れない語を洗い出す段を**足す**
+    3. 会話の返答には入口 rule `rules/japanese-text-writing.md` へ 1 行足す。Stop hook は採らない
+    4. `core.md` の条項の例に、観測した語形（「層 0」型 = 汎用名詞 + 数字）を足す
+    5. 引き継ぎ資料の機械検査 `check-handover.mjs` に、この語形を拾う条項を足す
+- 決めなかった範囲: 各実装の文面と正規表現の具体形（PR で出す）。
+  結論 2 の段を `page-reviewer` の手順 (a)〜(e) のどこへ挿すか。
+  結論 5 の語形の定義を `check-handover.mjs` に直書きするか共有するか
+  （結論 1 で `check-page.mjs` 側を持たないため、共有先の相手がいない）。
+  Stop hook を将来使うかどうか（今回は採らないと決めただけで、機構としての可否は否定していない）
+- 決め手: 提示した推奨のうち 3 件（結論 2・4・5）は採られ、2 件（結論 1・3）は推奨と逆が選ばれた。
+  **逆を選んだ 2 件について、回答に理由の記載は無い。** 推測で埋めない。
+  採られた側の根拠は、ページが挙げた次のもの。条項は既に 3 ファイル 6 か所にあり、
+  違反した 2 件では 4 か所が違反の直前にコンテキストへ届いていた
+  （うち 3 か所は違反したページを生成した skill 自身が持っていた）。
+  `core.md` が届いた後の assistant のテキストターン 135 件のうち 37 件（27%）が破っている。
+  「載せる」系統の限界がこの実測で示されている
+- 出典: ccm-f063 回答 2026-09-01。設問・選択肢・判断材料の実文は
+  [確認フォームの実文](./artifacts/norm-refit-form-sources.md#ccm-f063)、
+  回答の実文は同節の「回答の実文」。調査の明細は
+  [エイリアスの条項が守られなかった件の実測](./artifacts/alias-clause-adherence.md)
+- 反映先:
+    - `rules/japanese-text-writing.md`（結論 3。最小規範に 1 行）
+    - `rules/japanese-text-writing/references/core.md`（結論 4。「読み手の負荷」の条項の例）
+    - `plugins/claude-user-communication`（結論 2。`agents/page-reviewer.md` の手順）
+    - `plugins/session`（結論 5。`skills/handover/scripts/check-handover.mjs`）
+    - `plugins/claude-user-communication` の `check-page.mjs`（結論 1。**反映なし**。足さないと決めた）
+    - `notes/norm-refit-plan.md` の段階 V の節（下記）、ccm-r003
+- 段階 V との関係: ユーザーの補足「段階 V でここでの議論や調査を拾えるように note か何かにも残しておいて」。
+  この調査は段階 V の「まだ検証していないこと」の 3 つ目
+  （条項がロードされた状態で振る舞いを変えているか）に、自然環境の観測を 1 件与える。
+  対照条件が無いので「条項が振る舞いを変えていない」ことの証明にはならず、
+  「載せただけでは止まらない」ことだけが言える。
+  加えて、結論 2・3・4・5 は段階 V が測る対象そのものになる
+  （効いたかどうかを測る仕組みが段階 V の成果物）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
