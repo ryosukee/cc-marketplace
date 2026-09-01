@@ -72,12 +72,12 @@ cc-marketplace/
 | cache-keepalive | 0.7.3 | utility | prompt cache keepalive の自動発火 |
 | cc-transcript | 0.7.0 | utility | セッションの直近やり取りを jq 整形して vim で開く |
 | dotclaude | 0.14.1 | dotclaude | doctor/cross-review/registry |
-| session | 2.12.3 | session | start/debrief/retrospective/handover/end + handover の機械検査 9 種 + handover-reviewer agent |
+| session | 2.13.0 | session | start/debrief/retrospective/handover/end + handover の機械検査 10 種 + handover-reviewer agent |
 | impl-spec | 0.5.5 | impl-spec | requirements/design/test-plan + spec-reviewer agent |
 | markdownlint | 0.3.2 | authoring | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | 0.2.1 | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | 0.2.0 | tooling | .netrc 等の credentials 保護 hook |
-| claude-user-communication | 0.38.0 | communication | HTML ページ提示 (claude-html-communication) + 生成ページの機械検査 18 種 + 提示前レビューの page-reviewer agent。雛形は 1 / 2 / 3 pane のレスポンシブ 5 段 (3 pane は 1340 / 1700 / 2100px) + 現在地の追従 + 設問のグループ化。完了ページは削除せず archive.html へ送る。セクション番号は見出しの外に出す。図は Tailwind 可 (図の中だけ)。要環境変数 (plugin README) |
+| claude-user-communication | 0.39.0 | communication | HTML ページ提示 (claude-html-communication) + 生成ページの機械検査 18 種 + 提示前レビューの page-reviewer agent (造語の判定を含む 6 段)。雛形は 1 / 2 / 3 pane のレスポンシブ 5 段 (3 pane は 1340 / 1700 / 2100px) + 現在地の追従 + 設問のグループ化。完了ページは削除せず archive.html へ送る。セクション番号は見出しの外に出す。図は Tailwind 可 (図の中だけ)。要環境変数 (plugin README) |
 | claude-known-issues | 0.4.0 | meta | Claude Code の既知バグ一覧 (8 項目、未解決と解除済みを別ファイル。一覧は空で作られ、config/ の 2 本は書き方の例) + 更新検知・全件突合の時期を通知する SessionStart hook + 差分・全件の突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | 0.4.10 | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill) + レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件。要 `gh` CLI |

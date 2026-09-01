@@ -24,7 +24,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| session | 2.12.3 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査 9 種) / end (オーケストレーター) + handover-reviewer agent |
+| session | 2.13.0 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査 10 種) / end (オーケストレーター) + handover-reviewer agent |
 
 ### impl-spec
 
@@ -50,7 +50,7 @@
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| claude-user-communication | 0.38.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。雛形は 1 / 2 / 3 pane のレスポンシブ 5 段 (3 pane は 1340 / 1700 / 2100px。広い段では表と図だけを伸ばし、地の文は行長の上限で止める) と、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 18 種の 3 層) と、提示前レビューの page-reviewer agent を同梱。完了したページは削除せず、index は直近 10 件を出して残りを archive.html へ辿らせる (build-archive.mjs が生成)。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| claude-user-communication | 0.39.0 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。雛形は 1 / 2 / 3 pane のレスポンシブ 5 段 (3 pane は 1340 / 1700 / 2100px。広い段では表と図だけを伸ばし、地の文は行長の上限で止める) と、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 18 種の 3 層) と、提示前レビューの page-reviewer agent (一次情報との突合 / 推奨の妥当性 / ユーザー発言に遡れない語の 6 段) を同梱。完了したページは削除せず、index は直近 10 件を出して残りを archive.html へ辿らせる (build-archive.mjs が生成)。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 

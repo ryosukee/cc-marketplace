@@ -11,6 +11,11 @@
 //      本文が現 branch と HEAD に言及しているかを検査する
 //   8. 「却下と決めたこと」節に先送りの含みを持つ語がある
 //   9. 空振りの参照 (存在しない節への参照、名指しの無い 後述 / 前述 / 上記 / 下記)
+//  10. 実体の書かれていない呼び名 (汎用名詞 + 数字、数字と英字を繋いだ記号)
+//
+// 10 は 2026-09-01 の ccm-f063 で決めたもの。前のセッションで作られた呼び名が
+// 引き継ぎ資料に載ると、次のセッションからは「前回までに合意された名前」に見える。
+// 実測 (EFSO IdP、2026-08-31) では、その経路で確認フォーム 2 枚に 163 回と 165 回まで増えた。
 //
 // 4〜9 は 2026-08-18〜19 の実測 (handover-reviewer R1〜R5、5 ラウンド 284.1k トークン・
 // ツール 107 回・1,738 秒で収束せず) で、agent がツール 43 回の大半を費やしていた突合と、
@@ -38,6 +43,31 @@ const REQUIRED_SECTIONS = [
 // 「却下と決めたこと」に入ってはいけない語。却下はやらないと決めたものだけで、
 // 先送りの含みがあるものは復元タスクへ行く
 const DEFERRED_WORDS = ["保留", "あとで", "後で", "いずれ", "追って", "TODO", "見送"];
+
+// 10. 呼び名の語形。汎用名詞 + 数字と、数字と英字を繋いだ記号。
+// 「面」のような数字を伴わない裸の汎用語は、語形からは普通の名詞と区別が付かないので拾えない
+// (ccm-f063 の設問 1。そちらは page-reviewer の手順 (f) が持つ)。
+const ALIAS_NOUNS = "層|面|段|系|群|枠|軸|区分|帯|パターン|ケース|グループ|フェーズ|レイヤー?|ゾーン|ブロック";
+// 数え上げと区別するための条件が 3 つ入っている。実測 (2026-09-01、archive の引き継ぎ資料 28 本)
+// で、これを入れないと誤検知が 10 / 16 件になった。
+//   - 数字は 1 桁だけ。呼び名の採番は 1 桁で、2 桁以上は数え上げ (「重複グループ 47」)
+//   - 直前が数字なら数え上げ (「4 群 16 件」「1 グループ 1 コミット」)
+//   - 直後が助数詞なら数え上げ (「47 件」)
+const COUNTERS = "件|個|本|つ|種|名|箇所|回|点|問|行|枚|割|倍|節|条";
+const ALIAS_PATTERNS = [
+  new RegExp(`(?<![0-9] ?)(?:${ALIAS_NOUNS}) ?[0-9](?![0-9])(?! ?(?:${COUNTERS}))`, "g"),
+  /(?<![\w.#-])[0-9]+-[A-Za-z](?![\w-])/g,
+  /(?<![\w.#-])[A-Z]-[0-9]+(?![\w-])/g,
+];
+
+// その呼び名の実体が同じ文書に書かれているかの判定。
+// 直後が定義の記号 (= （ ( : とは) か、直前が開き括弧 (「agent レビュー（フェーズ 1）」の形) なら、
+// その場で中身を書いていると見なす
+function isGlossed(src, label) {
+  const esc = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`${esc} ?(?:=|＝|（|\\(|:|：|とは)`).test(src)
+    || new RegExp(`[（(]${esc}[）)]`).test(src);
+}
 
 const files = process.argv.slice(2);
 if (files.length === 0) {
@@ -302,6 +332,31 @@ function checkFile(path) {
       check: "dangling-reference",
       line: lineOf(src, m.index),
       message: `「${m[1]}」の参照先が名指しされていない。節名かパスを書く`,
+    });
+  }
+
+  // 10. 実体の書かれていない呼び名
+  // コードブロックとインラインコードは対象外。パス・hash・版番号がここに入る。
+  // 空白へ潰すときに長さと改行を保つ。潰した分だけ添字がずれると lineOf が別の行を指す
+  const blank = (m) => m.replace(/[^\n]/g, " ");
+  const prose = src
+    .replace(/```[\s\S]*?```/g, blank)
+    .replace(/`[^`\n]*`/g, blank);
+  const counts = new Map();
+  for (const re of ALIAS_PATTERNS) {
+    for (const m of prose.matchAll(re)) {
+      const label = m[0];
+      if (!counts.has(label)) counts.set(label, { n: 0, index: m.index });
+      counts.get(label).n += 1;
+    }
+  }
+  for (const [label, { n, index }] of counts) {
+    if (isGlossed(src, label)) continue;
+    findings.push({
+      check: "unglossed-alias",
+      line: lineOf(src, index),
+      message: `呼び名「${label}」が ${n} 回出るが、実体が書かれていない。` +
+        `次のセッションはこの文書しか読まない。中身を書くか、合意された名前で呼ぶ`,
     });
   }
 
