@@ -16,6 +16,8 @@
 // 10 は 2026-09-01 の ccm-f063 で決めたもの。前のセッションで作られた呼び名が
 // 引き継ぎ資料に載ると、次のセッションからは「前回までに合意された名前」に見える。
 // 実測 (EFSO IdP、2026-08-31) では、その経路で確認フォーム 2 枚に 163 回と 165 回まで増えた。
+// 外す条件も決めてある。採番が合意されている議題で誤検知が続くなら 10 を外す。
+// 判定は、指摘のうち「呼び名を書かざるをえない合意済みの採番」が半数を超えたとき。
 //
 // 4〜9 は 2026-08-18〜19 の実測 (handover-reviewer R1〜R5、5 ラウンド 284.1k トークン・
 // ツール 107 回・1,738 秒で収束せず) で、agent がツール 43 回の大半を費やしていた突合と、
@@ -45,29 +47,41 @@ const REQUIRED_SECTIONS = [
 const DEFERRED_WORDS = ["保留", "あとで", "後で", "いずれ", "追って", "TODO", "見送"];
 
 // 10. 呼び名の語形。汎用名詞 + 数字と、数字と英字を繋いだ記号。
-// 「面」のような数字を伴わない裸の汎用語は、語形からは普通の名詞と区別が付かないので拾えない
-// (ccm-f063 の設問 1。そちらは page-reviewer の手順 (f) が持つ)。
+// 「面」のような数字を伴わない裸の汎用語は、語形からは普通の名詞と区別が付かないので拾えない。
+// 条項が挙げる例のうち「A 案」「B-C」「明細」「台帳」も同じ理由で拾えない。
+// 語形で拾える範囲だけがここの担当で、残りは page-reviewer の手順 (f) が持つ。
 const ALIAS_NOUNS = "層|面|段|系|群|枠|軸|区分|帯|パターン|ケース|グループ|フェーズ|レイヤー?|ゾーン|ブロック";
-// 数え上げと区別するための条件が 3 つ入っている。実測 (2026-09-01、archive の引き継ぎ資料 28 本)
-// で、これを入れないと誤検知が 10 / 16 件になった。
+// 数え上げ・複合語と区別するための条件が 4 つ入っている。
+//   - 直前が漢字かカタカナなら複合語の一部 (「階層 2」「アンチパターン 2」「断面 3」)
 //   - 数字は 1 桁だけ。呼び名の採番は 1 桁で、2 桁以上は数え上げ (「重複グループ 47」)
 //   - 直前が数字なら数え上げ (「4 群 16 件」「1 グループ 1 コミット」)
-//   - 直後が助数詞なら数え上げ (「47 件」)
-const COUNTERS = "件|個|本|つ|種|名|箇所|回|点|問|行|枚|割|倍|節|条";
+//   - 直後が助数詞なら数え上げ (「47 件」「3 通り」「2 日目」)
+const COUNTERS = "件|個|本|つ|種|種類|名|箇所|回|点|問|行|枚|割|倍|節|条|通り|例|日|系統|列|桁|人|時間|分|秒|カラム";
 const ALIAS_PATTERNS = [
-  new RegExp(`(?<![0-9] ?)(?:${ALIAS_NOUNS}) ?[0-9](?![0-9])(?! ?(?:${COUNTERS}))`, "g"),
+  new RegExp(
+    `(?<![0-9] ?)(?<![\\p{Script=Han}\\p{Script=Katakana}ー])` +
+      `(?:${ALIAS_NOUNS}) ?[0-9](?![0-9])(?! ?(?:${COUNTERS}))`,
+    "gu",
+  ),
   /(?<![\w.#-])[0-9]+-[A-Za-z](?![\w-])/g,
   /(?<![\w.#-])[A-Z]-[0-9]+(?![\w-])/g,
 ];
 
-// その呼び名の実体が同じ文書に書かれているかの判定。
-// 直後が定義の記号 (= （ ( : とは) か、直前が開き括弧 (「agent レビュー（フェーズ 1）」の形) なら、
-// その場で中身を書いていると見なす
-function isGlossed(src, label) {
+// その呼び名の実体が同じ文書に書かれているかの判定。次の 2 つだけを実体と見なす。
+//   - label の直後に定義の記号が続く (「層 0 = 認証の入口」「層 0（BFF が検証する経路）」「層 0 とは」)
+//   - 先行する語に括弧で添えてある (「agent レビュー（フェーズ 1）」)
+// コロンは実体と見なさない。「段 1: 未着手」のような状態の一覧と区別が付かず、
+// 1 行あるだけで地の文の全出現が握り潰される。
+// 判定に渡すのはコードを潰した後の本文。コードの中の 1 か所を実体と誤認すると、同じことが起きる
+function isGlossed(prose, label) {
   const esc = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`${esc} ?(?:=|＝|（|\\(|:|：|とは)`).test(src)
-    || new RegExp(`[（(]${esc}[）)]`).test(src);
+  const bare = esc.replace(/\\?[ ]/g, " ?");
+  return new RegExp(`${bare} ?(?:=|＝|（|\\(|とは)`).test(prose)
+    || new RegExp(`[^\\s（(] ?[（(]${bare}[）)]`).test(prose);
 }
+
+// 空白の有無で別の呼び名として数えないための正規形
+const normalizeAlias = (s) => s.replace(/ /g, "");
 
 const files = process.argv.slice(2);
 if (files.length === 0) {
@@ -336,22 +350,20 @@ function checkFile(path) {
   }
 
   // 10. 実体の書かれていない呼び名
-  // コードブロックとインラインコードは対象外。パス・hash・版番号がここに入る。
+  // インラインコードは対象外。パス・hash・版番号がここに入る。
+  // fenced code block は src の時点で maskCodeBlocks が潰してある。
   // 空白へ潰すときに長さと改行を保つ。潰した分だけ添字がずれると lineOf が別の行を指す
-  const blank = (m) => m.replace(/[^\n]/g, " ");
-  const prose = src
-    .replace(/```[\s\S]*?```/g, blank)
-    .replace(/`[^`\n]*`/g, blank);
+  const prose = src.replace(/`[^`\n]*`/g, (m) => m.replace(/[^\n]/g, " "));
   const counts = new Map();
   for (const re of ALIAS_PATTERNS) {
     for (const m of prose.matchAll(re)) {
-      const label = m[0];
-      if (!counts.has(label)) counts.set(label, { n: 0, index: m.index });
-      counts.get(label).n += 1;
+      const key = normalizeAlias(m[0]);
+      if (!counts.has(key)) counts.set(key, { n: 0, index: m.index, label: m[0] });
+      counts.get(key).n += 1;
     }
   }
-  for (const [label, { n, index }] of counts) {
-    if (isGlossed(src, label)) continue;
+  for (const { n, index, label } of counts.values()) {
+    if (isGlossed(prose, label)) continue;
     findings.push({
       check: "unglossed-alias",
       line: lineOf(src, index),
