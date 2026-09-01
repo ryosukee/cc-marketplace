@@ -159,6 +159,10 @@ transcript の 75 行目）に入り、そこから `eidp-f022` へ流れてい�
 突合のためで、(a) の目的は本文に「捏造と誤引用の検出がこの段の目的」と書かれている。
 造語を当てる段は (b) から (e) にも無い。条項は載るが、それを消費する工程が無い。
 
+検査もレビューも実際に走っている。実例 A の transcript の 697 行目から 1062 行目のあいだに、
+`validate-page.sh` の実行が 5 回と、`claude-user-communication:page-reviewer` の起動が
+1 回（`description` は `Review eidp-f022 form`）ある。呼び名は両方を通り抜けてユーザーへ提示された。
+
 ### skill 自身がこの穴を予告していた
 
 `review-norms.md` の冒頭。
