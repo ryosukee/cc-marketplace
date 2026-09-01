@@ -78,7 +78,7 @@ todo/ へ移した handover に対して検査スクリプトを実行する。
 node "${CLAUDE_PLUGIN_ROOT}/skills/handover/scripts/check-handover.mjs" <handover のパス>
 ```
 
-- 10 種を検査し、指摘を JSON で stdout に出す。`total` が 0 になるまで直して再実行する
+- 指摘を JSON で stdout に出す。`total` が 0 になるまで直して再実行する
 - Exit: 0 = 指摘なし、1 = 指摘あり、2 = 前提条件エラー
 - 出力の `git` は検査結果ではなく実測した git 状態。branch / HEAD / 未コミット件数 /
   stash 件数 / upstream との ahead-behind / worktree 数が入る。
