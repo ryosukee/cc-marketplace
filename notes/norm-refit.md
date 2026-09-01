@@ -2411,6 +2411,24 @@ f045 Q3 の判断材料として記録する。
   適用しないと決めたのは実装時の判断で、ユーザーの指示ではない。PR #18 の本文に判断を明記した
 - 反映先: `rules/japanese-text-writing/references/core.md`（PR #18）。反映は残す
 
+### 2026-09-01 ccm-f063 の実装は PR #18 として main 7f63be7 にマージ（観測）
+
+- 結論: エイリアスの検出を入れる実装が main へ入った。session 2.13.0 / claude-user-communication 0.39.0。
+  plugin cache も同じ版へ更新済み
+- 決めなかった範囲: なし（この PR の範囲は ccm-f063 の確定 5 件と、その上書き 2 件で閉じている）
+- 決め手: 観測エントリなので判断は無い。`approve` ラベルの付与を確認してマージした
+- レビューの内訳: ユーザーの指摘 9 件（経緯を書くな 3 件 / 個数を転記するな 6 件）に対応し、
+  同型の横展開を 2 commit で行った。経緯の横展開は落とすのではなく、
+  履歴で説明していた 6 箇所を構造的な理由へ書き換えた（ユーザーの指示 2026-09-01
+  「ただ落とすだけだと根幹の why が消えるっていうなら why の書き方を考えろ。
+  経緯ではなく本質の why をかけ。同じ PR で修正しろ」）
+- 出典: PR <https://github.com/ryosukee/cc-marketplace/pull/18>。
+  レビューコメントと返信は同 PR に残っている
+- 反映先: `rules/japanese-text-writing.md`、`rules/japanese-text-writing/references/core.md`、
+  `plugins/claude-user-communication`（page-reviewer の手順 (f)、review-norms、SKILL.md）、
+  `plugins/session`（check-handover.mjs の検査 10、handover-reviewer、handover の SKILL.md）、
+  README.md、CLAUDE.md
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
