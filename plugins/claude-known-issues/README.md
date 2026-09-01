@@ -9,7 +9,7 @@ Claude Code の更新を検知したら changelog と突合し、たまに全エ
 | 要素 | 役割 |
 | --- | --- |
 | SessionStart hook | 版の変化と、全件突合の時期（導入直後 / 180 日超過）を検知して通知する。判定はしない |
-| entry skill | 一覧への追記手順とエントリの型（8 項目） |
+| entry skill | 一覧への追記手順とエントリの型 |
 | review skill | agent の起動と、結果の一覧・state への反映 |
 | known-issues-reviewer agent | 差分（changelog との突合）と全件（`how_to_verify` の実行）の判定 |
 
