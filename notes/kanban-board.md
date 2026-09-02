@@ -161,6 +161,36 @@ GitHub Projects を外すのは配置の可否ではなく、個人で使える�
 
 反映先。導入の手順。
 
+### 確定 10 セッションごとの絞り込みは kanban 側で行う。ラベルで足りるなら独自の属性は必須でない
+
+結論。セッションごとの一覧は、kanban の UI 側で絞れる必要がある。
+そのために名前の付いた独自の属性が要るなら、要件 3 は必須になる。
+ただし実測の結果、ラベルでもこの絞り込みは満たせることが分かった。
+
+- Plane の公式ドキュメントは "Once labels exist, you can apply several to a single work item,
+  then filter, group, and sort your work items by them across every layout" と書く。
+  board のレイアウトでもラベルで絞れる
+- Linear は label groups を持ち、"Label groups create one level of nesting in your workspace and
+  team labels" と書く。`session` グループの下にセッションごとのラベルを置ける。
+  1 グループ 250 ラベルが上限
+
+したがって要件 3 は「名前の付いた属性を足せること」ではなく
+「セッションごとの一覧を kanban の UI で絞れること」として扱う。
+これを満たす手段は、カスタムフィールドとラベルの 2 通りある。
+
+決めなかった範囲。ラベルで運用する場合の掃除の手順は決めていない。
+セッションが増えるとラベルが増え続け、Linear では 1 グループ 250 の上限に当たる。
+
+決め手。ユーザーの発言「セッションごとの一覧を何かしらの方法で kanban 側で絞れて欲しい。
+そのために独自の属性をつける必要があるなら必須になるね」。
+条件は絞り込みができることで、実現の手段は問われていない。
+
+出典。2026-09-03 の発言。実文は
+[実文 20](./artifacts/kanban-requirements-origin.md#実文-20-セッションごとの絞り込みは-kanban-側で行う)。
+Plane と Linear の文言は 2026-09-03 に公式ドキュメントから取得した。
+
+反映先。候補の比較。Linear と Plane Community Edition が候補に戻る。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
@@ -175,7 +205,7 @@ Linear や Plane をデータソースとして使い、Claude やエージェ�
 分岐点は要件 3（カードに名前の付いた独自の属性）をどちらに置くか。
 板に置くなら Linear と Plane Community Edition は落ちたままになる
 （Linear はユーザー定義のカスタムフィールドを持たず、Plane CE は Pro 以上の機能）。
-Claude 側に置くなら、板は kanban UI と親子と依存だけ持てばよく、この 2 つが候補に戻る。
+確定 10 のとおり、板側でもラベルで絞り込みが成立するため、この 2 つは板側の手段で候補に戻る。
 代償は、状態が板と手元の 2 か所に割れることと、
 Claude 側に置いた属性を人が UI で見られなくなること。
 
