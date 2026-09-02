@@ -4,7 +4,7 @@
 | --- | --- |
 | 目的 | 並行して走る話題をカードで追う道具を決め、導入するまでの確定事項を積む |
 | 生存期間 | 道具を導入し、運用の手順を plugin か CLAUDE.md へ移すまで |
-| 対象タスク | ccm-f058 / ccm-f061 / ccm-f062 / ccm-f065 / ccm-f066 |
+| 対象タスク | ccm-f058 / ccm-f061 / ccm-f062 / ccm-f065 / ccm-f066 / ccm-f067 |
 
 出典の実文は [kanban のタスク管理を求めた発言の実文](./artifacts/kanban-requirements-origin.md) にある。
 候補の比較の明細は [kanban の板の道具を、観点を定義して比較し直す](./artifacts/kanban-matrix.md) にあるが、
@@ -116,6 +116,74 @@
 
 反映先。`notes/README.md` の一覧。
 
+### 確定 7 カードの内容は外部のサービスに置いてよい。ただし GitHub Projects は採らない
+
+結論。カードの題名・本文・属性の値が外部のサービスに置かれることを許す。
+ただし GitHub Projects v2 は採らない。project 単位で使えない場合があり、
+チームの公共リソースになってしまうため。使いたいのはチームの中でも個人で使えるもの。
+
+決めなかった範囲。どのサービスなら許すかの線引きは決めていない。
+
+決め手。この repo は既に GitHub にあり、issue と PR の本文は同じ場所に置かれている。
+GitHub Projects を外すのは配置の可否ではなく、個人で使えるかどうかの理由になる。
+
+出典。ccm-f067 への回答（2026-09-03）。実文は
+[実文 18](./artifacts/kanban-requirements-origin.md#実文-18-ccm-f067-への回答)。
+
+反映先。候補の比較。GitHub Projects v2 を候補から外す。
+
+### 確定 8 常駐は許す。自宅サーバでも手元の mac-mini local でもよい
+
+結論。常駐するプロセスの有無と必要リソースは、重みとしては見るが候補を落とす条件にしない。
+自前の自宅サーバに常駐させてもよく、kanban のサービスごと常駐させてもよい。
+最初は手元の mac-mini local でもよい。
+
+決めなかった範囲。どのマシンへ置くかは決めていない。
+
+決め手。ccm-f067 の設問 2 の回答と、その補足。
+
+出典。ccm-f067 への回答（2026-09-03）。実文は
+[実文 18](./artifacts/kanban-requirements-origin.md#実文-18-ccm-f067-への回答)。
+
+反映先。候補の比較。4 コア・4 GB の常駐を理由に不利にしていた候補
+（OpenProject CE・YouTrack Server・Wekan）が横並びに戻る。
+
+### 確定 9 未着手の一覧は 1 項目 1 枚でそのまま取り込む
+
+結論。`todo.md` の項目を、分解せずに 1 項目 1 枚のカードとして取り込む。
+
+決めなかった範囲。取り込んだ後に分解するかどうかは、着手のときに決める。
+
+決め手。ccm-f067 の設問 4 の回答。
+
+出典。ccm-f067 への回答（2026-09-03）。実文は
+[実文 18](./artifacts/kanban-requirements-origin.md#実文-18-ccm-f067-への回答)。
+
+反映先。導入の手順。
+
+### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
+
+結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
+Linear や Plane をデータソースとして使い、Claude やエージェントとのやり取りを
+別の仕組みでラップする案が出た。ラップする側は自前実装でも plugin / skill でもよいとされている。
+
+この構成を採ると、要件の置き場が 2 つに分かれる。
+
+- 板に要るもの: kanban の UI、親子、依存、カードの CRUD の口、セッションをまたいで残る
+- Claude 側に置けるもの: セッションとカードの対応、作業場所の記録、その絞り込み
+
+分岐点は要件 3（カードに名前の付いた独自の属性）をどちらに置くか。
+板に置くなら Linear と Plane Community Edition は落ちたままになる
+（Linear はユーザー定義のカスタムフィールドを持たず、Plane CE は Pro 以上の機能）。
+Claude 側に置くなら、板は kanban UI と親子と依存だけ持てばよく、この 2 つが候補に戻る。
+代償は、状態が板と手元の 2 か所に割れることと、
+Claude 側に置いた属性を人が UI で見られなくなること。
+
+出典。2026-09-03 の発言。実文は
+[実文 19](./artifacts/kanban-requirements-origin.md#実文-19-板を既製のサービスに任せclaude-側をラップする案)。
+
+反映先。未定。要件 3 の置き場が決まってから比較を組み直す。
+
 ## 作業メモ
 
 ### Orca の判定
@@ -150,10 +218,35 @@ Claude が API を叩くための token の置き場。後者は
 
 ### 次にやること
 
-1. 確定 2 の 6 要件と確定 4 の 3 要件で観点を組み直し、候補を並べ直す。
-   確定 3 の優先条件は落とす条件に使わない
-2. 候補を決めて導入する
-3. `todo.md` の 43 項目をカードとして取り込む
+1. 要件 3（独自の属性）を板と Claude 側のどちらに置くかを決める。ここで候補の集合が変わる
+2. 確定 2 の 6 要件と確定 4 の 3 要件で観点を組み直し、候補を並べ直す。
+   確定 3 の優先条件と、確定 8 の常駐の重みは、落とす条件に使わない
+3. 候補を決めて導入する
+4. `todo.md` の項目をカードとして取り込む（確定 9 のとおり 1 項目 1 枚）
+
+### 落とした候補の理由
+
+cline/kanban はカードのスキーマが固定で、親を指すフィールドもラベルも任意のキーも無い
+（`src/core/api-contract.ts` の `runtimeBoardCardSchema`）。
+列は `z.enum(["backlog", "in_progress", "review", "trash"])` の 4 つ固定で、
+ユーザーが定義できない。カードの単位は 1 タスク = 1 worktree で、
+README が "Each task card gets its own terminal and worktree, all handled for you automatically." と書く。
+Research Preview。依存は `fromTaskId` / `toTaskId` で持っている。UI は落ちる理由になっていない。
+
+Symphony は kanban の UI を持たない。README の説明が
+"Symphony monitors a Linear board for work and spawns agents to handle the tasks" で、
+板そのものは Linear 側にある。カードの CRUD もできない。
+この構成が、上の「未確定」の案の先例になる。
+
+### UI のスクリーンショット
+
+候補 8 件（OpenProject / YouTrack / Wekan / Kandev / cline-kanban / Vikunja / Planka / Plane）の
+kanban のボードが写った画像を、公式サイト・公式ドキュメント・公式 repo から取得した。
+保存先はセッションの scratchpad で、次のページへ貼り込む。
+
+2 件は静止画が公開されておらず、公式の GIF からフレームを抜いた加工物になる
+（cline-kanban と Planka）。Wekan は公式に存在する唯一のボード画像で、
+右端をポップアップが覆っている。
 
 ### 詰めていない構想
 
