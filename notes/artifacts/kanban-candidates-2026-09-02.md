@@ -62,7 +62,14 @@
 
 - kanban-md と Backlog.md は、未知の frontmatter キーを書き込みのたびに消す。
   警告は出ない。kanban-md は `edit 2 --status todo` を 1 回打つだけで `session_id` と
-  `worktree` の両方が消えた
+  `worktree` の両方が消えた。そのときの標準出力は次の 1 行だけだった
+
+  ```text
+  Updated task #2: child A
+  ```
+
+  Backlog.md も同じで、`backlog task edit 1.1 -s "In Progress"` で 2 キーとも消えた。
+  消える前でも `backlog task list --search "sess-A"` は `No tasks found.` を返した
 - taskmd と nd と Kandev は値を保持するが、絞り込みの経路が無い
 
 taskmd の絞り込みが受け付けるフィールドは `sdk/go/filter/filter.go` の固定の switch で
