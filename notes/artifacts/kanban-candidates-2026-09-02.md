@@ -148,4 +148,105 @@ Kandev だけが複数人の体制で、ライセンスは AGPL-3.0 で他の 4 
 
 ## 汎用の kanban と製品レベルのサービス
 
-調査中。結果が出たらここへ追記する。
+### 7 条件を単独で満たす 3 件
+
+| 候補 | 自己ホスト | 落ちる条件 | 起動に要るもの |
+| --- | --- | --- | --- |
+| OpenProject Community Edition | 可 | なし（条件 7 は未確認） | コンテナ 1 個。4 コア / 4096 MB RAM。常駐 |
+| YouTrack Server | 可 | なし（条件 7 は未確認） | Docker のみ。JVM ヒープ 1024m 以上。常駐 |
+| GitHub Projects v2 | 不可 | なし | 常駐なし。`gh` CLI だけ |
+
+※ 表 5 7 条件を単独で満たす候補
+
+OpenProject は 17.3（2026-04-15）で全 action board 種別が Community へ移った。
+公式の文言は "With this release, all Action board types are now available in the Community edition."
+Enterprise 限定として残るのは Hierarchy 型と Weighted item list のカスタムフィールド 2 型、
+および将来の swimlane と WIP 制限。データの実体は PostgreSQL のみで、git で追えない。
+16,002 stars / GPL-3.0 / 最終コミット 2026-09-02。
+
+YouTrack Server は 1 インスタンス・10 ユーザーまで無償。JetBrains のクローズドソースで、
+無償枠は商用ライセンス条件に依存する。データは独自の in-process データベース（Xodus）。
+
+GitHub Projects v2 は sub-issues が 2025-04-09 に GA（ネスト 8 階層、親 1 件あたり 100 件）、
+issue dependencies が 2025-08-21 に GA（関係タイプごとに 50 件）、
+カスタムフィールド 50 個、item 上限 50,000 件/project。
+`gh project` が CRUD 一式を持ち（`field-create` を含む）、公式の MCP server が `projects` toolset を持つ。
+必要なトークンスコープは `project`（`gh auth refresh -s project`）。
+`gh project --help` と `GET repos/:owner/:repo/issues/:n/dependencies/blocked_by` は
+2026-09-02 に手元で実行して存在を確認した。
+
+### 条件 3（カスタムフィールド）が最も多くの候補を落とす
+
+機能自体が無いもの。Vikunja・Kaneo・Linear・Plane CE・Forgejo/Gitea・Nextcloud Deck。
+有償のもの。GitLab CE・Leantime。
+ClickUp Free は 60 用途で頭打ちになる
+（"Once you reach 60 uses on a Free Forever Plan Workspace, you can't add values to any Custom Fields"）。
+
+### 条件 2（依存の UI）で落ちるもの
+
+Planka・Taiga・Focalboard・NocoDB Community・Leantime。
+Taiga の「block」はカード間の関係ではなく 1 枚のカードに付く真偽値フラグで、
+順序制約の機能そのものが無い。
+
+### Linear の判定
+
+自己ホストできない。エージェント連携は「Linear for Agents」として Developer Preview
+（"Linear for Agents APIs are currently in active development and available as a Developer Preview."）。
+公式 MCP は `https://mcp.linear.app/mcp` で、Claude Code の追加手順が公式に載っている
+（`claude mcp add --transport http linear-server https://mcp.linear.app/mcp`）。
+課題を delegate すると Claude Code か Codex のコーディングセッションが走るが、
+これは Basic 以上で無料枠では使えない。
+
+落ちるのは 2 点。**ユーザー定義のカスタムフィールドが無い**（issue のプロパティは
+team / status / priority / assignee / estimate / cycle / labels / project / milestone の固定セット。
+代替は label）。**無料枠が 250 issues・2 teams で頭打ちになる**（Basic は $10/user/month で無制限）。
+
+階層は Workspace > Team > Initiative > Project > Milestone > Issue > sub-issue。
+sub-issue の最大ネスト段数は公式に記述が見つからなかった。
+
+### エージェント向けで kanban UI を持つもの
+
+**Beads (bd) + beads_viewer** は 7 条件を満たす。19 種の依存タイプ、
+issue の `metadata` が任意 JSON で `bd list --metadata-field key=value` で絞り込める。
+親子は階層 ID（`bd-a3f8` → `bd-a3f8.1`）。26,814 stars / MIT / 単一 Go バイナリ / 常駐不要。
+
+kanban UI は本体に無く、別 repo の beads_viewer（TUI）が担う。
+**この beads_viewer のライセンスに、採用の可否を左右する条項がある。**
+LICENSE の 1 行目が "MIT License (with OpenAI/Anthropic Rider)" で、
+"Restricted Parties" に Anthropic, PBC と
+"any person or entity acting directly or indirectly on behalf of, for the benefit of,
+or under the direction of any of the foregoing" を含め、
+"no rights are granted to any Restricted Party" と定める。
+GitHub の license 判定も `NOASSERTION`。2026-09-02 に GitHub の API で原文を取得して確認した。
+Claude Code から使う形がこれに触れるかは法的判断が要る。
+
+**Kandev** は Web UI が最もリッチだが、親子が 2 段まで、
+`metadata` を値で絞り込めない、session が 1 カードにしか属せない。
+
+**cline/kanban** はカードの単位が 1 タスク = 1 エージェントセッション = 1 個の一時 worktree。
+親子が無く、列は 4 つ固定でユーザーが変えられず、label も任意フィールドも無い。
+依存の矢印は両端の少なくとも一方が backlog 列にある場合だけ描かれ、
+条件を外れたエッジは state のロード・セーブのたびに黙って削除される。
+127 枚での破綻が PR #564 に記録されている。MCP は削除済み。
+
+**Symphony** は kanban UI を持たない。Linear / Jira / Asana / GitHub / GitLab の板を
+外部の control plane として読むスケジューラで、UI は実行中エージェントの status dashboard。
+SPEC の文言は "Symphony does not require first-class tracker write APIs in the orchestrator.
+The service remains a scheduler/runner and tracker reader."
+
+### 開発が止まっているもの
+
+Focalboard（README が "This repository is currently not maintained."）、
+Taskcafe（2023-07）、Restyaboard（2023-10）、Nullboard（2023-11）、
+Taskell（archived）、vibe-kanban（README の h1 が "Vibe Kanban is sunsetting."）。
+
+### 未確認のまま残った項目
+
+- カード数百枚での実測性能。全候補で未実測。公式にカード枚数基準の記述を持つものが 1 つも無かった
+- Jira Cloud Free で課題リンク（blocks / is blocked by）が使えるか
+- Tuleap に `blocks` / `depends on` / `precedes` の組み込み link type が同梱されるか
+- Huly の Tracker Issue が Task クラスのカスタム属性を受け取るか、その値でフィルタできるか
+- Planka のカスタムフィールドが自己ホスト版で実際に使えるか
+- GitHub Enterprise Server での issue dependencies 対応
+- Linear MCP が公開しているツール名の一覧、sub-issue の最大ネスト段数
+- Beads の親子の最大段数
