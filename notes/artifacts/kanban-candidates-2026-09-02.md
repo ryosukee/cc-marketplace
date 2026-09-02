@@ -241,6 +241,63 @@ Claude Code から使う形がこれに触れるかは法的判断が要る。
 SPEC の文言は "Symphony does not require first-class tracker write APIs in the orchestrator.
 The service remains a scheduler/runner and tracker reader."
 
+### 残った候補の明細（2026-09-03 に出典を付け直した分）
+
+前の記録は結論だけを残して、候補ごとの技術的な根拠を落としていた。
+提示前のレビューで無出典と指摘されたため、出典を当たり直して書き戻す。
+
+#### Wekan
+
+- 親子はカードの `parentId`。サブタスクは独立したカードとして作られる（`models/cards.js`）
+- 依存は `cardDependencies` の 5 種（related-to / blocks / is-blocked-by / fixes / is-fixed-by）。
+  ボード上に SVG の矢印線として描かれる。
+  REST も `GET|POST /api/boards/:boardId/cards/:cardId/dependencies` まである
+- カードの `customFields` 配列と、`client/lib/filter.js` の値によるフィルタ実装
+- REST は未完成。`docs/API/REST-API.md` の 1 行目が
+  "REST API is not complete yet, please add missing functionality with pull requests to devel branch."
+  （2026-09-03 に GitHub の API で原文を取得して確認）
+- `WITH_API=true` で起動しないと `/api/*` が 403。認証は `POST /users/login` が返す
+  Meteor のログイン再開トークンを Bearer で送る
+- データの実体は MongoDB ワイヤプロトコル。既定の docker-compose は FerretDB v1 + 組み込み SQLite
+- star 21,070 / MIT / 最終 push 2026-09-02（2026-09-03 に GitHub の API で取得）。
+  実質 xet7 の単独開発（17,137 commits に対し 2 位が 598）
+- 2026 年に入ってからの性能不具合の報告は issue 6480 / 6307 / 6394 で、
+  いずれも closed（2026-09-03 に GitHub の API で状態を確認）
+
+#### Plane Community Edition
+
+- sub-issue と Blocking / Blocked by の relation は Community Edition で使える
+- Work Item Types と Custom Properties、Initiatives、Timeline の依存は Pro 以上
+  （<https://plane.so/pricing>）。Community Edition について公式は
+  "The Community Edition is at par with the Free tier of the Cloud edition in its feature availability."
+  と書く（<https://developers.plane.so/self-hosting/editions-and-versions>）
+- ラベルは全レイアウトから絞れる。公式の Labels の文書が
+  "Once labels exist, you can apply several to a single work item, then filter, group, and sort
+  your work items by them across every layout" と書く
+- API は `X-API-Key` ヘッダ + 60 req/min。公式の MCP server が Community Edition に対して
+  stdio + PAT で動く
+- `docker-compose.yml` の services は 13 個（web / admin / space / api / worker / beat-worker /
+  migrator / live / plane-db / plane-redis / plane-mq / plane-minio / proxy）。
+  2026-09-03 に GitHub の API で原文を取得して数えた。最小 2 コア / 4GB RAM
+- star 58,780 / AGPL-3.0 / 最終 push 2026-09-02（2026-09-03 に GitHub の API で取得）
+
+#### Beads (bd) + beads_viewer
+
+- カードの単位は 1 タスク。19 種の依存タイプ（`blocks` / `parent-child` /
+  `conditional-blocks` / `waits-for` ほか）。`bd ready` が未ブロックの issue を返す
+- issue の `metadata` が任意 JSON で、`bd list --metadata-field key=value` で絞り込める。
+  **残った候補の中で唯一、任意のキーと値で絞り込める**
+- 親子は階層 ID（`bd-a3f8` → `bd-a3f8.1` → `bd-a3f8.1.1`）。最大段数は公式に記述が見つからなかった
+- kanban UI は本体に無く、別 repo の beads_viewer（TUI）が担う。
+  カード枠が赤（BLOCKED）/ 黄（他をブロック中）/ 緑（READY）に色分けされ、
+  依存 DAG・PageRank・critical path も見られる。読み取り専用
+- データの実体は Dolt（バージョン管理付き SQL DB）で `.beads/embeddeddolt/` に置かれ、gitignore される。
+  git が追うのは `.beads/issues.jsonl` の export だけ。単一の Go バイナリ、常駐不要
+- star 26,824 / MIT / 最終 push 2026-09-02。beads_viewer は star 1,673 / 最終 push 2026-09-02
+  （2026-09-03 に GitHub の API で取得）
+- **beads_viewer のライセンスに、採用の可否を左右する条項がある。** 上記「エージェント向けで
+  kanban UI を持つもの」の節に原文がある
+
 ### 開発が止まっているもの
 
 Focalboard（README が "This repository is currently not maintained."）、
