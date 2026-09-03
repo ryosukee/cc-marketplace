@@ -41,7 +41,8 @@ agent は一覧と state を編集しない。`how_to_verify` の実行でプロ
 
 ### ステップ 3: 結果の反映
 
-1. 各エントリの `log` に、agent の追記案の 1 行を加える
+1. 各エントリの `log` に、agent の追記案の 1 行を加える。単引用符で囲み、中の単引用符は `''` にする。
+   複数行に折り返さない
 2. 解除候補があれば、エントリの `dependents` をユーザーに提示し、解除してよいか確認する。
    承認されたら dependents の各場所を直し、エントリに `resolved_at`（日付）と
    `resolved_version` を足して `known-issues.resolved.yml` へ移す。

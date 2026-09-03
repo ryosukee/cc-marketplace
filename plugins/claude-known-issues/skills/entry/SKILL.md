@@ -38,13 +38,17 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
     - https://github.com/anthropics/claude-code/issues/NNNNN
     - https://code.claude.com/docs/en/...
   dependents:
-    - {ワークアラウンドを担う場所（plugin / skill / rule とファイル・節）}: {解除時にそこをどうするか}
+  - '{ワークアラウンドを担う場所（plugin / skill / rule とファイル・節）}: {解除時にそこをどうするか}'
   how_to_verify: |
     再現手順と期待結果。誰が実行しても同じ結果が出る形で書く。
     期待結果と違う結果が出たら解除候補
   log:
-    - YYYY-MM-DD: 確認したことと結果
+  - 'YYYY-MM-DD: 確認したことと結果'
 ```
+
+`dependents` と `log` の各項目は単引用符で囲んだ 1 行にする。中の単引用符は `''` にする。
+`場所: 内容` や `日付: 内容` を引用符なしで書くと、YAML では mapping として読まれ、
+一覧全体が parse できなくなる。項目を複数行に折り返さない。
 
 - `dependents`: このエントリに依存している場所の一覧。1 行に「場所: 解除時にどうするか」を書く。
   対応はこの一覧側だけが持つ。ワークアラウンドを担う rule・skill の側には、この plugin や
