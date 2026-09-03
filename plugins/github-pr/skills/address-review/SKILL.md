@@ -173,7 +173,9 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments \
 
 **修正内容**:
 - {具体的な変更 1}
-- {具体的な変更 2}" \
+- {具体的な変更 2}
+
+🤖 posted by Claude Code" \
   -F in_reply_to={comment_id}
 ```
 
@@ -188,11 +190,14 @@ gh api repos/{owner}/{repo}/issues/{number}/comments \
 
 **修正内容**:
 - {具体的な変更 1}
-- {具体的な変更 2}"
+- {具体的な変更 2}
+
+🤖 posted by Claude Code"
 ```
 
 返信のルール:
 
+- 本文の末尾に署名行 `🤖 posted by Claude Code` を付ける。Claude の投稿をユーザー自身の投稿と見分ける唯一の手がかり（[formatting-rules.md](../create/references/shared/formatting-rules.md) の「Claude が投稿するコメントの署名行」）
 - メンションは `user_login` から動的に取得する。固定ユーザー名にしない
 - コミット SHA を明記する（GitHub 上でコミットへのリンクになる）
 - 実施したことは commit hash か実施の記録を添えて書く。まだ実施していないことを予定として書くのはよいが、

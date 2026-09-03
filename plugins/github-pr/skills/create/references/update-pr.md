@@ -5,6 +5,16 @@
 
 更新フローでは各アクションの結果を記録し、最後にまとめて報告する。
 
+## push のたびに実行する
+
+コミットを push したら、同じターンでこの更新フローを回す。まとまった変更のときだけ回すのではなく、
+1 行の変更でも push ごとに body と差分コメントを push 後の内容に合わせる。
+本文の変更点・How to check の結果・コメントが指す行のどれかが食い違ったまま次の作業に進まない。
+
+見直し・編集・resolve の対象は、Claude が投稿した署名行付きのコメントだけ
+（[formatting-rules.md](shared/formatting-rules.md) の「Claude が投稿するコメントの署名行」）。
+ユーザーや他の人のコメントは読むだけで、編集も resolve もしない。
+
 ## 前提
 
 ステップ2 で既存 PR が検出され、ユーザーが更新を選択した状態。
@@ -55,11 +65,14 @@ body の生成ルールは [generate-body.md](generate-body.md) に従う。
 
 ### ステップ2: 差分コメントの見直し
 
-既存の差分コメント（行指定・ファイル）を API で取得し、現在の差分と照合する:
+既存の差分コメント（行指定・ファイル）を API で取得し、署名行を持つものだけを現在の差分と照合する:
 
 ```bash
-gh api repos/{owner}/{repo}/pulls/{number}/comments --jq '.[] | {id, path, body, subject_type, line, start_line}'
+gh api repos/{owner}/{repo}/pulls/{number}/comments --paginate \
+  --jq '.[] | select(.body | endswith("🤖 posted by Claude Code")) | {id, path, body, subject_type, line, start_line}'
 ```
+
+署名行の無いコメントはユーザーか他の人の投稿なので、以下の確認と処理の対象にしない。
 
 確認すること:
 
@@ -78,7 +91,9 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments --jq '.[] | {id, path, body,
 # 1. スレッドに返信
 gh api repos/{owner}/{repo}/pulls/{number}/comments/{comment_id}/replies \
   --method POST \
-  -f body="このコメントは後続のコミットにより古くなったため resolve します。"
+  -f body="このコメントは後続のコミットにより古くなったため resolve します。
+
+🤖 posted by Claude Code"
 
 # 2. スレッドを resolve（GraphQL）
 gh api graphql -f query='
@@ -154,6 +169,8 @@ gh pr comment <number> --body "$(cat <<'EOF'
 
 - {変更点1}
 - {変更点2}
+
+🤖 posted by Claude Code
 EOF
 )"
 ```

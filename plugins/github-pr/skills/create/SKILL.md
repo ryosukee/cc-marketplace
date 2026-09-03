@@ -41,6 +41,7 @@ gh pr list --head <branch>
 
 - PR なし → **作成フロー**（ステップ3〜6）に進む
 - PR あり → URL を報告し、更新するか確認。更新する場合は [update-pr.md](references/update-pr.md) の**更新フロー**（ステップ1〜3）に進む。以降の作成フローは実行しない
+- PR を作った後にコミットを push したら、確認を待たずに同じターンで更新フローを回す（[update-pr.md](references/update-pr.md) の「push のたびに実行する」）
 
 ### ステップ3: PR 本文の生成
 

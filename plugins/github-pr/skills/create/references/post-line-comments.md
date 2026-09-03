@@ -98,6 +98,7 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments \
 ### 共通の注意
 
 - コメント本文で他の箇所を参照する際はファイルパスと行番号を明記する
+- 本文の末尾に署名行 `🤖 posted by Claude Code` を付ける（[formatting-rules.md](shared/formatting-rules.md) の「Claude が投稿するコメントの署名行」）。JSON の `body` に含める
 
 ## コメントの更新
 
