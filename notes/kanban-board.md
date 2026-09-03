@@ -305,7 +305,7 @@ ccm-f068 は 250 件の見込みを立てず、repo を Linear のどの単位�
 - [OpenProject / YouTrack / Wekan / Beads の切り分け単位と上限](./artifacts/kanban-candidates-repo-units-2026-09-03.md)。
   4 件とも件数の上限は記載なし。横断の kanban を公式に持つのは YouTrack Server と Beads + bv
 
-250 件の見込み（観測、2026-09-03）: `todo.md` の cc-marketplace 宛の依頼 29 件前後 + 復元タスク 13 件、
+250 件の見込み（観測、2026-09-03）: `todo.md` の cc-marketplace 宛の依頼 27 件前後 + 復元タスク 13 件、
 html-communication の index に出る project は 9 個。cc-marketplace だけで 40 件前後が板に乗る。
 
 ccm-f068 はこの前提で同名上書きで改稿する（回答を受けていないため）。推奨は Linear から Plane Cloud Free へ。
