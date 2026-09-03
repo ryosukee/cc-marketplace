@@ -225,6 +225,29 @@ CLI の有無を確かめてから決める。
 反映先。新しい plugin。`.claude/rules/plugin-design.md` の kernel パターンと
 「環境固有の値は settings.json の env に置く」（API key の置き場）が当たる。
 
+### 確定 13 Plane Cloud Free に work item 数・project 数の上限は無いものとして扱う
+
+結論。Plane Cloud Free の work item 数・project 数に上限は無いものとして扱い、
+確定 11 の「決めなかった範囲」に残していた「Free は有限ではないか」という疑問を閉じる。
+公式が数値で示す Free の上限は席数 12・AI credits 500 / 席 / 月・添付 1 件 5MB の 3 つで、
+1 人で使う限りどれも効かない。
+
+決めなかった範囲。エディションそのもの（Cloud Free か Community Edition か）は ccm-f069 で問う。
+Cloud 側の実装は非公開なので、上限が無いという判定は公式資料とコードからの推定であり、
+作成が失敗し始めたら上限に当たったと見て Community Edition へ移す。
+
+決め手。価格ページの機能表で件数を持つ行は席数だけで、Projects / Work Items の行は件数なし。
+Community Edition のコードの料金比較表が Free の見出しに "Unlimited projects" と
+"Unlimited cycles and modules" を持ち、上限を数える実装が無い。公式ブログが Community Edition を
+"At 99.9% parity with the Free plan of our Cloud" と書く。
+「CE が無制限と明記しているなら Free は有限では」という読みは、どの公式資料にも支持されない。
+
+出典。2026-09-04 の調査。実文は
+[Plane Cloud Free の上限・公式 CLI・公式 MCP・API レート制限](./artifacts/kanban-plane-free-limits-cli-mcp-2026-09-04.md)。
+問いの実文は [実文 21](./artifacts/kanban-requirements-origin.md#実文-21-ccm-f068-への回答) の補足。
+
+反映先。ccm-f069 の設問 1 の推奨（Cloud Free）。導入時のエディションの選択。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
