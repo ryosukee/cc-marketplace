@@ -289,3 +289,23 @@ fork した先での handover の同時書き込みや重複のリスクが減�
 成果物をカードへ紐づける構想もある。norm-refit の進捗レポートを親カードに紐づければ、
 claude-html-communication の index に必ずしも置かなくてよくなる、という形。
 これも詳細は決めていない。
+
+### 全 repo を 1 サービスに載せる前提での上限と切り分け（2026-09-03）
+
+ccm-f068 は 250 件の見込みを立てず、repo を Linear のどの単位に対応させるかも決めていなかった。
+全 repo を 1 サービスに載せる前提（確定 3 の優先条件の範囲内）で、候補 6 件を公式の一次情報で確かめ直した。
+実文は次の 3 本。
+
+- [Linear Free プランの制限と repo の対応](./artifacts/kanban-linear-free-plan-2026-09-03.md)。
+  250 件は archive 済みを除く全 issue に掛かり、閉じた issue も自動 archive まで数える。
+  超えると新規作成が止まる。Project は Team をまたげ、数の上限は記載なし
+- [Plane Cloud Free と Community Edition の差](./artifacts/kanban-plane-cloud-vs-ce-2026-09-03.md)。
+  公式が「Community Edition は Cloud Free と機能同等」と明記。Cloud Free の差は席数 12 と AI credits。
+  work item 数・project 数の上限は Cloud Free に記載なし、Community Edition は無制限と明記
+- [OpenProject / YouTrack / Wekan / Beads の切り分け単位と上限](./artifacts/kanban-candidates-repo-units-2026-09-03.md)。
+  4 件とも件数の上限は記載なし。横断の kanban を公式に持つのは YouTrack Server と Beads + bv
+
+250 件の見込み（観測、2026-09-03）: `todo.md` の cc-marketplace 宛の依頼 29 件前後 + 復元タスク 13 件、
+html-communication の index に出る project は 9 個。cc-marketplace だけで 40 件前後が板に乗る。
+
+ccm-f068 はこの前提で同名上書きで改稿する（回答を受けていないため）。推奨は Linear から Plane Cloud Free へ。

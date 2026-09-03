@@ -5,6 +5,10 @@
 
 前の比較（`kanban-matrix.md`）の判定は根拠に使っていない。観点の組み方が誤っていたため。
 
+訂正（2026-09-03）: beads_viewer の公式 repo は steveyegge 配下ではなく `Dicklesworthstone/beads_viewer`（別作者）。
+無料枠の上限と repo の切り分け単位は `kanban-linear-free-plan-2026-09-03.md` /
+`kanban-plane-cloud-vs-ce-2026-09-03.md` / `kanban-candidates-repo-units-2026-09-03.md` で確かめ直した。
+
 ## 観点
 
 要件（満たさないものは候補から外れる）。
