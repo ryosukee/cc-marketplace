@@ -310,6 +310,28 @@ Claude が機械的に引くためのものか」への回答。
 
 条件は kanban 側で絞れることで、実現の手段は問われていない。
 
+## 実文 21 ccm-f068 への回答
+
+`91957157-527e-41ea-8b9d-af357dbb5d6e.jsonl`、2026-09-04（行番号は次回の突合で確定する）。
+ccm-f068（2026-09-03 の改稿版。全 repo を 1 サービスに載せる前提、推奨は Plane Cloud Free）の
+2 問への回答。設問 1「どの候補を採るか」の選択肢は Plane Cloud Free（推奨）/ Plane Community Edition /
+Linear / YouTrack Server / OpenProject Community Edition / Wekan / Beads + beads_viewer / 自前実装 / その他。
+設問 2「Claude 側のラップをどこに置くか」の選択肢は cc-marketplace の plugin にする（推奨）/
+この repo のスクリプトにする / いまは決めない / その他。
+
+<!-- markdownlint-disable MD032 -->
+> "## HTML フォーム回答（kanban の候補 7 件のレポート）
+> - Q1（候補の選択）: その他: plane cloud or comunity, 次点で youtrack
+> - Q2（ラップの置き場）: cc-marketplace の plugin にする
+> - 補足: plane の free plan が本当に上限がないのか調べてみて欲しい
+> 今手元に plane 使えるから mcp or cli setup して試してみてもよい。cli もあるんだっけ？token 節約的には mcp より cli の方がよいと思ってる。
+> というか community edition で無制限という記載があるなら free の方は有限なのでは？
+> cli じゃなくて api だとリクエスト制限くらう？"
+<!-- markdownlint-enable MD032 -->
+
+回答は Q1 と Q2 の 2 行。補足は 4 つの問い（Free の上限の実調査 / CLI の有無と token の観点 /
+CE が無制限なら Free は有限ではないか / API のリクエスト制限）で、回答の上書きではない。
+
 ## kanban-matrix.md の 6 要件と、実文との対応
 
 `notes/artifacts/kanban-matrix.md` の 36-43 行が挙げる 6 件について、

@@ -191,6 +191,40 @@ Plane と Linear の文言は 2026-09-03 に公式ドキュメントから取得
 
 反映先。候補の比較。Linear と Plane Community Edition が候補に戻る。
 
+### 確定 11 道具は Plane。Cloud Free と Community Edition のどちらかは未定。次点は YouTrack Server
+
+結論。kanban の道具は Plane にする。Cloud Free と Community Edition のどちらにするかは、
+Cloud Free に work item 数の上限があるかを確かめてから決める。次点は YouTrack Server。
+Linear・OpenProject・Wekan・Beads・自前実装は候補から外れた。
+
+決めなかった範囲。エディション。Cloud Free の上限の有無（2026-09-03 の調査では公式に記載なし。
+Community Edition は「無制限」と明記しているため、Free は有限ではないかという疑問が残る）。
+
+決め手。ccm-f068 への回答「その他: plane cloud or comunity, 次点で youtrack」。
+
+出典。2026-09-04 の回答。実文は
+[実文 21](./artifacts/kanban-requirements-origin.md#実文-21-ccm-f068-への回答)。
+
+反映先。導入の手順。候補の比較はこれで終了。
+
+### 確定 12 Claude 側のラップは cc-marketplace の plugin にする
+
+結論。カードを読み書きする手順と、いまのセッションをカードへ結び付ける仕組みは、
+cc-marketplace の plugin として作る。全 repo のセッションが同じ手順で使える。
+
+決めなかった範囲。plugin の名前と構成（skill / hook / agent のどれを持つか）。
+Plane との接続手段（CLI / API 直叩き / MCP）。ユーザーは補足で
+「token 節約的には mcp より cli の方がよいと思ってる」と述べているが、これは回答ではなく補足で、
+CLI の有無を確かめてから決める。
+
+決め手。ccm-f068 への回答「cc-marketplace の plugin にする」。
+
+出典。2026-09-04 の回答。実文は
+[実文 21](./artifacts/kanban-requirements-origin.md#実文-21-ccm-f068-への回答)。
+
+反映先。新しい plugin。`.claude/rules/plugin-design.md` の kernel パターンと
+「環境固有の値は settings.json の env に置く」（API key の置き場）が当たる。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
