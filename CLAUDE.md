@@ -78,7 +78,7 @@ cc-marketplace/
 | mkdocs-setup | 0.2.1 | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | 0.2.0 | tooling | .netrc 等の credentials 保護 hook |
 | claude-user-communication | 0.40.0 | communication | HTML ページ提示 (claude-html-communication) + 生成ページの機械検査 + 提示前レビューの page-reviewer agent (造語の判定を含む)。雛形は 1 / 2 / 3 pane のレスポンシブ (3 pane は 1340 / 1700 / 2100px) + 現在地の追従 + 設問のグループ化。完了ページは削除せず archive.html へ送る。セクション番号は見出しの外に出す。図は Tailwind 可 (図の中だけ)。要環境変数 (plugin README) |
-| claude-known-issues | 0.4.0 | meta | Claude Code の既知バグ一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、config/ の 2 本は書き方の例) + 更新検知・全件突合の時期を通知する SessionStart hook + 差分・全件の突合 agent |
+| claude-known-issues | 0.4.1 | meta | Claude Code の既知バグ一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、config/ の 2 本は書き方の例) + 更新検知・全件突合の時期を通知する SessionStart hook + 差分・全件の突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | 0.4.11 | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill) + レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件。要 `gh` CLI |
 

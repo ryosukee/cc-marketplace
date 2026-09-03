@@ -66,10 +66,16 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
    関係する行があれば summary と affected に反映する。登録より前に挙動が変わっていることがある
 4. how_to_verify を、手順 2 の実測をそのまま手順にして書く
 5. dependents を書く。ワークアラウンドを担う rule・skill の側には一覧への言及を足さない
-6. 一覧を編集して保存する
+6. ワークアラウンドを担う rule・skill の frontmatter に `note` を書く（下記）
+7. 一覧を編集して保存する
 
 ## ワークアラウンド側に書くこと
 
-- rule・skill 側: 制約があること、どう振る舞うか。一覧のエントリ id や plugin 名は書かない。
+- rule・skill の本文: どう振る舞うか。制約の中身は why に機構として書き、
+  バージョン番号・changelog の引用・一覧のエントリ id・plugin 名は書かない。
   一覧を読まないセッションでも振る舞いが再現できる状態にする
+- rule・skill の frontmatter の `note`: この文書がワークアラウンドであること、
+  対象の制約と根拠（挙動が入った版、changelog の引用、実測の所在）、解除の条件。
+  frontmatter はセッションのコンテキストに載らないので、指示として読まれない情報はここに置く。
+  `status` のような状態フィールドは付けない。読んで判断が変わる値が無い
 - 一覧側: 再現手順、依存している場所、時系列ログ
