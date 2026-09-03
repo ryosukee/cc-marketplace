@@ -248,6 +248,66 @@ Community Edition のコードの料金比較表が Free の見出しに "Unlimi
 
 反映先。ccm-f069 の設問 1 の推奨（Cloud Free）。導入時のエディションの選択。
 
+### 確定 14 エディションは Plane Cloud Free
+
+結論。Plane Cloud Free を使う。Community Edition の常駐は立てない。
+確定 11 が「未定」として残していたエディションの選択を閉じる。
+
+決めなかった範囲。Cloud Free で運用できなくなったときの移り先は決めていない。
+確定 11 の次点（YouTrack Server）は Plane 自体が使えなかったときの退避先で、
+エディションの退避先は Community Edition になる。移す条件は確定 13 のとおり
+「work item の作成が失敗し始めたとき」。
+
+決め手。確定 13 で件数の上限が無いものとして扱うと決めたことで、
+Cloud Free を採らない理由が「カードの内容を手元に置きたい」だけになった。
+確定 7 でカードの内容は外部のサービスに置いてよいと決めてあるので、この理由は立たない。
+立てるものが無く、新機能が Cloud に先に来る。
+
+出典。ccm-f069 の設問 1 への回答（2026-09-04）。実文は
+[実文 22](./artifacts/kanban-requirements-origin.md#実文-22-ccm-f069-への回答)。
+
+反映先。plugin の接続先（Cloud の API エンドポイントと workspace slug）。API key は Cloud で発行する。
+
+### 確定 15 plugin は Plane の REST API を自分のスクリプトから直接叩く
+
+結論。常用の接続手段は REST API の直叩き。公式 MCP server（hosted 版・stdio 版）と
+公式 CLI（Plane Compose）は常用の経路にしない。
+
+決めなかった範囲。API の呼び出しをどの言語・どの形のスクリプトで書くかは決めていない
+（plugin の構成と一緒に決める）。429 に当たったときの待ち方も未定。
+
+決め手。MCP は tool 30 個の定義が毎セッション context に載る。
+実文 21 の補足が「token 節約的には mcp より cli の方がよい」と述べており、
+context に載る量を最小にする選択が API 直叩きになる。
+plugin のスクリプトから叩く形は、cc-marketplace の kernel パターン
+（`scripts/` のエントリスクリプト経由で state に触る）にそのまま乗る。
+引き受けるのは、API の変更への追従と 429 の対処を自分で持つこと。
+
+出典。ccm-f069 の設問 2 への回答（2026-09-04）。実文は
+[実文 22](./artifacts/kanban-requirements-origin.md#実文-22-ccm-f069-への回答)。
+API のレート制限（key 1 本あたり 60 req/分、超過は 429）の実文は
+[Plane Cloud Free の上限・公式 CLI・公式 MCP・API レート制限](./artifacts/kanban-plane-free-limits-cli-mcp-2026-09-04.md)。
+
+反映先。plugin のスクリプト。API key の置き場は settings.json の env（確定 12）。
+
+### 確定 16 未着手の一覧の一括取り込みも、同じスクリプトで 1 件ずつ API を叩く
+
+結論。`todo.md` の 27 件前後の取り込みは、確定 15 で作るスクリプトを使って 1 件ずつ作る。
+Plane Compose（`pipx install plane-compose`）は入れない。
+
+決めなかった範囲。取り込む前に差分を見る手段は決めていない。
+Compose の `plane diff` に相当するものが要るなら、スクリプト側で作る。
+
+決め手。この 1 回のために pipx の依存を増やさない。
+Compose を採る利点（親子と依存を YAML でまとめて書け、push 前に差分を見られる）は、
+27 件前後の 1 回限りの取り込みでは、依存を 1 つ増やすコストに見合わない。
+確定 15 のスクリプトが既にあるので、追加で書くものが無い。
+
+出典。ccm-f069 の設問 3 への回答（2026-09-04）。実文は
+[実文 22](./artifacts/kanban-requirements-origin.md#実文-22-ccm-f069-への回答)。
+
+反映先。`todo.md` の取り込み手順（確定 9 の 1 項目 1 枚）。plugin のスクリプトの要件。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
@@ -303,13 +363,18 @@ Orca だけは、依存関係を持たずカードに独自の属性を足せな
 Claude が API を叩くための token の置き場。後者は
 `.claude/rules/plugin-design.md` の「環境固有の値は settings.json の env に置く」が当たる。
 
-### 次にやること
+### 次にやること（2026-09-04 更新）
 
-1. 要件 3（独自の属性）を板と Claude 側のどちらに置くかを決める。ここで候補の集合が変わる
-2. 確定 2 の 6 要件と確定 4 の 3 要件で観点を組み直し、候補を並べ直す。
-   確定 3 の優先条件と、確定 8 の常駐の重みは、落とす条件に使わない
-3. 候補を決めて導入する
-4. `todo.md` の項目をカードとして取り込む（確定 9 のとおり 1 項目 1 枚）
+道具・エディション・接続手段は確定 11・12・14・15・16 で決まった。残りは構成の設計と導入。
+
+1. Plane の階層構造を調べ、project / board の構成を提案する。
+   既存の Plane workspace の中身は破棄してよい（実文 22 の補足）。
+   決めるのは、repo と project の対応、セッションごとの板を作るか、
+   確定 10 のラベルによる絞り込みを Plane のどの機能に載せるか
+2. plugin を作る（確定 12・15）。名前と skill / hook の構成は未定。
+   API key は settings.json の env
+3. `todo.md` の項目をカードとして取り込む（確定 9 のとおり 1 項目 1 枚、
+   確定 16 のとおりスクリプトで 1 件ずつ）
 
 ### 落とした候補の理由
 

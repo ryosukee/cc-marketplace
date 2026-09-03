@@ -332,6 +332,32 @@ Linear / YouTrack Server / OpenProject Community Edition / Wekan / Beads + beads
 回答は Q1 と Q2 の 2 行。補足は 4 つの問い（Free の上限の実調査 / CLI の有無と token の観点 /
 CE が無制限なら Free は有限ではないか / API のリクエスト制限）で、回答の上書きではない。
 
+## 実文 22 ccm-f069 への回答
+
+セッション `a9c04f8d-fa4c-414a-b7e7-3a6cb4a9a90f`、2026-09-04。
+ccm-f069（Plane のエディションと接続手段、設問 3 問）への回答。
+設問 1「Plane のどのエディションを使うか」の選択肢は Plane Cloud Free（推奨）/
+Plane Community Edition / その他。
+設問 2「plugin は Plane とどの手段でやり取りするか」の選択肢は
+REST API を plugin のスクリプトから直接叩く（推奨）/ 公式 CLI Plane Compose /
+公式 MCP server の hosted 版 / 公式 MCP server の stdio 版 / その他。
+設問 3「未着手の依頼の一覧をどの手段で一括して取り込むか」の選択肢は
+Plane Compose の YAML を書いて plane push（推奨）/ plugin のスクリプトで 1 件ずつ API を叩く / その他。
+
+<!-- markdownlint-disable MD032 -->
+> "## HTML フォーム回答（Plane のエディションと接続手段）
+> - Q1（エディション）: Plane Cloud Free
+> - Q2（常用の接続手段）: REST API を plugin のスクリプトから直接叩く
+> - Q3（一括取り込みの手段）: plugin のスクリプトで 1 件ずつ API を叩く
+> - 補足: plane は今手元で使っている project もあるので、project 構成やボード構成をどうするかも検討したい。そもそも plane ではどのような階層構造を持っているのかの調査をして、どのように project ごとの kanban を割り当てるのか、セッションごとの kanban を作るのかを提案して。場合によっては今 plane で使っている内容は破棄してもよい。大して運用もしていなかったので"
+<!-- markdownlint-enable MD032 -->
+
+回答は Q1〜Q3 の 3 行。Q3 だけ推奨（Plane Compose の YAML を push）を採らず、
+追加の依存を増やさない側を選んでいる。
+補足は回答の上書きではなく、新しい依頼が 2 つ。Plane の階層構造そのものの調査と、
+project ごとの kanban の割り当て・セッションごとの kanban を作るかの提案。
+既存の Plane workspace の中身は破棄してよいという許可を含む。
+
 ## kanban-matrix.md の 6 要件と、実文との対応
 
 `notes/artifacts/kanban-matrix.md` の 36-43 行が挙げる 6 件について、
