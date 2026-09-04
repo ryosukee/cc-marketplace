@@ -81,5 +81,8 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
 - rule・skill の frontmatter の `note`: この文書がワークアラウンドであること、
   対象の制約と根拠（挙動が入った版、changelog の引用、実測の所在）、解除の条件。
   frontmatter はセッションのコンテキストに載らないので、指示として読まれない情報はここに置く。
-  `status` のような状態フィールドは付けない。読んで判断が変わる値が無い
+  `status` のような状態フィールドは付けない。読んで判断が変わる値が無い。
+  `note` を書くのはこの手順を通るときだけで、ワークアラウンドでない rule・skill には書かない。
+  why: `note` は公式の frontmatter フィールドではない。書ける場面をワークアラウンドに限らないと、
+  挙動を持たないフィールドが置き場の分からない情報の受け皿になる
 - 一覧側: 再現手順、依存している場所、時系列ログ
