@@ -3,7 +3,7 @@
 //
 // usage:
 //   node assemble-page.mjs <本文.html> <出力.html> --title "<title>" --file <ファイル名（拡張子なし）> \
-//        [--qs "q1=ラベル|q2=ラベル"] [--report] [--css <追加 CSS ファイル>]...
+//        [--qs "q1=ラベル|q2=ラベル"] [--report] [--css <追加 CSS ファイル>]... [--force]
 //
 // 本文ファイルには <main> から下部バー（form は #bar、report は #footer-nav）までを書く。
 // 雛形の <head>（CSS を含む）と、form なら <script>（追従・下書き保存・回答コピー）が付く。
@@ -11,6 +11,7 @@
 //             ラベルは summary の設問ラベル部分から取る
 //   --report  report 型。<script> を付けない
 //   --css     パターン集の style.css など、雛形の <style> の末尾へ追加する CSS
+//   --force   中身のある出力先を上書きする。回答前の同名上書きの改稿でだけ使う
 // 版は plugin.json の version を読んで埋める。
 // Exit: 0 = 成功, 2 = 前提条件エラー（引数不足・雛形なし・placeholder の残り）
 import fs from "node:fs";
@@ -27,12 +28,23 @@ for (let i = 0; i < args.length; i++) {
   else if (a === "--file") opt.file = args[++i];
   else if (a === "--qs") opt.qs = args[++i];
   else if (a === "--report") opt.report = true;
+  else if (a === "--force") opt.force = true;
   else if (a === "--css") opt.css.push(args[++i]);
   else positional.push(a);
 }
 const [bodyPath, outPath] = positional;
 if (!bodyPath || !outPath || !opt.title || !opt.file) {
-  console.error("usage: assemble-page.mjs <本文.html> <出力.html> --title <title> --file <name> [--qs ...] [--report] [--css file]...");
+  console.error("usage: assemble-page.mjs <本文.html> <出力.html> --title <title> --file <name> [--qs ...] [--report] [--css file]... [--force]");
+  process.exit(2);
+}
+
+// 出力先が既にあるとき、他人のページを潰さない。通すのは claim-page-number.sh が作った
+// 0 バイトの予約と、--force を明示したときだけ。並行するセッションが同じ連番を取ると、
+// 走査から書き込みまでの隙間で相手のページを上書きする
+if (fs.existsSync(outPath) && !opt.force && fs.statSync(outPath).size > 0) {
+  console.error(`出力先に中身のあるファイルがある: ${outPath}`);
+  console.error("回答前の同名上書きの改稿なら --force を付ける。");
+  console.error("別のページなら claim-page-number.sh で番号を取り直す。");
   process.exit(2);
 }
 
