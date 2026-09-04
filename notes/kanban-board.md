@@ -363,14 +363,31 @@ Orca だけは、依存関係を持たずカードに独自の属性を足せな
 Claude が API を叩くための token の置き場。後者は
 `.claude/rules/plugin-design.md` の「環境固有の値は settings.json の env に置く」が当たる。
 
+### Plane の階層構造の調査（2026-09-04）
+
+公式ドキュメントと Community Edition のソースで裏を取った。実文は
+[Plane の階層構造とデータモデル](./artifacts/kanban-plane-hierarchy-2026-09-04.md)。
+構成の設計に効くのは次の 4 点。
+
+- 必須の階層は Workspace > Project > Work item > Sub work item の 1 本。
+  Cycle・Module・Label・State はすべて Project にぶら下がり、project の境界を越えない
+- Cloud Free に project 横断の kanban は無い。Board layout が付くのは project の work items 画面と
+  project view だけで、workspace view は spreadsheet 固定。teamspace view は Pro 以上。
+  ただし workspace view が Cloud Free に含まれるかの明文は公式のどこにも無い
+- work item 数・project 数の上限は公式資料にも Community Edition のコードにも無い。
+  確定 13 を覆す材料は出なかった
+- v1 API に view と workspace 一覧が無い。work item の一覧は project をまたげず、
+  親子は同一 project に限られる（Community Edition の serializer。Cloud は未確認）
+
+公式資料どうしの矛盾 5 件と未確認 11 件を、実文の側に残してある。
+
 ### 次にやること（2026-09-04 更新）
 
-道具・エディション・接続手段は確定 11・12・14・15・16 で決まった。残りは構成の設計と導入。
+道具・エディション・接続手段は確定 11・12・14・15・16 で決まり、Plane の階層構造も調べ終えた。
 
-1. Plane の階層構造を調べ、project / board の構成を提案する。
-   既存の Plane workspace の中身は破棄してよい（実文 22 の補足）。
-   決めるのは、repo と project の対応、セッションごとの板を作るか、
-   確定 10 のラベルによる絞り込みを Plane のどの機能に載せるか
+1. ccm-f074 の回答を受けて、project / board の構成を確定として積む。
+   問うているのは、repo と project の対応、セッションを載せる軸、横断で見る手段、
+   既存 workspace の扱い、長期の仕事を束ねる軸、state の集合の 6 件
 2. plugin を作る（確定 12・15）。名前と skill / hook の構成は未定。
    API key は settings.json の env
 3. `todo.md` の項目をカードとして取り込む（確定 9 のとおり 1 項目 1 枚、
