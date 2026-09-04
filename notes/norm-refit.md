@@ -2481,54 +2481,15 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
 - 出典: ccm-f064 の Q4 に添えられた補足（上のエントリの実文に含まれる）
 - 反映先: 未定。R1 の設計で決める
 
-### 2026-09-05 ccm-f071: 発番の確保は実装済み、蓄積観点は根源の課題として整理し直す、frontmatter の note は却下
-
-- 結論: 3 件のうち Q1 は回答の前に実装が済んでいた。Q2 は提案した 2 観点を足さず、
-  もっと根源的な課題として整理してから norm-refit の rule 群へ反映する形に差し替える。
-  Q3 は却下で、`claude-doc-authoring.md` の frontmatter 節を変えない
-- 決めなかった範囲: Q2 の「根源的な課題」が何かは整理していない。どの rule へ反映するかも未定。
-  Q3 を却下したあと、`claude-known-issues` の entry skill が持つ「frontmatter の note を書く」
-  手順をどうするかは回答に無い（補足は「なし」）
-- 決め手: Q1 は 2026-09-05 の時点で `claude-user-communication` 0.41.0 として実装済み
-  （`claim-page-number.sh` と `assemble-page.mjs` の上書き防止）。
-  Q2 は、個別の観点を足すよりも根源の課題を整理するほうが反映先として適切という判断。
-  Q3 は選択肢の説明のとおり、規定を変えない
-- 出典: <https://mac-mini.hake-tarpon.ts.net/ccm-f071.html> への回答（2026-09-05）
-- 出典の実文:
-
-```text
-## HTML フォーム回答（retrospective の codify 候補 3 件）
-- Q1（発番の確保）: その他: これもう他の対応入れなかったっけ？
-- Q2（蓄積観点の追加）: その他: もっと根本の抽象的な根源的な課題を整理して norm-refit の rule 軍への反映にした方がいいかな
-- Q3（frontmatter の note）: 却下する
-- 補足: なし
-```
-
-- 反映先: Q1 は `plugins/claude-user-communication` 0.41.0（反映済み）。
-  Q2 は段階 R 以降の rule 群（対象の rule は未定）。Q3 は反映なし（`claude-doc-authoring.md` を変えない）
-
-### 2026-09-05 frontmatter の `note` は entry skill からの利用だけに閉じる（ccm-f071 Q3 の続き）
-
-- 結論: `claude-known-issues` の entry skill が定める「ワークアラウンドを担う rule・skill の
-  frontmatter に `note` を書く」手順はそのまま残す。`note` を書くのは entry skill の手順を
-  通ったときだけで、それ以外の場面では使わない。`claude-doc-authoring.md` は変えない
-- 決めなかった範囲: `claude-doc-authoring.md` の frontmatter 節が「無いフィールドは書かない」と
-  定めていることと、entry skill が `note` を書かせることの食い違いを、文面としてどう扱うかは
-  決めていない。現状は entry skill の側だけに定めがある状態で運用する
-- 決め手: ccm-f071 の Q3 で却下したのは `claude-doc-authoring.md` の frontmatter 節を
-  変えることであって、`note` を書く運用そのものではない。
-  `note` は挙動を持たないフィールドで、frontmatter がセッションのコンテキストに載らないことを
-  利用して、指示として読ませない情報（対象の制約、根拠、解除の条件）を置いている
-- 出典: 2026-09-05 のやり取り「enty skill には note に書けって書いてあるんだよね、
-  それでいいのでは？note の利用は entry skill からのみ」
-- 反映先: 反映なし。`plugins/claude-known-issues/skills/entry/SKILL.md` の手順 6 と
-  `rules/subagent-delegation.md` / `rules/bash-absolute-paths.md` の `note` は現状のまま
-
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
 f007 以降のフォームは、各設問がどの課題を解消するかを明記する。
 
+- [ ] レビューで繰り返し出る欠陥の根源を整理し、rule 群へ反映する（2026-09-05 提起）:
+  ccm-f071 の設問 2 で「確度の圧縮落ち」と「覆し条件の設問間整合」を蓄積観点として足す案を出したが、
+  個別の観点を足すのではなく、もっと根源の課題を整理してから rule 群へ反映する形に差し替えた。
+  何が根源かはまだ整理していない。反映先の rule も未定
 - [x] Q3 再提示: 実文ドラフト付きで f007 設問 1 として再提示
   （解消済み: 回答は最小構成への再差し戻し。後続は下の「入口 rule の最小構成」課題）
 - [x] Q4 再提示: 構成のゼロベース再考（解消済み: f007 Q3 で案 2 確定）
