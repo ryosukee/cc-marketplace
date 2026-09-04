@@ -358,6 +358,40 @@ Plane Compose の YAML を書いて plane push（推奨）/ plugin のスクリ�
 project ごとの kanban の割り当て・セッションごとの kanban を作るかの提案。
 既存の Plane workspace の中身は破棄してよいという許可を含む。
 
+## 実文 23 ccm-f074 への回答
+
+セッション `a9c04f8d-fa4c-414a-b7e7-3a6cb4a9a90f`、2026-09-05。
+ccm-f074（Plane の project とボードの構成、設問 6 問）への回答。
+設問 1「repo を Plane のどの単位に対応させるか」の選択肢は 1 repo = 1 project（推奨）/
+全 repo で 1 project / 能動的な repo だけ project にし、残りを 1 つへ集約 / その他。
+設問 2「セッションごとの絞り込みをどの軸に載せるか」の選択肢は Label（推奨）/ Cycle / Module /
+載せない / その他。
+設問 3「project をまたいで見る手段をどうするか」の選択肢は workspace view の表を使う（推奨）/
+plugin のスクリプトで横断の一覧を出す / 横断では見ない / その他。
+設問 4「既に使っている Plane の中身をどうするか」の選択肢は
+既存 workspace の project を消して作り直す（推奨）/ 新しい workspace を作り、既存はそのまま残す /
+消す前に中身を一覧して判断する / その他。
+設問 5「複数セッションにまたがる仕事をどの軸で束ねるか」の選択肢は
+親 work item と sub work item（推奨）/ Module / Cycle / 束ねない / その他。
+設問 6「board の列に使う state の集合をどう定義するか」の選択肢は
+Plane が入れた既定の state をそのまま使う（推奨）/ Claude の作業に合わせて足す / その他。
+
+<!-- markdownlint-disable MD032 -->
+> "## HTML フォーム回答（Plane の project とボードの構成）
+> - Q1（repo と project の対応）: 1 repo = 1 project
+> - Q2（セッションを載せる軸）: Label
+> - Q3（横断で見る手段）: 横断では見ない
+> - Q4（既存の Plane の扱い）: 既存 workspace の project を消して作り直す  ※ 勝手に消さないでね。こっちで引越しをする
+> - Q5（長期の仕事を束ねる軸）: 親 work item と sub work item
+> - Q6（state の集合）: その他: 要検討、なんかデフォルトの state 一般的じゃなくない？
+> - 補足: module って何？cycle は sprint 的なものだよね？"
+<!-- markdownlint-enable MD032 -->
+
+Q1・Q2・Q5 は推奨どおり。Q3 は推奨（workspace view の表）を採らず、横断で見ない側を選んでいる。
+Q4 は推奨の案を選びつつ、消す作業をユーザー自身が行うという条件が付いた。
+Q6 は決まっておらず、既定の state が一般的でないのではないかという疑問が付いている。
+補足は 2 つの問い（module とは何か / cycle は sprint 的なものか）で、回答の上書きではない。
+
 ## kanban-matrix.md の 6 要件と、実文との対応
 
 `notes/artifacts/kanban-matrix.md` の 36-43 行が挙げる 6 件について、

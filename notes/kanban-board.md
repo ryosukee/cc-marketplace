@@ -308,6 +308,114 @@ Compose を採る利点（親子と依存を YAML でまとめて書け、push �
 
 反映先。`todo.md` の取り込み手順（確定 9 の 1 項目 1 枚）。plugin のスクリプトの要件。
 
+### 確定 17 repo と project を 1 対 1 で対応させる
+
+結論。1 つの repo を 1 つの Plane project にする。全 repo を 1 project へまとめる案と、
+能動的な repo だけ project にする案は採らない。
+
+決めなかった範囲。repo が無い作業（dotfiles の設定変更のような、どの repo にも属さないもの）を
+どこへ入れるかは決めていない。project を新しく作るのはいつかも決めていない。
+
+決め手。repo ごとに独立した board が手に入り、state と label を repo の事情に合わせて変えられる。
+Plane では State・Label・Cycle・Module がすべて project の中に閉じるので、
+1 project へまとめると board の列を repo ごとに定義できなくなる。
+横断の board を得る利点は、確定 19 で横断を見ないと決めたことで消えた。
+
+出典。ccm-f074 の設問 1 への回答（2026-09-05）。実文は
+[実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。
+軸が project に閉じることの根拠は
+[Plane の階層構造とデータモデル](./artifacts/kanban-plane-hierarchy-2026-09-04.md)の 2 節。
+
+反映先。plugin が持つ repo と project id の対応表。project の作成手順。
+
+### 確定 18 セッションごとの絞り込みは Label に載せる
+
+結論。セッションを表す軸は Label にする。Cycle と Module は使わない。
+
+決めなかった範囲。label の名前の付け方（セッション id をそのまま使うのか、日付を足すのか）と、
+増え続けた label をいつ消すかは決めていない。確定 10 が残した掃除の論点がそのまま残る。
+
+決め手。1 つの work item が複数のセッションで触られることがあり、それを表せるのは
+複数持てて上限の無い Label だけ。Cycle は 1 work item に 1 つしか付かず、
+別の cycle へ入れると前の所属が消える。Label は work item の作成と同じ 1 回の
+API 呼び出しで付けられ、Cycle と Module は専用の endpoint がいる。
+
+出典。ccm-f074 の設問 2 への回答（2026-09-05）。実文は
+[実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。
+確定 10 が定めた「kanban の UI で絞れること」を、Label で満たす形になる。
+
+反映先。plugin が work item を作るときに付ける label。label の掃除の手順（未定）。
+
+### 確定 19 project をまたいだ一覧は作らない
+
+結論。repo をまたいで work item を見る手段は用意しない。見るのは常に 1 つの project のボードだけ。
+推奨した workspace view の表も、plugin のスクリプトが作る横断の一覧も採らない。
+
+決めなかった範囲。横断で見たい場面が実際に出てきたときにどうするかは決めていない。
+Cloud Free で横断を board の形で見る手段は無いので、そのときは表か、
+plugin のスクリプトが作る一覧のどちらかに戻ることになる。
+
+決め手。ユーザーが横断を見ないと選んだ。これにより確定 17 の
+「1 repo = 1 project にすると横断の board が作れない」という短所が効かなくなる。
+
+出典。ccm-f074 の設問 3 への回答（2026-09-05）。実文は
+[実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。
+
+反映先。plugin のスクリプトに横断の一覧を作らない。workspace view の設定をしない。
+
+### 確定 20 既存の workspace の project は消して作り直す。消す作業はユーザーが行う
+
+結論。いま使っている Plane の workspace をそのまま使い、その中の project を消して作り直す。
+新しい workspace は作らない。**消す作業と引越しはユーザーが行う。Claude は既存の project も
+work item も消さない。**
+
+決めなかった範囲。引越しの時期と、引越し後にどの project が残るかは決めていない。
+既存の workspace の中身は見ていない。
+
+決め手。workspace を 1 つに保つと slug が 1 つに決まり、plugin の設定が 1 行で済む。
+workspace の一覧を返す API が v1 に無いため、workspace が 2 つあるとどちらを見るかを
+設定で固定することになる。破棄の許可は「場合によっては今 plane で使っている内容は
+破棄してもよい」という留保付きで出ており、消す判断と作業はユーザーの側にある。
+
+出典。ccm-f074 の設問 4 への回答（2026-09-05）。実文は
+[実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。
+回答に「勝手に消さないでね。こっちで引越しをする」という条件が付いている。
+
+反映先。plugin のスクリプトに削除の経路を作らない。導入の手順は、
+ユーザーの引越しが終わったところから始める。
+
+### 確定 21 複数セッションにまたがる仕事は親 work item と sub work item で束ねる
+
+結論。段階が続く仕事は、束ねそのものを 1 枚の work item にして、その下に sub work item を置く。
+Module と Cycle は束ねに使わない。
+
+決めなかった範囲。入れ子を何段まで作るかは決めていない（Plane 側の段数の上限も未確認）。
+親子は v1 API では同一 project に限られるため、repo をまたぐ仕事をどう表すかも決めていない。
+
+決め手。束ねそのものがカードになるので、段階の状態・担当・説明を board の上で持てる。
+Module は複数持てるが束ね自体がカードにならず、状態も担当も持てない。
+Cycle は 1 work item に 1 つしか付かず、確定 18 の Label と役割が重ならないとしても、
+期間で区切る道具なので段階の表現には合わない。
+
+出典。ccm-f074 の設問 5 への回答（2026-09-05）。実文は
+[実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。
+親子が v1 API で同一 project に限られることの根拠は
+[Plane の階層構造とデータモデル](./artifacts/kanban-plane-hierarchy-2026-09-04.md)の 5.5 節。
+
+反映先。plugin が work item を作るときの `parent` の扱い。`todo.md` の取り込みで親を作るかどうか。
+
+### 未確定 board の列に使う state の集合
+
+ccm-f074 の設問 6 は決まらなかった。回答は「要検討、なんかデフォルトの state 一般的じゃなくない？」。
+
+論点は 2 つ。Plane が project を作った時点でどの名前の state が入るのか（ccm-f074 の時点では
+未確認のまま出した）と、その集合が作業の実態に合っているか。
+5 つの group（Backlog / Unstarted / Started / Completed / Cancelled）は固定で、
+名前だけを project ごとに決められる。
+
+出典。ccm-f074 の設問 6 への回答（2026-09-05）。実文は
+[実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
@@ -381,17 +489,18 @@ Claude が API を叩くための token の置き場。後者は
 
 公式資料どうしの矛盾 5 件と未確認 11 件を、実文の側に残してある。
 
-### 次にやること（2026-09-04 更新）
+### 次にやること（2026-09-05 更新）
 
-道具・エディション・接続手段は確定 11・12・14・15・16 で決まり、Plane の階層構造も調べ終えた。
+道具・エディション・接続手段・Plane の中の構成は確定 11〜21 で決まった。
+残るのは state の集合（未確定）と、実際に作る作業。
 
-1. ccm-f074 の回答を受けて、project / board の構成を確定として積む。
-   問うているのは、repo と project の対応、セッションを載せる軸、横断で見る手段、
-   既存 workspace の扱い、長期の仕事を束ねる軸、state の集合の 6 件
-2. plugin を作る（確定 12・15）。名前と skill / hook の構成は未定。
+1. state の集合を決める。Plane が project を作った時点で入る state の名前を確かめ、
+   そのままでよいかを問い直す
+2. ユーザーが既存 workspace の引越しを終えるのを待つ（確定 20。Claude は消さない）
+3. plugin を作る（確定 12・15）。名前と skill / hook の構成は未定。
    API key は settings.json の env
-3. `todo.md` の項目をカードとして取り込む（確定 9 のとおり 1 項目 1 枚、
-   確定 16 のとおりスクリプトで 1 件ずつ）
+4. `todo.md` の項目をカードとして取り込む（確定 9 のとおり 1 項目 1 枚、
+   確定 16 のとおりスクリプトで 1 件ずつ、確定 21 のとおり束ねは親 work item）
 
 ### 落とした候補の理由
 
