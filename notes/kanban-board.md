@@ -410,8 +410,17 @@ ccm-f074 の設問 6 は決まらなかった。回答は「要検討、なん�
 
 論点は 2 つ。Plane が project を作った時点でどの名前の state が入るのか（ccm-f074 の時点では
 未確認のまま出した）と、その集合が作業の実態に合っているか。
-5 つの group（Backlog / Unstarted / Started / Completed / Cancelled）は固定で、
-名前だけを project ごとに決められる。
+前者は 2026-09-05 に Community Edition のソースで確かめた。board の列に出るのは
+Backlog / Todo / In Progress / Done / Cancelled の 5 つで、既定は Backlog。
+実文は [Plane の階層構造とデータモデル](./artifacts/kanban-plane-hierarchy-2026-09-04.md)の
+「project 作成時に入る既定の state」。
+
+ccm-f074 の本文が挙げていた Backlog / Unstarted / Started / Completed / Cancelled は、
+列に出る state の名前ではなく内部の group。回答の「デフォルトの state 一般的じゃなくない？」は、
+この group を列の名前として読んだものである可能性がある。実際の列は上の 5 つ。
+
+state の名前は後から `PATCH` で変えられ、既定の state も書き換えられる。
+消せないのは `default=True` の state と、work item が紐づいている state。
 
 出典。ccm-f074 の設問 6 への回答（2026-09-05）。実文は
 [実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。

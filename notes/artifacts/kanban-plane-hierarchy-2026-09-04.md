@@ -262,6 +262,54 @@ Triage は intake 専用の system state で、project に 1 つ。
 > "* There is **one triage state per project**, or **one per workspace** under governance.
 > * **"Triage" is a reserved name** - you cannot name a state Triage."
 
+#### project 作成時に入る既定の state（2026-09-05 追記）
+
+Community Edition の `DEFAULT_STATES` が、project 作成の 2 経路から `bulk_create` される。
+定数は `apps/api/plane/db/models/state.py` の 24-62 行にリテラルで置かれている。
+clone は commit `da1a7ab85012d16836459a10dd92ec55eb739c69`（2026-09-02）。
+
+```python
+DEFAULT_STATES = [
+    {"name": "Backlog", "color": "#60646C", "sequence": 15000,
+     "group": StateGroup.BACKLOG.value, "default": True},
+    {"name": "Todo", "color": "#60646C", "sequence": 25000,
+     "group": StateGroup.UNSTARTED.value},
+    {"name": "In Progress", "color": "#F59E0B", "sequence": 35000,
+     "group": StateGroup.STARTED.value},
+    {"name": "Done", "color": "#46A758", "sequence": 45000,
+     "group": StateGroup.COMPLETED.value},
+    {"name": "Cancelled", "color": "#9AA4BC", "sequence": 55000,
+     "group": StateGroup.CANCELLED.value},
+    {"name": "Triage", "color": "#4E5355", "sequence": 65000,
+     "group": StateGroup.TRIAGE.value},
+]
+```
+
+> 補足: 引用は原文から `color` 以降の改行だけを詰めた。値と順序は変えていない。<br>
+> 6 件目の Triage は `State.objects` の manager が group=triage を除外するため、API と UI からは見えない。
+> CE の contract test も 5 件を期待している（`apps/api/plane/tests/contract/app/test_project_app.py` 92-97 行）。
+
+したがって board の列に出るのは Backlog / Todo / In Progress / Done / Cancelled の 5 つ。
+`default: True` は Backlog だけで、state を指定せずに作った work item はここへ入る。
+
+呼ばれるのは project 作成の 2 経路だけ。
+`POST /api/workspaces/{slug}/projects/`（`apps/api/plane/app/views/project/base.py` 281-295 行）と
+`POST /api/v1/workspaces/{slug}/projects/`（`apps/api/plane/api/views/project.py` 257-271 行）。
+CE に project template も複製の経路も無い。
+
+group は CE のモデルでは 6 種類（`backlog` / `unstarted` / `started` / `completed` / `cancelled` / `triage`）。
+docs が「5 つ」と書くのは intake 用の triage を除いた数で、この節の上の引用と食い違う。
+
+名前は後から変えられる。`PATCH /api/v1/workspaces/{slug}/projects/{project_id}/states/{id}/` の
+`name` は read_only ではなく、既定 state でも書き換えられる。
+`default: true` を渡すと同じ project の他の state が一括で `default=False` になる。
+消せないのは `default=True` の state と、work item が 1 件でも紐づいている state の 2 つ。
+`group` を `triage` にする作成・更新は serializer が拒否する。
+
+未確認。DB に Triage を含む 6 行が入ることは Django の `bulk_create` が manager のフィルタを
+適用しないという挙動からの読み取りで、実行して数えていない。
+他の state を `Triage` へ改名したときに 400 と 500 のどちらが返るかも、コードからは 500 に見えるが未実測。
+
 ### 2.2 Label は複数持てて、上限が無い。ただし 1 project に閉じる
 
 出典: <https://docs.plane.so/core-concepts/issues/labels.md>
