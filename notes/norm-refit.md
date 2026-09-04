@@ -2481,6 +2481,32 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
 - 出典: ccm-f064 の Q4 に添えられた補足（上のエントリの実文に含まれる）
 - 反映先: 未定。R1 の設計で決める
 
+### 2026-09-05 ccm-f071: 発番の確保は実装済み、蓄積観点は根源の課題として整理し直す、frontmatter の note は却下
+
+- 結論: 3 件のうち Q1 は回答の前に実装が済んでいた。Q2 は提案した 2 観点を足さず、
+  もっと根源的な課題として整理してから norm-refit の rule 群へ反映する形に差し替える。
+  Q3 は却下で、`claude-doc-authoring.md` の frontmatter 節を変えない
+- 決めなかった範囲: Q2 の「根源的な課題」が何かは整理していない。どの rule へ反映するかも未定。
+  Q3 を却下したあと、`claude-known-issues` の entry skill が持つ「frontmatter の note を書く」
+  手順をどうするかは回答に無い（補足は「なし」）
+- 決め手: Q1 は 2026-09-05 の時点で `claude-user-communication` 0.41.0 として実装済み
+  （`claim-page-number.sh` と `assemble-page.mjs` の上書き防止）。
+  Q2 は、個別の観点を足すよりも根源の課題を整理するほうが反映先として適切という判断。
+  Q3 は選択肢の説明のとおり、規定を変えない
+- 出典: <https://mac-mini.hake-tarpon.ts.net/ccm-f071.html> への回答（2026-09-05）
+- 出典の実文:
+
+```text
+## HTML フォーム回答（retrospective の codify 候補 3 件）
+- Q1（発番の確保）: その他: これもう他の対応入れなかったっけ？
+- Q2（蓄積観点の追加）: その他: もっと根本の抽象的な根源的な課題を整理して norm-refit の rule 軍への反映にした方がいいかな
+- Q3（frontmatter の note）: 却下する
+- 補足: なし
+```
+
+- 反映先: Q1 は `plugins/claude-user-communication` 0.41.0（反映済み）。
+  Q2 は段階 R 以降の rule 群（対象の rule は未定）。Q3 は反映なし（`claude-doc-authoring.md` を変えない）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。

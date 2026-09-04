@@ -404,26 +404,29 @@ Cycle は 1 work item に 1 つしか付かず、確定 18 の Label と役割�
 
 反映先。plugin が work item を作るときの `parent` の扱い。`todo.md` の取り込みで親を作るかどうか。
 
-### 未確定 board の列に使う state の集合
+### 確定 22 board の列は Plane の既定の state をそのまま使う
 
-ccm-f074 の設問 6 は決まらなかった。回答は「要検討、なんかデフォルトの state 一般的じゃなくない？」。
+結論。project 作成時に入る Backlog / Todo / In Progress / Done / Cancelled の 5 つを
+そのまま列にする。Claude の作業に固有の state（回答待ち・レビュー待ちなど）は足さない。
+運用してみて変える必要が出たら、そのときに変える。
 
-論点は 2 つ。Plane が project を作った時点でどの名前の state が入るのか（ccm-f074 の時点では
-未確認のまま出した）と、その集合が作業の実態に合っているか。
-前者は 2026-09-05 に Community Edition のソースで確かめた。board の列に出るのは
-Backlog / Todo / In Progress / Done / Cancelled の 5 つで、既定は Backlog。
-実文は [Plane の階層構造とデータモデル](./artifacts/kanban-plane-hierarchy-2026-09-04.md)の
+決めなかった範囲。どうなったら変えるかの条件は決めていない。
+変えるときに全 project の state を揃える手順も決めていない。
+
+決め手。ccm-f074 の設問 6 は「デフォルトの state 一般的じゃなくない？」として保留された。
+これは ccm-f074 の本文が、列に出る state の名前ではなく内部の group
+（Backlog / Unstarted / Started / Completed / Cancelled）を挙げていたことによる。
+実際に列に出るのは Backlog / Todo / In Progress / Done / Cancelled で、一般的な並びになる。
+state の名前は後から `PATCH` で変えられるので、いま決め切らなくても取り返しがつく。
+
+出典。ccm-f074 の設問 6 への回答（2026-09-05）と、その後のやり取り
+「state は一旦それをデフォルトとして、運用していく中で変更があったら変えよう」。
+実文は [実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。
+既定の state の根拠は
+[Plane の階層構造とデータモデル](./artifacts/kanban-plane-hierarchy-2026-09-04.md)の
 「project 作成時に入る既定の state」。
 
-ccm-f074 の本文が挙げていた Backlog / Unstarted / Started / Completed / Cancelled は、
-列に出る state の名前ではなく内部の group。回答の「デフォルトの state 一般的じゃなくない？」は、
-この group を列の名前として読んだものである可能性がある。実際の列は上の 5 つ。
-
-state の名前は後から `PATCH` で変えられ、既定の state も書き換えられる。
-消せないのは `default=True` の state と、work item が紐づいている state。
-
-出典。ccm-f074 の設問 6 への回答（2026-09-05）。実文は
-[実文 23](./artifacts/kanban-requirements-origin.md#実文-23-ccm-f074-への回答)。
+反映先。plugin が work item を作るときに引く state の名前。project の作成手順（state を触らない）。
 
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
