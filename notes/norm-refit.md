@@ -2507,6 +2507,23 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
 - 反映先: Q1 は `plugins/claude-user-communication` 0.41.0（反映済み）。
   Q2 は段階 R 以降の rule 群（対象の rule は未定）。Q3 は反映なし（`claude-doc-authoring.md` を変えない）
 
+### 2026-09-05 frontmatter の `note` は entry skill からの利用だけに閉じる（ccm-f071 Q3 の続き）
+
+- 結論: `claude-known-issues` の entry skill が定める「ワークアラウンドを担う rule・skill の
+  frontmatter に `note` を書く」手順はそのまま残す。`note` を書くのは entry skill の手順を
+  通ったときだけで、それ以外の場面では使わない。`claude-doc-authoring.md` は変えない
+- 決めなかった範囲: `claude-doc-authoring.md` の frontmatter 節が「無いフィールドは書かない」と
+  定めていることと、entry skill が `note` を書かせることの食い違いを、文面としてどう扱うかは
+  決めていない。現状は entry skill の側だけに定めがある状態で運用する
+- 決め手: ccm-f071 の Q3 で却下したのは `claude-doc-authoring.md` の frontmatter 節を
+  変えることであって、`note` を書く運用そのものではない。
+  `note` は挙動を持たないフィールドで、frontmatter がセッションのコンテキストに載らないことを
+  利用して、指示として読ませない情報（対象の制約、根拠、解除の条件）を置いている
+- 出典: 2026-09-05 のやり取り「enty skill には note に書けって書いてあるんだよね、
+  それでいいのでは？note の利用は entry skill からのみ」
+- 反映先: 反映なし。`plugins/claude-known-issues/skills/entry/SKILL.md` の手順 6 と
+  `rules/subagent-delegation.md` / `rules/bash-absolute-paths.md` の `note` は現状のまま
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
