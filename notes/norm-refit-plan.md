@@ -532,7 +532,7 @@ PR 5・段階 4 の「レビュー機構のゼロベース再設計」・v2 群 
 - agent が突合先として読む配布 rule が 455 行から 1,515 行へ増え、最適化時の実測値が基準にならなくなった
 - 文レベルの欠陥を agent がほとんど捕まえていない（事例集 39 件のうち agent 由来は 1 件）
 
-### R1 op-review を単機能 plugin として新設する
+### R1 norm-review を単機能 plugin として新設する
 
 - efso-document 側（`to-be/idp/.claude/` の agent 32 行 + SKILL.md 162 行 + facet 定義 266 行）を基準にする
 - KAO 側（`kanban-agent-orchestrator` の SKILL.md 169 行 + facet 定義 166 行）から、
@@ -600,8 +600,8 @@ norm と facet に付ける資材の扱いをここで設計する。最初の�
 
 ### R4 既存 reviewer agent 4 本の扱いを比較検討する
 
-- 統合・併存・一部統合の 3 案を比較する調査から始める。op-review への統合が有力（ccm-f056 Q6）
-- 比較の材料は、各 agent の観点と op-review の facet の重なり、機械検査との分担の有無、
+- 統合・併存・一部統合の 3 案を比較する調査から始める。`norm-review` への統合が有力（ccm-f056 Q6）
+- 比較の材料は、各 agent の観点と `norm-review` の facet の重なり、機械検査との分担の有無、
   統合したときに失われる分担
 - page-reviewer と handover-reviewer は「扱わないこと」で機械検査との分担を実測から作り込んである。
   spec-reviewer と known-issues-reviewer は対応する機械検査を持たない
@@ -638,7 +638,7 @@ html-communication の作りを改修して、レビューに渡す対象を小�
 外部セッションから持ち込まれた 3 観点を、レビュー時の観点ではなく、
 台帳を運用するときの rule として定義する（ccm-f056 Q7）。実文は `todo.md` にある。
 
-- op-review がこの rule を norm として読み込むかは R2 の設計次第
+- `norm-review` がこの rule を norm として読み込むかは R2 の設計次第
 - 依存: R2
 
 ### R7 reviewer agent の責務を揃える
@@ -653,7 +653,7 @@ html-communication の作りを改修して、レビューに渡す対象を小�
 
 ### 到達点
 
-- op-review が plugin として動き、既定の facet と norm set が定義されている
+- `norm-review` が plugin として動き、既定の facet と norm set が定義されている
 - 終了条件が、その単位（全体か facet ごとか norm ごとか）とともに決まっている
 - 既存 reviewer agent 4 本の扱いが決まっている
 - レビュー 1 回のトークン消費を、2026-08-25 の実測（6 ページ 9 回で 973k、推奨を変えた指摘 4 件）と
@@ -663,7 +663,7 @@ html-communication の作りを改修して、レビューに渡す対象を小�
 
 **暫定。段階 R が終わった時点で組み直す**（ユーザー判断 2026-09-01）。
 ccm-f056 Q1 が決めたのは段階 3 の残りの扱いまでで、以下は現時点の依存関係から置いた仮の並び。
-段階 R で op-review・facet・norm set・終了条件が決まると、
+段階 R で `norm-review`・facet・norm set・終了条件が決まると、
 どの作業がどの機構に乗るかが変わるため、そのときに見直す。
 
 1. 段階 3-2（japanese-text-writing の保守の手引き）。段階 R で規範の読ませ方が変わるので、
@@ -896,6 +896,8 @@ Opus 5 では GrowthBook の既定に関わらず入る。3 つを分離して�
 
 統合先は詳細規範 4 ファイルではない。idea-hub Q81 の用途 3 分割では
 op-review リソースと作成時指針が候補だが、48 本をどう割るかは未確定。
+この「op-review」は idea-hub Q81 の分類名の引用で、ccm-f064 で `norm-review` に改名した
+こちらの plugin と同じものを指すかは未確認。
 
 boilerplate repo の廃止判断と norm 1 本単位の明細も、この項目に含めて扱う。
 
