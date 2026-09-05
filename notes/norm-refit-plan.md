@@ -24,7 +24,6 @@ norm-refit をどの順で進めるかの正典。何をどこまでやるか、
 | `notes/artifacts/norm-audit-implementation-notes.md` | 実装で踏む注意 15 件 |
 | `notes/artifacts/norm-refit-form-sources.md` | 確認フォームの設問と回答の実文（掃除で消したページ分） |
 | `notes/artifacts/sentence-level-review-cases.md` | PR レビューの文レベル指摘の事例集（段階 4 群 3 の入力） |
-| `notes/artifacts/pending-codify-2026-08-25.md` | 未コミットだった codify 2 件の実文（PR #7 / #8 で反映済み） |
 | task list | いま何に取りかかっているか |
 
 ## 到達点
@@ -479,8 +478,8 @@ PR 1〜5 の直列とは参照の依存が無い。**PR #6 のマージ後に ma
 決着済みの中身（台帳の 2026-08-25 エントリ）:
 
 - `decision-record.md` に「出典の実文を repo 内に持つ」条項を足す。エントリ内の転記、専用 doc、
-  エントリから参照する別ファイルのいずれも可。原文は
-  [pending-codify-2026-08-25](./artifacts/pending-codify-2026-08-25.md) にあり、
+  エントリから参照する別ファイルのいずれも可。原文は commit 2654172 の
+  `notes/artifacts/pending-codify-2026-08-25.md`（反映後に削除、ccm-f050 Q2）にあり、
   「必ずエントリの中へ」をこの形に緩めてから入れる
 - notes ファイルの冒頭に目的・生存期間（日付でなく終わりの条件）・対象タスクの 3 項目を置く条項
 - 台帳が参照する実文ファイルは、本体を消すときに一緒に消す条項

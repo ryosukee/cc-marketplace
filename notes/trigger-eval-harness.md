@@ -93,7 +93,7 @@ eval [options] [target]  Run eval cases (evals/**/case.yaml or evals/**/prompt.m
 
 ## 4. 2026-07-29 の調査で追加された関連知見
 
-[調査台帳](./2026-07-30-research-ledger.md) の 1 節・13 節が直接関係する。
+[調査台帳](./research-ledger.md) の 1 節・13 節が直接関係する。
 
 - **IFScale**（20 モデル・7 プロバイダ）: 同時に課す指示数を 10 → 500 まで振り、
   後方の指示のエラー率が前方より一貫して高いことを測定。

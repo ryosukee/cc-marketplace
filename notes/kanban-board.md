@@ -4,7 +4,7 @@
 | --- | --- |
 | 目的 | 並行して走る話題をカードで追う道具を決め、導入するまでの確定事項を積む |
 | 生存期間 | 道具を導入し、運用の手順を plugin か CLAUDE.md へ移すまで |
-| 対象タスク | ccm-f058 / ccm-f061 / ccm-f062 / ccm-f065 / ccm-f066 / ccm-f067 |
+| 対象タスク | ccm-f058 / ccm-f061 / ccm-f062 / ccm-f065 / ccm-f066 / ccm-f067 / ccm-f068 / ccm-f069 / ccm-f074 |
 
 出典の実文は [kanban のタスク管理を求めた発言の実文](./artifacts/kanban-requirements-origin.md) にある。
 候補の比較の明細は [kanban の板の道具を、観点を定義して比較し直す](./artifacts/kanban-matrix.md) にあるが、
