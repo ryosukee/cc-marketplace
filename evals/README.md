@@ -74,8 +74,23 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
   （2026-08-25 に廃止した dotclaude-writer のスイートは 15 ケース × 3 = 45 実行だった）
 - 名前は `pos-NN-<内容>` / `neg-NN-<内容>`。境界事例には `boundary` タグを付ける
 
-スキーマの全容・grader 6 種の仕様は
-`notes/trigger-eval-harness.md` の 9 節（バイナリ解析の一次記録）を参照。
+## grader とスコア
+
+`tool_used` のほかに 5 種の grader がある。発動率だけを測るなら `tool_used` で足りる。
+発動した後に規範が守られたかを同じケースで測るときは `llm` と `regex` を使う。
+
+- `tool_used`: ツール名 + `input_match`（引数 JSON への正規表現）+ `min` / `max`
+- `regex`: `target` が trace / last_message / files。誤発動した skill 名は trace で拾える
+- `tool_order`: 呼び出しの前後関係
+- `file_exists`: 作業ディレクトリに生成されたファイル
+- `llm`: `criteria` を judge が 3 票投票して多数決（既定 haiku、`--judge-model` で変更）
+- `baseline`: `baseline_file` との比較を judge が判定
+
+スコアは実行ごとに grader の重み付き合格率を出し、ケースのスコアはその平均になる。
+`tool: Skill` の `tool_used` grader は、ablation 時に自動で with-only（スコア外・報告のみ）になる。
+
+この 2 つは v2.1.220 のバイナリを読んで確かめた（2026-07-30）。フィールド名と既定値は版で変わるので、
+ケースを書く前に `claude plugin eval --help` で取り直す。
 
 ## ケース設計の規範
 

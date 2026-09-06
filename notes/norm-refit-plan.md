@@ -941,7 +941,9 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
   再配置した規範 1 件ずつの要否を吟味し、retrospective の codify とレビュー指摘の一般化で規範を更新し続ける設計を決める。
   段階 3-2（保守の手引き）が入口になる
 - A2 rule の eval 化（task「rule の eval 化」）。reference-docs から削除した「rule を書くとき」由来の 1 条項の仕組み化と、
-  文レベル指摘の事例集を fixture にする案。一次記録は `notes/trigger-eval-harness.md`
+  文レベル指摘の事例集を fixture にする案。
+  grader とスコアの決まり方は `evals/README.md` に移した。
+  残りは commit ccdfc6c の `notes/trigger-eval-harness.md` にある
 - A3 review 工程のコスト対効果の見直し（2026-08-31 に段階 R へ移した。ccm-f056 Q1）。
   実測は段階 R の到達点と `notes/artifacts/review-cost-survey.md` にある
 - A4 「生成物への指摘は、まず規定を疑う」の置き場（台帳の未解決課題。内容は確定済み）

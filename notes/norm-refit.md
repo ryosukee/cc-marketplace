@@ -113,7 +113,8 @@
 
 - 結論: (1) `.handover/todo/` に残置していた読むだけの台帳 3 本は引き継ぎ資料ではないため
   notes/ へ移設（[norm-inventory](./norm-inventory.md) / [research-ledger](./research-ledger.md) /
-  [trigger-eval-harness](./trigger-eval-harness.md)）。(2) notes-format から commit 運用の言及を削除
+  trigger-eval-harness.md（commit ccdfc6c の同ファイル。反映後に削除、ccm-f076 Q7））。
+  (2) notes-format から commit 運用の言及を削除
   （git 上の扱いはプロジェクトによる）。(3) クローズ処理は「プロジェクトの慣行に従う」に一般化
   （昇格・チケット記録・単純削除のいずれも可。notes/ から消すことだけが不変）。
   (4) paths の除外パターンはワイルドカードなしの実在しないトークンに変更。
