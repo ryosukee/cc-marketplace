@@ -1,6 +1,6 @@
 # norm-refit の開発運用
 
-norm-refit（執筆規範の全条項監査と再配置）と、その後に続く norm-refit-v2 の進行中にだけ効かせる運用 rule。
+norm-refit（規範全体をゼロベースで再設計・再構成するプロジェクト）と、その後に続く norm-refit-v2 の進行中にだけ効かせる運用 rule。
 norm-refit-v2 が完了したらこのファイルごと削除する。
 
 ## 正典と着手手順
