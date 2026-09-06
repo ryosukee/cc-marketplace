@@ -910,6 +910,12 @@ skill 側はその HTML での具体形にあたる。41 本を整理すると�
 html-communication skill の `references/patterns/` に実物がある（パターン 5 件）。
 T4 が 41 本の置き場を決めるとき、このパターン集との関係を整理する。
 
+### 構成図のパターンをパターン集へ足す
+
+`notes/artifacts/diagram-representation-research.md` の調査結論を入力に、
+構成図・概念図のパターンを `references/patterns/` へ足し、出典をパターン集側へ移す。
+移し終えたらこの明細を削除する。シーケンス図の素材が `~/Desktop/html-communication-sequence/` にある。
+
 ### 独立の設計入力 2 件
 
 質問駆動手順の採否と、外部言及の解消（T5 から合流）。
@@ -924,6 +930,17 @@ T4 が 41 本の置き場を決めるとき、このパターン集との関係�
 
 切り替え直前に、写し元 commit `6dfddfc31b326d86c47d496646321551f07e5206` からの差分を取る。
 差分が出たら凍結が破れているので、写しへ反映してから切り替える。
+
+### 明細の処遇を決めて実行する
+
+`notes/norm-refit.md` の「この台帳が参照する明細」のうち、生存期間がこの段階を条件にしているものの
+処遇（正式な文書への昇格か削除か）を 1 件ずつ決めて実行する。
+対象は `notes/artifacts/norm-inventory.md` と `notes/artifacts/research-ledger.md`。
+
+### idea-hub へ申し送る
+
+`notes/artifacts/idea-hub-handoff.md` を依頼文に編み、ユーザー経由で idea-hub へ渡す。
+渡し終えたらこの明細を削除する。渡した後に先方でどう扱うかは群 D の D3 が持つ。
 
 ### 到達点の検証
 
@@ -971,7 +988,7 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
   `.claude/rules/coding.md` の機械的修正 5 行の見直しもここ）
 - D2 primary-sources-first の idea-hub への移管（依頼文は渡し済み。先方が取り込んだら cc-marketplace 側を削除。
   PR #7 で足した節を伝える）
-- D3 idea-hub への申し送り（`notes/idea-hub-handoff.md` を依頼文に編んで渡す。impl-spec の条項移設と内部重複の解消は idea-hub 側）
+- D3 idea-hub へ渡した後の追従（渡す作業は段階 5 の完了処理。impl-spec の条項移設と内部重複の解消は idea-hub 側）
 
 ### v2 で変わる運用
 

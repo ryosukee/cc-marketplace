@@ -8,9 +8,19 @@
 
 確定 1 件 = 1 エントリで積む。要約はしない（要約資料は html ページ側）。
 
-関連資料: 解釈まとめ = r011.html（serve URL は index 参照）、
-規範インベントリ = [norm-inventory](./norm-inventory.md)、
-調査台帳 = [research-ledger](./research-ledger.md)。
+関連資料: 解釈まとめ = r011.html（serve URL は index 参照）。
+
+## この台帳が参照する明細
+
+明細は `notes/artifacts/` に置く。各明細は冒頭でこの台帳へ逆参照する。
+生存期間はこの台帳と同じで、冒頭の表が持つ。どの明細をいつ処遇するかは計画のタスクにある。
+
+| 明細 | 目的 |
+| --- | --- |
+| [規範インベントリ](./artifacts/norm-inventory.md) | 規範 321 件の分類と重複マップを、正典の設計と重複削除の対象リストとして参照する |
+| [調査台帳](./artifacts/research-ledger.md) | 2026-07-29 の 9 本の並行調査の結論と出典を、再調査せずに参照する |
+| [idea-hub への申し送りの下書き](./artifacts/idea-hub-handoff.md) | idea-hub へ渡す伝達事項を、norm-refit の進行中に追記して貯める |
+| [構成図・概念図の表現](./artifacts/diagram-representation-research.md) | 構成図・概念図の表現の調査結論を、パターン集へ図を足すときの入力として参照する |
 
 ## 確定事項
 
@@ -112,7 +122,7 @@
 ### 2026-08-14 notes 運用のレビュー反映と参照台帳の移設
 
 - 結論: (1) `.handover/todo/` に残置していた読むだけの台帳 3 本は引き継ぎ資料ではないため
-  notes/ へ移設（[norm-inventory](./norm-inventory.md) / [research-ledger](./research-ledger.md) /
+  notes/ へ移設（[norm-inventory](./artifacts/norm-inventory.md) / [research-ledger](./artifacts/research-ledger.md) /
   trigger-eval-harness.md（commit ccdfc6c の同ファイル。反映後に削除、ccm-f076 Q7））。
   (2) notes-format から commit 運用の言及を削除
   （git 上の扱いはプロジェクトによる）。(3) クローズ処理は「プロジェクトの慣行に従う」に一般化
@@ -794,7 +804,7 @@
 ### 2026-08-18 FN の参照先を review-norms.md へ改名し、FN4 の失効を記録
 
 - 結論: `references/facet-review-norms.md` を `references/review-norms.md` へ改名した。
-  `FN` の接頭辞は維持し、`norm-inventory.md` と `norm-refit-t3-detail.md` の対応表だけを差し替えた
+  `FN` の接頭辞は維持し、`artifacts/norm-inventory.md` と `norm-refit-t3-detail.md` の対応表だけを差し替えた
 - 決めなかったこと: FN4 を norm として復活させるかどうか（T4 の管轄）
 - 経緯: 提示前レビューを facet 4 本から agent 1 本へ統合した（commit `05a3972`、
   claude-user-communication 0.21.0）。実測で判断を変えた指摘が内容整合と設計妥当性からしか
@@ -925,7 +935,7 @@
 ### 2026-08-20 `.claude/rules/` は規範抽出の対象に入っていなかった（訂正）
 
 - 結論: `coding.md` で分類の誤りが出た原因は監査の粒度ではなく、対象集合の欠落だった。
-  `notes/norm-inventory.md` の凡例は 15 略号で、`.claude/rules/` 3 本（198 行）に当たるものが無い
+  `notes/artifacts/norm-inventory.md` の凡例は 15 略号で、`.claude/rules/` 3 本（198 行）に当たるものが無い
 - T3 明細にもこの 3 ファイルの言及は 0 件（grep 実測）。計画に現れるのは機械的なパッチ対象としてだけで、
   実装棚卸しの当該行は自身に「台帳に記載なし」と注記している
 - 同じ理由で範囲外だったファイルが他にもある。`rules/` 直下 7 本 227 行、`notes-format.md` 29 行、
@@ -1361,7 +1371,7 @@ ccm-f031 脚注 11 が挙げた 3 件（f038 Q3 の個別処置）。2026-08-23 
 
 ### 2026-08-23 idea-hub への申し送りの置き場と、期間限定の運用 rule を作った
 
-- 結論: idea-hub へ渡す伝達事項は `notes/idea-hub-handoff.md` へ追記して貯める
+- 結論: idea-hub へ渡す伝達事項は `notes/artifacts/idea-hub-handoff.md` へ追記して貯める
   （norm-refit 完了時に依頼文へ編んでユーザー経由で渡す）。norm-refit の開発運用
   （PR 運用・セルフレビュー手順・編集凍結・台帳運用）は `.claude/rules/norm-refit-ops.md`
   として常時ロードの project rule にし、段階 5 の完了時にファイルごと削除する
@@ -1804,7 +1814,7 @@ f045 Q3 の判断材料として記録する。
         - その他
     - 設問 5 / 6「impl-spec の agent レビュー終了条件が旧方式のままなのを、どこで揃えるか」。
       問い: impl-spec 3 skill の spec-reviewer の終了条件「指摘がゼロになるか、最大 5 回に達したら終了する」を、どこで cuc / session の形に揃えるか。
-        - norm-refit では触らず、idea-hub への申し送り（`notes/idea-hub-handoff.md`）に「impl-spec の終了条件は cuc / session と不揃い。統合時に揃える」を足す［推奨］
+        - norm-refit では触らず、idea-hub への申し送り（`notes/artifacts/idea-hub-handoff.md`）に「impl-spec の終了条件は cuc / session と不揃い。統合時に揃える」を足す［推奨］
         - PR 3 で impl-spec 3 skill を「指摘 0 件まで繰り返さない。もう 1 度だけ」へ揃える。spec-reviewer の指摘の返し方は変えない
         - PR 5（review agent の責務統一）の対象に spec-reviewer と impl-spec 3 skill を足す
         - その他
@@ -1816,7 +1826,7 @@ f045 Q3 の判断材料として記録する。
         - 対象すべて（84 表）に付ける。plugins/ の 10 plugin は version bump と update を伴う
         - その他
 
-- 反映先: Q1 は PR 3（明細 C-4 の既定案）と `notes/idea-hub-handoff.md` / Q2 は PR 3（明細 B の「回答の受け取り」の文案を書き直す）/
+- 反映先: Q1 は PR 3（明細 C-4 の既定案）と `notes/artifacts/idea-hub-handoff.md` / Q2 は PR 3（明細 B の「回答の受け取り」の文案を書き直す）/
   Q3 は反映なし / Q4 は PR 3、`plugins/claude-known-issues/config/known-issues.template.yml`、
   配布済み `~/.claude/plugins/data/claude-known-issues-cc-tools/known-issues.yml` /
   Q5 は `notes/norm-refit-plan.md` の PR 5 節（呼び出し元が直す）/ Q6 は反映なし（rules の変更なし）
@@ -2199,7 +2209,7 @@ f045 Q3 の判断材料として記録する。
   起動してもセッション開始時には載らない（system prompt に出るのは常時ロードの 8 本だけ）。Read ツールで CLAUDE.md を
   明示的に読むと載る。よって「常時ロードは 8 本のまま」は保たれ、`claude-md-authoring.md` は CLAUDE.md を編集するために
   開いた時点で載る。既知バグ一覧の `rule-paths-exclusion-undocumented` の log にも追記した
-- 反映先: PR 9（`notes/artifacts/norm-refit-pr9-detail.md` の未特定 4・9・16 が確定）、`notes/idea-hub-handoff.md`
+- 反映先: PR 9（`notes/artifacts/norm-refit-pr9-detail.md` の未特定 4・9・16 が確定）、`notes/artifacts/idea-hub-handoff.md`
   （ドメイン固有の分離を採らなかった差分）
 
 ### 2026-08-27 PR 9 で「技術スタック」は残す（boilerplate 語彙の排除の例外）

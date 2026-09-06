@@ -14,7 +14,7 @@ norm-refit-v2 が完了したらこのファイルごと削除する。
 - 作業明細（条項の一覧、横展開の対象リスト）は scratchpad に置かず `notes/artifacts/` に残す。
   scratchpad はセッションとともに消え、後から照合できなくなる
   確定を変えるときは、元のエントリを書き換えず新しいエントリで上書きの経緯を残す
-- idea-hub へ伝えるべきことが出たら `notes/idea-hub-handoff.md` へ追記する。
+- idea-hub へ伝えるべきことが出たら `notes/artifacts/idea-hub-handoff.md` へ追記する。
   既存エントリが古くなっていたら消すか書き直し、常に現状を正しく伝える状態を保つ。
   idea-hub 側は norm-refit の全完了後に着手する
 

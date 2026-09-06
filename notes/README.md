@@ -11,7 +11,3 @@
 | [norm-refit: 実装計画](./norm-refit-plan.md) | norm-refit の進め方の正典。段階・順序・依存・待ち条件 | 進行中 |
 | [norm-refit](./norm-refit.md) | 規範の配置と強制の改修プロジェクトの確定事項 | 進行中 |
 | [kanban のタスク管理](./kanban-board.md) | 並行する話題をカードで追う道具の選定と導入の確定事項 | 進行中 |
-| [idea-hub への申し送りの下書き](./idea-hub-handoff.md) | norm-refit 完了後に idea-hub へ渡す伝達事項 | 進行中 |
-| [norm-inventory](./norm-inventory.md) | norm-refit: 規範 321 件のインベントリと重複マップ | 参照用 |
-| [research-ledger](./research-ledger.md) | norm-refit: 2026-07-29 の 9 本調査の結論 | 参照用 |
-| [構成図・概念図の表現](./diagram-representation-research.md) | html-communication: 2026-08-18 の 5 本調査の結論と実測 | 参照用 |

@@ -1,10 +1,6 @@
 # idea-hub への申し送りの下書き
 
-| 項目 | 内容 |
-| --- | --- |
-| 目的 | idea-hub へ渡す伝達事項を、norm-refit の進行中に追記して貯める |
-| 生存期間 | norm-refit の完了時に依頼文へ編み、ユーザー経由で idea-hub へ渡すまで |
-| 対象タスク | idea-hub（norm-refit の全完了後に着手） |
+本体は [norm-refit: 確定事項メモ](../norm-refit.md)。目的と生存期間はそちらの「この台帳が参照する明細」にある。
 
 idea-hub のセッションへ渡す伝達事項を、norm-refit の進行中に追記して貯める。
 idea-hub 側は norm-refit の全完了後に作業を開始する予定なので、
