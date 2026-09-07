@@ -66,7 +66,7 @@
     {
       "name": "claude-known-issues",
       "source": "./plugins/claude-known-issues",
-      "description": "Claude Code の既知バグ・制約とワークアラウンドの台帳。更新を検知して修正が入ったかを agent が判定し、解除手順を提示する"
+      "description": "Claude Code の既知バグ・制約とワークアラウンドの一覧。更新を検知して修正が入ったかを agent が判定し、解除手順を提示する"
     },
     {
       "name": "usage-line",
@@ -77,6 +77,11 @@
       "name": "github-pr",
       "source": "./plugins/github-pr",
       "description": "GitHub の Pull Request を作成・更新する。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成する"
+    },
+    {
+      "name": "ja-writing-ambiguity",
+      "source": "./plugins/ja-writing-ambiguity",
+      "description": "日本語を書くときに、読者の認知負荷を最も上げる 3 つ（指すものが文の中で決まらない語、主語と述語が実物と対応しない文、修飾が積み上がって係り受けが決まらない文）を止める参照知識 skill"
     }
   ]
 }
