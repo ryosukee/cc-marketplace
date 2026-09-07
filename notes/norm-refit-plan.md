@@ -43,12 +43,14 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 
 ## 現在地
 
-2026-09-07 時点。**段階 1・2・3-1 が完了し、段階 R・V を新設した。次に着手するのは段階 R で、
+2026-09-08 時点。**段階 1・2・3-1 が完了し、段階 R・V を新設した。次に着手するのは段階 R で、
 起点の R1（`norm-review` を単機能 plugin として新設する）は着手前の 5 件が確定して実装待ち。
 2026-09-05 に、条項が載る前に落ちる経路が 1 件見つかった。段階 V の対象をそこまで広げ、
 入口の誘導を直す作業を段階 3-2 へ足した。
 2026-09-07 に、文の意味を見る agent `sentence-reviewer` を html-communication 側で先行して入れた
-（ccm-f082、PR #20）。段階 R の R4 は、既存 reviewer agent を 5 本として取り込み方と統合を検討する。**
+（ccm-f082、PR #20）。2026-09-08 のレビューで、造語と用語も sentence-reviewer に、構成と設問の自立性を
+page-reviewer に寄せる分担にしてマージした（claude-user-communication 0.42.0）。
+段階 R の R4 は、既存 reviewer agent を 5 本として取り込み方と統合を検討する。**
 段階 3 は 3-1（実装の PR 群）と 3-2（保守の手引き）に割り、あいだに段階 R を入れた。
 3-1 の 9 本のうち 7 本（PR 6・1・8・2・3・4・9）がマージ済みで、PR 5 は段階 R の R7 へ、
 PR 7 は 3-2 へ移した。残る 2 本が両方とも外へ出たので 3-1 は閉じた。
@@ -611,9 +613,12 @@ norm と facet に付ける資材の扱いをここで設計する。最初の�
   統合したときに失われる分担
 - page-reviewer と handover-reviewer は「扱わないこと」で機械検査との分担を実測から作り込んである。
   spec-reviewer と known-issues-reviewer は対応する機械検査を持たない
-- sentence-reviewer（claude-user-communication 0.42.0、2026-09-07、ccm-f082）は norm-refit の外で先行して入れた。
+- sentence-reviewer（claude-user-communication 0.42.0、2026-09-07 確定、2026-09-08 マージ、ccm-f082 と PR #20）は
+  norm-refit の外で先行して入れた。
   ユーザーの補足は「先行実装を参考にしつつ、どう取り入れてどうマージするかを考える」。
-  この agent は、一次情報も議題の説明も渡さないこと（文脈を持たないこと）が検出の条件なので、
+  分担は、日本語テキストの観点（文の意味・定義の無い呼び名・用語の揺れ）を sentence-reviewer が、
+  構成と設問の自立性を page-reviewer が持つ（PR #20 のレビューで確定）。
+  sentence-reviewer は、一次情報も議題の説明も渡さないこと（文脈を持たないこと）が検出の条件なので、
   `norm-review` へ統合するなら、その facet には一次情報を渡さない形が要る。
   取り込み方（facet として持つか、別 agent のまま呼ぶか）と、効果の測り方
   （事例集 `sentence-level-review-cases.md` の出所別の件数。基準値と期間は未定）をここで決める。
