@@ -2540,6 +2540,37 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
   雛形の並び順の修正は PR #19、0.41.1）。`notes/norm-refit-plan.md` の現在地と R4 の節。
   `rules/japanese-text-writing/references/core.md` は反映なし（群 3 へ送る。未解決課題の「文レベルの読解不能」に 2 型を追記）
 
+### 2026-09-08 PR #20 レビュー: 日本語テキストの観点は sentence-reviewer、構成と設問の自立性は page-reviewer が持つ
+
+- 結論: 提示前レビュー 2 本の分担を再配分した。
+  (1) `sentence-reviewer`（文脈を持たない）は、文の意味に加えて、ページ内に定義の無い呼び名
+  （汎用名詞 + 数字 / その場で振った記号 / 名前として使われた汎用語）と用語の揺れを挙げる。
+  覆せる条件が読み手に判定できる形か（全称命題）も型「条件を示さない表現」に含める。
+  ユーザーの語か Claude の語かは判定せず、ユーザーの発言に遡れるかは呼び出し元が判断する。
+  (2) `page-reviewer`（一次情報を持つ）は、(f)「ユーザー発言に遡れない語」を外し、
+  (f)「構成と設問の自立性」（設問の節だけで答えられるか / 判断材料の位置 / 読み方の案内の有無 /
+  脚注と補足の使い分け / 生成に関する補足の 5 項目）を持つ。(d) から覆せる条件の判定可能性を外す。
+  (3) 順序（sentence-reviewer → page-reviewer）と model（opus / sonnet）は変えない
+- 決めなかった範囲: page-reviewer が (f) で当てる作成規範の項目の全件。5 項目から始め、指摘の出方で足す。
+  効果の測り方は上のエントリのまま（R3 に合わせる）
+- 決め手: 造語は文脈を知らない読み手にしか気づけない指摘で、一次情報と議題の説明を受け取る page-reviewer には向かない。
+  構成の判定は作成規範をページ全体に当てる作業で、ページ全体を読む page-reviewer に寄せる。
+  再配分後の定義で ccm-f082 を判定させると、「2 型」が説明 2 と設問 4 で別の意味に使われていることを挙げた
+- 出典: PR #20 <https://github.com/ryosukee/cc-marketplace/pull/20> のレビューコメント
+  （`review-norms.md:16`、2026-09-08）と、棚卸しの表への返信「@claude ok」
+- 出典の実文:
+
+```text
+造語も sentence-reviewer が担うべきでは？日本語テキストに関するところは sentence-reviewer でいいと思うけど。構造とか脚注とかページ全体の広い部分を page-reviewer にやらせるのがいいのでは
+分担を再度棚卸しして再配分して
+```
+
+- 反映先: `plugins/claude-user-communication/agents/sentence-reviewer.md`「呼び名と用語」、
+  `agents/page-reviewer.md` の (d) と (f)、`references/review-norms.md` の担い手表、
+  `skills/html-communication/SKILL.md`「提示前のレビュー」「この形にした理由」、README.md、CLAUDE.md、
+  plugin README（PR #20 の 8bbde12）。session plugin の `check-handover.mjs` のコメント（9098459、session 2.13.1）。
+  上の 2026-09-07 のエントリの (1) は、この再配分で agent の範囲が呼び名と用語に広がった
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
