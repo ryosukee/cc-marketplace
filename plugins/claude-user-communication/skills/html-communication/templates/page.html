@@ -508,7 +508,9 @@
 <p class="pane-h">設問 {{N}} 件（読んでいる範囲のものが開く／見出しで開閉）</p>
 <!-- 設問をグループ化するページは、カードに data-grp を付けてここへ容器を置く。
      グループ名は内容の名詞句だけ（件数・接頭語・動詞句を付けない）。
-     見出しの回答進捗 (n/N) は JS が入れる。グループ外の設問は data-grp 無しで混在できる
+     見出しの回答進捗 (n/N) は JS が入れる。グループ外の設問は data-grp 無しで混在できる。
+     3 pane では JS が設問カードを本文に出てくる順に並べる。グループの有無で並びは変わらない。
+     容器をここに書く順は、表示の並びに影響しない
 <div class="qgrp" data-grp="{{グループ id}}"><p class="qgrp-h" data-grp-name="{{グループ名}}">{{グループ名}}</p></div>
 -->
 </aside>
@@ -581,19 +583,34 @@
   });
   function place() {
     var pane = document.getElementById('q-pane');
-    qds.forEach(function (d) {
-      if (mq3.matches) {
-        /* data-grp を持つカードは対応するグループ容器へ、無ければ pane 直下へ積む */
-        var tgt = pane;
-        if (d.dataset.grp) {
-          var g = pane.querySelector('.qgrp[data-grp="' + d.dataset.grp + '"]');
-          if (g) tgt = g;
+    if (!mq3.matches) {
+      /* 3 pane でなければ本文側の元位置へ戻す */
+      qds.forEach(function (d) {
+        if (d.parentNode === pane || (d.parentNode && d.parentNode.classList &&
+            d.parentNode.classList.contains('qgrp'))) {
+          d.__home.parentNode.insertBefore(d, d.__home);
         }
-        if (d.parentNode !== tgt) tgt.appendChild(d);
-      } else if (d.parentNode === pane || (d.parentNode && d.parentNode.classList &&
-                 d.parentNode.classList.contains('qgrp'))) {
-        d.__home.parentNode.insertBefore(d, d.__home);
-      }
+      });
+      return;
+    }
+    /* 3 pane では本文の順（qds の並び）で pane に置く。グループ容器はそのグループの
+       最初のカードが来る位置へ移し、同じグループの後続カードはその容器へ入る。
+       グループ外のカードは pane 直下に置く。容器を pane に書いた順は並びに効かない。
+       末尾へ積むだけだと、グループ外のカードが全グループより後ろに来て番号順が崩れる。
+       既に望む位置にあるノードは動かさない（動かすと入力中の focus が外れる） */
+    var last = {};
+    function put(box, node) {
+      var key = box === pane ? '' : box.dataset.grp;
+      if (!(key in last)) last[key] = box.querySelector(box === pane ? '.pane-h' : '.qgrp-h');
+      var ref = last[key] ? last[key].nextElementSibling : box.firstElementChild;
+      if (node !== ref) box.insertBefore(node, ref);
+      last[key] = node;
+    }
+    qds.forEach(function (d) {
+      var g = d.dataset.grp ? pane.querySelector('.qgrp[data-grp="' + d.dataset.grp + '"]') : null;
+      if (!g) { put(pane, d); return; }
+      if (!(g.dataset.grp in last)) put(pane, g);
+      put(g, d);
     });
   }
 
