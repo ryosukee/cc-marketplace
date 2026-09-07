@@ -10,15 +10,17 @@
 | --- | --- |
 | 内容整合 | `page-reviewer` の手順 (a) |
 | 設計妥当性 | `page-reviewer` の手順 (b)〜(e) |
-| 情報デザイン | 雛形（`templates/page.html`）と機械検査 |
-| clarity | 機械検査、SKILL.md の作成規範、`sentence-reviewer`（文の意味）、`page-reviewer` の手順 (f)（造語） |
+| 情報デザイン | 雛形（`templates/page.html`）と機械検査。機械で判定できない構成と設問の自立性は `page-reviewer` の手順 (f) |
+| clarity | 機械検査、SKILL.md の作成規範、`sentence-reviewer`（文の意味・造語・用語の揺れ） |
 
-clarity のうち、文の意味が取れるかは `sentence-reviewer` が、造語の判定は `page-reviewer` の手順 (f) が持つ。
+clarity のうち、文の意味・ページ内に定義の無い呼び名・用語の揺れは `sentence-reviewer` が持つ。
 それ以外は機械検査と作成規範が持つ。
 
 造語は語形では判定しきれない。正規表現が拾えるのは数字を伴う形だけで、
 裸の汎用語は普通の名詞と区別が付かない。文脈を知らない読者にしか気づけない指摘なので、
-機械検査には置かない。
+機械検査には置かず、文脈を持たない `sentence-reviewer` が挙げる。
+ユーザーの語か Claude が作った語かは agent には分からないので、
+呼び出し元が「用語の出自」「新語導入の規律」の観点で判断する。
 
 ## 突合の蓄積観点
 
