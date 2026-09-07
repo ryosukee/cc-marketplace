@@ -1,10 +1,12 @@
 # claude-user-communication
 
-ユーザーへの確認・提示のコミュニケーション方法を定める plugin。1 つの skill を提供する。
+ユーザーへの確認・提示のコミュニケーション方法を定める plugin。1 つの skill と 2 つの agent を提供する。
 
 - html-communication: 入り組んだ説明・報告・確認を self-contained な HTML ページ（claude-html-communication）で提示する運用一式。
   index 管理・serve URL 提示・下書きプロトコル・PWA アセットの再生成（`templates/` に雛形を同梱）・
   HTML フォームの設問の作りと回答の受け取り
+- sentence-reviewer: 提示前に、意味の取れない文と、ページ内に定義の無い呼び名を挙げる agent。ページ 1 本だけを読み、一次情報も議題の説明も受け取らない
+- page-reviewer: 提示前に、一次情報との突合・推奨と選択肢集合の妥当性・構成と設問の自立性を見る agent
 
 ## 必要な環境変数
 
