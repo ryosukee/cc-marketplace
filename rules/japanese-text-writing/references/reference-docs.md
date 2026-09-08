@@ -4,7 +4,9 @@ paths:
 sources:
   - https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing
   - https://smarthr.design/products/contents/writing-style/
-  - 木下是雄『理科系の作文技術』（原則の再言語化）
+  - source: 木下是雄『理科系の作文技術』中公新書
+    notes:
+      - 原則を再言語化して取り込んだ
 ---
 
 # 参照ドキュメントの規範

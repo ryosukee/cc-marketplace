@@ -14,7 +14,7 @@
 ## 探索順序
 
 1. 手元の repo (ghq_root 配下): 対象そのものの実装・docs・git 履歴
-2. registry・台帳類: dotclaude registry (`~/.claude/plugins/data/dotclaude-cc-tools/registry.json`) 等の参照 repo リスト
+2. registry・decision-record: dotclaude registry (`~/.claude/plugins/data/dotclaude-cc-tools/registry.json`) 等の参照 repo リストと、議題ごとの decision-record
 3. 過去セッションの成果物: handover、設計ドキュメント、transcript
 4. ここまでで足りないものだけ Web 検索・公式ドキュメントで調べる
 
@@ -46,6 +46,6 @@ git 履歴も一次情報に含める。過去にどう判断してなぜ変え�
 
 ## why
 
-手元の一次情報には、Web 検索では得られない判断の経緯（移行の理由、既にある台帳）が残っている。
+手元の一次情報には、Web 検索では得られない判断の経緯（移行の理由、既にある decision-record）が残っている。
 推測で議論を進めると、既に決まっていることを再設計し、既にあるものを再発明する。
 手元の探索は Web 検索より速い。
