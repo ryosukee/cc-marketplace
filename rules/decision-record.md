@@ -48,7 +48,7 @@ repo 直下 `notes/` の 3 層。この 3 層以外のファイル（計画・�
 - `notes/README.md`: decision-record の一覧（ファイル / 対象 / 状態の表）と、運用の規定である rule への
   ファイル名での言及だけを置く
 - `notes/{slug}.md`: 1 議題 1 ファイル。他の議題の内容を混ぜない
-- `notes/artifacts/`: decision-record が参照する明細（生データ・作業明細・出典の実文）の置き場
+- `notes/artifacts/`: artifacts（decision-record が参照する付随ファイル。生データ・作業の一覧・出典の実文の写し）の置き場
 
 作るときにすることが 2 つある。
 

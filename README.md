@@ -91,7 +91,7 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | bash-state-mutation-isolation | 常時 | 状態変更と復旧を 1 つのシェルコマンドに連結しない |
 | markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
 | rule-authoring | `.claude/rules/**` `rules/**` | rule ファイルの冒頭とロード方式の使い分け |
-| notes-authoring | `notes/**` | decision-record として運用する `notes/` を書く最中の規範。冒頭の目的・生存期間・対象議題、ファイルの構成（明細・確定事項・未解決課題・作業メモ）、確定項目の書き方、参照と出典、重複回避、消す手順 |
+| notes-authoring | `notes/**` | decision-record として運用する `notes/` を書く最中の規範。冒頭の目的・生存期間・対象議題、ファイルの構成（artifacts・確定事項・未解決課題・作業メモ）、確定項目の書き方、参照と出典、重複回避、消す手順 |
 | claude-doc-authoring | `.claude/rules/**` `rules/**` `.claude/skills/**` `plugins/*/skills/**` `.claude/agents/*` `plugins/*/agents/*` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・frontmatter・指示項目・参照・why・改訂 |
 | skill-authoring | `.claude/skills/**` `plugins/*/skills/**` | SKILL.md の書き方。2 種別の判定・frontmatter と description・スクリプト化・文体 |
 | agent-authoring | `.claude/agents/*` `plugins/*/agents/*` | agent 定義の書き方。ファイル形式・frontmatter・冒頭に書く 6 つの責務・入出力 |
