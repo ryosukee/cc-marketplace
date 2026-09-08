@@ -26,7 +26,6 @@ evals/run.sh [--case "<glob>"] [--runs N] [--json <path>]
 - `--no-publish` を必ず付ける。
   HTML レポートは既定で claude.ai へ Artifact として発行される。発行先は private だが、
   Artifact は CLI から削除できず実行のたびに増えるためローカル出力のみとする
-  （制約の追跡は claude-known-issues 一覧のエントリ `artifact-no-cli-delete`）
 - モデルはアカウント既定（opus）を使い、`--model` は指定しない
 - 消費はサブスクのレート枠（OAuth 経由）。実測 1 実行あたり平均 $0.21・約 27 秒
   （30 実行の平均。skill 発動 + 手順実行まで含む場合）。実行は直列
