@@ -1,5 +1,5 @@
 #!/bin/bash
-# 台帳と状態ファイルのパス解決・読み書きヘルパ
+# 一覧と状態ファイルのパス解決・読み書きヘルパ
 #
 # 使い方: source して各関数を呼ぶ
 # 前提: CLAUDE_PLUGIN_DATA と CLAUDE_PLUGIN_ROOT が設定されていること
@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-# 台帳のパスを解決する。無ければ空で作る
+# 一覧のパスを解決する。無ければ空で作る
 # config/ の 2 つの yml はエントリの書き方の例で、ここへは入れない
 # 出力: LEDGER_PATH
 resolve_ledger() {

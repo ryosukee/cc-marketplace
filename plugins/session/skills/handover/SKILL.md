@@ -94,7 +94,7 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/handover/scripts/check-handover.mjs" <handove
 
 - 対象 handover ファイルの絶対パス
 - 機械検査の JSON 出力
-- そのセッションで触れた台帳・設計ドキュメントの所在
+- そのセッションで触れた decision-record・設計ドキュメントの所在
 
 agent が見るのは、節をまたいだ記述の矛盾、やることの集約、却下の妥当性、
 handover の外にあるファイルの内容についての主張の検算の 4 点だけ。

@@ -1,8 +1,8 @@
 #!/bin/bash
-# SessionStart hook: Claude Code の更新を検知し、未突合なら台帳突合を促す
+# SessionStart hook: Claude Code の更新を検知し、未突合なら一覧突合を促す
 #
 # 判定ロジックは持たない。バージョンが前回突合時から変わったか (または前回の
-# 突合が完了していないか) だけを見る。実際に台帳と changelog を突き合わせるのは
+# 突合が完了していないか) だけを見る。実際に一覧と changelog を突き合わせるのは
 # known-issues-reviewer agent の仕事。
 #
 # 更新を検知したときだけ JSON を stdout に出す。additionalContext がモデルの

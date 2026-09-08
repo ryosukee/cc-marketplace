@@ -2,22 +2,22 @@
 # ページの連番を取り、同じ操作でそのファイル名を占有する。
 #
 # usage:
-#   claim-page-number.sh <配信ディレクトリ> <略号> <f|r>
+#   claim-page-number.sh <配信ディレクトリ> <接頭辞> <f|r>
 #
-# ディレクトリ内の {略号}-{種別}{NNN}.html の最大連番 + 1 から順に、
+# ディレクトリ内の {接頭辞}-{種別}{NNN}.html の最大連番 + 1 から順に、
 # noclobber の > で 0 バイトのファイルを作れるまで試す。noclobber の > は
 # 既存ファイルがあると失敗するので、走査してから書くまでの隙間で
 # 別セッションが同じ番号を取ることがない。
 #
 # 確保したファイルの絶対パスを stdout に出す。中身は 0 バイトで、
 # assemble-page.mjs はこの予約に対してだけ上書きを許す。
-# 生成元の JSON は同じ語幹で src/ に書く（{dir}/src/{略号}-{種別}NNN.json）。
+# 生成元の JSON は同じ語幹で src/ に書く（{dir}/src/{接頭辞}-{種別}NNN.json）。
 #
 # Exit: 0 = 確保した, 1 = 空き番号が見つからない, 2 = 前提条件エラー
 set -euo pipefail
 
 if [ "$#" -ne 3 ]; then
-  echo "usage: claim-page-number.sh <配信ディレクトリ> <略号> <f|r>" >&2
+  echo "usage: claim-page-number.sh <配信ディレクトリ> <接頭辞> <f|r>" >&2
   exit 2
 fi
 
@@ -38,7 +38,7 @@ case "$kind" in
 esac
 case "$slug" in
   *[!a-z0-9]*)
-    echo "略号は英小文字と数字だけ: $slug" >&2
+    echo "接頭辞は英小文字と数字だけ: $slug" >&2
     exit 2
     ;;
 esac
@@ -46,7 +46,7 @@ esac
 # 生成元（JSON と図の markup）の置き場。無ければ作る
 mkdir -p "$dir/src"
 
-# 既存の最大連番を読む。{略号}-{種別}NNN.html だけを数え、
+# 既存の最大連番を読む。{接頭辞}-{種別}NNN.html だけを数え、
 # ccm-f072-v6.html のようなサブページは 3 桁 + .html に一致しないので入らない
 max=0
 for f in "$dir/$slug-$kind"[0-9][0-9][0-9].html; do
