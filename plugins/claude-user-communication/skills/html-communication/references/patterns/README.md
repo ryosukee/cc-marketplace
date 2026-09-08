@@ -10,7 +10,8 @@
 | 置き場 | 役割 |
 | --- | --- |
 | [入り組んだ説明・報告・確認は HTML で行う](../../SKILL.md) | 守るべき規定。色の役割、フォントの段、表の作り、設問の置き方 |
-| `templates/page.html` | 基盤の実装。全ページが使う CSS と HTML |
+| [生成元 JSON の書式](../page-format.md) | 本文を書く JSON のキーとブロックの形 |
+| `templates/page.html` | 基盤の実装。head と script だけを持ち、本文の markup は組み立てが出す |
 | このディレクトリ | 個別のパターン。使うページだけが取り込む |
 
 パターンの CSS を雛形へ入れない。入れると使わないページも運ぶことになり、
@@ -79,10 +80,12 @@ group: 進行と状態
 ## 使い方
 
 1. このディレクトリを見て、使えるパターンがあるかを確かめる
-2. あれば `style.css` を生成ページの `style` 要素の末尾へ入れ、`example.html` を参考に本文を書く
+2. あれば生成元 JSON の `css` にパターン名を書く（組み立てが `style.css` を雛形の CSS の末尾に足す）。
+   `example.html` を参考にした markup は `src/{語幹}.figures.html` の `<template data-fig="…">` に置き、
+   JSON からは `custom`（キャプション無し）か `fig`（図として番号とキャプションを付ける）で参照する
 3. 無ければその場で作る。次に使えるものだけ、作った後にここへ足す
 
-生成ページは self-contained が必須なので、CSS は必ずページの中へ貼り込む。
+生成ページは self-contained が必須なので、CSS は組み立てが必ずページの中へ貼り込む。
 外部ファイルとして参照しない。
 
 ## 図を Tailwind で組む
@@ -120,12 +123,13 @@ npx @tailwindcss/cli@4.3.3 -i in.css -o out.css --minify
 **版を固定する。** `@latest` にすると、次に回したときに版が変わって図の見た目が動いても
 検知できない。上げるときは図を作り直して差分を見る。
 
-出た `out.css` をページの `<style data-scope="figures">` へそのまま入れる。
+出た `out.css` を `src/{語幹}.figures.html` の `<style data-scope="figures">` へそのまま入れる。
+組み立てがページの雛形の `<style>` の後ろに置く。
 図 3 つ程度で 9 KB 前後。ダークは Tailwind の `dark:` が `prefers-color-scheme` を見るので、
 雛形と同じ切り替わり方になる。
 
-アイコンはインライン SVG の `symbol` を `<body>` の先頭に置き、`<use href="#id">` で呼ぶ。
-アイコンフォントもアイコンセットも読み込まない。
+アイコンはインライン SVG の `symbol` を figures ファイルの `template` と `style` の外に置き、`<use href="#id">` で呼ぶ
+（組み立てが `<body>` の先頭に置く）。アイコンフォントもアイコンセットも読み込まない。
 
 色とフォントの段は、この `style` の中では雛形の規定の対象外
 （[SKILL.md](../../SKILL.md) の色役割とフォント段の項）。機械検査もこの `style` を飛ばす。
@@ -142,7 +146,7 @@ npx @tailwindcss/cli@4.3.3 -i in.css -o out.css --minify
 4. **色に意味を持たせたら凡例を出す。** 図の中は色が自由になるぶん、これが唯一の縛りになる。
    色だけで区別させず、名前か形を併記する
 5. **アイコンはインライン SVG の `symbol` で持つ。** アイコンフォントもアイコンセットも
-   読み込まない。`<body>` の先頭に `symbol` を置いて `<use>` で呼び、色は `currentColor` にして
+   読み込まない。figures ファイルの `template` の外に `symbol` を置いて `<use>` で呼び、色は `currentColor` にして
    図の色に追従させる
 6. **生成物を手で編集しない。** `style.css` は CLI の出力。直すときは `example.html` の
    クラスを変えて生成し直す

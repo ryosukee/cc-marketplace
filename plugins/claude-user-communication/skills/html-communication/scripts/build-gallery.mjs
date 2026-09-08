@@ -44,7 +44,8 @@ if (!m) {
   console.error("雛形に style 要素が見つからない: " + templatePath);
   process.exit(2);
 }
-const baseCss = m[1];
+// 雛形の style には assemble-page.mjs が埋めるスロット（{{追加 CSS}}）が残っているので外す
+const baseCss = m[1].replace(/\{\{[^}]+\}\}/g, "");
 
 const names = readdirSync(patternsDir, { withFileTypes: true })
   .filter((e) => e.isDirectory())

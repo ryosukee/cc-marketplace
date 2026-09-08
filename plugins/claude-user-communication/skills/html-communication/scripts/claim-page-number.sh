@@ -11,6 +11,7 @@
 #
 # 確保したファイルの絶対パスを stdout に出す。中身は 0 バイトで、
 # assemble-page.mjs はこの予約に対してだけ上書きを許す。
+# 生成元の JSON は同じ語幹で src/ に書く（{dir}/src/{略号}-{種別}NNN.json）。
 #
 # Exit: 0 = 確保した, 1 = 空き番号が見つからない, 2 = 前提条件エラー
 set -euo pipefail
@@ -41,6 +42,9 @@ case "$slug" in
     exit 2
     ;;
 esac
+
+# 生成元（JSON と図の markup）の置き場。無ければ作る
+mkdir -p "$dir/src"
 
 # 既存の最大連番を読む。{略号}-{種別}NNN.html だけを数え、
 # ccm-f072-v6.html のようなサブページは 3 桁 + .html に一致しないので入らない

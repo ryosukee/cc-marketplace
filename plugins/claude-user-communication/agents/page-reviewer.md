@@ -29,9 +29,15 @@ tools:
 
 呼び出し元が次を渡す。
 
-- 対象ページの絶対パス
+- 対象ページの生成元 JSON（`src/{語幹}.json`）の絶対パスと、図があれば `src/{語幹}.figures.html` の絶対パス。
+  JSON を持たない旧ページだけ HTML の絶対パス
 - 一次情報の所在（台帳・設計ドキュメント・実装・過去の回答フォームなど）
 - そのページが何を決めるためのものか
+
+JSON の文字列には 6 種の記法（`` `code` ``・`**強調**`・`*斜体*`・`==要点==`・`[文字](URL)`・`[^キー]`）が入る。
+`[^キー]` は `footnotes` / `supplements` の同じキーの本文を指す参照マーカーで、文の一部ではない。
+閲覧用 HTML は読まない。読むのは JSON を持たない旧ページのときだけで、
+その場合も CSS と script は判定に使わない。
 
 ## 手順
 
@@ -113,7 +119,7 @@ tools:
 
 ## 扱わないこと
 
-次の項目は機械検査（`scripts/check-page.mjs`）と作成規範（SKILL.md）と `sentence-reviewer` が持つ。**この agent では見ない。**
+次の項目は機械検査（`scripts/validate-page.sh` が回す 4 層）と作成規範（SKILL.md）と `sentence-reviewer` が持つ。**この agent では見ない。**
 
 - 文の意味が取れるか（動作主・条件の欠落、名詞構文。`sentence-reviewer` が持つ）
 - ページ内に定義の無い呼び名と、用語の揺れ（`sentence-reviewer` が持つ）

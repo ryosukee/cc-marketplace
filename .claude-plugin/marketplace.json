@@ -61,7 +61,7 @@
     {
       "name": "claude-user-communication",
       "source": "./plugins/claude-user-communication",
-      "description": "ユーザーへの確認・提示のコミュニケーション方法。入り組んだ内容の HTML ページ提示 (claude-html-communication) の 1 skill を提供する"
+      "description": "ユーザーへの確認・提示のコミュニケーション方法。入り組んだ内容の HTML ページ提示 (claude-html-communication) の 1 skill + 提示前レビューの sentence-reviewer / page-reviewer agent を提供する"
     },
     {
       "name": "claude-known-issues",
