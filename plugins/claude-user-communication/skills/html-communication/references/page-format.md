@@ -1,12 +1,12 @@
-# 共通ページの生成元 JSON の書式
+# ページの生成元 JSON の書式
 
-共通ページの本文は JSON に書き、閲覧用の HTML は `scripts/assemble-page.mjs` がその JSON から組み立てる。
+ページの本文は JSON に書き、閲覧用の HTML は `scripts/assemble-page.mjs` がその JSON から組み立てる。
 この文書はその JSON（`format` 1）の書式を定める。実装は `scripts/lib/page-source.mjs` で、
 文書と実装が食い違ったら実装を直すか、この文書を実装に合わせる。
 
 ## ファイルの配置
 
-共通ページディレクトリ（`CLAUDE_HTML_COMMUNICATION_DIR`）の直下に閲覧用 HTML、`src/` に生成元を置く。
+配信ディレクトリ（`CLAUDE_HTML_COMMUNICATION_DIR`）の直下に閲覧用 HTML、`src/` に生成元を置く。
 
 ```text
 claude-html-communication/
@@ -114,6 +114,8 @@ code span の中身をバッククォートで始めたいときは、囲むバ�
 
 - `label` は設問カードの見出しと回答テキストの `Q1（ラベル）` に出る
 - 選択肢の `label` は表示と回答の値の両方に使う。記法を外した素の文字列が値になる
+- 選択肢の `value` は、変換したページ（`import-page.mjs`）だけが持つ。あるときは表示が `label`、
+  radio の値と回答の突合が `value`。新しく書くページには書かない
 - `recommended` は 1 つまで。`description` は文字列か文字列の配列（1 行 1 文）
 - `pros` と `cons` は両方書くか両方省く。雛形の長所短所（`.proscons`）になる
 - 「その他」の選択肢と補足欄は組み立て時に必ず付く。JSON には書かない
@@ -166,6 +168,7 @@ code span の中身をバッククォートで始めたいときは、囲むバ�
 ```
 
 - `raw` は貼り付けの全文を逐語で持つ。`items` は行の形式に合った行だけを解釈した結果で、
-  `value`（選んだ選択肢の素の文字列。未回答は `null`）・`other`（その他の記述）・`note`（補足）を持つ
+  `value`（選んだ選択肢の radio の値。選択肢に `value` があればそれ、無ければ `label` の素の文字列。未回答は `null`）・
+  `other`（その他の記述）・`note`（補足）を持つ
 - report は `{ "received": "…", "confirmed": "ユーザーの確認の発言（逐語）" }`
 - `answers` があるページは、選択肢を選択済み・入力不可の状態で組み立てる。下書きの復元とリセットは止まる

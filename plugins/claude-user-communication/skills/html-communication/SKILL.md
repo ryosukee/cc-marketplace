@@ -21,7 +21,9 @@ HTML にすると決めたら、ターミナル向けに書いた（書きかけ
 
 配置先ディレクトリと配信 URL は環境変数から解決する（値のセットアップは環境側の文書の管轄）。
 
-- `CLAUDE_HTML_COMMUNICATION_DIR`: 共通ページディレクトリ。未設定なら既定値 `~/.local/share/claude-html-communication` を使う
+- `CLAUDE_HTML_COMMUNICATION_DIR`: 配信ディレクトリ。未設定なら既定値 `~/.local/share/claude-html-communication` を使う。
+  配信ディレクトリは全プロジェクトで 1 つだけ持ち、tailnet で配信する。
+  この skill が生成する HTML（以下、ページ）はここに置く
 - `CLAUDE_HTML_COMMUNICATION_BASE_URL`: 配信のベース URL（例: `https://<ホスト名>.<tailnet 名>.ts.net`）。
   ページの serve URL は `{CLAUDE_HTML_COMMUNICATION_BASE_URL}/{ファイル名}`、一覧のルート URL は `{CLAUDE_HTML_COMMUNICATION_BASE_URL}/`
 - `CLAUDE_HTML_COMMUNICATION_BASE_URL` が未設定・空の場合は、ページ提示の前にユーザーに URL を確認し、
@@ -40,7 +42,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
 ## 生成・表示方法
 
 - **本文は生成元の JSON に書き、閲覧用の HTML は `scripts/assemble-page.mjs` だけが書く。**
-  生成元は共通ページディレクトリの `src/` に `{語幹}.json`（図があれば `{語幹}.figures.html` も）として置き、
+  生成元は配信ディレクトリの `src/` に `{語幹}.json`（図があれば `{語幹}.figures.html` も）として置き、
   閲覧用 HTML は直下に `{語幹}.html` として script が出す。書式は
   [生成元 JSON の書式](./references/page-format.md)、見本は `templates/page.json`
     - 閲覧用 HTML は手で編集しない。出力は読み取り専用（0444）で、Write / Edit は失敗する。
@@ -49,10 +51,10 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
     - 既存のページを参考にするときも、閲覧用 HTML ではなく `src/` の JSON を読む。
       JSON を持たない旧ページ（0.42.0 以前に作り、変換していないもの）だけ HTML を読む
     - JSON を持たない未完了のページは、そのプロジェクトを作業対象にしているセッションが
-      `node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/import-page.mjs" <ページ.html> <共通ページディレクトリ>` で `src/` へ変換し、
+      `node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/import-page.mjs" <ページ.html> <配信ディレクトリ>` で `src/` へ変換し、
       `assemble-page.mjs --force` で組み直して機械検査を通す。他プロジェクトのページは変換しない。
       完了したページは変換しない（読み直す規定が無い）
-- 共通ページディレクトリ（`CLAUDE_HTML_COMMUNICATION_DIR`。無ければ `mkdir -p` で作る）に
+- 配信ディレクトリ（`CLAUDE_HTML_COMMUNICATION_DIR`。無ければ `mkdir -p` で作る）に
   `{略号}-f{NNN}.html`（form）/ `{略号}-r{NNN}.html`（report）の名前で書く。
   番号空間をプロジェクトごとに閉じることで、並行セッションが同じ番号を取り合わなくなり、
   他プロジェクトのページを上書きすることが命名上ありえなくなる
@@ -60,7 +62,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       台帳に無いプロジェクトなら、そのプロジェクトの最初のページを作るときに決めて登録する
       （3〜5 文字。既存の値と衝突しないことを台帳で確認する）
     - **発番は `scripts/claim-page-number.sh` で行う**:
-      `"${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/claim-page-number.sh" <共通ページディレクトリ> <略号> <f|r>` が最大連番 + 1 を取り、
+      `"${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/claim-page-number.sh" <配信ディレクトリ> <略号> <f|r>` が最大連番 + 1 を取り、
       同じ操作でそのファイル名を 0 バイトで占有して絶対パスを返す（3 桁ゼロ埋め、
       該当が無ければ 001。欠番は再利用しない）。返ったパスの語幹で `src/{語幹}.json` を書き、
       `assemble-page.mjs` に渡す。出力先はその予約したファイルになる
@@ -277,7 +279,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       溢れた分は `archive.html` へ辿らせる。件数の上限は `templates/index.html` の `RECENT_DONE`
     - **index を書き換えたら `scripts/build-archive.mjs` を回す。**
       archive.html は index.html から生成するので、エントリの追加・状態の更新のたびに作り直さないと
-      古い一覧が残る。生成先は共通ページディレクトリ。`record-answer.mjs` は自分で回す
+      古い一覧が残る。生成先は配信ディレクトリ。`record-answer.mjs` は自分で回す
     - ユーザーが明示的に削除を指示したときだけ削除する。そのページを出典に引いている記録が無いことを
       先に確かめ、引いているものがあれば実文を写してから消す
     - セッションが操作してよいのは、自分のプロジェクトのページと index.html（+ PWA 固定アセット）だけ。
@@ -296,7 +298,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       （index.html 雛形・manifest.json・icon-192.png・icon-512.png）から再生成する
     - `gallery.html` は [見せ方のパターン集](./references/patterns/README.md) を実物で並べたページ。
       `scripts/build-gallery.mjs` が生成する。パターンを追加・削除・修正したら作り直し、
-      共通ページディレクトリへ置く。index からはリンクで辿らせ、一覧のエントリは持たせない
+      配信ディレクトリへ置く。index からはリンクで辿らせ、一覧のエントリは持たせない
       （回答・確認の対象ではないため、状態遷移を持たない）
     - 雛形 `templates/index.html` の表示仕様（レンダリング JS・CSS）を変えたら、
       配信中の index.html にも同じ変更を適用する。配信中の index は以後エントリだけを
@@ -564,7 +566,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
   `stale-html` は JSON を直したあと組み立てていないときに出る。
   脚注と補足の初出順は組み立てが採番するので、`ref-order` は落ちない
 - 「一覧に戻る」リンク（`./`）の解決に同ディレクトリの index.html が要る。
-  共通ページディレクトリ内のファイルパスで実行する
+  配信ディレクトリ内のファイルパスで実行する
 - npx のキャッシュがあればオフラインで動く。1 ページ約 7 秒（初回のみダウンロードで + 数秒）
 - Exit: 0 = 指摘なし、1 = 指摘あり、2 = 前提条件エラー（node / npx が無い等）
 - 検査を通したら、ターミナルに書く内容を URL と問いだけに絞る。

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# 共通ページの連番を取り、同じ操作でそのファイル名を占有する。
+# ページの連番を取り、同じ操作でそのファイル名を占有する。
 #
 # usage:
-#   claim-page-number.sh <共通ページディレクトリ> <略号> <f|r>
+#   claim-page-number.sh <配信ディレクトリ> <略号> <f|r>
 #
 # ディレクトリ内の {略号}-{種別}{NNN}.html の最大連番 + 1 から順に、
 # noclobber の > で 0 バイトのファイルを作れるまで試す。noclobber の > は
@@ -17,7 +17,7 @@
 set -euo pipefail
 
 if [ "$#" -ne 3 ]; then
-  echo "usage: claim-page-number.sh <共通ページディレクトリ> <略号> <f|r>" >&2
+  echo "usage: claim-page-number.sh <配信ディレクトリ> <略号> <f|r>" >&2
   exit 2
 fi
 
@@ -26,7 +26,7 @@ slug=$2
 kind=$3
 
 if [ ! -d "$dir" ]; then
-  echo "共通ページディレクトリが無い: $dir" >&2
+  echo "配信ディレクトリが無い: $dir" >&2
   exit 2
 fi
 case "$kind" in

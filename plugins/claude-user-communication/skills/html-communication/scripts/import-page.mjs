@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-// 生成元 JSON を持たない既存の共通ページ HTML を、生成元の書式（src/{語幹}.json + src/{語幹}.figures.html）へ写す。
+// 生成元 JSON を持たない既存のページ HTML を、生成元の書式（src/{語幹}.json + src/{語幹}.figures.html）へ写す。
 // 0.42.0 以前の雛形で作ったページを、JSON から組み立てる流れに乗せるための変換。
 //
-// usage: node import-page.mjs <元の page.html> <共通ページディレクトリ> [--force]
-//   出力: <共通ページディレクトリ>/src/{語幹}.json と、図があれば src/{語幹}.figures.html
+// usage: node import-page.mjs <元の page.html> <配信ディレクトリ> [--force]
+//   出力: <配信ディレクトリ>/src/{語幹}.json と、図があれば src/{語幹}.figures.html
 //   出力先の JSON が既にあるときは止める。上書きするなら --force を付ける
 //   （既にある JSON には受領した回答（answers）が入っていることがあり、変換はそれを作れない）。
 //   写し方を決めた箇所（現行の書式に無い markup をどう写したか）と、記法の往復が合わない箇所を stderr に出す。
 //   変換したら assemble-page.mjs --force で組み直し、validate-page.sh を通す。
 //   本文の文言は変えない。地の文にある記法の文字（\ ` * [ ==）はエスケープして写す。
+//   元の radio の値が表示（label の素の文字列）と違う選択肢は、値を value キーに保つ（VALUE に出す）。
+//   値が変わると、受領済みの回答の突合と、ブラウザの下書きの復元が切れる。
 //   引用（quote.paragraphs）は逐語なので、エスケープも記法への変換もせず文字だけを写す
 //   （中の <code> や <strong> の markup は落ちる。参照マーカーは落として WARN に出す）。
 //   旧い雛形（冒頭ブロックの見出し語「結論」、番号入りの h2 など）は現行の形に揃うので、その分だけ表示が変わる。
@@ -399,6 +401,12 @@ function questionSection(sec) {
     for (const c of lab.children) { if (c === input) continue; if (stopAt(c)) break; text += inlineNode(c); }
     const olabel = tidy(text);
     const o = { label: olabel };
+    // 元の radio の値が表示（label の素の文字列）と違うページは、値を選択肢の value に保つ。
+    // 値が変わると、受領済みの回答の突合と、ブラウザの下書き（radio の値で保存する）の復元が切れる
+    if (input.attrs.value !== plain(olabel)) {
+      o.value = input.attrs.value;
+      valueChanges.push({ page: stem, q: label, value: input.attrs.value, shown: plain(olabel) });
+    }
     if (rec) o.recommended = true;
     if (dsp) {
       const parts = splitOnBr(dsp);
@@ -418,13 +426,9 @@ function questionSection(sec) {
       if (pros != null) o.pros = pros;
       if (cons != null) o.cons = cons;
     }
-    options.push({ o, value: input.attrs.value });
+    options.push(o);
   }
-  out.question = { label, text: inlineChecked(qtext, "question.text"), options: options.map((x) => x.o) };
-  for (const { o, value } of options) {
-    const v = plain(o.label);
-    if (v !== value) valueChanges.push({ page: stem, q: label, from: value, to: v });
-  }
+  out.question = { label, text: inlineChecked(qtext, "question.text"), options };
   return out;
 }
 
@@ -582,5 +586,5 @@ if (plainStyles.length) {
 for (const n of notes) console.error("NOTE " + n);
 for (const l of literals) console.error(`LITERAL 地の文の「${l.literal}」はエスケープして写した（…${l.around}…）`);
 for (const w of warns) console.error("WARN " + w);
-for (const v of valueChanges) console.error(`VALUE ${v.page} 「${v.q}」: "${v.from}" → "${v.to}"`);
+for (const v of valueChanges) console.error(`VALUE ${v.page} 「${v.q}」: radio の値 "${v.value}" が表示「${v.shown}」と違うので、選択肢の "value" に保った（受領済みの回答の突合と下書きの復元が切れないように）`);
 console.error(`--- ${stem}: 節 ${src.sections.length}（説明 ${src.sections.filter((s) => s.kind === "explain").length} / 設問 ${src.sections.filter((s) => s.kind === "question").length}）, 図 ${figures.length}, 脚注 ${Object.keys(src.footnotes || {}).length}, 補足 ${Object.keys(src.supplements || {}).length}, NOTE ${notes.length}, WARN ${warns.length}`);

@@ -48,7 +48,7 @@ export function assemblePage(jsonPath, { force = false, out = null } = {}) {
   const loaded = loadSource(p.jsonPath);
   if (loaded.findings.length) return { ok: false, out: outPath, findings: loaded.findings };
   if (path.basename(p.srcDir) !== "src") {
-    return { ok: false, out: outPath, findings: [{ check: "source", where: p.jsonPath, message: "生成元は共通ページディレクトリの src/ に置く" }] };
+    return { ok: false, out: outPath, findings: [{ check: "source", where: p.jsonPath, message: "生成元は配信ディレクトリの src/ に置く" }] };
   }
   if (fs.existsSync(outPath) && !force && fs.statSync(outPath).size > 0) {
     return { ok: false, out: outPath, findings: [{ check: "output", where: outPath, message: "出力先に中身のあるファイルがある。回答前の同名上書きの改稿なら --force を付ける。別のページなら claim-page-number.sh で番号を取り直す" }] };

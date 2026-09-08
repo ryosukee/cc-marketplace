@@ -1,4 +1,4 @@
-// 共通ページの生成元 JSON（src/{file}.json）を読み、本文の HTML を組み立てる。
+// ページの生成元 JSON（src/{file}.json）を読み、本文の HTML を組み立てる。
 // 書式の定義は references/page-format.md。ここが実装の正で、文書はそれを写す。
 //
 // 提供する関数
@@ -95,6 +95,13 @@ export function refKeys(text) {
   const t = String(text).replace(/\\[\\`*=\[\]]/g, "  ").replace(/(`+)[\s\S]+?\1(?!`)/g, " ");
   for (const m of t.matchAll(/\[\^([^\]\s]+)\]/g)) keys.push(m[1]);
   return keys;
+}
+
+// 選択肢の radio に入れる値。既定は記法を外した素の label。
+// 変換したページだけが持つ value があるときはそれを使う（表示は label のまま、値だけ元の文字列を保つ）。
+// 受領済みの回答の突合と、ブラウザの下書き（radio の値で保存する）の復元が、変換の前後で続くようにするため
+export function optionValue(o) {
+  return o && typeof o.value === "string" ? o.value : plain(o && o.label != null ? o.label : "");
 }
 
 // ---------------------------------------------------------------------------
@@ -208,11 +215,18 @@ export function loadSource(jsonPath) {
       if (!Array.isArray(q.options) || !q.options.length) add(`${w}.question`, "options が無い");
       else {
         let rec = 0;
+        const valueAt = new Map(); // radio の値 → 最初に使った選択肢の位置
         q.options.forEach((o, j) => {
           const ow = `${w}.question.options[${j}]`;
           if (!o || typeof o.label !== "string" || !o.label.trim()) { add(ow, "選択肢は label が要る"); return; }
           strings.push({ where: ow, text: o.label });
           if (o.recommended) rec++;
+          if (o.value != null && (typeof o.value !== "string" || !o.value.trim())) {
+            add(ow, "value は空でない文字列。変換したページが元の radio の値を保つキーで、新しく書くページには書かない");
+          }
+          const ov = optionValue(o);
+          if (valueAt.has(ov)) add(ow, `radio の値 "${ov}" が options[${valueAt.get(ov)}] と同じ。同じ設問の中では 1 つずつにする`);
+          else valueAt.set(ov, j);
           if (o.description != null) (Array.isArray(o.description) ? o.description : [o.description]).forEach((d, k) => strings.push({ where: `${ow}.description[${k}]`, text: String(d) }));
           for (const k of ["pros", "cons"]) if (o[k] != null) strings.push({ where: `${ow}.${k}`, text: String(o[k]) });
           if ((o.pros == null) !== (o.cons == null)) add(ow, "pros と cons は両方書くか両方省く");
@@ -254,8 +268,8 @@ export function loadSource(jsonPath) {
     if (typeof a.received !== "string") add("answers", "received（受領日）が無い");
     if (src.type === "form" && (typeof a.raw !== "string" || !Array.isArray(a.items))) add("answers", "form の answers は { received, raw, items, free }");
     if (src.type === "report" && typeof a.confirmed !== "string") add("answers", "report の answers は { received, confirmed }");
-    // items の value は選択肢の plain(label) か null。どちらでもない値は radio の checked に一致せず、
-    // 回答が入っているのに未選択で表示される
+    // items の value は選択肢の radio の値（既定は plain(label)、変換したページは選択肢の value）か null。
+    // どちらでもない値は radio の checked に一致せず、回答が入っているのに未選択で表示される
     if (src.type === "form" && Array.isArray(a.items)) {
       const qs = (src.sections || []).filter((s) => s && s.kind === "question");
       const byId = new Map(qs.map((s, i) => [`q${i + 1}`, s]));
@@ -264,9 +278,9 @@ export function loadSource(jsonPath) {
         if (!it || typeof it !== "object") { add(w, "回答の項目はオブジェクト"); return; }
         const s = byId.get(it.id);
         if (!s) { add(w, `id "${it.id}" に対応する設問の節が無い`); return; }
-        const labels = Array.isArray(s.question?.options) ? s.question.options.map((o) => (o && typeof o.label === "string" ? plain(o.label) : null)) : [];
-        if (it.value != null && !labels.includes(it.value)) {
-          add(w, `value "${it.value}" がどの選択肢とも一致しない。選択肢は ${labels.map((x) => JSON.stringify(x)).join(" / ")}`);
+        const values = Array.isArray(s.question?.options) ? s.question.options.map((o) => (o && typeof o.label === "string" ? optionValue(o) : null)) : [];
+        if (it.value != null && !values.includes(it.value)) {
+          add(w, `value "${it.value}" がどの選択肢とも一致しない。選択肢は ${values.map((x) => JSON.stringify(x)).join(" / ")}`);
         }
         if (it.other != null && it.value != null) add(w, "other を持つ項目の value は null にする（「その他」を選んだ回答）");
       });
@@ -424,7 +438,7 @@ export function renderPage(src, opts = {}) {
     const label = s.group ? `${esc(s.gname)} ${s.gn} / ${s.gN} ${inline(q.label, ctx)}` : `設問 ${s.n} / ${NQ} ${inline(q.label, ctx)}`;
     const a = ansItems.get(s.id);
     const opts = q.options.map((o) => {
-      const value = plain(o.label);
+      const value = optionValue(o);
       const checked = a && a.value != null && a.value === value ? " checked" : "";
       const desc = o.description == null ? [] : Array.isArray(o.description) ? o.description : [o.description];
       let h = `  <label class="opt"><input type="radio" name="${s.id}" value="${esc(value)}"${checked}${dis}>\n    ${inline(o.label, ctx)}${o.recommended ? '<span class="rec">推奨</span>' : ""}`;

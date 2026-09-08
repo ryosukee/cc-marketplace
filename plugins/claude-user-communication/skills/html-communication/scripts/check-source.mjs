@@ -29,7 +29,7 @@ function checkFile(jsonPath) {
   const loaded = loadSource(p.jsonPath);
   const findings = [...loaded.findings];
   if (!loaded.source) return findings;
-  if (p.srcDir.split("/").pop() !== "src") findings.push({ check: "source", where: p.jsonPath, message: "生成元は共通ページディレクトリの src/ に置く" });
+  if (p.srcDir.split("/").pop() !== "src") findings.push({ check: "source", where: p.jsonPath, message: "生成元は配信ディレクトリの src/ に置く" });
   const figures = loadFigures(p.figuresPath);
   if (!figures.exists && loaded.figIds.length) findings.push({ check: "source", where: p.figuresPath, message: `図のブロックが ${loaded.figIds.length} 個あるのに figures ファイルが無い` });
   if (findings.length === 0) {

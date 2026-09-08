@@ -3,7 +3,7 @@
 ユーザーへの確認・提示のコミュニケーション方法を定める plugin。1 つの skill と 2 つの agent を提供する。
 
 - html-communication: 入り組んだ説明・報告・確認を self-contained な HTML ページ（claude-html-communication）で提示する運用一式。
-  本文は生成元 JSON（共通ページディレクトリの `src/`）に書き、閲覧用 HTML は `assemble-page.mjs` だけが生成する
+  本文は生成元 JSON（配信ディレクトリの `src/`）に書き、閲覧用 HTML は `assemble-page.mjs` だけが生成する
   （読み取り専用。書式は `references/page-format.md`）。回答は `record-answer.mjs` が JSON に記録し、
   ページ・index・archive を揃える。index 管理・serve URL 提示・下書きプロトコル・PWA アセットの再生成
   （`templates/` に雛形を同梱）・HTML フォームの設問の作りと回答の受け取り

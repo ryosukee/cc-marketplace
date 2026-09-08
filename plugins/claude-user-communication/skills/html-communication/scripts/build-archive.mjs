@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 共通ページディレクトリの archive.html を index.html から生成する。
+// 配信ディレクトリの archive.html を index.html から生成する。
 //
 // index.html は完了分をプロジェクトごとに直近 RECENT_DONE 件までしか出さない。
 // 溢れた分を辿れるようにするのがこのページで、完了分の全件を出す。
@@ -11,7 +11,7 @@
 //   3. 未完了の節（アーカイブは完了分だけを扱う）
 //
 // usage:
-//   node build-archive.mjs [共通ページディレクトリ]
+//   node build-archive.mjs [配信ディレクトリ]
 //   省略時は $CLAUDE_HTML_COMMUNICATION_DIR、それも無ければ ~/.local/share/claude-html-communication
 //
 // Exit: 0 = 生成した, 2 = 前提条件エラー（index.html が無い・差し替え対象が見つからない）

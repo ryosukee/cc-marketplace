@@ -175,7 +175,7 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/build-gallery.mjs"
 全パターンの CSS を 1 枚に連結するので、増えるとセレクタが衝突しうる。
 衝突が起きたら、そのときに個別へ切り出す形を再検討する。
 
-共通ページディレクトリへ `gallery.html` として出すと、
+配信ディレクトリへ `gallery.html` として出すと、
 index の「見せ方のパターン集」からリンクで辿れる。
 一覧のエントリは持たせない（回答・確認の対象ではないため）。
 
