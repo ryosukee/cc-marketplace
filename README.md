@@ -83,7 +83,7 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | --- | --- | --- |
 | japanese-text-writing | 常時 | 出力のタイプ判定と数行返答の最小規範。詳細規範（共通原則・分類別 5・ユーザーへの確認）は `rules/japanese-text-writing/references/` |
 | primary-sources-first | 常時 | 仕様を述べる前に手元の一次情報を当たる |
-| decision-record | 常時 | 複数セッションの調査・設計で確定事項の台帳を持つ |
+| decision-record | 常時 | セッションを跨ぐ議題で decision-record を持つ |
 | subagent-delegation | 常時 | subagent の起動は原則許可。判断基準はコンテキストの節約 |
 | background-task | 常時 | バックグラウンド起動は `run_in_background` を使う |
 | propose-before-implement | 常時 | 設計判断を含む作業は案の提示で止め、承認を得てから実装する |
@@ -91,7 +91,7 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | bash-state-mutation-isolation | 常時 | 状態変更と復旧を 1 つのシェルコマンドに連結しない |
 | markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
 | rule-authoring | `.claude/rules/**` `rules/**` | rule ファイルの冒頭とロード方式の使い分け |
-| notes-authoring | `notes/**` | 確定事項の台帳として運用する `notes/` を書く最中の規範。冒頭の目的・生存期間・対象タスク、確定事項と作業メモの 2 節、重複回避、消す手順 |
+| notes-authoring | `notes/**` | decision-record として運用する `notes/` を書く最中の規範。冒頭の目的・生存期間・対象議題、ファイルの構成（明細・確定事項・未解決課題・作業メモ）、確定項目の書き方、参照と出典、重複回避、消す手順 |
 | claude-doc-authoring | `.claude/rules/**` `rules/**` `.claude/skills/**` `plugins/*/skills/**` `.claude/agents/*` `plugins/*/agents/*` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・frontmatter・指示項目・参照・why・改訂 |
 | skill-authoring | `.claude/skills/**` `plugins/*/skills/**` | SKILL.md の書き方。2 種別の判定・frontmatter と description・スクリプト化・文体 |
 | agent-authoring | `.claude/agents/*` `plugins/*/agents/*` | agent 定義の書き方。ファイル形式・frontmatter・冒頭に書く 6 つの責務・入出力 |

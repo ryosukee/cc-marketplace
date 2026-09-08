@@ -7,7 +7,9 @@ sources:
   - https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing
   - https://github.com/textlint-ja/textlint-rule-preset-ai-writing
   - https://smarthr.design/products/contents/writing-style/
-  - 木下是雄『理科系の作文技術』（中公新書。原則の再言語化）
+  - source: 木下是雄『理科系の作文技術』中公新書
+    notes:
+      - 原則を再言語化して取り込んだ
 ---
 
 # 日本語テキストの詳細規範: 共通原則
@@ -165,7 +167,7 @@ sources:
   単語・熟語のレベルで英語を混ぜてよい。
   「ツール」「AI」のような曖昧な広い語に後退しない
 - 専門用語・略語は初出で定義する。概念・記号・術語は導入してから使い、導入後はその語で通す
-- 「台帳」「一覧」「設定」「エントリ」のような汎用語を、特定の物の名前として使わない。
+- 「台帳」「一覧」「設定」「エントリ」「軸」「条項」「正典」のような汎用語を、特定の物の名前として使わない。
   文脈を共有していない読み手には一意に定まらない。特定のファイル・エントリを指すときは
   固有名（plugin 名・ファイル名・エントリの id）で呼ぶ。定義を添えても足りない。
   同じ語が文書内で別の物も指しうるため
