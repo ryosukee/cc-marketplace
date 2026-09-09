@@ -1,5 +1,5 @@
 {
   "name": "diffo",
-  "version": "0.1.0",
-  "description": "diffo でレビューを受けるときの参照知識 skill と、markdown プレビューを GitHub 風にするユーザースタイルシート"
+  "version": "0.2.0",
+  "description": "diffo でレビューを受けるときの参照知識 skill と、markdown プレビューを GitHub 風にする diffo-patch"
 }

@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# diffo の配信ファイルへ 2 つのパッチを当てる。何度実行しても同じ結果になる。
+#
+#   1. .md Preview を GitHub 風にする CSS を dist/client へ置き、index.html から link する
+#   2. marked の breaks を false にして、改行 1 つが <br> にならないようにする
+#
+# 当てるタイミングは diffo を起動した後。理由は 2 つある。
+#   - npx は初回と版が上がった直後にしかパッケージを取得しない。起動前だと当てる先が無いか、
+#     古いキャッシュへ当ててしまう
+#   - diffo のサーバーは dist/client 配下をリクエストのたびに readFile する。起動後に当てても
+#     リロードで反映され、サーバーの立て直しは要らない
+#
+# JS を当て直した直後はブラウザがバンドルをキャッシュしていることがある。
+# 色は変わったのに改行が変わらないときはハードリロードする。
+#
+# 対象は環境変数 DIFFO_DIR で上書きできる。既定は npx キャッシュの最新、無ければ global install。
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+CSS_SRC="$SCRIPT_DIR/../assets/diffo-github-preview.css"
+
+if [ ! -f "$CSS_SRC" ]; then
+	echo "diffo-patch: CSS が見つからない: $CSS_SRC" >&2
+	exit 1
+fi
+
+find_diffo_dir() {
+	if [ -n "${DIFFO_DIR-}" ]; then
+		echo "$DIFFO_DIR"
+		return
+	fi
+	# npx キャッシュの中で mtime が最新のものを選ぶ
+	local newest=""
+	local d
+	for d in "$HOME"/.npm/_npx/*/node_modules/@diffohq/diffo; do
+		[ -d "$d" ] || continue
+		if [ -z "$newest" ] || [ "$d" -nt "$newest" ]; then
+			newest="$d"
+		fi
+	done
+	if [ -n "$newest" ]; then
+		echo "$newest"
+		return
+	fi
+	local groot
+	groot="$(npm root -g 2>/dev/null || true)"
+	if [ -n "$groot" ] && [ -d "$groot/@diffohq/diffo" ]; then
+		echo "$groot/@diffohq/diffo"
+		return
+	fi
+	echo ""
+}
+
+DIFFO_ROOT="$(find_diffo_dir)"
+
+if [ -z "$DIFFO_ROOT" ]; then
+	echo "diffo-patch: @diffohq/diffo が見つからない。先に diffo を 1 度起動して取得させる" >&2
+	exit 1
+fi
+
+CLIENT="$DIFFO_ROOT/dist/client"
+INDEX="$CLIENT/index.html"
+
+if [ ! -f "$INDEX" ]; then
+	echo "diffo-patch: index.html が見つからない: $INDEX" >&2
+	exit 1
+fi
+
+echo "diffo-patch: 対象 $DIFFO_ROOT"
+
+# 1. CSS を置く
+if cmp -s "$CSS_SRC" "$CLIENT/github-preview.css"; then
+	echo "  css      : 変更なし"
+else
+	cp "$CSS_SRC" "$CLIENT/github-preview.css"
+	echo "  css      : 置いた"
+fi
+
+# 2. index.html から link する
+if grep -q 'href="/github-preview.css"' "$INDEX"; then
+	echo "  link     : 変更なし"
+else
+	perl -0pi -e 's{(\s*)</head>}{$1  <link rel="stylesheet" href="/github-preview.css">$1</head>}' "$INDEX"
+	echo "  link     : 足した"
+fi
+
+# 3. marked の breaks を false にする
+BUNDLE="$(grep -rl '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null | head -1 || true)"
+if [ -n "$BUNDLE" ]; then
+	perl -pi -e 's/\{gfm:!0,breaks:!0\}/{gfm:!0,breaks:!1}/' "$BUNDLE"
+	echo "  breaks   : false にした（$(basename "$BUNDLE")）"
+elif grep -rq '{gfm:!0,breaks:!1}' "$CLIENT/assets" 2>/dev/null; then
+	echo "  breaks   : 変更なし"
+else
+	echo "  breaks   : 当てる先が見つからない。diffo 側が marked の呼び方を変えた可能性がある" >&2
+fi
+
+echo "diffo-patch: 完了。ブラウザをリロードする（JS を当て直したときはハードリロード）"
