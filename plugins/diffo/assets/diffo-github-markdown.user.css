@@ -1,0 +1,115 @@
+/* ==UserStyle==
+@name           diffo — GitHub 風の markdown プレビュー
+@namespace      github.com/ryosukee/cc-marketplace
+@version        0.1.0
+@description    diffo の .md Preview モーダルを GitHub 風の配色と字送りにする。diff ビューには影響しない。
+@author         ryosukee
+@license        MIT
+==/UserStyle== */
+
+/*
+効かせ方
+  変数を :root ではなく .modal.md-preview に再定義する。カスタムプロパティは継承するので、
+  配下の .markdown / .md-doc 規則が全部この値で解決される。diff ビューは別の要素なので影響を受けない。
+
+当てられる理由（diffo v0.2.0 で確認）
+  - クラス名にハッシュが無い。CSS のセレクタは全部手書きの名前で、ビルドごとに変わらない
+  - Shadow DOM を使っていない。モーダルは document.body 直下に出る
+  - プレビュー本文にインライン style が入らない。DOMPurify が全要素から class を剥がし
+    （language-* だけ残す）、ALLOWED_ATTR に style を含めないため
+  - 本文がクラスを持たない素の HTML なので、要素セレクタで指せる
+
+当てても届かない範囲
+  - プレビューのコードブロックにシンタックスハイライトがかからない。diffo の shiki は
+    diff 行専用で、プレビューは <code class="language-js"> のまま出る
+  - mermaid の図は diffo が後から差し込む SVG なので、図中の色は変わらない
+
+壊れるとしたら
+  変数名（--ink --hair --fill --paper --t-14）か .md-doc / .md-preview の改名。
+  どちらも失敗の形は「色が diffo の既定に戻る」で、レイアウトは崩れない。
+
+色の出どころ
+  github-markdown-css@5 の github-markdown-light.css / github-markdown-dark.css
+*/
+
+@-moz-document regexp("https?://(localhost|127\\.0\\.0\\.1):[0-9]+/.*") {
+
+  .modal.md-preview {
+    --paper: #ffffff;
+    --ink:   #1f2328;
+    --ink-2: #59636e;
+    --ink-3: #59636e;
+    --hair:  #d1d9e0;
+    --fill:  #f6f8fa;
+    --t-14:  16px;
+    --t-125: 14px;
+    width: min(1012px, 100%) !important;
+  }
+
+  /* 1 つの変数が 2 用途に使われている箇所は直接指定する */
+  .md-doc { max-width: none !important; line-height: 1.5 !important; }
+  .md-doc a { color: #0969da !important; text-decoration: none !important; }
+  .md-doc a:hover { text-decoration: underline !important; }
+
+  .md-doc h1, .md-doc h2, .md-doc h3,
+  .md-doc h4, .md-doc h5, .md-doc h6 {
+    margin: 1.5rem 0 1rem !important;
+    line-height: 1.25 !important;
+  }
+  .md-doc h1 {
+    font-size: 2em !important;
+    padding-bottom: .3em !important;
+    border-bottom: 1px solid var(--hair) !important;
+  }
+  .md-doc h2 {
+    font-size: 1.5em !important;
+    padding-bottom: .3em !important;
+    border-bottom: 1px solid var(--hair) !important;
+  }
+  .md-doc h3 { font-size: 1.25em !important; }
+
+  .md-doc code {
+    background: #818b981f !important;
+    font-size: 85% !important;
+    padding: .2em .4em !important;
+    border-radius: 6px !important;
+  }
+  .md-doc pre {
+    padding: 1rem !important;
+    line-height: 1.45 !important;
+    border-radius: 6px !important;
+  }
+  .md-doc pre code {
+    background: none !important;
+    padding: 0 !important;
+    font-size: 100% !important;
+  }
+
+  .md-doc th, .md-doc td { padding: 6px 13px !important; }
+  .md-doc tr:nth-child(2n) { background: var(--fill) !important; }
+
+  /* dark。diffo は data-theme と prefers-color-scheme の両方で切り替わるので 2 回書く */
+  :root[data-theme="dark"] .modal.md-preview {
+    --paper: #0d1117;
+    --ink:   #f0f6fc;
+    --ink-2: #9198a1;
+    --ink-3: #9198a1;
+    --hair:  #3d444d;
+    --fill:  #151b23;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .modal.md-preview {
+      --paper: #0d1117;
+      --ink:   #f0f6fc;
+      --ink-2: #9198a1;
+      --ink-3: #9198a1;
+      --hair:  #3d444d;
+      --fill:  #151b23;
+    }
+    :root:not([data-theme="light"]) .md-doc a { color: #4493f8 !important; }
+    :root:not([data-theme="light"]) .md-doc code { background: #656c7633 !important; }
+  }
+  :root[data-theme="dark"] .md-doc a { color: #4493f8 !important; }
+  :root[data-theme="dark"] .md-doc code { background: #656c7633 !important; }
+
+}

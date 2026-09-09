@@ -82,6 +82,11 @@
       "name": "ja-writing-ambiguity",
       "source": "./plugins/ja-writing-ambiguity",
       "description": "日本語を書くときに、読者の認知負荷を最も上げる 3 つ（指すものが文の中で決まらない語、主語と述語が実物と対応しない文、修飾が積み上がって係り受けが決まらない文）を止める参照知識 skill"
+    },
+    {
+      "name": "diffo",
+      "source": "./plugins/diffo",
+      "description": "diffo でレビューを受けるときの参照知識 skill と、markdown プレビューを GitHub 風にするユーザースタイルシート"
     }
   ]
 }
