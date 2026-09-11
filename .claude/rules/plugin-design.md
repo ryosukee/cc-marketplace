@@ -2,24 +2,31 @@
 
 ## 対応ホストを明記する
 
-plugin の README に `Claude Code + Codex`、`Claude Code only`、`Codex only` のいずれかを記載する。
+plugin の README に、対応ホストとして `Claude Code + Codex`、`Claude Code only`、
+`Codex only` のいずれかを記載する。
 Codex で読み込める形式であっても、実際の動作を検証するまでは `Claude Code + Codex` としない。
 
-`Claude Code + Codex` plugin は、両ホストで共通の判定処理と、host 固有の入力・出力を扱う adapter を
-分離する。Claude Code 固有の環境変数や JSON 形式を共通処理へ漏らさない。
+`Claude Code + Codex` plugin では、両ホストで共通の判定処理と、ホスト固有の入出力を扱う adapter を分離する。
+Claude Code 固有の環境変数や JSON 形式を共通処理へ渡さない。
 
-全体の責務分担と段階的な導入順序は `docs/cross-client-architecture.md` を正とする。
+全体の責務分担と段階的な導入順序は、`docs/cross-client-architecture.md` を正の所在とする。
 
 ## Requirements を README に記載する
 
-外部 CLI、バイナリ、環境変数、追加設定を必要とする plugin は README に、
-必要なもの、確認方法、setup、未 setup 時の挙動、更新・削除方法、state 保存先を書く。
+外部 CLI、バイナリ、環境変数、追加設定を必要とする plugin は、README に次の情報を書く。
+
+- 必要なものと、その確認方法
+- setup の方法
+- setup していない場合の挙動
+- 更新方法と削除方法
+- state の保存先
+
 当面は独自の requirements manifest を作らない。
 
-setup skill を同梱する場合も、hook や他の skill が環境を暗黙に変更してはいけない。
-未 setup を検出したら setup skill を案内する。
+setup skill を同梱する場合も、hook や他の skill から環境を暗黙に変更してはいけない。
+hook や他の skill が未 setup の状態を検出した場合は、setup skill を案内する。
 
-## Agent はホスト別の定義を生成する
+## 名前付き agent のホスト別定義を生成する
 
 両ホストで提供する名前付き agent は、共通の定義原本から次を生成する。
 
@@ -28,11 +35,12 @@ setup skill を同梱する場合も、hook や他の skill が環境を暗黙�
 - `codex-agents/{name}.toml`: Codex 用の生成物
 - `agent-resources/`: agent 内部だけで使う資料
 
-agent からしか実行させない処理を `skills/` に置かない。親 agent の skill 一覧へ
-公開され、独立コンテキストや agent 固有の権限制限を迂回できるためである。
+名前付き agent からのみ実行させる処理は、`skills/` に置かない。
+`skills/` に置くと、親 agent の skill 一覧に公開される。
+親 agent から直接実行できるため、独立コンテキストや agent 固有の権限制限を迂回できてしまう。
 
-Codex 側の agent 登録は明示的な setup で行う。plugin cache のversion付きパスを
-永続設定へ直接書かない。
+Codex 側の agent 登録は明示的な setup で行う。
+plugin cache の version 付きパスを永続設定へ直接書かない。
 
 ## Plugin 自己完結
 

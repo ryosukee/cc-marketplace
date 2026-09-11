@@ -34,7 +34,7 @@ cc-marketplace/
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
 ├── docs/
-│   └── cross-client-architecture.md # Claude Code / Codex 共通化方針
+│   └── cross-client-architecture.md # Claude Code と Codex の共通化方針
 ├── rules/                        # user global rules (symlink で配布)
 │   ├── {rule}.md                 # 常時ロード。paths を持つものは条件ロード
 │   └── {rule}/references/        # 詳細規範。paths 除外で常時ロードから外す
@@ -53,7 +53,7 @@ cc-marketplace/
         ├── skills/               # consumer skills
         │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）
         ├── config/               # plugin 同梱 default config（あれば）
-        ├── agent-src/            # host 別 agent 定義の生成元（あれば）
+        ├── agent-src/            # ホスト別 agent 定義の生成元（あれば）
         ├── agents/               # Claude Code consumer agents（生成物）
         ├── codex-agents/         # Codex 用 agent adapter（あれば）
         └── agent-resources/      # agent 内部専用資料（skills として公開しない）
@@ -68,9 +68,9 @@ cc-marketplace/
 - `.claude/rules/plugin-release.md`: plugin 更新手順
 - `.claude/rules/user-global-rules.md`: 配布用 user global rule の運用 (symlink、フラット構成、入口と詳細規範の階層)
 
-Claude Code / Codex の対応ホスト、adapter、requirements の設計判断は
-`docs/cross-client-architecture.md` を正とする。plugin 実装時の必須事項は
-`.claude/rules/plugin-design.md` に従う。
+Claude Code と Codex の対応ホスト、adapter、requirements に関する設計判断は、
+`docs/cross-client-architecture.md` を正の所在とする。plugin を実装するときは、
+`.claude/rules/plugin-design.md` の必須事項に従う。
 
 ## Plugin 一覧
 
