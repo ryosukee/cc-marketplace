@@ -2,6 +2,11 @@
 
 個人用 Claude Code plugin marketplace (`cc-tools`)。1 marketplace / multi plugin 構成。
 
+Claude Code と Codex の両方から利用するための設計を段階的に導入している。
+現在の plugin は、各 README で Codex 対応を明記していない限り Claude Code 用である。
+共通化の対象、対応ホストの分類、requirements と adapter の方針は
+[Claude Code / Codex 共通化方針](./docs/cross-client-architecture.md)を参照。
+
 ## プラグイン
 
 ### Utility
