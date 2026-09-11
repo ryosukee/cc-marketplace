@@ -91,4 +91,4 @@ Claude Code と Codex の対応ホスト、adapter、requirements に関する�
 | claude-known-issues | 0.4.6 | meta | Claude Code の既知バグ一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、config/ の 2 本は書き方の例) + 更新検知・全件突合の時期を通知する SessionStart hook + 差分・全件の突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | 0.4.11 | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill) + レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件。要 `gh` CLI |
-| diffo | 0.1.0 | authoring | 参照知識 skill `ref-diffo` 1 本。diffo でレビューを受けるときの返信先の取り方 (payload 本文の `id:` 行から取る)、指定文言をそのまま当てること、ターミナルへの重複報告の抑止。`assets/` に markdown プレビューを GitHub 風にするユーザースタイルシート (Stylus 等へ読み込ませる。diffo 側に CSS を差し替える口が無いため) |
+| diffo | 0.3.0 | authoring | 参照知識 skill `ref-diffo` 1 本。poll timeout をバックグラウンドの loop 内で処理し、指摘の payload だけを作業セッションへ返す。返信先の取り方、指定文言の反映、ターミナルへの重複報告の抑止、markdown プレビューの調整手順も定める |

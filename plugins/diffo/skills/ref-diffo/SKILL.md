@@ -7,6 +7,51 @@ description: diffo でレビューを受ける作業の前に必ず読む。`dif
 
 `diffo poll` が返す payload の読み方と、返信するときに守るものを定める。
 
+## poll の timeout を loop 内で処理する
+
+`diffo poll` を 1 回だけ起動すると、指摘が届かないまま timeout したときにも待機タスクが終了する。
+レビュー中は次の loop を追跡対象のバックグラウンドタスクとして起動する。
+
+```bash
+while :; do
+  out=$(npx -y @diffohq/diffo poll 2>&1) || {
+    printf '%s\n' "$out"
+    printf '%s\n' '[poll が非ゼロで終了。loop を抜けた]'
+    break
+  }
+  case "$out" in
+    *'"status":"timeout"'*) continue ;;
+    *) printf '%s\n' "$out"; break ;;
+  esac
+done
+```
+
+この loop は `{"status":"timeout"}` を受け取ったときだけ `diffo poll` を再実行する。
+指摘を含む payload を受け取ったときと、`diffo poll` が非ゼロで終了したときは、出力を保持して終了する。
+`nohup`、shell の `&`、`disown` では起動しない。待機タスクの完了を、開始元のセッションが受け取れる状態にする。
+
+### Claude Code
+
+Bash tool で上の loop を `run_in_background: true` にして起動する。
+Claude Code が追跡するバックグラウンドタスクにすることで、timeout では通知せず、loop が終了したときだけ
+Monitor の完了通知を同じセッションで受け取る。
+
+### Codex
+
+poll 専用の子 agent を 1 体起動し、その agent に上の loop を実行させる。子 agent へは次の条件を渡す。
+
+- repo の絶対パスを指定し、その repo で loop を実行する
+- timeout は親 agent へ返さず、loop 内で次の `diffo poll` を起動する
+- 指摘を含む payload または異常終了時の出力を、省略せず親 agent へ返す
+- ファイルの編集、スレッドへの返信、commit、push、次の poll は行わない
+
+親 agent は shell の `diffo poll` や出力待ちでメインセッションを占有しない。子 agent の完了通知を mailbox で
+受け取り、payload へ対応する。指摘への対応をすべて終えた後、次の poll 専用 agent を起動する。
+同時に複数の poll 専用 agent を起動しない。
+
+親 agent のターンがすでに終了している場合、子 agent の結果は mailbox に保持されるが、ユーザー向けの処理を
+自動で開始するとは限らない。その場合は、親 agent が次に起動した時点で結果を処理する。
+
 ## 返信先はスレッドの本文から取る
 
 `poll` の payload に含まれる `threadIds` の配列と、本文の `### Thread N` の並び順を対応づけない。

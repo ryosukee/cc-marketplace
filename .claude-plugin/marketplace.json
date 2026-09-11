@@ -86,7 +86,7 @@
     {
       "name": "diffo",
       "source": "./plugins/diffo",
-      "description": "diffo でレビューを受けるときの参照知識 skill と、markdown プレビューを GitHub 風にするユーザースタイルシート"
+      "description": "diffo の poll timeout をバックグラウンドの loop 内で処理し、指摘の payload だけを作業セッションへ返す参照知識 skill と、markdown プレビューの調整ツール"
     }
   ]
 }

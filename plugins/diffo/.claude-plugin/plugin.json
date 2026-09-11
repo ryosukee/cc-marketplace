@@ -1,5 +1,5 @@
 {
   "name": "diffo",
-  "version": "0.2.0",
-  "description": "diffo でレビューを受けるときの参照知識 skill と、markdown プレビューを GitHub 風にする diffo-patch"
+  "version": "0.3.0",
+  "description": "diffo の poll timeout をバックグラウンドの loop 内で処理する参照知識 skill と、markdown プレビューを GitHub 風にする diffo-patch"
 }
