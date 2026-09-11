@@ -13,7 +13,7 @@ requirements と setup 手順である。
 
 | 分類 | 意味 |
 | --- | --- |
-| shared | Claude Code と Codex の両方で動作を検証する |
+| Claude Code + Codex | Claude Code と Codex の両方で動作を検証する |
 | Claude Code only | Claude Code 固有の API、状態、イベントに依存する |
 | Codex only | Codex 固有の API、設定、イベントに依存する |
 
@@ -64,15 +64,15 @@ plugin 外にある `op-review` と `meta-improvement` の共通化は保留す�
 ## Hooks
 
 host 固有のイベント名、入力 JSON、応答 JSON は adapter に閉じ込める。
-判定処理を共有できても、片方の host で未検証なら shared と表示しない。
+判定処理を共有できても、片方の host で未検証なら `Claude Code + Codex` と表示しない。
 
 現在の整理は次のとおり。
 
-- Claude Code only: `claude-known-issues`、`plugin-update`、`version-check`
-- Codex only: path rules hook
-- shared 化候補: `markdownlint`、`security-guards`
+- `Claude Code only`: `claude-known-issues`、`plugin-update`、`version-check`
+- `Codex only`: path rules hook
+- `Claude Code + Codex` 化候補: `markdownlint`、`security-guards`
 
-plugin 外で設定されている hook は直ちに移動しない。shared 版を作るときに、
+plugin 外で設定されている hook は直ちに移動しない。`Claude Code + Codex` 版を作るときに、
 同じ処理を行う既存 hook を置き換えるか確認する。
 
 ## Requirements と setup

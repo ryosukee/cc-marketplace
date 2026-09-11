@@ -2,10 +2,10 @@
 
 ## 対応ホストを明記する
 
-plugin の README に `shared`、`Claude Code only`、`Codex only` のいずれかを記載する。
-Codex で読み込める形式であっても、実際の動作を検証するまでは shared としない。
+plugin の README に `Claude Code + Codex`、`Claude Code only`、`Codex only` のいずれかを記載する。
+Codex で読み込める形式であっても、実際の動作を検証するまでは `Claude Code + Codex` としない。
 
-shared plugin は、両ホストで共通の判定処理と、host 固有の入力・出力を扱う adapter を
+`Claude Code + Codex` plugin は、両ホストで共通の判定処理と、host 固有の入力・出力を扱う adapter を
 分離する。Claude Code 固有の環境変数や JSON 形式を共通処理へ漏らさない。
 
 全体の責務分担と段階的な導入順序は `docs/cross-client-architecture.md` を正とする。
