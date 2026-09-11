@@ -34,14 +34,13 @@ done
 
 Bash tool で上の loop を `run_in_background: true` にして起動する。
 Claude Code が追跡するバックグラウンドタスクにすることで、timeout では通知せず、loop が終了したときだけ
-Monitor の完了通知を同じセッションで受け取る。
+バックグラウンドタスクの完了通知を同じセッションで受け取る。
 
 ### Codex
 
 poll 専用の子 agent を 1 体起動し、その agent に上の loop を実行させる。子 agent へは次の条件を渡す。
 
 - repo の絶対パスを指定し、その repo で loop を実行する
-- timeout は親 agent へ返さず、loop 内で次の `diffo poll` を起動する
 - 指摘を含む payload または異常終了時の出力を、省略せず親 agent へ返す
 - ファイルの編集、スレッドへの返信、commit、push、次の poll は行わない
 
