@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# diffo のレビュー payload を、起動元の Codex thread へ自動で queue する。
+# diffo のレビュー payload を、起動元の Codex thread へ 1 回だけ自動で queue する。
 
 set -u
 
@@ -10,7 +10,7 @@ fi
 
 TARGET_CODEX_THREAD_ID="$1"
 
-for command_name in codex npx shasum awk grep git; do
+for command_name in codex npx shasum awk git; do
 	if ! command -v "$command_name" >/dev/null 2>&1; then
 		echo "diffo-codex-poll: 必要なコマンドが見つからない: $command_name" >&2
 		exit 1
@@ -30,11 +30,9 @@ fi
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
 scope_hash="$(printf '%s' "$repo_root" | shasum -a 256 | awk '{print $1}')"
 state_root="${XDG_STATE_HOME:-$HOME/.local/state}/diffo-codex-poll"
-state_file="$state_root/${TARGET_CODEX_THREAD_ID}-${scope_hash}.seen"
 lock_dir="$state_root/${TARGET_CODEX_THREAD_ID}-${scope_hash}.lock"
 
 mkdir -p "$state_root"
-touch "$state_file"
 if ! mkdir "$lock_dir" 2>/dev/null; then
 	echo "diffo-codex-poll: この Codex thread と repo の poller は既に動いている" >&2
 	exit 1
@@ -46,29 +44,22 @@ echo "diffo-codex-poll: $repo_root のレビューを Codex thread $TARGET_CODEX
 while :; do
 	if ! out="$(npx -y @diffohq/diffo poll 2>&1)"; then
 		printf '%s\n' "$out" >&2
-		echo "diffo-codex-poll: diffo poll が失敗した。5 秒後に再試行する" >&2
-		sleep 5
-		continue
+		echo "diffo-codex-poll: diffo poll が失敗した。監視を終了する" >&2
+		exit 1
 	fi
 	case "$out" in
 		*'"status":"timeout"'*) continue ;;
 	esac
 
-	payload_hash="$(printf '%s' "$out" | shasum -a 256 | awk '{print $1}')"
-	if grep -Fxq "$payload_hash" "$state_file"; then
-		continue
-	fi
-
 	wake_message="$(printf '%s\n\n%s' \
-		'diffo のバックグラウンド監視からレビューが届いた。ref-diffo と必要な規範を読み、レビューを反映・検証してスレッドへ返信すること。スレッドの解決はしない。既存の poller が監視を継続しているため、新しい poll は起動しない。' \
+		'diffo のバックグラウンド監視からレビューが届いた。ref-diffo と必要な規範を読み、payload 内の全スレッドを反映・検証して返信すること。スレッドは解決しない。この poller は配送後に終了するため、全スレッドへの返信後に新しい poller を起動すること。' \
 		"$out")"
 
-	if queue_result="$(codex queue --thread "$TARGET_CODEX_THREAD_ID" --message "$wake_message" 2>&1)"; then
-		printf '%s\n' "$payload_hash" >> "$state_file"
-		printf '%s\n' "$queue_result"
-	else
+	while ! queue_result="$(codex queue --thread "$TARGET_CODEX_THREAD_ID" --message "$wake_message" 2>&1)"; do
 		printf '%s\n' "$queue_result" >&2
-		echo "diffo-codex-poll: Codex への queue に失敗した。5 秒後に再試行する" >&2
+		echo "diffo-codex-poll: Codex への queue に失敗した。同じ payload を 5 秒後に再送する" >&2
 		sleep 5
-	fi
+	done
+	printf '%s\n' "$queue_result"
+	exit 0
 done

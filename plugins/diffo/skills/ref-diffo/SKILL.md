@@ -41,8 +41,8 @@ Claude Code が追跡するバックグラウンドタスクにすることで�
 ### Codex
 
 `codex queue` とローカル app-server daemon を使い、指摘を受けたら同じ Codex thread に次の turn を
-自動で起動する。親 agent で `CODEX_THREAD_ID` を確認してから、poll 専用の子 agent を 1 体起動し、
-その値を引数にして plugin の `bin/diffo-codex-poll` を実行させる。
+自動で起動する。親 agent で `CODEX_THREAD_ID` を確認してから、1 回の待機を担当する poll 専用の
+子 agent を起動し、その値を引数にして plugin の `bin/diffo-codex-poll` を実行させる。
 
 ```bash
 diffo-codex-poll '<親 agent の CODEX_THREAD_ID>'
@@ -50,18 +50,19 @@ diffo-codex-poll '<親 agent の CODEX_THREAD_ID>'
 
 子 agent へは次の条件を渡す。
 
-- repo の絶対パスを指定し、その repo で loop を実行する
-- loop は長時間実行セッションとして保持し、出力待ちは子 agent 側で行う
+- repo の絶対パスを指定し、その repo で実行する
+- timeout の間は待機を続け、feedback を queue したら終了する
 - 親 agent の `CODEX_THREAD_ID` を文字列として渡し、子 agent の環境変数で置き換えない
 - 異常終了時だけ出力を親 agent へ送る
 - ファイルの編集、スレッドへの返信、commit、push は行わない
 
-スクリプトは同じ payload を fingerprint で識別し、同じ Codex thread と repo への二重配送を防ぐ。
-指摘を受け取るたびに poll 専用 agent を作り直さない。同時に同じ Codex thread と repo を監視する
-poll 専用 agent を複数起動しない。
+スクリプトは同じ Codex thread と repo の組み合わせを lock し、同時に複数の poller が動くことを防ぐ。
+feedback を queue した後は次の `diffo poll` を起動せず、スクリプトと子 agent を終了する。
 
 親 agent が待機中なら `codex queue` が次の turn を開始する。別の turn が動いている場合は、その完了後に
 レビュー対応の turn を開始する。現在の permission mode は引き継ぎ、承認が必要な操作は通常どおり停止する。
+親 agent は payload 内の全 `threadIds` へ通常返信した後、新しい poll 専用 agent を起動する。
+返信前に次の `diffo poll` を始めると、Diffo が前の配送を未回答として扱うため、先に起動しない。
 
 ## 返信先はスレッドの本文から取る
 
