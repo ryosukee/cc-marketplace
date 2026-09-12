@@ -7,6 +7,67 @@ description: diffo でレビューを受ける作業の前に必ず読む。`dif
 
 `diffo poll` が返す payload の読み方と、返信するときに守るものを定める。
 
+## poll の timeout を loop 内で処理する
+
+`diffo poll` を 1 回だけ起動すると、指摘が届かないまま timeout したときにも待機タスクが終了する。
+レビュー中は次の loop を追跡対象のバックグラウンドタスクとして起動する。
+`diffo poll` は作業ディレクトリから対象レビューを特定する。`--port` などのオプションは足さず、
+レビュー対象の repo で記載どおりに実行する。
+
+```bash
+while :; do
+  out=$(npx -y @diffohq/diffo poll 2>&1) || {
+    printf '%s\n' "$out"
+    printf '%s\n' '[poll が非ゼロで終了。loop を抜けた]'
+    break
+  }
+  case "$out" in
+    *'"status":"timeout"'*) continue ;;
+    *) printf '%s\n' "$out"; break ;;
+  esac
+done
+```
+
+この loop は `{"status":"timeout"}` を受け取ったときだけ `diffo poll` を再実行する。
+指摘を含む payload を受け取ったときと、`diffo poll` が非ゼロで終了したときは、出力を保持して終了する。
+`nohup`、shell の `&`、`disown` では起動しない。待機タスクの完了を、開始元のセッションが受け取れる状態にする。
+
+### Claude Code
+
+Bash tool で上の loop を `run_in_background: true` にして起動する。
+Claude Code が追跡するバックグラウンドタスクにすることで、timeout では通知せず、loop が終了したときだけ
+バックグラウンドタスクの完了通知を同じセッションで受け取る。
+
+### Codex
+
+`codex queue` とローカル app-server daemon を使い、指摘を受けたら同じ Codex thread に次の turn を
+自動で起動する。親 agent で `CODEX_THREAD_ID` を確認してから、1 回の待機を担当する poll 専用の
+子 agent を起動し、その値を引数にして plugin の `bin/diffo-codex-poll` を実行させる。
+
+```bash
+diffo-codex-poll '<親 agent の CODEX_THREAD_ID>'
+```
+
+子 agent へは次の条件を渡す。
+
+- repo の絶対パスを指定し、その repo で実行する
+- timeout の間は待機を続け、feedback を queue したら終了する
+- 親 agent の `CODEX_THREAD_ID` を文字列として渡し、子 agent の環境変数で置き換えない
+- 異常終了時だけ出力を親 agent へ送る
+- ファイルの編集、スレッドへの返信、commit、push は行わない
+
+スクリプトは同じ Codex thread と repo の組み合わせを lock し、同時に複数の poller が動くことを防ぐ。
+feedback を queue した後は次の `diffo poll` を起動せず、スクリプトと子 agent を終了する。
+
+親 agent が待機中なら `codex queue` が次の turn を開始する。別の turn が動いている場合は、その完了後に
+レビュー対応の turn を開始する。現在の permission mode は引き継ぎ、承認が必要な操作は通常どおり停止する。
+親 agent は payload 内の全 `threadIds` へ通常返信した後、新しい poll 専用 agent を起動する。
+返信前に次の `diffo poll` を始めると、Diffo が前の配送を未回答として扱うため、先に起動しない。
+
+レビュー API などで `sent` 状態のスレッドを見つけても、payload が届く前に返信しない。
+`sent` は agent への通知待ちを含む状態であり、先に返信しても通知待ちは消えない。
+poller が返す payload を待ち、その `threadIds` に対して返信する。
+
 ## 返信先はスレッドの本文から取る
 
 `poll` の payload に含まれる `threadIds` の配列と、本文の `### Thread N` の並び順を対応づけない。
@@ -49,12 +110,20 @@ npx -y @diffohq/diffo --no-open
 diffo-patch
 ```
 
-当てるのは 2 つ。
+> [!NOTE]
+> diffo の起動後に適用する。npx が diffo を更新した後は再適用する。
+> 表示切替が出ないときは、diffo 側の class 名や `aria-label` が変わっていないかを確認してからパッチを直す。
+
+当てるのは 4 つ。
 
 - `.md` の Preview モーダルを GitHub 風の配色と字送りにする CSS。`assets/diffo-github-preview.css` を
   `dist/client/` へ置き、`index.html` から link する
 - marked の `breaks` を false にする。diffo の既定は true で、改行 1 つが `<br>` になる。
   GitHub の `.md` ファイルの描画は改行 1 つを空白に潰すので、`<br>` を書いた行が 2 行分空いてしまう
+- `Collapse all files` の隣に、解決済みスレッドの表示を切り替えるボタンを足す。
+  初期状態では解決済みスレッドを隠し、選択はブラウザの `localStorage` に保存する
+- commit などによる再描画に備え、新規ラインコメントと既存スレッドへの返信の下書きを
+  ブラウザタブの `sessionStorage` に保存して復元する。送信完了または Close で削除する
 
 何度実行しても同じ結果になる。当たっていれば「変更なし」と出る。
 
@@ -72,9 +141,19 @@ JS を当て直した直後はブラウザがバンドルをキャッシュし�
 ### 効く範囲と、届かない範囲
 
 `breaks` の変更は marked のモジュール全体に効く。Preview だけでなくコメントスレッドと返信の描画も
-`breaks: false` になるので、返信の中で改行 1 つを使うと詰まる。段落は空行で分ける。
+`breaks: false` になるので、返信の中で改行 1 つを使うと詰まる。段落は実際の空行で分ける。
+段落内で強制改行するときだけ `<br>` を使い、改行のつもりで文字列 `\n` を渡さない。
 
 CSS を当てられる理由と、当てても届かない範囲（コードブロックのシンタックスハイライト、mermaid の図の色）は
 CSS のファイル冒頭に書いてある。
 
 ブラウザ拡張は要らない。Orca の内蔵ブラウザのように拡張を読み込めない環境でも同じように効く。
+
+## 解決済みスレッドの表示を切り替える
+
+`diffo-patch` を当てると、`Collapse all files` または `Expand all files` の隣に表示切替ボタンが増える。
+初期状態では解決済みスレッドを隠す。ボタンを押すと表示と非表示が切り替わり、次に diffo を開いたときも
+前回の選択を使う。
+
+この切替は `.thread-resolved` などの表示だけを変える。thread の `resolved` 状態や diffo の保存データは変更しない。
+解決によって非表示になるスレッドに行のホバー強調が残っている場合は、diffo 本体の `onMouseLeave` を発火させて解除する。

@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# diffo の配信ファイルへ 2 つのパッチを当てる。何度実行しても同じ結果になる。
+# diffo の配信ファイルへ 4 つのパッチを当てる。何度実行しても同じ結果になる。
 #
 #   1. .md Preview を GitHub 風にする CSS を dist/client へ置き、index.html から link する
 #   2. marked の breaks を false にして、改行 1 つが <br> にならないようにする
+#   3. 解決済みスレッドの表示切替を Collapse all files の隣へ足す
+#   4. 再描画されても新規ラインコメントと既存スレッドへの返信の下書きを復元する
 #
 # 当てるタイミングは diffo を起動した後。理由は 2 つある。
 #   - npx は初回と版が上がった直後にしかパッケージを取得しない。起動前だと当てる先が無いか、
@@ -19,11 +21,15 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 CSS_SRC="$SCRIPT_DIR/../assets/diffo-github-preview.css"
+UI_CSS_SRC="$SCRIPT_DIR/../assets/diffo-ui.css"
+UI_JS_SRC="$SCRIPT_DIR/../assets/diffo-ui.js"
 
-if [ ! -f "$CSS_SRC" ]; then
-	echo "diffo-patch: CSS が見つからない: $CSS_SRC" >&2
-	exit 1
-fi
+for asset in "$CSS_SRC" "$UI_CSS_SRC" "$UI_JS_SRC"; do
+	if [ ! -f "$asset" ]; then
+		echo "diffo-patch: asset が見つからない: $asset" >&2
+		exit 1
+	fi
+done
 
 find_diffo_dir() {
 	if [ -n "${DIFFO_DIR-}" ]; then
@@ -77,23 +83,99 @@ else
 	echo "  css      : 置いた"
 fi
 
-# 2. index.html から link する
-if grep -q 'href="/github-preview.css"' "$INDEX"; then
-	echo "  link     : 変更なし"
+# 2. UI patch の CSS と JS を置く
+if cmp -s "$UI_CSS_SRC" "$CLIENT/diffo-ui.css"; then
+	echo "  ui css   : 変更なし"
 else
-	perl -0pi -e 's{(\s*)</head>}{$1  <link rel="stylesheet" href="/github-preview.css">$1</head>}' "$INDEX"
-	echo "  link     : 足した"
+	cp "$UI_CSS_SRC" "$CLIENT/diffo-ui.css"
+	echo "  ui css   : 置いた"
 fi
 
-# 3. marked の breaks を false にする
-BUNDLE="$(grep -rl '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null | head -1 || true)"
-if [ -n "$BUNDLE" ]; then
-	perl -pi -e 's/\{gfm:!0,breaks:!0\}/{gfm:!0,breaks:!1}/' "$BUNDLE"
-	echo "  breaks   : false にした（$(basename "$BUNDLE")）"
+if cmp -s "$UI_JS_SRC" "$CLIENT/diffo-ui.js"; then
+	echo "  ui js    : 変更なし"
+else
+	cp "$UI_JS_SRC" "$CLIENT/diffo-ui.js"
+	echo "  ui js    : 置いた"
+fi
+
+# 3. index.html から CSS と JS を読み込む
+if grep -q 'href="/github-preview.css"' "$INDEX"; then
+	echo "  md link  : 変更なし"
+else
+	perl -0pi -e 's{(\s*)</head>}{$1  <link rel="stylesheet" href="/github-preview.css">$1</head>}' "$INDEX"
+	echo "  md link  : 足した"
+fi
+
+if grep -q 'href="/diffo-ui.css"' "$INDEX"; then
+	echo "  ui link  : 変更なし"
+else
+	perl -0pi -e 's{(\s*)</head>}{$1  <link rel="stylesheet" href="/diffo-ui.css">$1</head>}' "$INDEX"
+	echo "  ui link  : 足した"
+fi
+
+if grep -q 'src="/diffo-ui.js"' "$INDEX"; then
+	echo "  ui script: 変更なし"
+else
+	perl -0pi -e 's{(\s*)</head>}{$1  <script src="/diffo-ui.js" defer></script>$1</head>}' "$INDEX"
+	echo "  ui script: 足した"
+fi
+
+# 4. marked の breaks を false にする
+BUNDLES="$(grep -rl '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null || true)"
+if [ -n "$BUNDLES" ]; then
+	while IFS= read -r bundle; do
+		perl -pi -e 's/\{gfm:!0,breaks:!0\}/{gfm:!0,breaks:!1}/g' "$bundle"
+		echo "  breaks   : false にした（$(basename "$bundle")）"
+	done <<< "$BUNDLES"
 elif grep -rq '{gfm:!0,breaks:!1}' "$CLIENT/assets" 2>/dev/null; then
 	echo "  breaks   : 変更なし"
 else
 	echo "  breaks   : 当てる先が見つからない。diffo 側が marked の呼び方を変えた可能性がある" >&2
+	exit 1
 fi
 
+count_occurrences() {
+	local needle="$1"
+	local file="$2"
+	(grep -oF "$needle" "$file" || true) | wc -l | tr -d '[:space:]'
+}
+
+assert_single_reference() {
+	local needle="$1"
+	local count
+	count="$(count_occurrences "$needle" "$INDEX")"
+	if [ "$count" -ne 1 ]; then
+		echo "diffo-patch: index.html の参照数が 1 ではない: $needle ($count 件)" >&2
+		exit 1
+	fi
+}
+
+# 終了前に、再実行しても同じ状態へ収束していることを確認する。
+cmp -s "$CSS_SRC" "$CLIENT/github-preview.css" || {
+	echo "diffo-patch: github-preview.css の配置結果が同梱元と一致しない" >&2
+	exit 1
+}
+cmp -s "$UI_CSS_SRC" "$CLIENT/diffo-ui.css" || {
+	echo "diffo-patch: diffo-ui.css の配置結果が同梱元と一致しない" >&2
+	exit 1
+}
+cmp -s "$UI_JS_SRC" "$CLIENT/diffo-ui.js" || {
+	echo "diffo-patch: diffo-ui.js の配置結果が同梱元と一致しない" >&2
+	exit 1
+}
+
+assert_single_reference 'href="/github-preview.css"'
+assert_single_reference 'href="/diffo-ui.css"'
+assert_single_reference 'src="/diffo-ui.js"'
+
+if grep -rq '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null; then
+	echo "diffo-patch: breaks: true が残っている" >&2
+	exit 1
+fi
+if ! grep -rq '{gfm:!0,breaks:!1}' "$CLIENT/assets" 2>/dev/null; then
+	echo "diffo-patch: breaks: false を確認できない" >&2
+	exit 1
+fi
+
+echo "  verify   : 適用結果を確認した"
 echo "diffo-patch: 完了。ブラウザをリロードする（JS を当て直したときはハードリロード）"

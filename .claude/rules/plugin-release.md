@@ -6,9 +6,13 @@ plugin の内容 (skills/agents/hooks/scripts) を変更したら、
 1. plugin.json の `version` を bump する
 2. README.md の該当 plugin セクション (バージョン番号) を更新する
 3. CLAUDE.md の Plugin 一覧を更新する (構成変更がある場合)
-4. `git commit` + `git push`
-5. `claude plugins marketplace update cc-tools`
-6. `claude plugins update {plugin}@cc-tools`
+4. README に記載した対応ホスト、requirements、setup 方法、未 setup 時の挙動を更新する
+5. `Claude Code + Codex` plugin は Claude Code と Codex の両方で動作を確認する
+6. agent の定義原本を変えた場合は、Claude Code 用と Codex 用の adapter を両方再生成する
+7. `Claude Code + Codex` hook を追加した場合は、同じ処理を行う既存 hook の置き換え要否を確認する
+8. `git commit` + `git push`
+9. `claude plugins marketplace update cc-tools`
+10. `claude plugins update {plugin}@cc-tools`
 
 手元の plugin cache は update するまで古いバージョンのまま。
 bump + push だけで終わらせない。

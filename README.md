@@ -2,6 +2,11 @@
 
 個人用 Claude Code plugin marketplace (`cc-tools`)。1 marketplace / multi plugin 構成。
 
+cc-marketplace の plugin を Claude Code と Codex の両方で利用できる構成を、段階的に導入している。
+現在の plugin は、各 README に Codex 対応の記載があるものを除き、Claude Code 用である。
+共通化する対象、対応ホストの分類、requirements と adapter の方針は、
+[Claude Code と Codex の共通化方針](./docs/cross-client-architecture.md)を参照。
+
 ## プラグイン
 
 ### Utility
@@ -45,6 +50,11 @@
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.1 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
+| diffo | 0.4.1 | diffo のレビューを Claude Code の background task または Codex の `queue` で作業セッションへ届ける。返信先の取り方、markdown プレビュー、解決済みスレッドの表示切替も扱う |
+
+Codex で diffo のレビュー対応を自動起動するには、`codex queue` を備えた Codex CLI が必要。
+`diffo-codex-poll` がローカル app-server daemon を起動する。`codex queue --help` が失敗する場合は
+Codex CLI を更新する。
 
 ### Communication
 

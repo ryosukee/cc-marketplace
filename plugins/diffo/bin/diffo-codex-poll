@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# diffo のレビュー payload を、起動元の Codex thread へ 1 回だけ自動で queue する。
+
+set -u
+
+if [ "$#" -ne 1 ] || ! [[ "$1" =~ ^[0-9a-fA-F-]{36}$ ]]; then
+	echo "usage: diffo-codex-poll CODEX_THREAD_ID" >&2
+	exit 2
+fi
+
+TARGET_CODEX_THREAD_ID="$1"
+
+for command_name in codex npx shasum awk git; do
+	if ! command -v "$command_name" >/dev/null 2>&1; then
+		echo "diffo-codex-poll: 必要なコマンドが見つからない: $command_name" >&2
+		exit 1
+	fi
+done
+
+if ! codex queue --help >/dev/null 2>&1; then
+	echo "diffo-codex-poll: この Codex には queue コマンドがない。Codex を更新する" >&2
+	exit 1
+fi
+
+if ! codex app-server daemon start >/dev/null 2>&1; then
+	echo "diffo-codex-poll: Codex app-server daemon を起動できない" >&2
+	exit 1
+fi
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+scope_hash="$(printf '%s' "$repo_root" | shasum -a 256 | awk '{print $1}')"
+state_root="${XDG_STATE_HOME:-$HOME/.local/state}/diffo-codex-poll"
+lock_dir="$state_root/${TARGET_CODEX_THREAD_ID}-${scope_hash}.lock"
+
+mkdir -p "$state_root"
+if ! mkdir "$lock_dir" 2>/dev/null; then
+	echo "diffo-codex-poll: この Codex thread と repo の poller は既に動いている" >&2
+	exit 1
+fi
+trap 'rmdir "$lock_dir" 2>/dev/null || true' EXIT
+
+echo "diffo-codex-poll: $repo_root のレビューを Codex thread $TARGET_CODEX_THREAD_ID へ配送する"
+
+while :; do
+	if ! out="$(npx -y @diffohq/diffo poll 2>&1)"; then
+		printf '%s\n' "$out" >&2
+		echo "diffo-codex-poll: diffo poll が失敗した。監視を終了する" >&2
+		exit 1
+	fi
+	case "$out" in
+		*'"status":"timeout"'*) continue ;;
+	esac
+
+	wake_message="$(printf '%s\n\n%s' \
+		'diffo のバックグラウンド監視からレビューが届いた。ref-diffo と必要な規範を読み、payload の threadIds 全件を反映・検証して返信すること。スレッドは解決しない。この poller は通知後に終了するため、全件返信後に新しい poller を起動すること。' \
+		"$out")"
+
+	while ! queue_result="$(codex queue --thread "$TARGET_CODEX_THREAD_ID" --message "$wake_message" 2>&1)"; do
+		printf '%s\n' "$queue_result" >&2
+		echo "diffo-codex-poll: Codex への queue に失敗した。同じ payload を 5 秒後に再送する" >&2
+		sleep 5
+	done
+	printf '%s\n' "$queue_result"
+	exit 0
+done

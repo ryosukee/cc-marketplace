@@ -33,6 +33,8 @@ cc-marketplace/
 │   └── rules/                    # プロジェクト固有ルール (設計原則、規約)
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
+├── docs/
+│   └── cross-client-architecture.md # Claude Code と Codex の共通化方針
 ├── rules/                        # user global rules (symlink で配布)
 │   ├── {rule}.md                 # 常時ロード。paths を持つものは条件ロード
 │   └── {rule}/references/        # 詳細規範。paths 除外で常時ロードから外す
@@ -51,7 +53,10 @@ cc-marketplace/
         ├── skills/               # consumer skills
         │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）
         ├── config/               # plugin 同梱 default config（あれば）
-        └── agents/               # consumer agents（あれば）
+        ├── agent-src/            # ホスト別 agent 定義の生成元（あれば）
+        ├── agents/               # Claude Code consumer agents（生成物）
+        ├── codex-agents/         # Codex 用 agent adapter（あれば）
+        └── agent-resources/      # agent 内部専用資料（skills として公開しない）
 ```
 
 ## 設計原則・コーディング規約
@@ -62,6 +67,10 @@ cc-marketplace/
 - `.claude/rules/coding.md`: Bash 規約、命名規則、スクリプト設計
 - `.claude/rules/plugin-release.md`: plugin 更新手順
 - `.claude/rules/user-global-rules.md`: 配布用 user global rule の運用 (symlink、フラット構成、入口と詳細規範の階層)
+
+Claude Code と Codex の対応ホスト、adapter、requirements に関する設計判断は、
+`docs/cross-client-architecture.md` を正の所在とする。plugin を実装するときは、
+`.claude/rules/plugin-design.md` の必須事項に従う。
 
 ## Plugin 一覧
 
@@ -82,5 +91,4 @@ cc-marketplace/
 | claude-known-issues | 0.4.6 | meta | Claude Code の既知バグ一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、config/ の 2 本は書き方の例) + 更新検知・全件突合の時期を通知する SessionStart hook + 差分・全件の突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | 0.4.11 | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill) + レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件。要 `gh` CLI |
-| diffo | 0.1.0 | authoring | 参照知識 skill `ref-diffo` 1 本。diffo でレビューを受けるときの返信先の取り方 (payload 本文の `id:` 行から取る)、指定文言をそのまま当てること、ターミナルへの重複報告の抑止。`assets/` に markdown プレビューを GitHub 風にするユーザースタイルシート (Stylus 等へ読み込ませる。diffo 側に CSS を差し替える口が無いため) |
-
+| diffo | 0.4.1 | authoring | 参照知識 skill `ref-diffo` 1 本。レビューを Claude Code の background task または Codex の `queue` で作業セッションへ届ける。返信先の取り方、指定文言の反映、ターミナルへの重複報告の抑止、markdown プレビューと解決済みスレッドの表示切替も扱う |
