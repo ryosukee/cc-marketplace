@@ -109,7 +109,7 @@ diffo-patch
 > diffo の起動後に適用する。npx が diffo を更新した後は再適用する。
 > 表示切替が出ないときは、diffo 側の class 名や `aria-label` が変わっていないかを確認してからパッチを直す。
 
-当てるのは 3 つ。
+当てるのは 4 つ。
 
 - `.md` の Preview モーダルを GitHub 風の配色と字送りにする CSS。`assets/diffo-github-preview.css` を
   `dist/client/` へ置き、`index.html` から link する
@@ -117,6 +117,8 @@ diffo-patch
   GitHub の `.md` ファイルの描画は改行 1 つを空白に潰すので、`<br>` を書いた行が 2 行分空いてしまう
 - `Collapse all files` の隣に、解決済みスレッドの表示を切り替えるボタンを足す。
   初期状態では解決済みスレッドを隠し、選択はブラウザの `localStorage` に保存する
+- commit などによる再描画に備え、新規ラインコメントと既存スレッドへの返信の下書きを
+  ブラウザタブの `sessionStorage` に保存して復元する。送信完了または Close で削除する
 
 何度実行しても同じ結果になる。当たっていれば「変更なし」と出る。
 
