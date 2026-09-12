@@ -93,6 +93,10 @@ npx -y @diffohq/diffo --no-open
 diffo-patch
 ```
 
+> [!NOTE]
+> diffo の起動後に適用する。npx が diffo を更新した後は再適用する。
+> 表示切替が出ないときは、diffo 側の class 名や `aria-label` が変わっていないかを確認してからパッチを直す。
+
 当てるのは 3 つ。
 
 - `.md` の Preview モーダルを GitHub 風の配色と字送りにする CSS。`assets/diffo-github-preview.css` を
