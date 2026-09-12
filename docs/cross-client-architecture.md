@@ -36,6 +36,9 @@ Claude Code の `.claude/rules/*.md` と `paths` を、path rules の正の所�
 Codex 専用の `codex-path-rules` plugin は同じ rule を解釈する。
 `paths` が対象ファイルに一致する rule の指示だけを Codex のセッションへ渡す。
 
+ユーザー共通 rule のうち `paths` を持たないものは、Codex のグローバル `AGENTS.md` に置く
+adapter から読み込む。adapter の配置は dotfiles で管理し、rule 本文は複製しない。
+
 `codex-path-rules` は、実行バイナリと setup skill を同梱して cc-marketplace から配布する。
 未導入または未設定を検出した場合は、環境を暗黙に変更せず、同梱した setup skill を案内する。
 
@@ -43,6 +46,8 @@ Codex 専用の `codex-path-rules` plugin は同じ rule を解釈する。
 
 複数のリポジトリで使う skill は plugin で配布する。
 特定の作業リポジトリだけで使う skill は、その作業リポジトリに置く。
+ユーザー共通の skill は `.claude/skills` を原本とし、`.agents/skills` から symlink する。
+この symlink の作成は dotfiles のセットアップで扱う。
 
 名前付き agent の内部処理だけに使う文書は、`skills/` に置かない。
 `skills/` に置くと、親 agent が直接選択できる機能として一覧に表示されるためである。
