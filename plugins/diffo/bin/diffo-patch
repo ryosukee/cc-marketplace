@@ -120,14 +120,61 @@ else
 fi
 
 # 4. marked の breaks を false にする
-BUNDLE="$(grep -rl '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null | head -1 || true)"
-if [ -n "$BUNDLE" ]; then
-	perl -pi -e 's/\{gfm:!0,breaks:!0\}/{gfm:!0,breaks:!1}/' "$BUNDLE"
-	echo "  breaks   : false にした（$(basename "$BUNDLE")）"
+BUNDLES="$(grep -rl '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null || true)"
+if [ -n "$BUNDLES" ]; then
+	while IFS= read -r bundle; do
+		perl -pi -e 's/\{gfm:!0,breaks:!0\}/{gfm:!0,breaks:!1}/g' "$bundle"
+		echo "  breaks   : false にした（$(basename "$bundle")）"
+	done <<< "$BUNDLES"
 elif grep -rq '{gfm:!0,breaks:!1}' "$CLIENT/assets" 2>/dev/null; then
 	echo "  breaks   : 変更なし"
 else
 	echo "  breaks   : 当てる先が見つからない。diffo 側が marked の呼び方を変えた可能性がある" >&2
+	exit 1
 fi
 
+count_occurrences() {
+	local needle="$1"
+	local file="$2"
+	(grep -oF "$needle" "$file" || true) | wc -l | tr -d '[:space:]'
+}
+
+assert_single_reference() {
+	local needle="$1"
+	local count
+	count="$(count_occurrences "$needle" "$INDEX")"
+	if [ "$count" -ne 1 ]; then
+		echo "diffo-patch: index.html の参照数が 1 ではない: $needle ($count 件)" >&2
+		exit 1
+	fi
+}
+
+# 終了前に、再実行しても同じ状態へ収束していることを確認する。
+cmp -s "$CSS_SRC" "$CLIENT/github-preview.css" || {
+	echo "diffo-patch: github-preview.css の配置結果が同梱元と一致しない" >&2
+	exit 1
+}
+cmp -s "$UI_CSS_SRC" "$CLIENT/diffo-ui.css" || {
+	echo "diffo-patch: diffo-ui.css の配置結果が同梱元と一致しない" >&2
+	exit 1
+}
+cmp -s "$UI_JS_SRC" "$CLIENT/diffo-ui.js" || {
+	echo "diffo-patch: diffo-ui.js の配置結果が同梱元と一致しない" >&2
+	exit 1
+}
+
+assert_single_reference 'href="/github-preview.css"'
+assert_single_reference 'href="/diffo-ui.css"'
+assert_single_reference 'src="/diffo-ui.js"'
+
+if grep -rq '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null; then
+	echo "diffo-patch: breaks: true が残っている" >&2
+	exit 1
+fi
+if ! grep -rq '{gfm:!0,breaks:!1}' "$CLIENT/assets" 2>/dev/null; then
+	echo "diffo-patch: breaks: false を確認できない" >&2
+	exit 1
+fi
+
+echo "  verify   : 適用結果を確認した"
 echo "diffo-patch: 完了。ブラウザをリロードする（JS を当て直したときはハードリロード）"
