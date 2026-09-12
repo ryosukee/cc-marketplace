@@ -12,6 +12,7 @@
 
 :root[data-diffo-hide-resolved="true"] .thread-resolved,
 :root[data-diffo-hide-resolved="true"] .crow-done,
-:root[data-diffo-hide-resolved="true"] .diffo-settled-section {
+:root[data-diffo-hide-resolved="true"] .diffo-settled-section,
+:root[data-diffo-hide-resolved="true"] .diffo-resolved-only-row {
   display: none !important;
 }

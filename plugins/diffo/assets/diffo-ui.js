@@ -47,9 +47,21 @@
     }
   }
 
+  const markResolvedOnlyRows = () => {
+    for (const row of document.querySelectorAll('.thread-row')) {
+      const threads = [...row.querySelectorAll('.thread')]
+      const resolvedOnly =
+        threads.length > 0 &&
+        !row.querySelector('.thread-composer') &&
+        threads.every((thread) => thread.classList.contains('thread-resolved'))
+      row.classList.toggle('diffo-resolved-only-row', resolvedOnly)
+    }
+  }
+
   const mount = () => {
     document.documentElement.setAttribute(hiddenAttribute, String(hidden))
     markSettledSections()
+    markResolvedOnlyRows()
 
     const collapse = document.querySelector(
       '.pane-bar button[aria-label="Collapse all files"], .pane-bar button[aria-label="Expand all files"]',
