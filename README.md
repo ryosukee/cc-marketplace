@@ -50,7 +50,7 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.1 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| diffo | 0.4.0 | diffo のレビューを Claude Code の background task または Codex の `queue` で作業セッションへ届ける。返信先の取り方、markdown プレビュー、解決済みスレッドの表示切替も扱う |
+| diffo | 0.4.1 | diffo のレビューを Claude Code の background task または Codex の `queue` で作業セッションへ届ける。返信先の取り方、markdown プレビュー、解決済みスレッドの表示切替も扱う |
 
 Codex で diffo のレビュー対応を自動起動するには、`codex queue` を備えた Codex CLI が必要。
 `diffo-codex-poll` がローカル app-server daemon を起動する。`codex queue --help` が失敗する場合は

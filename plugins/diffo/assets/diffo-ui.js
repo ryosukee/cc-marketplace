@@ -230,7 +230,11 @@
     for (const row of document.querySelectorAll('.sec-row')) {
       const heading = row.querySelector('.sec-head')
       if (heading?.textContent?.trim().startsWith('Settled')) {
-        row.parentElement?.classList.add('diffo-settled-section')
+        const section = row.parentElement
+        // Rewriting an unchanged class still notifies the observer below.
+        if (section && !section.classList.contains('diffo-settled-section')) {
+          section.classList.add('diffo-settled-section')
+        }
       }
     }
   }
@@ -242,7 +246,9 @@
         threads.length > 0 &&
         !row.querySelector('.thread-composer') &&
         threads.every((thread) => thread.classList.contains('thread-resolved'))
-      row.classList.toggle('diffo-resolved-only-row', resolvedOnly)
+      if (row.classList.contains('diffo-resolved-only-row') !== resolvedOnly) {
+        row.classList.toggle('diffo-resolved-only-row', resolvedOnly)
+      }
     }
   }
 

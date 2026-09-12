@@ -1,5 +1,5 @@
 {
   "name": "diffo",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "diffo のレビューを Claude Code の background task または Codex の自動 queue で受け取り、markdown プレビューと解決済みスレッドの表示も調整する plugin"
 }
