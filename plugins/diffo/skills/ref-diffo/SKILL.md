@@ -40,46 +40,28 @@ Claude Code が追跡するバックグラウンドタスクにすることで�
 
 ### Codex
 
-poll 専用の子 agent を 1 体起動する。Codex では指摘を親へ渡した後も監視を切らさないため、
-子 agent に次の loop を実行させる。
+`codex queue` とローカル app-server daemon を使い、指摘を受けたら同じ Codex thread に次の turn を
+自動で起動する。親 agent で `CODEX_THREAD_ID` を確認してから、poll 専用の子 agent を 1 体起動し、
+その値を引数にして plugin の `bin/diffo-codex-poll` を実行させる。
 
 ```bash
-seen_payload_hashes=''
-while :; do
-  out=$(npx -y @diffohq/diffo poll 2>&1) || {
-    printf '%s\n' "$out"
-    printf '%s\n' '[poll が非ゼロで終了。loop を抜けた]'
-    break
-  }
-  case "$out" in
-    *'"status":"timeout"'*) continue ;;
-  esac
-  payload_hash=$(printf '%s' "$out" | shasum -a 256 | awk '{print $1}')
-  case "$seen_payload_hashes" in
-    *"|$payload_hash|"*) continue ;;
-  esac
-  seen_payload_hashes="${seen_payload_hashes}|${payload_hash}|"
-  printf '%s\n' '[DIFFO_PAYLOAD_BEGIN]'
-  printf '%s\n' "$out"
-  printf '%s\n' '[DIFFO_PAYLOAD_END]'
-done
+diffo-codex-poll '<親 agent の CODEX_THREAD_ID>'
 ```
 
 子 agent へは次の条件を渡す。
 
 - repo の絶対パスを指定し、その repo で loop を実行する
 - loop は長時間実行セッションとして保持し、出力待ちは子 agent 側で行う
-- `[DIFFO_PAYLOAD_BEGIN]` から `[DIFFO_PAYLOAD_END]` までを受け取ったら、省略せず親 agent へ
-  メッセージで送り、同じ実行セッションの出力待ちへ戻る
-- 異常終了時の出力は省略せず親 agent へ送り、その時だけ終了する
+- 親 agent の `CODEX_THREAD_ID` を文字列として渡し、子 agent の環境変数で置き換えない
+- 異常終了時だけ出力を親 agent へ送る
 - ファイルの編集、スレッドへの返信、commit、push は行わない
 
-親 agent は shell の `diffo poll` や出力待ちでメインセッションを占有しない。子 agent の完了通知を mailbox で
-受け取るのではなく、稼働中の子 agent から届くメッセージを mailbox で受け取り、payload へ対応する。
-指摘を受け取るたびに poll 専用 agent を作り直さない。同時に複数の poll 専用 agent を起動しない。
+スクリプトは同じ payload を fingerprint で識別し、同じ Codex thread と repo への二重配送を防ぐ。
+指摘を受け取るたびに poll 専用 agent を作り直さない。同時に同じ Codex thread と repo を監視する
+poll 専用 agent を複数起動しない。
 
-親 agent のターンがすでに終了している場合、子 agent のメッセージは mailbox に保持されるが、ユーザー向けの処理を
-自動で開始するとは限らない。その場合は、親 agent が次に起動した時点で結果を処理する。
+親 agent が待機中なら `codex queue` が次の turn を開始する。別の turn が動いている場合は、その完了後に
+レビュー対応の turn を開始する。現在の permission mode は引き継ぎ、承認が必要な操作は通常どおり停止する。
 
 ## 返信先はスレッドの本文から取る
 

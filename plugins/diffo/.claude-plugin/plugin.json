@@ -1,5 +1,5 @@
 {
   "name": "diffo",
-  "version": "0.3.0",
-  "description": "diffo の poll timeout をバックグラウンドの loop 内で処理する参照知識 skill と、markdown プレビューおよび解決済みスレッドの表示を調整する diffo-patch"
+  "version": "0.4.0",
+  "description": "diffo のレビューを Claude Code の background task または Codex の自動 queue で受け取り、markdown プレビューと解決済みスレッドの表示も調整する plugin"
 }
