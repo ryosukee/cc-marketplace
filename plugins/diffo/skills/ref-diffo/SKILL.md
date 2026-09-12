@@ -64,6 +64,10 @@ feedback を queue した後は次の `diffo poll` を起動せず、スクリ�
 親 agent は payload 内の全 `threadIds` へ通常返信した後、新しい poll 専用 agent を起動する。
 返信前に次の `diffo poll` を始めると、Diffo が前の配送を未回答として扱うため、先に起動しない。
 
+payload が届く前に別経路で返信したスレッドも、`threadIds` に含まれていれば通常返信が必要である。
+再編集はせず、配送前に対応済みで追加変更がない旨を返信する。画面上で最後の発言者が agent であっても
+返信を省くと、次の poll 開始時にその配送が `no answer` になる。
+
 ## 返信先はスレッドの本文から取る
 
 `poll` の payload に含まれる `threadIds` の配列と、本文の `### Thread N` の並び順を対応づけない。
