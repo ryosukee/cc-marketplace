@@ -28,6 +28,10 @@
 
   const setHidden = (next) => {
     hidden = next
+    if (hidden) {
+      markResolvedOnlyRows()
+      clearHiddenResolvedHover()
+    }
     document.documentElement.setAttribute(hiddenAttribute, String(hidden))
     try {
       localStorage.setItem(storageKey, String(hidden))
@@ -58,10 +62,24 @@
     }
   }
 
+  const clearHiddenResolvedHover = () => {
+    for (const scope of document.querySelectorAll(
+      '.thread-row-lit.diffo-resolved-only-row .thread-anchor-scope',
+    )) {
+      scope.dispatchEvent(
+        new MouseEvent('mouseout', {
+          bubbles: true,
+          relatedTarget: document.body,
+        }),
+      )
+    }
+  }
+
   const mount = () => {
-    document.documentElement.setAttribute(hiddenAttribute, String(hidden))
     markSettledSections()
     markResolvedOnlyRows()
+    if (hidden) clearHiddenResolvedHover()
+    document.documentElement.setAttribute(hiddenAttribute, String(hidden))
 
     const collapse = document.querySelector(
       '.pane-bar button[aria-label="Collapse all files"], .pane-bar button[aria-label="Expand all files"]',
@@ -79,7 +97,12 @@
 
   const start = () => {
     mount()
-    new MutationObserver(mount).observe(document.body, { childList: true, subtree: true })
+    new MutationObserver(mount).observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
+      childList: true,
+      subtree: true,
+    })
   }
 
   if (document.readyState === 'loading') {
