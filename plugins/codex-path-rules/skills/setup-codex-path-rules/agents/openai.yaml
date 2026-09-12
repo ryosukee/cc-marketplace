@@ -1,3 +1,0 @@
-interface:
-  display_name: "Setup Codex Path Rules"
-  short_description: "rule収集コマンドを導入・更新・削除する"

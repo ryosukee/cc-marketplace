@@ -33,15 +33,8 @@ Codex はユーザー設定の`project_doc_fallback_filenames = ["CLAUDE.md"]`�
 Codex 専用の追加指示が無ければ `AGENTS.md` は作らない。
 
 Claude Code の `.claude/rules/*.md` と `paths` を、path rules の正の所在とする。
-Codex 専用の `codex-path-rules` plugin は同じ rule を解釈する。
-`paths` が対象ファイルに一致する rule の指示だけを Codex のセッションへ渡す。
-
-ユーザー共通 rule と、Git リポジトリのルートから作業ディレクトリまでにある project rule のうち、
-`paths` を持たないものは `codex-path-rules always` で収集する。Codex のグローバル `AGENTS.md` に置く
-adapter がこのコマンドを実行する。adapter の配置は dotfiles で管理し、rule 本文は複製しない。
-
-`codex-path-rules` は、実行バイナリと setup skill を同梱して cc-marketplace から配布する。
-未導入または未設定を検出した場合は、環境を暗黙に変更せず、同梱した setup skill を案内する。
+Codex が同じ rule を読むためのスクリプトと hook は、ユーザー環境の設定として dotfiles で管理する。
+cc-marketplace には重複する rule 読み込み plugin を置かない。
 
 ## Skill を利用範囲に応じて配置する
 
@@ -87,7 +80,6 @@ plugin 外で定義している名前付き agent のうち、`op-review` と `m
 各 plugin の対応方針は次のとおり。
 
 - `Claude Code only`: `claude-known-issues`、`plugin-update`、`version-check`
-- `Codex only`: `codex-path-rules`
 - `Claude Code + Codex` 化候補: `markdownlint`、`security-guards`
 
 plugin 外で設定されている hook は現時点では移動しない。`Claude Code + Codex` 版を作るときに、
@@ -113,7 +105,7 @@ setup が必要な plugin には、可能であれば setup skill を同梱す�
 ## 導入順序
 
 1. Claude Code と Codex で共用する skill だけを持つ plugin で、Codex からの読み込みを検証する
-2. Codex 専用の `codex-path-rules` plugin を実装する
+2. dotfiles 管理の Codex hook で Claude Code の rule を読み込む
 3. `markdownlint`、`security-guards` の順に hook を共通化する
 4. plugin が配布する名前付き agent に Codex adapter を追加する
 
