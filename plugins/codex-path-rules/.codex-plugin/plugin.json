@@ -1,0 +1,18 @@
+{
+  "name": "codex-path-rules",
+  "version": "0.1.0",
+  "description": "Claude Code の rule を Codex から読み取る",
+  "author": {
+    "name": "ryosukee"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Path Rules",
+    "shortDescription": "Claude Code の rule を Codex でも利用する。",
+    "longDescription": "ユーザー共通および作業リポジトリの .claude/rules を解析し、Codex へ渡します。",
+    "developerName": "ryosukee",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "codex-path-rules をセットアップしてください。"
+  }
+}

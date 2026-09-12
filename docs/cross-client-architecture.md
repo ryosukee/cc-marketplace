@@ -36,8 +36,9 @@ Claude Code の `.claude/rules/*.md` と `paths` を、path rules の正の所�
 Codex 専用の `codex-path-rules` plugin は同じ rule を解釈する。
 `paths` が対象ファイルに一致する rule の指示だけを Codex のセッションへ渡す。
 
-ユーザー共通 rule のうち `paths` を持たないものは、Codex のグローバル `AGENTS.md` に置く
-adapter から読み込む。adapter の配置は dotfiles で管理し、rule 本文は複製しない。
+ユーザー共通 rule と、Git リポジトリのルートから作業ディレクトリまでにある project rule のうち、
+`paths` を持たないものは `codex-path-rules always` で収集する。Codex のグローバル `AGENTS.md` に置く
+adapter がこのコマンドを実行する。adapter の配置は dotfiles で管理し、rule 本文は複製しない。
 
 `codex-path-rules` は、実行バイナリと setup skill を同梱して cc-marketplace から配布する。
 未導入または未設定を検出した場合は、環境を暗黙に変更せず、同梱した setup skill を案内する。
