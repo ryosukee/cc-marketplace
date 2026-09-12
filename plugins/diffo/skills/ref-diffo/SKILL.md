@@ -93,12 +93,14 @@ npx -y @diffohq/diffo --no-open
 diffo-patch
 ```
 
-当てるのは 2 つ。
+当てるのは 3 つ。
 
 - `.md` の Preview モーダルを GitHub 風の配色と字送りにする CSS。`assets/diffo-github-preview.css` を
   `dist/client/` へ置き、`index.html` から link する
 - marked の `breaks` を false にする。diffo の既定は true で、改行 1 つが `<br>` になる。
   GitHub の `.md` ファイルの描画は改行 1 つを空白に潰すので、`<br>` を書いた行が 2 行分空いてしまう
+- `Collapse all files` の隣に、解決済みスレッドの表示を切り替えるボタンを足す。
+  初期状態では解決済みスレッドを隠し、選択はブラウザの `localStorage` に保存する
 
 何度実行しても同じ結果になる。当たっていれば「変更なし」と出る。
 
@@ -122,3 +124,11 @@ CSS を当てられる理由と、当てても届かない範囲（コードブ�
 CSS のファイル冒頭に書いてある。
 
 ブラウザ拡張は要らない。Orca の内蔵ブラウザのように拡張を読み込めない環境でも同じように効く。
+
+## 解決済みスレッドの表示を切り替える
+
+`diffo-patch` を当てると、`Collapse all files` または `Expand all files` の隣に表示切替ボタンが増える。
+初期状態では解決済みスレッドを隠す。ボタンを押すと表示と非表示が切り替わり、次に diffo を開いたときも
+前回の選択を使う。
+
+この切替は `.thread-resolved` などの表示だけを変える。thread の `resolved` 状態や diffo の保存データは変更しない。
