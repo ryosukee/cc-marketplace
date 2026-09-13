@@ -1,8 +1,9 @@
 {
   "name": "diffo",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Diffo のレビューを Claude Code の background task で受け取り、Markdown プレビューと解決済みスレッドの表示も調整する plugin",
   "author": {
     "name": "CC Tools"
-  }
+  },
+  "skills": ["./claude-skills/"]
 }

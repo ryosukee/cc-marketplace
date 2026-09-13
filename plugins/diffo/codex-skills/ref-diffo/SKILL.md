@@ -1,0 +1,39 @@
+---
+name: ref-diffo
+description: diffo でレビューを受ける作業の前に必ず読む。`diffo poll` で指摘を受け取る、スレッドへ返信する、指摘を資料へ反映する、のどれかを始める時点が発動点で、返信を書き終えてからでは遅い。返信先の取り違え、指定文言の言い換え、ターミナルへの重複報告を止める。markdown プレビューの見た目を変えるユーザースタイルシートの所在も持つ。
+user-invocable: false
+---
+
+# Codex で Diffo レビューを受ける
+
+Codex の作業 thread に Diffo の通知を届ける。
+返信前に[共通手順](../../references/review-protocol.md)を読む。
+
+## poll を監視する
+
+親 agent の `CODEX_THREAD_ID` を確認する。レビュー対象 repo で、
+plugin の `bin/diffo-codex-poll` を追跡可能なタスクまたは poll 専用の子 agent から実行する。
+この SKILL.md のパスから plugin root を特定し、script の絶対パスを使う。
+
+```bash
+"<plugin root>/bin/diffo-codex-poll" '<親 agent の CODEX_THREAD_ID>'
+```
+
+子 agent に任せる場合は、次の条件を渡す。
+
+- repo の絶対パスを指定し、その repo で実行する
+- timeout 中は待機を続け、feedback を queue したら終了する
+- 親 agent の `CODEX_THREAD_ID` を文字列として渡し、子 agent の環境変数で置き換えない
+- 異常終了時だけ出力を親 agent へ送る
+- ファイルの編集、スレッドへの返信、commit、push は行わない
+
+script は同じ Codex thread と repo の組み合わせを lock し、poller の重複起動を防ぐ。
+feedback を queue した後は次の poll を起動せず、終了する。親 agent が待機中なら
+`codex queue` が次の turn を開始する。別の turn が動いていれば、その完了後に開始する。
+現在の permission mode は引き継がれ、承認を要する操作は通常どおり停止する。
+
+親 agent は payload の全 `threadIds` に返信してから、新しい poller を起動する。
+返信前に再開すると、Diffo は前の配送を未回答として扱う。
+API などで `sent` 状態のスレッドを見つけても payload 到着前に返信しない。
+`sent` には通知待ちも含まれるため、poller が返した `threadIds` に返信する。
+スレッドの解決はレビュアーが行う。

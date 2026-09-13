@@ -5,7 +5,9 @@
 Diffo のレビュー通知を作業中のセッションで受け、各スレッドへの返信を支援する plugin。
 Claude Code では追跡可能な background task、Codex では追跡可能な poller または
 `codex queue` を使う。いずれもレビュー開始と監視の起動は明示的に行う。
-レビュー本文の読み方と返信の手順は `skills/ref-diffo/SKILL.md` に定める。
+Claude Code 用の手順は[Claude Code の ref-diffo](./claude-skills/ref-diffo/SKILL.md)、
+Codex 用の手順は[Codex の ref-diffo](./codex-skills/ref-diffo/SKILL.md)に分ける。
+両方に共通する返信の規範は[共通手順](./references/review-protocol.md)を読む。
 
 ## 必要なものと導入
 
@@ -25,7 +27,7 @@ Codex ではリポジトリルートで `codex plugin marketplace add .` を実�
 Codex の queue 方式では、インストールした plugin の
 `bin/diffo-codex-poll` を絶対パスで呼び、親 thread の `CODEX_THREAD_ID` を渡す。
 このスクリプトは PATH に自動登録されない。利用する agent は、読み込んだ
-`skills/ref-diffo/SKILL.md` のパスから plugin root を特定する。
+`codex-skills/ref-diffo/SKILL.md` のパスから plugin root を特定する。
 
 ## 未導入・異常終了時
 

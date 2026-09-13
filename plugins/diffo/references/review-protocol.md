@@ -1,79 +1,6 @@
----
-name: ref-diffo
-description: diffo でレビューを受ける作業の前に必ず読む。`diffo poll` で指摘を受け取る、スレッドへ返信する、指摘を資料へ反映する、のどれかを始める時点が発動点で、返信を書き終えてからでは遅い。返信先の取り違え、指定文言の言い換え、ターミナルへの重複報告を止める。markdown プレビューの見た目を変えるユーザースタイルシートの所在も持つ。
----
+# Diffo レビューの共通手順
 
-# diffo でレビューを受ける
-
-`diffo poll` が返す payload の読み方と、返信するときに守るものを定める。
-
-## poll の timeout を loop 内で処理する
-
-`diffo poll` を 1 回だけ起動すると、指摘が届かないまま timeout したときにも待機タスクが終了する。
-レビュー中は次の loop を追跡対象のバックグラウンドタスクとして起動する。
-`diffo poll` は作業ディレクトリから対象レビューを特定する。`--port` などのオプションは足さず、
-レビュー対象の repo で記載どおりに実行する。
-
-```bash
-while :; do
-  out=$(npx -y @diffohq/diffo poll 2>&1) || {
-    printf '%s\n' "$out"
-    printf '%s\n' '[poll が非ゼロで終了。loop を抜けた]'
-    break
-  }
-  case "$out" in
-    *'"status":"timeout"'*) continue ;;
-    *)
-      compact=$(printf '%s' "$out" | node "${CLAUDE_PLUGIN_ROOT}/bin/diffo-compact-payload.mjs" 2>/dev/null) || compact="$out"
-      printf '%s\n' "$compact"
-      break
-      ;;
-  esac
-done
-```
-
-この loop は `{"status":"timeout"}` を受け取ったときだけ `diffo poll` を再実行する。
-指摘を含む payload を受け取ったときと、`diffo poll` が非ゼロで終了したときは、出力を保持して終了する。
-`threads` 通知は今回の指摘と直前の agent 返信に縮約する。`finish` / `cleared` と、
-解析できない通知は元の payload をそのまま出す。整形は `poll` の出力だけで行う。
-`nohup`、shell の `&`、`disown` では起動しない。待機タスクの完了を、開始元のセッションが受け取れる状態にする。
-
-### Claude Code
-
-Bash tool で上の loop を `run_in_background: true` にして起動する。
-Claude Code が追跡するバックグラウンドタスクにすることで、timeout では通知せず、loop が終了したときだけ
-バックグラウンドタスクの完了通知を同じセッションで受け取る。
-
-### Codex
-
-`codex queue` とローカル app-server daemon を使い、指摘を受けたら同じ Codex thread に次の turn を
-自動で起動する。親 agent で `CODEX_THREAD_ID` を確認してから、1 回の待機を担当する poll 専用の
-子 agent を起動し、その値を引数にして plugin の `bin/diffo-codex-poll` を実行させる。
-この SKILL.md のパスから plugin root を特定し、script の絶対パスで呼ぶ。
-
-```bash
-"<plugin root>/bin/diffo-codex-poll" '<親 agent の CODEX_THREAD_ID>'
-```
-
-子 agent へは次の条件を渡す。
-
-- repo の絶対パスを指定し、その repo で実行する
-- timeout の間は待機を続け、feedback を queue したら終了する
-- 親 agent の `CODEX_THREAD_ID` を文字列として渡し、子 agent の環境変数で置き換えない
-- 異常終了時だけ出力を親 agent へ送る
-- ファイルの編集、スレッドへの返信、commit、push は行わない
-
-スクリプトは同じ Codex thread と repo の組み合わせを lock し、同時に複数の poller が動くことを防ぐ。
-feedback を queue した後は次の `diffo poll` を起動せず、スクリプトと子 agent を終了する。
-
-親 agent が待機中なら `codex queue` が次の turn を開始する。別の turn が動いている場合は、その完了後に
-レビュー対応の turn を開始する。現在の permission mode は引き継ぎ、承認が必要な操作は通常どおり停止する。
-親 agent は payload 内の全 `threadIds` へ通常返信した後、新しい poll 専用 agent を起動する。
-返信前に次の `diffo poll` を始めると、Diffo が前の配送を未回答として扱うため、先に起動しない。
-
-レビュー API などで `sent` 状態のスレッドを見つけても、payload が届く前に返信しない。
-`sent` は agent への通知待ちを含む状態であり、先に返信しても通知待ちは消えない。
-poller が返す payload を待ち、その `threadIds` に対して返信する。
+Claude Code と Codex の両方で、Diffo の payload を読んで返信するときに使う。
 
 ## 返信先は各スレッドの id から取る
 
@@ -110,11 +37,12 @@ diffo でやりとりしている間、ターミナルへの報告は「対応�
 diffo にテーマや CSS を差し替えるオプションは無い。CLI のオプションにも環境変数にも該当するものがない。
 配信しているファイルへ直接当てる。
 
-`diffo` を起動した後に `diffo-patch` を実行する。この plugin の `bin/` にある。
+`diffo` を起動した後に、この plugin の `bin/diffo-patch` を実行する。
+plugin root は、読み込んだ SKILL.md のパスから 2 階層上にある。
 
 ```bash
 npx -y @diffohq/diffo --no-open
-diffo-patch
+"<plugin root>/bin/diffo-patch"
 ```
 
 > [!NOTE]
