@@ -1,18 +1,13 @@
 外のセッションからの依頼など
 内容はちゃんと確認してないので、解釈・咀嚼した上でユーザーと議論して判断すること
 
-# GitHub リポジトリ名の変更（今回の PR の対象外）
+# marketplace ID と GitHub リポジトリ名の変更（別タスク）
 
-Diffo レビューで、`cc-marketplace` を `agent-plugins-marketplace` に変更する方針を確認した。
-今回の PR では marketplace ID の `cc-tools` だけを先に変更する。
-PR マージ後に GitHub リポジトリ名とローカルの ghq 配置、remote URL、rules の symlink、
-他リポジトリからの参照を棚卸しして移行する。旧 URL や旧パスを前提にした利用者がいないか確認する。
-
-# marketplace ID のローカル移行（PR マージ後）
-
-`cc-tools` から `agent-plugins-marketplace` に改名したカタログをローカル環境へ反映する。
-旧 ID で導入した plugin と `~/.claude/plugins/data/*-cc-tools/` の状態を棚卸しし、
-必要なデータを新 ID 側へ移してから旧 ID の導入を解除する。Codex 側の導入状態も確認する。
+今回の PR では名称を変更しない。別タスクで marketplace ID の `cc-tools` と
+GitHub リポジトリ名の `cc-marketplace` を `agent-plugins-marketplace` に変更する。
+着手前に既存 plugin の導入状態、`~/.claude/plugins/data/*-cc-tools/` の永続データ、
+Codex の marketplace 登録、remote URL、ローカルの ghq 配置、rules の symlink、
+他リポジトリからの参照を棚卸しする。移行順序と旧データの保持・解除方法を決めてから実施する。
 
 #  diffo でやりとりしている時はターミナルに重複の返答をする必要はない。「対応して回答した」レベルでよい。重複しない論点があるならターミナル出力してもよい
 - ref-skill の plugin で作って install したい diffo の作業の時に必ず読み込む。今はこの１つだけだがおそらく今後増える気がする

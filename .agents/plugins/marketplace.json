@@ -1,7 +1,7 @@
 {
-  "name": "agent-plugins-marketplace",
+  "name": "cc-tools",
   "interface": {
-    "displayName": "Agent Plugins Marketplace"
+    "displayName": "CC Tools"
   },
   "plugins": [
     {

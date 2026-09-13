@@ -72,7 +72,7 @@ fi
 - `statusLine` から起動されたスクリプトに plugin 系の環境変数が渡るか
 
 検証は `settings.json` の書き換えを伴う。折衷案として、置き場だけ
-`~/.claude/plugins/data/usage-line-agent-plugins-marketplace/` へ移し、書き出しはユーザー側に残す形もある
+`~/.claude/plugins/data/usage-line-cc-tools/` へ移し、書き出しはユーザー側に残す形もある
 （`CLAUDE_USAGE_LINE_DIR` がその切り替え点）。
 
 ## skill

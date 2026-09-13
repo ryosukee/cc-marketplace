@@ -26,8 +26,7 @@ Claude Code の更新を検知したら changelog と突合し、たまに全エ
 この中身が一覧へ入ることはない。
 
 `${CLAUDE_PLUGIN_DATA}` は plugin 更新をまたいで残る永続ディレクトリで、
-新しい marketplace ID での実体は `~/.claude/plugins/data/claude-known-issues-agent-plugins-marketplace/`。
-旧 ID の `~/.claude/plugins/data/claude-known-issues-cc-tools/` にあるデータは自動では移らない。
+実体は `~/.claude/plugins/data/claude-known-issues-cc-tools/`。
 エントリに status は無く、どちらのファイルにあるかが状態。
 `/plugin uninstall` は既定でこのディレクトリも削除する。残したい場合は `--keep-data` を付ける。
 

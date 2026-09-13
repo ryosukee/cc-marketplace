@@ -1,6 +1,6 @@
 # cc-marketplace
 
-個人用 Claude Code plugin marketplace (`agent-plugins-marketplace`)。1 marketplace / multi plugin 構成。
+個人用 Claude Code plugin marketplace (`cc-tools`)。1 marketplace / multi plugin 構成。
 
 cc-marketplace の plugin を Claude Code と Codex の両方で利用できる構成を、段階的に導入している。
 現在の plugin は、各 README に Codex 対応の記載があるものを除き、Claude Code 用である。
@@ -13,7 +13,7 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 
 | plugin | version | 概要 |
 | --- | --- | --- |
-| version-check | 0.10.1 | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
+| version-check | 0.10.0 | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
 | plugin-update | 0.4.0 | SessionStart 時にプラグインの更新を検知・通知 |
 | cache-keepalive | 0.7.3 | prompt cache (extended cache, TTL 1h) の expire 前に keepalive を自動発火 |
 | cc-transcript | 0.7.0 | 現在セッションの直近やり取りを jq で整形して vim で開く |
@@ -114,46 +114,39 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 claude plugins marketplace add https://github.com/ryosukee/cc-marketplace.git
 
 # plugin をインストール (必要なもののみ)
-claude plugins install version-check@agent-plugins-marketplace
-claude plugins install plugin-update@agent-plugins-marketplace
-claude plugins install cache-keepalive@agent-plugins-marketplace
-claude plugins install cc-transcript@agent-plugins-marketplace
-claude plugins install dotclaude@agent-plugins-marketplace
-claude plugins install session@agent-plugins-marketplace
-claude plugins install impl-spec@agent-plugins-marketplace
-claude plugins install markdownlint@agent-plugins-marketplace
-claude plugins install mkdocs-setup@agent-plugins-marketplace
-claude plugins install security-guards@agent-plugins-marketplace
-claude plugins install claude-user-communication@agent-plugins-marketplace  # 要環境変数 (plugin README 参照)
-claude plugins install claude-known-issues@agent-plugins-marketplace
-claude plugins install usage-line@agent-plugins-marketplace                 # 要セットアップ (plugin README 参照)
-claude plugins install github-pr@agent-plugins-marketplace
-claude plugins install ja-writing-ambiguity@agent-plugins-marketplace
-claude plugins install diffo@agent-plugins-marketplace
+claude plugins install version-check@cc-tools
+claude plugins install plugin-update@cc-tools
+claude plugins install cache-keepalive@cc-tools
+claude plugins install cc-transcript@cc-tools
+claude plugins install dotclaude@cc-tools
+claude plugins install session@cc-tools
+claude plugins install impl-spec@cc-tools
+claude plugins install markdownlint@cc-tools
+claude plugins install mkdocs-setup@cc-tools
+claude plugins install security-guards@cc-tools
+claude plugins install claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
+claude plugins install claude-known-issues@cc-tools
+claude plugins install usage-line@cc-tools                 # 要セットアップ (plugin README 参照)
+claude plugins install github-pr@cc-tools
+claude plugins install ja-writing-ambiguity@cc-tools
+claude plugins install diffo@cc-tools
 
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace
 ```
 
-> [!IMPORTANT]
-> `cc-tools` からの改名により、既存の plugin は新 ID の plugin へ自動で切り替わらない。
-> 永続データも `*-cc-tools` のディレクトリから自動移行されない。
-> 旧 ID の plugin とデータを確認し、新 ID への移行が済むまで旧データを削除しない。
-> この PR ではローカルのインストール状態を変更しない。
-
 ## アップデート
 
 ```bash
 # marketplace を更新 (git pull)
-claude plugins marketplace update agent-plugins-marketplace
+claude plugins marketplace update cc-tools
 
 # plugin を新バージョンへ切り替える (restart で反映)
-claude plugins update session@agent-plugins-marketplace
+claude plugins update session@cc-tools
 ```
 
 `install` は使えない。インストール済みの plugin に対しては何もせず終了する。
 新バージョンの cache ディレクトリは作られるが、`installed_plugins.json` の `installPath` が
 旧バージョンのままになり、セッションは旧版を読み続ける。
 
-version-check の既読バージョンは、同 plugin の resolver が旧 cache から引き継ぐ。
-他 plugin の永続データは自動移行されないため、新 ID への切替時に個別に確認する。
+状態データ (version-check のバージョン記録など) は各 plugin の resolve スクリプトが旧キャッシュから自動引き継ぎするため、手動マイグレーション不要。
