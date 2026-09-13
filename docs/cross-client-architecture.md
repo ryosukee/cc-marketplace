@@ -46,15 +46,17 @@ cc-marketplace には重複する rule 読み込み plugin を置かない。
 名前付き agent の内部処理だけに使う文書は、`skills/` に置かない。
 `skills/` に置くと、親 agent が直接選択できる機能として一覧に表示されるためである。
 
-## CodingAgent 間の共有方式を機能ごとに選ぶ
+## Skill の入口を選ぶ
 
-### 共通の SKILL.md
+skill ごとに次の A または B を選ぶ。hook を併用するかどうかは、この選択とは別に決める。
+
+### A. 共通の SKILL.md
 
 対象は、両 CodingAgent で発動条件と実行手順が同じ skill。
 一つの `skills/{name}/SKILL.md` を共有し、両方で動作を検証する。
 入口まで分けると、同じ手順の改訂箇所が増える。
 
-### CodingAgent 別の SKILL.md と共通 reference
+### B. CodingAgent 別の SKILL.md と共通 reference
 
 対象は、poll の起動方法など CodingAgent ごとの手順が異なる一方、判断規範を共有する skill。
 各 CodingAgent の SKILL.md を別の入口とし、共通規範は `references/` に一度だけ置く。
@@ -62,7 +64,17 @@ cc-marketplace には重複する rule 読み込み plugin を置かない。
 SKILL.md は共通 reference を読むよう指示する。入口の違いは入出力変換ではないので、
 この SKILL.md を adapter と呼ばない。
 
-### 共通 script と CodingAgent 別 adapter
+## Hook を使う場合は実装方式を選ぶ
+
+hook を使う場合は次の A または B を選ぶ。この選択は skill の入口の選択から独立し、
+hook だけを持つ plugin にも適用する。
+
+### A. CodingAgent 別の hook 実装
+
+対象は、CodingAgent ごとに処理そのものが異なり、共通の判定処理を取り出せない hook。
+各 CodingAgent の hook 定義と処理を別々に持ち、それぞれで動作を検証する。
+
+### B. 共通 script と CodingAgent 別 adapter
 
 対象は、hook のイベント名や入出力形式が異なり、判定処理は決定論的に共有できる機能。
 adapter は各 CodingAgent の入力を共通 script の入力契約へ変換し、script の結果を
@@ -75,6 +87,8 @@ Claude Code と Codex は名前付き agent の定義形式が異なる。
 共通原本から生成する案は、共通の指示本文を二つの定義へ手作業で複写せず、
 形式の違いを生成時に吸収するために挙げた。しかし、形式が異なるだけで生成が必要とは限らない。
 両対応の実装例と方式間の検証がないため、次の候補からまだ選ばない。
+名前付き agent を含む plugin を両対応にする時に候補を再検討し、配布方式を決める。
+それまでは生成スクリプトや配置先を規約化しない。
 
 ### 候補 A: CodingAgent 別の入口と共通 reference
 
@@ -97,7 +111,7 @@ plugin 外で定義している名前付き agent のうち、`op-review` と `m
 
 ## Hook の移行対象
 
-共通 script と CodingAgent 別 adapter を採る場合も、両方で動作を検証していなければ、
+hook の実装方式にかかわらず、両方で動作を検証していなければ、
 `Claude Code + Codex` と表示しない。
 
 各 plugin の対応方針は次のとおり。
