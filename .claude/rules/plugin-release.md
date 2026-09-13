@@ -1,21 +1,52 @@
 # Plugin 更新手順
 
-plugin の内容 (skills/agents/hooks/scripts) を変更したら、
-必ず以下を一連で実行する:
+plugin の内容 (skills/agents/hooks/scripts) を変更したら、README に記載した対応コーディングエージェントを確認する。
+`Claude Code + Codex` の plugin は、Claude Code と Codex の両方の手順を実行する。
 
-1. plugin.json の `version` を bump する
-2. README.md の該当 plugin セクション (バージョン番号) を更新する
-3. CLAUDE.md の Plugin 一覧を更新する (構成変更がある場合)
-4. README に記載した対応ホスト、requirements、setup 方法、未 setup 時の挙動を更新する
-5. `Claude Code + Codex` plugin は Claude Code と Codex の両方で動作を確認する
-6. agent の定義原本を変えた場合は、Claude Code 用と Codex 用の adapter を両方再生成する
-7. `Claude Code + Codex` hook を追加した場合は、同じ処理を行う既存 hook の置き換え要否を確認する
-8. `git commit` + `git push`
-9. `claude plugins marketplace update cc-tools`
-10. `claude plugins update {plugin}@cc-tools`
+## 共通の変更
 
-手元の plugin cache は update するまで古いバージョンのまま。
-bump + push だけで終わらせない。
+1. README.md の該当 plugin のバージョン番号を更新する
+2. 構成を変更した場合は、CLAUDE.md の Plugin 一覧を更新する
+3. README に記載した対応コーディングエージェント、requirements、setup 方法、未 setup 時の挙動を更新する
+
+## Claude Code に対応する場合
+
+1. `.claude-plugin/plugin.json` の `version` を上げる
+2. Claude Code で変更した機能を検証する
+
+## Codex に対応する場合
+
+1. `.codex-plugin/plugin.json` の `version` を上げる
+2. Codex で変更した機能を検証する
+
+## 両対応の場合の追加確認
+
+1. agent の定義原本を変えた場合は、Claude Code 用と Codex 用の adapter を両方再生成する
+2. 両対応の hook を追加した場合は、同じ処理を行う既存 hook の置き換え要否を確認する
+
+## 公開と手元への反映
+
+変更と検証が済んだら、`git commit` と `git push` を実行する。
+
+### Claude Code に対応する場合
+
+```bash
+claude plugins marketplace update cc-tools
+claude plugins update {plugin}@cc-tools
+```
+
+### Codex に対応する場合
+
+Git から登録した marketplace は、先に `codex plugin marketplace upgrade cc-tools` で更新する。
+ローカルディレクトリから登録した marketplace では、この操作は不要。
+
+```bash
+codex plugin add {plugin}@cc-tools
+codex plugin list --marketplace cc-tools
+```
+
+plugin は更新前から動いているセッションへ遡って反映されない。新しいセッションで確認する。
+manifest の変更と push だけでは、手元にインストール済みの plugin は更新されない。
 
 ## plugin を削除する手順
 
@@ -24,8 +55,18 @@ bump + push だけで終わらせない。
 1. plugin ディレクトリ、evals、marketplace.json のエントリ、README.md と CLAUDE.md の行を削除する
 2. 他 plugin・rule・skill からの参照を grep で消す（既知バグ一覧のエントリが指していれば、そのエントリも直す）
 3. `docs/retired-plugins.md` に 1 件足す: 名前・廃止日・最終版・削除 commit・理由・復元コマンド
-4. `git commit` + `git push`、`claude plugins marketplace update cc-tools`、
-   `claude plugins uninstall {plugin}@cc-tools`
+4. `git commit` と `git push` を実行する
+
+### Claude Code に対応する場合
+
+`claude plugins marketplace update cc-tools` と
+`claude plugins uninstall {plugin}@cc-tools` を順に実行する。
+
+### Codex に対応する場合
+
+`codex plugin remove {plugin}@cc-tools` を実行する。
+
+両対応の plugin は、Claude Code と Codex の両方から削除する。
 
 ## 複数箇所に書いてある事実を変えたら、全部を同じ変更で直す
 
