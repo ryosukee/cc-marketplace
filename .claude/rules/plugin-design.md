@@ -6,12 +6,8 @@ plugin の README に、対応 CodingAgent として `Claude Code + Codex`、`Cl
 `Codex only` のいずれかを記載する。
 `Claude Code + Codex` と分類する前に、Claude Code と Codex の両方で動作を検証する。
 
-`Claude Code + Codex` plugin は、skill の入口と hook の実装方式を別々に選ぶ。
-skill の入口と共通資料の分離は adapter ではない。
-adapter は CodingAgent 固有の入出力を共通 script の入出力へ変換する層に限る。
-Claude Code 固有の環境変数や JSON 形式を共通 script へ渡さない。
-
-全体の責務分担と段階的な導入順序は、`docs/cross-client-architecture.md` を正の所在とする。
+Claude Code と Codex の両対応を設計するときは、
+[両対応の設計方針](../../docs/cross-client-architecture.md)を読む。
 
 ## Requirements を README に記載する
 
