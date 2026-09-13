@@ -27,6 +27,8 @@ plugin の内容 (skills/agents/hooks/scripts) を変更したら、README に�
 ## 公開と手元への反映
 
 変更と検証が済んだら、`git commit` と `git push` を実行する。
+manifest の変更と push だけでは、手元にインストール済みの plugin は更新されない。
+更新前から動いているセッションにも反映されない。再導入後に新しいセッションで確認する。
 
 ### Claude Code に対応する場合
 
@@ -45,12 +47,10 @@ codex plugin add {plugin}@cc-tools
 codex plugin list --marketplace cc-tools
 ```
 
-plugin は更新前から動いているセッションへ遡って反映されない。新しいセッションで確認する。
-manifest の変更と push だけでは、手元にインストール済みの plugin は更新されない。
-
 ## plugin を削除する手順
 
 コードは削除し、archive へは移さない（git 履歴から取り出せる）。
+両対応の plugin は、Claude Code と Codex の両方から削除する。
 
 1. plugin ディレクトリ、evals、marketplace.json のエントリ、README.md と CLAUDE.md の行を削除する
 2. 他 plugin・rule・skill からの参照を grep で消す（既知バグ一覧のエントリが指していれば、そのエントリも直す）
@@ -65,8 +65,6 @@ manifest の変更と push だけでは、手元にインストール済みの p
 ### Codex に対応する場合
 
 `codex plugin remove {plugin}@cc-tools` を実行する。
-
-両対応の plugin は、Claude Code と Codex の両方から削除する。
 
 ## 複数箇所に書いてある事実を変えたら、全部を同じ変更で直す
 
