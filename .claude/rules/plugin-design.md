@@ -9,16 +9,15 @@ plugin の README に、対応 CodingAgent として `Claude Code + Codex`、`Cl
 Claude Code と Codex の両対応を設計するときは、
 [両対応の設計方針](../../docs/cross-client-architecture.md)を読む。
 
-## Requirements を README に記載する
+## README に導入・運用情報を記載する
 
-外部 CLI、バイナリ、環境変数、追加設定を必要とする plugin は、README に次の情報を書く。
+plugin の README には、次の情報を書く。
 
 - 対応 CodingAgent
-- 必要なものと、その確認方法
-- setup の方法
-- setup していない場合の挙動
 - 更新方法と削除方法
-- state の保存先
+- 外部 CLI、バイナリ、環境変数、追加設定が必要な場合は、必要なものとその確認方法、
+  setup の方法、未 setup 時の挙動
+- state を保存する場合は、その保存先
 
 当面は独自の requirements manifest を作らない。
 
