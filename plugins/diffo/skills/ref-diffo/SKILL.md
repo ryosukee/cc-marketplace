@@ -49,9 +49,10 @@ Claude Code が追跡するバックグラウンドタスクにすることで�
 `codex queue` とローカル app-server daemon を使い、指摘を受けたら同じ Codex thread に次の turn を
 自動で起動する。親 agent で `CODEX_THREAD_ID` を確認してから、1 回の待機を担当する poll 専用の
 子 agent を起動し、その値を引数にして plugin の `bin/diffo-codex-poll` を実行させる。
+この SKILL.md のパスから plugin root を特定し、script の絶対パスで呼ぶ。
 
 ```bash
-diffo-codex-poll '<親 agent の CODEX_THREAD_ID>'
+"<plugin root>/bin/diffo-codex-poll" '<親 agent の CODEX_THREAD_ID>'
 ```
 
 子 agent へは次の条件を渡す。

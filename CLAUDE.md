@@ -53,7 +53,7 @@ cc-marketplace/
         ├── skills/               # consumer skills
         │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）
         ├── config/               # plugin 同梱 default config（あれば）
-        ├── agent-src/            # ホスト別 agent 定義の生成元（あれば）
+        ├── agent-src/            # エージェント別定義の生成元（あれば）
         ├── agents/               # Claude Code consumer agents（生成物）
         ├── codex-agents/         # Codex 用 agent adapter（あれば）
         └── agent-resources/      # agent 内部専用資料（skills として公開しない）
@@ -68,7 +68,7 @@ cc-marketplace/
 - `.claude/rules/plugin-release.md`: plugin 更新手順
 - `.claude/rules/user-global-rules.md`: 配布用 user global rule の運用 (symlink、フラット構成、入口と詳細規範の階層)
 
-Claude Code と Codex の対応ホスト、adapter、requirements に関する設計判断は、
+Claude Code と Codex の対応コーディングエージェント、adapter、requirements に関する設計判断は、
 `docs/cross-client-architecture.md` を正の所在とする。plugin を実装するときは、
 `.claude/rules/plugin-design.md` の必須事項に従う。
 
@@ -91,4 +91,4 @@ Claude Code と Codex の対応ホスト、adapter、requirements に関する�
 | claude-known-issues | 0.4.6 | meta | Claude Code の既知バグ一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、config/ の 2 本は書き方の例) + 更新検知・全件突合の時期を通知する SessionStart hook + 差分・全件の突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | 0.4.11 | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill) + レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件。要 `gh` CLI |
-| diffo | 0.4.2 | authoring | 参照知識 skill `ref-diffo` 1 本。レビューを Claude Code の background task または Codex の `queue` で作業セッションへ届ける。返信先の取り方、指定文言の反映、ターミナルへの重複報告の抑止、markdown プレビューと解決済みスレッドの表示切替も扱う |
+| diffo | 0.4.3 | authoring | Claude Code と Codex 向けの参照知識 skill `ref-diffo`。レビュー通知を作業セッションへ届ける。導入条件は plugin README を参照 |

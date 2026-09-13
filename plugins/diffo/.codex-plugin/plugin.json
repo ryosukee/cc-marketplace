@@ -1,0 +1,18 @@
+{
+  "name": "diffo",
+  "version": "0.4.3",
+  "description": "Diffo のレビュー通知を Claude Code または Codex の作業セッションへ届ける",
+  "author": {
+    "name": "CC Tools"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Diffo",
+    "shortDescription": "レビュー通知を作業セッションへ届ける",
+    "longDescription": "Diffo のレビュー通知を受け、スレッドへの対応を支援する。Codex では queue による再開も利用できる。",
+    "developerName": "CC Tools",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "この変更を Diffo でレビューして"
+  }
+}

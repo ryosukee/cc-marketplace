@@ -4,7 +4,7 @@
 
 cc-marketplace の plugin を Claude Code と Codex の両方で利用できる構成を、段階的に導入している。
 現在の plugin は、各 README に Codex 対応の記載があるものを除き、Claude Code 用である。
-共通化する対象、対応ホストの分類、requirements と adapter の方針は、
+共通化する対象、対応コーディングエージェントの分類、requirements と adapter の方針は、
 [Claude Code と Codex の共通化方針](./docs/cross-client-architecture.md)を参照。
 
 ## プラグイン
@@ -50,13 +50,7 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.1 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| diffo | 0.4.2 | diffo のレビューを Claude Code の background task または Codex の `queue` で作業セッションへ届ける。返信先の取り方、markdown プレビュー、解決済みスレッドの表示切替も扱う |
-
-Codex で diffo のレビュー対応を自動起動するには、`codex queue` を備えた Codex CLI が必要。
-`diffo-codex-poll` がローカル app-server daemon を起動する。`codex queue --help` が失敗する場合は
-Codex CLI を更新する。
-両ホストの通知は `poll` 出力から今回の指摘と直前の返信だけを抽出する。
-抽出できない場合と `finish` / `cleared` は元の出力をそのまま渡す。整形には `node` を使う。
+| [diffo](./plugins/diffo/README.md) | 0.4.3 | Diffo のレビュー通知を Claude Code または Codex の作業セッションへ届け、スレッドへの対応を支援する |
 
 ### Communication
 
@@ -135,6 +129,7 @@ claude plugins install claude-known-issues@cc-tools
 claude plugins install usage-line@cc-tools                 # 要セットアップ (plugin README 参照)
 claude plugins install github-pr@cc-tools
 claude plugins install ja-writing-ambiguity@cc-tools
+claude plugins install diffo@cc-tools
 
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace
