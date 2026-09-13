@@ -4,7 +4,7 @@
 
 plugin の README に、対応 CodingAgent として `Claude Code + Codex`、`Claude Code only`、
 `Codex only` のいずれかを記載する。
-Codex で読み込める形式であっても、実際の動作を検証するまでは `Claude Code + Codex` としない。
+`Claude Code + Codex` と分類する前に、Claude Code と Codex の両方で動作を検証する。
 
 `Claude Code + Codex` plugin は、skill の入口と hook の実装方式を別々に選ぶ。
 skill の入口と共通資料の分離は adapter ではない。
