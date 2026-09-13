@@ -76,7 +76,7 @@ Claude Code と Codex の対応コーディングエージェント、adapter、
 
 | plugin | version | カテゴリ | 概要 |
 | --- | --- | --- | --- |
-| version-check | 0.10.0 | utility | Claude Code のバージョン追跡・更新検知 |
+| version-check | 0.10.1 | utility | Claude Code のバージョン追跡・更新検知 |
 | plugin-update | 0.4.0 | utility | SessionStart 時にプラグイン更新を検知・通知 |
 | cache-keepalive | 0.7.3 | utility | prompt cache keepalive の自動発火 |
 | cc-transcript | 0.7.0 | utility | セッションの直近やり取りを jq 整形して vim で開く |

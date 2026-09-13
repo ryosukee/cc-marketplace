@@ -14,7 +14,7 @@
 ## 探索順序
 
 1. 手元の repo (ghq_root 配下): 対象そのものの実装・docs・git 履歴
-2. registry・decision-record: dotclaude registry (`~/.claude/plugins/data/dotclaude-cc-tools/registry.json`) 等の参照 repo リストと、議題ごとの decision-record
+2. registry・decision-record: dotclaude registry (`~/.claude/plugins/data/dotclaude-agent-plugins-marketplace/registry.json`) 等の参照 repo リストと、議題ごとの decision-record
 3. 過去セッションの成果物: handover、設計ドキュメント、transcript
 4. ここまでで足りないものだけ Web 検索・公式ドキュメントで調べる
 

@@ -1,6 +1,19 @@
 外のセッションからの依頼など
 内容はちゃんと確認してないので、解釈・咀嚼した上でユーザーと議論して判断すること
 
+# GitHub リポジトリ名の変更（今回の PR の対象外）
+
+Diffo レビューで、`cc-marketplace` を `agent-plugins-marketplace` に変更する方針を確認した。
+今回の PR では marketplace ID の `cc-tools` だけを先に変更する。
+PR マージ後に GitHub リポジトリ名とローカルの ghq 配置、remote URL、rules の symlink、
+他リポジトリからの参照を棚卸しして移行する。旧 URL や旧パスを前提にした利用者がいないか確認する。
+
+# marketplace ID のローカル移行（PR マージ後）
+
+`cc-tools` から `agent-plugins-marketplace` に改名したカタログをローカル環境へ反映する。
+旧 ID で導入した plugin と `~/.claude/plugins/data/*-cc-tools/` の状態を棚卸しし、
+必要なデータを新 ID 側へ移してから旧 ID の導入を解除する。Codex 側の導入状態も確認する。
+
 #  diffo でやりとりしている時はターミナルに重複の返答をする必要はない。「対応して回答した」レベルでよい。重複しない論点があるならターミナル出力してもよい
 - ref-skill の plugin で作って install したい diffo の作業の時に必ず読み込む。今はこの１つだけだがおそらく今後増える気がする
 - diffo review 完了後の宿題（レビューは 2026-09-13 に完了）: `diffo poll` が毎回返す `prompt` は、長いスレッドの全履歴と `How to respond` を含んで冗長。one-shot poller が JSON を丸ごと Codex に渡しているため、通知に必要な最新の指摘・thread ID・場所・次の操作を残してトークンを減らす方法を検討する。長い履歴が必要な場合の取得経路と、パース失敗時の扱いも決める。レビュー中に保留した依頼（会話ログ 2026-09-13「今の diffo review が一通り終わったら、そこの改善案も考えようか」）。

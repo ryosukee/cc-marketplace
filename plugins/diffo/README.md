@@ -15,9 +15,9 @@ Claude Code では追跡可能な background task、Codex では追跡可能な 
   `codex queue --help` で対応状況を確認できる。
 - Markdown プレビューの見た目を変更する場合は、`diffo-patch` が使う `npm`、`perl`、`cmp` も必要。
 
-Claude Code では、このリポジトリを marketplace に追加して `diffo@cc-tools` をインストールする。
+Claude Code では、このリポジトリを marketplace に追加して `diffo@agent-plugins-marketplace` をインストールする。
 Codex ではリポジトリルートで `codex plugin marketplace add .` を実行し、
-`codex plugin add diffo@cc-tools` でインストールする。
+`codex plugin add diffo@agent-plugins-marketplace` でインストールする。
 両方とも plugin を導入するだけでは監視は始まらない。レビュー対象のリポジトリで
 `npx -y @diffohq/diffo --no-open` を実行し、skill の手順で poller を起動する。
 別の setup skill はない。

@@ -19,34 +19,32 @@ resolve_last_version() {
     return 0
   fi
 
-  # 2. 旧バージョンキャッシュから探索
-  local cache_base="$HOME/.claude/plugins/cache/cc-tools/version-check"
-  if [ ! -d "$cache_base" ]; then
-    return 0
-  fi
-
   # バージョンソート関数
   local version_sort_cmd="sort -t. -k1,1n -k2,2n -k3,3n"
   if command -v gsort &>/dev/null; then
     version_sort_cmd="gsort -V"
   fi
 
-  # 旧キャッシュの last-version を探し、最新バージョンのものを使う
-  local latest
-  latest=$(
-    for f in "$cache_base"/*/internal/version/last-version; do
-      [ -f "$f" ] || continue
-      [ "$f" = "$version_file" ] && continue
-      echo "$f" | sed "s|$cache_base/||" | cut -d/ -f1
-    done | $version_sort_cmd | tail -1
-  )
-
-  if [ -n "$latest" ]; then
-    local source_file="$cache_base/$latest/internal/version/last-version"
-    if [ -f "$source_file" ]; then
+  # 現 ID の旧版を優先し、無ければ旧 marketplace ID の cache を移行する
+  local cache_root="${VERSION_CHECK_CACHE_ROOT:-$HOME/.claude/plugins/cache}"
+  local cache_base latest source_file
+  for cache_base in \
+    "$cache_root/agent-plugins-marketplace/version-check" \
+    "$cache_root/cc-tools/version-check"; do
+    [ -d "$cache_base" ] || continue
+    latest=$(
+      for f in "$cache_base"/*/internal/version/last-version; do
+        [ -f "$f" ] || continue
+        [ "$f" = "$version_file" ] && continue
+        echo "$f" | sed "s|$cache_base/||" | cut -d/ -f1
+      done | $version_sort_cmd | tail -1
+    )
+    if [ -n "$latest" ]; then
+      source_file="$cache_base/$latest/internal/version/last-version"
       LAST_VERSION=$(cat "$source_file")
       mkdir -p "$(dirname "$version_file")"
       cp "$source_file" "$version_file"
+      return 0
     fi
-  fi
+  done
 }
