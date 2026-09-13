@@ -25,7 +25,7 @@ plugin の README には、次の情報を書く。
 hook や skill は、未 setup を検出してもユーザーの環境を自動変更しない。
 README に記載した setup 手順を案内する。
 
-## 名前付き agent の内部資料を公開 skill にしない
+## 名前付き agent の定義・実装方法
 
 名前付き agent を両 CodingAgent へ配布する方式は未決定。
 名前付き agent を含む plugin を両対応にする時に再検討する。
