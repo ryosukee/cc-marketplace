@@ -24,8 +24,9 @@ Claude Code 固有の環境変数や JSON 形式を共通処理へ渡さない�
 
 当面は独自の requirements manifest を作らない。
 
-setup skill を同梱する場合も、hook や他の skill から環境を暗黙に変更してはいけない。
-hook や他の skill が未 setup の状態を検出した場合は、setup skill を案内する。
+setup skill は必須ではない。用意する場合も、hook や他の skill が自動実行して
+ユーザーの環境を変更してはいけない。未 setup を検出した場合は README の手順を案内し、
+setup skill があればその名前も示す。
 
 ## 名前付き agent のエージェント別定義を生成する
 
