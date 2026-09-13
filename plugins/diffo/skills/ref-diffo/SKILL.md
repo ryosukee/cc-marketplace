@@ -23,13 +23,19 @@ while :; do
   }
   case "$out" in
     *'"status":"timeout"'*) continue ;;
-    *) printf '%s\n' "$out"; break ;;
+    *)
+      compact=$(printf '%s' "$out" | node "${CLAUDE_PLUGIN_ROOT}/bin/diffo-compact-payload.mjs" 2>/dev/null) || compact="$out"
+      printf '%s\n' "$compact"
+      break
+      ;;
   esac
 done
 ```
 
 この loop は `{"status":"timeout"}` を受け取ったときだけ `diffo poll` を再実行する。
 指摘を含む payload を受け取ったときと、`diffo poll` が非ゼロで終了したときは、出力を保持して終了する。
+`threads` 通知は今回の指摘と直前の agent 返信に縮約する。`finish` / `cleared` と、
+解析できない通知は元の payload をそのまま出す。整形は `poll` の出力だけで行う。
 `nohup`、shell の `&`、`disown` では起動しない。待機タスクの完了を、開始元のセッションが受け取れる状態にする。
 
 ### Claude Code
@@ -68,10 +74,10 @@ feedback を queue した後は次の `diffo poll` を起動せず、スクリ�
 `sent` は agent への通知待ちを含む状態であり、先に返信しても通知待ちは消えない。
 poller が返す payload を待ち、その `threadIds` に対して返信する。
 
-## 返信先はスレッドの本文から取る
+## 返信先は各スレッドの id から取る
 
-`poll` の payload に含まれる `threadIds` の配列と、本文の `### Thread N` の並び順を対応づけない。
-返信先の id は、各スレッドの見出しの直下にある `id:` 行から取る。
+縮約済み通知では各 `threads[].id`、元の payload では各 `### Thread N` 見出しの直下にある
+`id:` 行を返信先とする。`threadIds` の配列とスレッドの並び順だけでは対応づけない。
 
 why: 配列の並びと本文の並びは一致する保証が無い。ずれたまま返信すると、
 別のスレッドへ回答が付き、指摘した側は自分の指摘が無視されたと読む。
