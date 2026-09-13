@@ -1,10 +1,10 @@
 外のセッションからの依頼など
 内容はちゃんと確認してないので、解釈・咀嚼した上でユーザーと議論して判断すること
 
-# marketplace ID と GitHub リポジトリ名の変更（別タスク）
+# marketplace ID と GitHub リポジトリ名の変更
 
-今回の PR では名称を変更しない。別タスクで marketplace ID の `cc-tools` と
-GitHub リポジトリ名の `cc-marketplace` を `agent-plugins-marketplace` に変更する。
+marketplace ID の `cc-tools` と GitHub リポジトリ名の `cc-marketplace` を
+`agent-plugins-marketplace` に変更する。
 着手前に既存 plugin の導入状態、`~/.claude/plugins/data/*-cc-tools/` の永続データ、
 Codex の marketplace 登録、remote URL、ローカルの ghq 配置、rules の symlink、
 他リポジトリからの参照を棚卸しする。移行順序と旧データの保持・解除方法を決めてから実施する。

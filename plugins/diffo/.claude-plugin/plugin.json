@@ -1,7 +1,7 @@
 {
   "name": "diffo",
-  "version": "0.4.3",
-  "description": "diffo のレビューを Claude Code の background task または Codex の自動 queue で受け取り、markdown プレビューと解決済みスレッドの表示も調整する plugin",
+  "version": "0.4.4",
+  "description": "Diffo のレビューを Claude Code の background task で受け取り、Markdown プレビューと解決済みスレッドの表示も調整する plugin",
   "author": {
     "name": "CC Tools"
   }

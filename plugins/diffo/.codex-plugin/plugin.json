@@ -1,7 +1,7 @@
 {
   "name": "diffo",
-  "version": "0.4.3",
-  "description": "Diffo のレビュー通知を Claude Code または Codex の作業セッションへ届ける",
+  "version": "0.4.4",
+  "description": "Diffo のレビュー通知を Codex の作業セッションへ届ける",
   "author": {
     "name": "CC Tools"
   },

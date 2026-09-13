@@ -24,9 +24,8 @@ Claude Code 固有の環境変数や JSON 形式を共通処理へ渡さない�
 
 当面は独自の requirements manifest を作らない。
 
-setup skill は必須ではない。用意する場合も、hook や他の skill が自動実行して
-ユーザーの環境を変更してはいけない。未 setup を検出した場合は README の手順を案内し、
-setup skill があればその名前も示す。
+hook や skill は、未 setup を検出してもユーザーの環境を自動変更しない。
+README に記載した setup 手順を案内する。
 
 ## 名前付き agent のエージェント別定義を生成する
 
