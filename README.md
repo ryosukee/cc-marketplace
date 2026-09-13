@@ -4,7 +4,7 @@
 
 cc-marketplace の plugin を Claude Code と Codex の両方で利用できる構成を、段階的に導入している。
 現在の plugin は、各 README に Codex 対応の記載があるものを除き、Claude Code 用である。
-共通化する対象、対応コーディングエージェントの分類、requirements と adapter の方針は、
+共通化する対象、対応 CodingAgent の分類、requirements と共有方式は、
 [Claude Code と Codex の共通化方針](./docs/cross-client-architecture.md)を参照。
 
 ## プラグイン

@@ -1,6 +1,6 @@
 # diffo
 
-対応コーディングエージェント: `Claude Code + Codex`
+対応 CodingAgent: `Claude Code + Codex`
 
 Diffo のレビュー通知を作業中のセッションで受け、各スレッドへの返信を支援する plugin。
 Claude Code では追跡可能な background task、Codex では追跡可能な poller または
@@ -38,7 +38,7 @@ plugin がなくても Diffo CLI の手動 `poll` と `reply` は使用できる
 
 ## 更新・削除と状態
 
-更新後は各コーディングエージェントで plugin を更新し、新しいセッションで使う。
+更新後は各 CodingAgent で plugin を更新し、新しいセッションで使う。
 削除するときは各エージェントから plugin をアンインストールする。
 Codex poller の排他 lock は `${XDG_STATE_HOME:-$HOME/.local/state}/diffo-codex-poll/` に置き、
 正常終了時に削除する。レビューとスレッドのデータは Diffo 側が保持する。

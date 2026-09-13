@@ -1,6 +1,7 @@
 # Claude Code と Codex の共通化方針
 
 cc-marketplace は、複数の作業リポジトリで使う Claude Code と Codex の拡張機能を管理する。
+本書では、この二つをまとめて CodingAgent と呼ぶ。製品名は `Claude Code` と表記する。
 次のものを管理対象とする。
 
 - skill
@@ -13,9 +14,9 @@ cc-marketplace は、複数の作業リポジトリで使う Claude Code と Cod
 ユーザー環境に配置する設定ファイル、導入する CLI の一覧、symlink は dotfiles で管理する。
 業務知識、ビルドコマンド、ディレクトリ固有の執筆規約は各作業リポジトリで管理する。
 
-## 対応コーディングエージェントの分類
+## 対応 CodingAgent の分類
 
-各 plugin は、README に動作を確認したコーディングエージェントを次のいずれかで明記する。
+各 plugin は、README に動作を確認した CodingAgent を次のいずれかで明記する。
 
 | 分類 | 意味 |
 | --- | --- |
@@ -23,8 +24,7 @@ cc-marketplace は、複数の作業リポジトリで使う Claude Code と Cod
 | Claude Code only | Claude Code でのみ動作を確認した |
 | Codex only | Codex でのみ動作を確認した |
 
-未検証のエージェントは分類に含めない。エージェント固有の入出力は adapter で扱い、
-共有できる判定処理は共通のスクリプトへ置く。
+未検証の CodingAgent は分類に含めない。共有方式は機能ごとに選ぶ。
 
 ## CLAUDE.md と path rules を両エージェントで共有する
 
@@ -46,18 +46,58 @@ cc-marketplace には重複する rule 読み込み plugin を置かない。
 名前付き agent の内部処理だけに使う文書は、`skills/` に置かない。
 `skills/` に置くと、親 agent が直接選択できる機能として一覧に表示されるためである。
 
-## 名前付き agent の定義を共有する
+## CodingAgent 間の共有方式を機能ごとに選ぶ
 
-名前付き agent は、共通の定義原本からエージェント別の定義を生成する。
-Codex 側で登録が必要な定義は、明示的な setup で配置する。
-ファイル配置と制作時の規則は [Plugin 設計原則](../.claude/rules/plugin-design.md) に記載する。
+### 共通の SKILL.md
+
+対象は、両 CodingAgent で発動条件と実行手順が同じ skill。
+一つの `skills/{name}/SKILL.md` を共有し、両方で動作を検証する。
+入口まで分けると、同じ手順の改訂箇所が増える。
+
+### CodingAgent 別の SKILL.md と共通 reference
+
+対象は、poll の起動方法など CodingAgent ごとの手順が異なる一方、判断規範を共有する skill。
+各 CodingAgent の SKILL.md を別の入口とし、共通規範は `references/` に一度だけ置く。
+`diffo` の `claude-skills/ref-diffo/` と `codex-skills/ref-diffo/` がこの方式を使う。
+SKILL.md は共通 reference を読むよう指示する。入口の違いは入出力変換ではないので、
+この SKILL.md を adapter と呼ばない。
+
+### 共通 script と CodingAgent 別 adapter
+
+対象は、hook のイベント名や入出力形式が異なり、判定処理は決定論的に共有できる機能。
+adapter は各 CodingAgent の入力を共通 script の入力契約へ変換し、script の結果を
+各 CodingAgent の応答形式へ戻す。判定は共通 script に置き、固有の環境変数や JSON 形式を
+渡さない。adapter はこの入出力の境界を指し、skill の分割や agent 定義の生成物には使わない。
+
+## 名前付き agent の配布方式は未決定
+
+Claude Code と Codex は名前付き agent の定義形式が異なる。
+共通原本から生成する案は、共通の指示本文を二つの定義へ手作業で複写せず、
+形式の違いを生成時に吸収するために挙げた。しかし、形式が異なるだけで生成が必要とは限らない。
+両対応の実装例と方式間の検証がないため、次の候補からまだ選ばない。
+
+### 候補 A: CodingAgent 別の入口と共通 reference
+
+Claude Code 用と Codex 用の定義を別々に置き、共通の指示本文を参照する。
+両方の agent が実行時に参照先を確実に読めるなら、生成せずに共通部分を一元管理できる。
+定義ごとのメタデータや権限設定は別々に維持・検証する。実行時参照の可否は未検証。
+
+### 候補 B: 共通原本から各定義を生成
+
+共通の指示本文が多く、各 CodingAgent の定義を単独で完結させる必要がある場合の候補。
+共通原本から Claude Code 用と Codex 用の形式を生成する。
+生成スクリプト、差分確認、再生成と両方での動作検証が必要になる。
+
+選択時は、実行時参照の可否、共通部分の量、固有メタデータの差、生成物の保守負担を比べる。
+どちらを選んでも、agent 内部専用の資料を公開 `skills/` に置かない。
+Codex 側で登録が必要な定義は明示的な setup で配置し、plugin cache の
+version 付きパスを永続設定へ直接書かない。
 
 plugin 外で定義している名前付き agent のうち、`op-review` と `meta-improvement` の共通化は保留する。
 
-## Hook の共通処理とエージェント別 adapter を分離する
+## Hook の移行対象
 
-エージェント固有のイベント名、入力 JSON、応答 JSON は adapter に閉じ込める。
-判定処理を共有できても、いずれかのエージェントで動作を検証していなければ、
+共通 script と CodingAgent 別 adapter を採る場合も、両方で動作を検証していなければ、
 `Claude Code + Codex` と表示しない。
 
 各 plugin の対応方針は次のとおり。
@@ -78,6 +118,6 @@ requirements と setup の正の所在は各 plugin の README とし、独自�
 1. Claude Code と Codex で共用する skill だけを持つ plugin で、Codex からの読み込みを検証する
 2. dotfiles 管理の Codex hook で Claude Code の rule を読み込む
 3. `markdownlint`、`security-guards` の順に hook を共通化する
-4. plugin が配布する名前付き agent に Codex adapter を追加する
+4. 名前付き agent の配布方式を選び、対象 plugin の Codex 対応を検証する
 
-既存の Claude Code 環境は一括で移行しない。plugin 単位で対応コーディングエージェントと検証結果を更新する。
+既存の Claude Code 環境は一括で移行しない。plugin 単位で対応 CodingAgent と検証結果を更新する。

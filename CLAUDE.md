@@ -53,9 +53,7 @@ cc-marketplace/
         ├── skills/               # consumer skills
         │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）
         ├── config/               # plugin 同梱 default config（あれば）
-        ├── agent-src/            # エージェント別定義の生成元（あれば）
-        ├── agents/               # Claude Code consumer agents（生成物）
-        ├── codex-agents/         # Codex 用 agent adapter（あれば）
+        ├── agents/               # Claude Code consumer agents（あれば）
         └── agent-resources/      # agent 内部専用資料（skills として公開しない）
 ```
 
@@ -68,7 +66,7 @@ cc-marketplace/
 - `.claude/rules/plugin-release.md`: plugin 更新手順
 - `.claude/rules/user-global-rules.md`: 配布用 user global rule の運用 (symlink、フラット構成、入口と詳細規範の階層)
 
-Claude Code と Codex の対応コーディングエージェント、adapter、requirements に関する設計判断は、
+Claude Code と Codex の対応 CodingAgent、共有方式、requirements に関する設計判断は、
 `docs/cross-client-architecture.md` を正の所在とする。plugin を実装するときは、
 `.claude/rules/plugin-design.md` の必須事項に従う。
 

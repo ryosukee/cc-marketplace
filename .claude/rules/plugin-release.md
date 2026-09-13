@@ -1,13 +1,13 @@
 # Plugin 更新手順
 
-plugin の内容 (skills/agents/hooks/scripts) を変更したら、README に記載した対応コーディングエージェントを確認する。
+plugin の内容 (skills/agents/hooks/scripts) を変更したら、README に記載した対応 CodingAgent を確認する。
 `Claude Code + Codex` の plugin は、Claude Code と Codex の両方の手順を実行する。
 
 ## 共通の変更
 
 1. README.md の該当 plugin のバージョン番号を更新する
 2. 構成を変更した場合は、CLAUDE.md の Plugin 一覧を更新する
-3. README に記載した対応コーディングエージェント、requirements、setup 方法、未 setup 時の挙動を更新する
+3. README に記載した対応 CodingAgent、requirements、setup 方法、未 setup 時の挙動を更新する
 
 ## Claude Code に対応する場合
 
@@ -21,7 +21,8 @@ plugin の内容 (skills/agents/hooks/scripts) を変更したら、README に�
 
 ## 両対応の場合の追加確認
 
-1. agent の定義原本を変えた場合は、Claude Code 用と Codex 用の adapter を両方再生成する
+1. 名前付き agent を変更した場合は、Claude Code 用と Codex 用の定義・参照先を両方検証する。
+   生成方式を採用した plugin では生成物も更新する
 2. 両対応の hook を追加した場合は、同じ処理を行う既存 hook の置き換え要否を確認する
 
 ## 公開と手元への反映
