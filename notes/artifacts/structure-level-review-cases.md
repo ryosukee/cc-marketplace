@@ -1210,6 +1210,51 @@ after（3.3 節は `a7ea955aa`、2.2 節末は `6ca658c40`）:
 
 補記: 1 回目は指摘された 1 箇所だけを直し、同じ言い回しが他にもあることを返信で伝えて判断を仰いだ。同じ規範に当たる箇所が他にあるなら、指摘の対象外でも同時に直すのが期待されていた。
 
+### 16-6 [dotfiles] エージェント用規範に人間向け手順を重ねる
+
+指摘の実文（diffo スレッド cc55e429-a268-4221-b08f-bfee7cc67d18、2026-09-13）:
+
+> README やらと記載内容が重複している。そもそも CLAUDe.md ってどんなことを書くべきなんだ？
+
+before: `CLAUDE.md` に構造図・デプロイコマンド・plugin 分類表を再掲した。
+
+after（dotfiles `a61ce32`）: `CLAUDE.md` は編集時の規則に絞り、構造とセットアップは README、詳細は `docs/ai-agent-environment.md` へ参照した。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド cc55e429-a268-4221-b08f-bfee7cc67d18 /
+`CLAUDE.md`。修正は `a61ce32`
+
+### 16-7 [dotfiles] plugin 固有の仕様を環境全体の文書にも書く
+
+指摘の実文（diffo スレッド ed83e9ac-a8f4-4cc8-abbf-2b9dd63f66e9、2026-09-13）:
+
+> この辺りの詳細な説明はここではなく plugin 側の readme や description に任せるべき。ここにも書くと説明の二重管理になってしまう
+
+before: `docs/ai-agent-environment.md` に rule 探索・glob・制約を詳述した。
+
+after（dotfiles `a61ce32`）: 環境全体の文書は plugin の利用方針と README へのリンクに絞り、仕様は `plugins/codex-claude-rules/README.md` に残した。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド ed83e9ac-a8f4-4cc8-abbf-2b9dd63f66e9 /
+`docs/ai-agent-environment.md:24`。修正は `a61ce32`
+
+### 16-8 [dotfiles] plugin 自身の分類を一覧文書に重ねる
+
+指摘の実文（diffo スレッド 928a3339-6e3a-48e9-9bca-b3f940d15904、2026-09-13）:
+
+> この１行は二重管理になるので不要
+
+before: README に「現在の codex-claude-rules は Codex only」と記載した。
+
+after（dotfiles `a61ce32`）: その 1 行を削除し、分類は plugin 自身の README に残した。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 928a3339-6e3a-48e9-9bca-b3f940d15904 /
+`README.md:151`。修正は `a61ce32`
+
 ## 型 17: 記述を削るとき、他の場所に無い情報が落ちる
 
 ### 17-1 [efso-document] 削ったあとの状態どうしを突き合わせた
@@ -1533,6 +1578,100 @@ after（`9d972ce88`）:
 
 補記: 足した理由はリンク先の `auth0-alternative-cognito.md` が持っていた（「Cognito は SAML では SP 側にしかなれず、user pool を IdP の relying party として登録する側になる」）。この節は判定・年額・理由を書く場所で、他の候補には判定に理由が付いていた。
 
+## 型 25: 成果物固有の作成規約を確認せず、汎用形式で出す
+
+### 25-1 [cc-marketplace / dotfiles] PR 作成 plugin を使わず、英語の汎用本文で PR を作った
+
+cc-marketplace と dotfiles の環境共通化 PR。各 repo の変更自体は実装済みだったが、
+利用可能な `github-pr:create` plugin を確認せず、英語のタイトルと汎用的な
+`Summary` / `Validation` だけで open PR を作成した。
+
+指摘の実文（ターミナル、2026-09-11）:
+
+> おい PR が英語で終わっとる pr 作成する plugin があったはず
+
+before:
+
+> docs: define Claude Code and Codex plugin policy
+>
+> ## Summary
+
+after:
+
+> docs: Claude Code / Codex 共通 plugin の設計方針を追加
+>
+> ## 全体方針
+
+`github-pr:create` のロング版テンプレートに従い、変更計画、概要、背景、変更の詳細、
+How to check を日本語で記載した。plugin の既定に合わせ、両 PR を draft に戻した。
+
+出所: 人間のレビュー（ターミナルでの指摘）
+
+出典: cc-marketplace PR #25、dotfiles PR #1。PR metadata の修正なので修正コミットはない
+
+## 型 26: 説明の階層と補足の置き場
+
+### 26-1 [dotfiles] 共有対象を一節に流す
+
+指摘の実文（diffo スレッド d095b9a5-5ef7-4a4a-b586-0ab90107f2ab、2026-09-13）:
+
+> AGENTS.md, rule, skill, agent それぞれでサブセクションを立てた方が読みやすい
+
+before: `## 指示・rule・skill・agent の共有` の直下に全対象の説明を並べた。
+
+after（dotfiles `a61ce32`）: `### AGENTS.md と CLAUDE.md`、`### rule`、`### skill`、`### agent` に分けた。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド d095b9a5-5ef7-4a4a-b586-0ab90107f2ab /
+`docs/ai-agent-environment.md:13`。修正は `a61ce32`
+
+### 26-2 [dotfiles] profile の必要性を hook の話だけに置く
+
+指摘の実文（diffo スレッド eb0f54f5-e4e8-4519-9f02-5e06c449f5e5、2026-09-13）:
+
+> dotfiles profile は hook のためだけじゃない。stow 管理している設定値をちゃんと反映させるには profile 指定が必要というのがもっと広い真の理由。包含関係にある。
+> だからそもそもこの important は config を profile に分けるという説明のセクションに入れるべきだし、hook が profile に依存しているというのも profile のセクションのサブセクションで説明するべき
+
+before: profile 指定の IMPORTANT と警告 hook の説明をセットアップ手順の後に並べた。
+
+after（dotfiles `a61ce32`）: profile 指定の IMPORTANT を「stow 管理する Codex の config.toml は profile に分ける」節へ移し、その下に「必須 plugin 警告 hook」サブセクションを置いた。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド eb0f54f5-e4e8-4519-9f02-5e06c449f5e5 /
+`docs/ai-agent-environment.md:84`。修正は `a61ce32`
+
+### 26-3 [dotfiles] 別の注意を一つの IMPORTANT にまとめる
+
+指摘の実文（diffo スレッド f15c1fd9-85b8-4237-b213-786eae103320、2026-09-13）:
+
+> 2 つの important をまとめるな。別々の指摘のはず
+
+before: profile 選択と hook 信頼の注意を一つの IMPORTANT にまとめた。
+
+after（dotfiles `a61ce32`）: profile 選択は設定の節、hook 信頼はセットアップ手順の後で、それぞれ独立した IMPORTANT にした。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド f15c1fd9-85b8-4237-b213-786eae103320 /
+`docs/ai-agent-environment.md:79`。修正は `a61ce32`
+
+### 26-4 [dotfiles] 補足を本文の主線に置く
+
+指摘の実文（diffo スレッド 0e013311-664b-442f-967f-41af519ff4e3、2026-09-13）:
+
+> これも注釈とか補足の記法で書いてほしい
+
+before: fish の abbreviation が `--profile dotfiles` を付ける話を通常の地の文に置いた。
+
+after（dotfiles `a61ce32`）: 同じ内容を `[!NOTE]` に移した。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 0e013311-664b-442f-967f-41af519ff4e3 /
+`docs/ai-agent-environment.md:61`。修正は `a61ce32`
+
 ## 件数
 
 型ごとの件数（延べ。1 事例が複数の型に当たる場合は各型で数える）:
@@ -1552,7 +1691,7 @@ after（`9d972ce88`）:
 - 型 13 全件を並べた表より、結論に効く差分だけを残す: 3 件
 - 型 14 根拠に挙げた実績が、何を確かめていないかを書く: 3 件
 - 型 15 1 点で足りるところに、当たり前のことや言い換えを足す: 2 件
-- 型 16 他の場所が持っている内容を、ここにも書く: 6 件
+- 型 16 他の場所が持っている内容を、ここにも書く: 9 件
 - 型 17 記述を削るとき、他の場所に無い情報が落ちる: 1 件
 - 型 18 同じ対象を 2 箇所で扱うのに、役割を決めていない: 2 件
 - 型 19 表の列を削って、判定の違いが読めなくなる: 1 件
@@ -1561,10 +1700,12 @@ after（`9d972ce88`）:
 - 型 22 計算を示すのに、式と結果のどちらかしか書かない: 1 件
 - 型 23 少数の対象の情報を、種類ごとに別のブロックへ分ける: 1 件
 - 型 24 判定を書いて、その理由を参照先だけに置く: 1 件
-- 延べ合計: 61 件
+- 型 25 成果物固有の作成規約を確認せず、汎用形式で出す: 1 件
+- 型 26 説明の階層と補足の置き場: 4 件
+- 延べ合計: 69 件
 
-実数（事例の数）: 55 件。複数の型に当たる事例が 5 件（1-3 が型 1 と型 2、3-1 が型 1 と型 3、8-1 が型 6 と型 8、12-1 が型 9 と型 12、11-4 が型 11 と型 16 と型 18）あるので、延べが 6 多い。
+実数（事例の数）: 63 件。複数の型に当たる事例が 5 件（1-3 が型 1 と型 2、3-1 が型 1 と型 3、8-1 が型 6 と型 8、12-1 が型 9 と型 12、11-4 が型 11 と型 16 と型 18）あるので、延べが 6 多い。
 
 内訳（出所別）:
 
-- 人間のレビュー: 55 件（efso-document の PR #2912 の diffo レビュー 2026-09-09: 52 件、2026-09-10: 3 件）
+- 人間のレビュー: 63 件（dotfiles PR #3 の diffo レビュー 2026-09-13: 7 件。efso-document の PR #2912 の diffo レビュー 2026-09-09: 52 件、2026-09-10: 3 件。cc-marketplace / dotfiles の PR 作成後にターミナルで受けた指摘 2026-09-11: 1 件）
