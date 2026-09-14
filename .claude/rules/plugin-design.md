@@ -22,7 +22,7 @@ plugin の README には、次の情報を書く。
 
 当面は独自の requirements manifest を作らない。
 
-hook や skill は、未 setup を検出してもユーザーの環境を自動変更しない。
+hook や skill は、実行時に未 setup を検出してもユーザーの環境を自動変更しない。
 README に記載した setup 手順を案内する。
 
 ## 名前付き agent の定義・実装方法
