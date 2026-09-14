@@ -45,7 +45,7 @@ skill ごとに次の A または B を選ぶ。hook を併用するかどうか
 
 対象は、poll の起動方法など CodingAgent ごとの手順が異なる一方、判断規範を共有する skill。
 各 CodingAgent の SKILL.md を別の入口とし、共通規範は `references/` に一度だけ置く。
-`diffo` の `claude-skills/ref-diffo/` と `codex-skills/ref-diffo/` がこの方式を使う。
+例: `diffo` は `claude-skills/ref-diffo/` と `codex-skills/ref-diffo/` に入口を分けている。
 SKILL.md は共通 reference を読むよう指示する。
 
 ## Hook を使う場合は実装方式を選ぶ
