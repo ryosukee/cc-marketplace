@@ -2,7 +2,7 @@
 
 ## プロジェクト概要
 
-個人用 Claude Code plugin marketplace。1 marketplace / multi plugin 構成。
+個人用 plugin marketplace。Claude Code 向けを中心に、一部の plugin を Codex にも提供する。
 utility 系 (version-check, plugin-update, cache-keepalive, cc-transcript, usage-line)、
 dotclaude 系 (doctor/cross-review/registry)、
 session 系 (start/debrief/retrospective/handover/end)、
@@ -31,8 +31,11 @@ cc-marketplace/
 ├── .claude/
 │   ├── settings.local.json
 │   └── rules/                    # プロジェクト固有ルール (設計原則、規約)
+├── .agents/
+│   └── plugins/
+│       └── marketplace.json      # Codex の marketplace カタログ
 ├── .claude-plugin/
-│   └── marketplace.json          # marketplace カタログ
+│   └── marketplace.json          # Claude Code の marketplace カタログ
 ├── docs/
 │   └── cross-client-architecture.md # Marketplace plugin の両対応設計
 ├── rules/                        # user global rules (symlink で配布)
@@ -41,7 +44,9 @@ cc-marketplace/
 └── plugins/
     └── {plugin-name}/
         ├── .claude-plugin/
-        │   └── plugin.json       # plugin マニフェスト
+        │   └── plugin.json       # Claude Code の plugin マニフェスト
+        ├── .codex-plugin/
+        │   └── plugin.json       # Codex 対応時の plugin マニフェスト
         ├── hooks/
         │   └── hooks.json        # hooks 定義
         ├── scripts/
@@ -52,6 +57,9 @@ cc-marketplace/
         │   └── {resource}/
         ├── skills/               # consumer skills
         │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）
+        ├── claude-skills/        # Claude Code 専用の skill（あれば）
+        ├── codex-skills/         # Codex 専用の skill（あれば）
+        ├── references/           # 両者が参照する資料（あれば）
         ├── config/               # plugin 同梱 default config（あれば）
         ├── agents/               # Claude Code consumer agents（あれば）
         └── agent-resources/      # agent 内部専用資料（skills として公開しない）

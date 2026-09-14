@@ -9,9 +9,9 @@ marketplace ID の `cc-tools` と GitHub リポジトリ名の `cc-marketplace` 
 Codex の marketplace 登録、remote URL、ローカルの ghq 配置、rules の symlink、
 他リポジトリからの参照を棚卸しする。移行順序と旧データの保持・解除方法を決めてから実施する。
 
-#  diffo でやりとりしている時はターミナルに重複の返答をする必要はない。「対応して回答した」レベルでよい。重複しない論点があるならターミナル出力してもよい
-- ref-skill の plugin で作って install したい diffo の作業の時に必ず読み込む。今はこの１つだけだがおそらく今後増える気がする
-- diffo review 完了後の宿題（レビューは 2026-09-13 に完了）: `diffo poll` が毎回返す `prompt` は、長いスレッドの全履歴と `How to respond` を含んで冗長。one-shot poller が JSON を丸ごと Codex に渡しているため、通知に必要な最新の指摘・thread ID・場所・次の操作を残してトークンを減らす方法を検討する。長い履歴が必要な場合の取得経路と、パース失敗時の扱いも決める。レビュー中に保留した依頼（会話ログ 2026-09-13「今の diffo review が一通り終わったら、そこの改善案も考えようか」）。
+# Diffo の履歴取得
+
+短縮通知で省かれた過去のスレッド履歴が必要な場合の取得方法を検討する。
 
 # cc-marketplace への依頼
 
