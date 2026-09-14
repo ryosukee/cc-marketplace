@@ -1,6 +1,5 @@
 # Plugin 更新手順
 
-plugin の内容 (skills/agents/hooks/scripts) を変更したら、README に記載した対応 CodingAgent を確認する。
 `Claude Code + Codex` の plugin は、Claude Code と Codex の両方の手順を実行する。
 
 ## 共通の変更
