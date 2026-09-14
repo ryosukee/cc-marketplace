@@ -1,18 +1,16 @@
-# Claude Code と Codex の共通化方針
+# Marketplace plugin の両対応設計
 
-cc-marketplace は、複数の作業リポジトリで使う Claude Code と Codex の拡張機能を管理する。
-本書では、この二つをまとめて CodingAgent と呼ぶ。
-次のものを管理対象とする。
+本書は、cc-marketplace の plugin を Claude Code と Codex の両方へ配布する際の設計方針を定める。
+この二つをまとめて CodingAgent と呼ぶ。plugin で扱う対象は次のとおり。
 
 - skill
 - 名前付き agent
 - hook
 - skill、名前付き agent、hook が呼び出すスクリプト
-- 既定設定
 - requirements と setup 手順
 
-ユーザー環境に配置する設定ファイル、導入する CLI の一覧、symlink は dotfiles で管理する。
-業務知識、ビルドコマンド、ディレクトリ固有の執筆規約は各作業リポジトリで管理する。
+ユーザー環境の設定ファイルや symlink は dotfiles、作業リポジトリ固有の指示は
+各作業リポジトリで管理する。これらの共有設定は本書の対象にしない。
 
 ## 対応 CodingAgent の分類
 
@@ -26,22 +24,9 @@ cc-marketplace は、複数の作業リポジトリで使う Claude Code と Cod
 
 未検証の CodingAgent は分類に含めない。共有方式は機能ごとに選ぶ。
 
-## CLAUDE.md と path rules を両エージェントで共有する
-
-Claude Code と Codex に共通する作業リポジトリの指示は、`CLAUDE.md` に置く。
-Codex はユーザー設定の`project_doc_fallback_filenames = ["CLAUDE.md"]`で同じファイルを読む。
-Codex 専用の追加指示が無ければ `AGENTS.md` は作らない。
-
-Claude Code の `.claude/rules/*.md` と `paths` を、path rules の正の所在とする。
-Codex が同じ rule を読むためのスクリプトと hook は、ユーザー環境の設定として dotfiles で管理する。
-cc-marketplace には重複する rule 読み込み plugin を置かない。
-
-## Skill を利用範囲に応じて配置する
+## Plugin で配布する skill
 
 複数のリポジトリで使う skill は plugin で配布する。
-特定の作業リポジトリだけで使う skill は、その作業リポジトリに置く。
-ユーザー共通の skill は `.claude/skills` を原本とし、`.agents/skills` から symlink する。
-この symlink の作成は dotfiles のセットアップで扱う。
 
 名前付き agent の内部処理だけに使う文書は、`skills/` に置かない。
 `skills/` に置くと、親 agent が直接選択できる機能として一覧に表示されるためである。
@@ -105,31 +90,7 @@ Claude Code 用と Codex 用の定義を別々に置き、共通の指示本文�
 選択時は、実行時参照の可否、共通部分の量、固有メタデータの差、生成物の保守負担を比べる。
 どちらを選んでも、agent 内部専用の資料を公開 `skills/` に置かない。
 
-plugin 外で定義している名前付き agent のうち、`op-review` と `meta-improvement` の共通化は保留する。
-
-## Hook の移行対象
-
-hook の実装方式にかかわらず、両方で動作を検証していなければ、
-`Claude Code + Codex` と表示しない。
-
-各 plugin の対応方針は次のとおり。
-
-- `Claude Code only`: `claude-known-issues`、`plugin-update`、`version-check`
-- `Claude Code + Codex` 化候補: `markdownlint`、`security-guards`
-
-plugin 外で設定されている hook は現時点では移動しない。`Claude Code + Codex` 版を作るときに、
-同じ処理を行う既存 hook を置き換えるか確認する。
-
 ## Requirements と setup を plugin ごとに管理する
 
 requirements と setup の正の所在は各 plugin の README とし、独自の requirements manifest は設けない。
 必要な項目と未 setup 時の扱いは [Plugin 設計原則](../.claude/rules/plugin-design.md) に記載する。
-
-## 導入順序
-
-1. Claude Code と Codex で共用する skill だけを持つ plugin で、Codex からの読み込みを検証する
-2. dotfiles 管理の Codex hook で Claude Code の rule を読み込む
-3. `markdownlint`、`security-guards` の順に hook を共通化する
-4. 名前付き agent の配布方式を選び、対象 plugin の Codex 対応を検証する
-
-既存の Claude Code 環境は一括で移行しない。plugin 単位で対応 CodingAgent と検証結果を更新する。

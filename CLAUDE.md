@@ -34,7 +34,7 @@ cc-marketplace/
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace カタログ
 ├── docs/
-│   └── cross-client-architecture.md # Claude Code と Codex の共通化方針
+│   └── cross-client-architecture.md # Marketplace plugin の両対応設計
 ├── rules/                        # user global rules (symlink で配布)
 │   ├── {rule}.md                 # 常時ロード。paths を持つものは条件ロード
 │   └── {rule}/references/        # 詳細規範。paths 除外で常時ロードから外す
