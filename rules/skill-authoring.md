@@ -2,6 +2,8 @@
 paths:
   - ".claude/skills/*/SKILL.md"
   - "plugins/*/skills/*/SKILL.md"
+  - "plugins/*/claude-skills/*/SKILL.md"
+  - "plugins/*/codex-skills/*/SKILL.md"
 ---
 
 # skill の書き方

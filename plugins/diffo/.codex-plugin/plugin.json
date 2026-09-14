@@ -1,0 +1,18 @@
+{
+  "name": "diffo",
+  "version": "0.4.0",
+  "description": "Diffo 公式 skill を補い、レビュー通知を Codex の作業セッションへ届ける",
+  "author": {
+    "name": "CC Tools"
+  },
+  "skills": "./codex-skills/",
+  "interface": {
+    "displayName": "Diffo",
+    "shortDescription": "レビュー通知を作業セッションへ届ける",
+    "longDescription": "Diffo 公式 skill によるレビュー開始と CLI の基本プロトコルを補い、Codex での通知受信とスレッドへの対応を支援する。",
+    "developerName": "CC Tools",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "この変更を Diffo でレビューして"
+  }
+}

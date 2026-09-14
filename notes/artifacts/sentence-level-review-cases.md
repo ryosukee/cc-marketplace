@@ -75,6 +75,35 @@ after（`7677a3373`）:
 
 補記: 1 回目の修正で「候補が満たさない」の格の順に直したが、文全体の主語は「必須要件 4 つのうち」のままだったため再指摘を受けた。列挙するものを主語に取ると、格の順序も決まる。同じ節の見出しへの別スレッドの指摘は 5-20 にある。
 
+### 1-3 [dotfiles] 「この plugin は」の主語と格
+
+dotfiles PR #3 の plugin README。Claude Code 向けに管理するものが plugin に読める語順と、
+plugin を動作主にした「は〜渡す」の格を指摘された。
+
+指摘の実文（diffo スレッド 867ea65f-2fc4-49fd-926d-d4e36e49d54e、2026-09-13）:
+
+> ClaudeCode 向けに管理している各種 rules を Codex にも渡すための plugin。
+> 対象の rule は〜
+>
+> こういう書き方の方が読みやすい。
+> 「この plugin は、Claude Code 向けに管理している、、、」この書き出しだと途中までの脳内の解釈が ClaudeCode 向けに管理している何かしらの plugin という意味に読めてしまう。その意味でも語順や文の長さは重要。
+> 「この plugin は 〜を Codex にも渡す」しかも格の選択も適切でない。正確には plugin 「で」Codex にも渡す。もしくは注入する。（注入するの方が技術文脈では適切に思う）
+
+before:
+
+> この plugin は、Claude Code 向けに管理している `~/.claude/rules` と、
+> 起動ディレクトリの親階層・操作対象ファイルまでの階層にある
+> `.claude/rules` の Markdown rule 本文を Codex にも渡す。
+
+after（dotfiles `a61ce32`）:
+
+> Claude Code 向けに管理している rule の本文を、Codex のコンテキストにも注入する plugin。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 867ea65f-2fc4-49fd-926d-d4e36e49d54e /
+`plugins/codex-claude-rules/README.md:5`。修正は `a61ce32`
+
 ## 型 2: 読点の位置と並列の範囲
 
 ### 2-1 読者の判断か、その確信度を変えるか
@@ -599,6 +628,28 @@ after 2 段目（`0aef19a92`）:
 出典: efso-document の PR #2912 の diffo レビュー スレッド 27365ae1 / `to-be/idp/docs/investigation/auth0-alternative-idp-comparison.md:73`（`d342eca18` 時点）。修正は `e95169664` と `0aef19a92`
 
 補記: 1 段目は格を補うために母集団の引き算（28 件から 2 件を除いて 26 件）と要件番号を書き足したので、格は通ったが、この文書が持たない情報が増えた。件数と番号をこの文書から落とす判断は [レビューの構造レベル指摘 事例集](./structure-level-review-cases.md) の 9-4 にある。
+
+### 4-16 [dotfiles] 「原本として読み込む」の対象と注入先
+
+dotfiles PR #3 の plugin README。何を読み、どこへ渡すのかが文に無かった。
+
+指摘の実文（diffo スレッド 662b973f-c555-40f4-926d-53aff94712eb、2026-09-13）:
+
+> 説明不足。原本として、Codex の hook で読み込む。
+> 何を読み込む？hook でどこに読み込む？原本がそれだから何？読み込むのは何？
+
+before:
+
+> Claude Code の `.claude/rules` を原本とし、Codex の hook で読み込む。
+
+after（dotfiles `a61ce32`）:
+
+> Claude Code 向けに管理している rule の本文を、Codex のコンテキストにも注入する plugin。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 662b973f-c555-40f4-926d-53aff94712eb /
+`plugins/codex-claude-rules/README.md:5`。修正は `a61ce32`
 
 ## 型 5: 語が指す先が一意に定まらない（指示語・多義語・未定義語・汎用語）
 
@@ -1409,6 +1460,143 @@ after（`9a6a61062`）:
 
 補記: この文は同じスレッドの直前の指摘で書き直したもので、その指摘は構造レベルにあたる。[構造レベルの事例集](./structure-level-review-cases.md) の 11-4 を参照。
 
+### 5-31 [efso-document] 「dotfiles＝配線、cc-marketplace＝機能、作業repo＝固有知識」
+
+Claude Code と Codex の環境をどのリポジトリで管理するか整理したときの説明。
+「配線」「機能」「固有知識」だけでは、それぞれが管理するファイルや設定を判断できない。
+
+指摘の実文（ターミナル、2026-09-11）:
+
+> dotfiles＝配線、cc-marketplace＝機能、作業repo＝固有知識
+> これの配線と機能って単語が抽象的すぎて意味わからん
+
+before:
+
+> dotfiles＝配線、cc-marketplace＝機能、作業repo＝固有知識
+
+after（dotfiles `52ecd96`）:
+
+> - dotfiles: `~/.claude` と `~/.codex` のユーザー設定、statusline、
+>   導入する CLI の一覧、symlink とセットアップ手順
+> - cc-marketplace: 複数の作業リポジトリで使う skills、名前付き agents、hooks、
+>   実行スクリプト、既定設定、requirements と setup 手順
+> - 作業リポジトリ: 業務・設計知識、ビルドコマンド、ディレクトリ別 rules、
+>   そのリポジトリだけで使う workflow
+
+出所: 人間のレビュー（efso-document）
+
+出典: efso-document のターミナルでの指摘（2026-09-11）。修正は dotfiles の
+`docs/ai-agent-environment.md`（`52ecd96`）と cc-marketplace の
+`docs/cross-client-architecture.md`（`d67d983`）
+
+### 5-32 [efso-document] 「shared」（共有する主体が無いラベル）
+
+Claude Code と Codex に対する plugin の対応状況を分類するラベル。
+`shared` だけでは、何と何の間で共有されるのかをラベル単独で判断できない。
+
+指摘の実文（ターミナル、2026-09-11）:
+
+> `shared`、`Claude Code only`、`Codex only` これのラベル名を変えたい。shared だと何と何で share なのかわからない
+
+before:
+
+> `shared`、`Claude Code only`、`Codex only`
+
+after（`6391676`）:
+
+> `Claude Code + Codex`、`Claude Code only`、`Codex only`
+
+出所: 人間のレビュー（efso-document）
+
+出典: efso-document のターミナルでの指摘（2026-09-11）。修正は cc-marketplace の
+`.claude/rules/plugin-design.md`、`.claude/rules/plugin-release.md`、
+`docs/cross-client-architecture.md`（`6391676`）
+
+### 5-33 [dotfiles] 「対応ホスト」
+
+plugin の対応先を表すラベル。「ホスト」では対象が Codex なのか Claude Code なのか伝わらない。
+
+指摘の実文（diffo スレッド 5b954130-085c-4a47-b51e-820f092deed8、2026-09-13）:
+
+> ホスト？ホストではなさそう。agent? Coding Agent?
+
+before:
+
+> 対応ホスト: `Codex only`
+
+after（dotfiles `a61ce32`）:
+
+> 対応コーディングエージェント: `Codex only`
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 5b954130-085c-4a47-b51e-820f092deed8 /
+`plugins/codex-claude-rules/README.md:3`。修正は `a61ce32`
+
+### 5-34 [dotfiles] 「~ からの相対パスを再現」
+
+stow package の配置規則。「再現」が何をどこへ配置するのかを示していなかった。
+
+指摘の実文（diffo スレッド e0fb6b4f-183d-4c73-b098-bb17f5874701、2026-09-13）:
+
+> ~ からの相対ぱすを再現しているとは？
+
+before:
+
+> stow 対象の設定ディレクトリは、`~` からの相対パスを再現している。
+
+after（dotfiles `a61ce32`）:
+
+> 新しいツールの設定は `stow/<package名>/` に置く。
+> package 名より下のパスをホームディレクトリ配下の配置先に合わせる
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド e0fb6b4f-183d-4c73-b098-bb17f5874701 /
+`CLAUDE.md:13`。修正は `a61ce32`
+
+### 5-35 [dotfiles] 「Codex の設定を profile に分ける」
+
+見出しで、どの設定を分けるかが限定されていなかった。
+
+指摘の実文（diffo スレッド 321df869-aaf0-4e6e-8b76-37b814af66c2、2026-09-13）:
+
+> stow 管理する Codex の config.toml は profile に分ける
+
+before:
+
+> ## Codex の設定を profile に分ける
+
+after（dotfiles `a61ce32`）:
+
+> ## stow 管理する Codex の config.toml は profile に分ける
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 321df869-aaf0-4e6e-8b76-37b814af66c2 /
+`docs/ai-agent-environment.md:48`。修正は `a61ce32`
+
+### 5-36 [dotfiles] 「利便機能」
+
+機能の区分を述べる文で、一般的でない語を選んでいた。
+
+指摘の実文（diffo スレッド 0980e020-c73f-4b88-a525-baa16cc8fa86、2026-09-13）:
+
+> 利便機能？便利機能の方が一般的なワードじゃない？
+
+before:
+
+> 任意の利便機能やツール系 plugin はこのリポジトリで管理しない。
+
+after（dotfiles `a61ce32`）:
+
+> marketplace には環境設定に必要な plugin だけを登録し、任意の便利機能やツール系 plugin は登録しない
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 0980e020-c73f-4b88-a525-baa16cc8fa86 /
+`CLAUDE.md:32`。修正は `a61ce32`
+
 ## 型 6: 並列要素の圧縮
 
 ### 6-1 参照先が別文書にある、遠いなどの理由
@@ -1703,6 +1891,41 @@ HTML フォームの本文は分類判定では判断文書に当たるが、`de
 出所: 人間のレビュー
 
 出典: ターミナルのやり取り（2026-09-05）。修正は未着手（未解決課題へ登録）
+
+### 9-4 [efso-document] 日本語執筆規範を確認せずに 2 件の PR を作成した
+
+Claude Code と Codex の作業環境を共通化する PR を、cc-marketplace と dotfiles に
+作成したときの指摘。個別の文ではなく、両 PR の成果物全体を日本語執筆規範と
+突き合わせて直す要求である。
+
+指摘の実文（ターミナル、2026-09-12）:
+
+> どちらも作られた成果物内の日本語が終わってる。日本語執筆規範系の .claude の rule と skill がローカルルートにあるはずだから、それを確認しつつ agent にその規範に照らしてレビュー修正させて。事実や論理は変更しないように。返ってきたらここで議論して決定した事実や論理との整合性をレビューして
+
+before（cc-marketplace）:
+
+> cc-marketplace は、複数の作業リポジトリで再利用する AI エージェント拡張を管理する。
+
+after（`2b78203`）:
+
+> cc-marketplace は、複数の作業リポジトリで使う Claude Code と Codex の拡張機能を管理する。
+
+before（dotfiles）:
+
+> Claude Code と Codex から、同じ作業リポジトリの知識と再利用可能な拡張を使う。
+
+after（`dde2e1d`）:
+
+> 両方のホストから、作業リポジトリの `CLAUDE.md` と cc-marketplace が配布する
+> plugin を利用できるようにする。
+
+出所: 人間のレビュー（efso-document）
+
+出典: efso-document のターミナルでの指摘（2026-09-12）。修正は cc-marketplace の
+PR #25（`2b78203`）と dotfiles の PR #1（`dde2e1d`）
+
+補記: 9-3 と同じく、`core.md` だけでなく、成果物の分類に対応する
+`reference-docs.md` と `decision-docs.md` まで読んでから修正した。
 
 ## 型 10: 表記（数字・例の印）
 
@@ -2054,19 +2277,63 @@ after（`bb6c226bb`）:
 
 補記: 主語を表から比較検討そのものへ移すまでに 3 回かかった。1 回目で主語は移ったが、扱わない範囲の説明が表の話のままだった。この文の置き場（表の下の ※ から表の上へ）は構造レベルで、[構造レベルの事例集](./structure-level-review-cases.md) の 2-3 にある。同じスレッドの「5章にも足して」は同 14-2。
 
+## 型 17: ドキュメントの文体から外れた言い切り
+
+### 17-1 [dotfiles] 「確認は完了だ」
+
+指摘の実文（diffo スレッド 4f98ff1e-57e4-4346-92c4-e7cd030d4d4b、2026-09-13）:
+
+> 確認は完了だ。って末尾おかしい。ドキュメントの口調じゃないよね
+
+before:
+
+> 末尾が途中で切れていなければ確認は完了だ。
+
+after（dotfiles `a61ce32`）:
+
+> 内容が末尾まで表示されることを確認する。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 4f98ff1e-57e4-4346-92c4-e7cd030d4d4b /
+`docs/ai-agent-environment.md:89`。修正は `a61ce32`
+
+### 17-2 [dotfiles] 理由を「ためだ」で言い切る
+
+指摘の実文（diffo スレッド 586e88c5-fa2e-4bb7-a979-9c95ee96c24c、2026-09-13）:
+
+> 説明が冗長。〜ためだ。←これもドキュメントの口調じゃない
+
+before:
+
+> `~/.codex/config.toml` 全体は stow しない。このファイルには、Codex が更新する
+> hook trust hash と、端末ごとの project path が入るためだ。symlink すると、Codex が
+> 実行中に更新した内容が dotfiles の working tree に書き込まれる。別の端末では使えない
+> 絶対パスも追跡される。
+
+after（dotfiles `a61ce32`）:
+
+> `~/.codex/config.toml` には Codex が更新する hook trust hash と
+> 端末固有の project path が含まれるため、stow しない。
+
+出所: 人間のレビュー（dotfiles）
+
+出典: dotfiles PR #3 の diffo レビュー スレッド 586e88c5-fa2e-4bb7-a979-9c95ee96c24c /
+`docs/ai-agent-environment.md:52`。修正は `a61ce32`
+
 ## 件数
 
 型ごとの件数（延べ。1 事例が複数の型に当たる場合は各型で数える）:
 
-- 型 1 格の位置と語順: 2 件
+- 型 1 格の位置と語順: 3 件
 - 型 2 読点の位置と並列の範囲: 3 件
 - 型 3 係り受けと修飾のスコープ: 4 件
-- 型 4 主語・動作主・格の欠落: 16 件
-- 型 5 語が指す先が一意に定まらない（指示語・多義語・未定義語・汎用語）: 35 件
+- 型 4 主語・動作主・格の欠落: 17 件
+- 型 5 語が指す先が一意に定まらない（指示語・多義語・未定義語・汎用語）: 41 件
 - 型 6 並列要素の圧縮: 1 件
 - 型 7 長文と条件の詰め込み（読解不能）: 7 件
 - 型 8 条件の比較対象の欠落: 1 件
-- 型 9 個別の文に紐づかない文レベルの要求: 3 件
+- 型 9 個別の文に紐づかない文レベルの要求: 4 件
 - 型 10 表記（数字・例の印）: 4 件
 - 型 11 語の置き換えで限定が緩む: 3 件
 - 型 12 不要な否定対比: 1 件
@@ -2074,13 +2341,14 @@ after（`bb6c226bb`）:
 - 型 14 系列をなすラベルの語形: 1 件
 - 型 15 未確認の値に、性質を決めつける修飾語を付ける: 1 件
 - 型 16 述べたい対象と違うものを主語に取る: 1 件
-- 延べ合計: 85 件
+- 型 17 ドキュメントの文体から外れた言い切り: 2 件
+- 延べ合計: 96 件
 
-実数（事例の数）: 82 件。複数の型に当たる事例が 3 件（1-2 が型 1 と型 5、13-1 が型 5 と型 13、14-1 が型 5 と型 14）出たので、延べが 3 多い。
+実数（事例の数）: 93 件。複数の型に当たる事例が 3 件（1-2 が型 1 と型 5、13-1 が型 5 と型 13、14-1 が型 5 と型 14）出たので、延べが 3 多い。
 
 内訳（出所別）:
 
-- 人間のレビュー: 68 件（うち efso-document 31 件: PR #2912 の diffo レビュー 2026-09-09 が 30 件、2026-09-10 が 1 件。以下は cc-marketplace）（PR #6 第 1 巡 2026-08-23: 8 件、第 2 巡 2026-08-24: 6 件、第 3 巡 2026-08-24: 5 件、第 4 巡 2026-08-24: 2 件。PR #7 第 1 巡 2026-08-24: 1 件。PR #10 第 1 巡 2026-08-25: 1 件。PR #11 第 1 巡 2026-08-26: 1 件、第 2 巡 2026-08-26: 1 件。PR #12 第 1 巡 2026-08-26: 3 件。PR #17 第 1 巡 2026-08-27: 3 件。ccm-f056 の提示前 2026-08-31: 1 件。ccm-f076 の作業中と提示後 2026-09-05: 4 件。PR #19 第 1 巡 2026-09-08: 1 件）
+- 人間のレビュー: 79 件（dotfiles PR #3 の diffo レビュー 2026-09-13: 8 件。うち efso-document 34 件: PR #2912 の diffo レビュー 2026-09-09 が 30 件、2026-09-10 が 1 件、ターミナルでの指摘 2026-09-11 が 2 件、2026-09-12 が 1 件。以下は cc-marketplace）（PR #6 第 1 巡 2026-08-23: 8 件、第 2 巡 2026-08-24: 6 件、第 3 巡 2026-08-24: 5 件、第 4 巡 2026-08-24: 2 件。PR #7 第 1 巡 2026-08-24: 1 件。PR #10 第 1 巡 2026-08-25: 1 件。PR #11 第 1 巡 2026-08-26: 1 件、第 2 巡 2026-08-26: 1 件。PR #12 第 1 巡 2026-08-26: 3 件。PR #17 第 1 巡 2026-08-27: 3 件。ccm-f056 の提示前 2026-08-31: 1 件。ccm-f076 の作業中と提示後 2026-09-05: 4 件。PR #19 第 1 巡 2026-09-08: 1 件）
 - Claude の横展開スイープ: 6 件（`cab2ce6` の「曖昧な語順・係り受けの修正」）
 - review agent: 8 件（11-1。PR 9 のセルフレビュー。4-8〜4-11・5-11・5-12・11-3。ccm-f082 の提示前に sentence-reviewer の方式で 3 巡回した subagent 2026-09-07。
   文脈を持たない subagent の指摘は、人間のレビューと同じく書き手が自分では検出できない欠陥を拾う。信頼度の扱いは群 3 で決める）

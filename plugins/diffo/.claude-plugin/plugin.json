@@ -1,5 +1,9 @@
 {
   "name": "diffo",
-  "version": "0.2.0",
-  "description": "diffo でレビューを受けるときの参照知識 skill と、markdown プレビューを GitHub 風にする diffo-patch"
+  "version": "0.4.0",
+  "description": "Diffo 公式 skill を補い、Claude Code の background task でレビュー通知を受け取り、Markdown プレビューを調整する plugin",
+  "author": {
+    "name": "CC Tools"
+  },
+  "skills": ["./claude-skills/"]
 }

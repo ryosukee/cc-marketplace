@@ -2,62 +2,68 @@
 
 個人用 Claude Code plugin marketplace (`cc-tools`)。1 marketplace / multi plugin 構成。
 
+cc-marketplace の plugin を Claude Code と Codex の両方で利用できる構成を、段階的に導入している。
+現在の plugin は、各 README に Codex 対応の記載があるものを除き、Claude Code 用である。
+共通化する対象、対応 CodingAgent の分類、requirements と共有方式は、
+[両対応 plugin の設計方針](./docs/cross-client-architecture.md)を参照。
+
 ## プラグイン
 
 ### Utility
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| version-check | 0.10.0 | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
-| plugin-update | 0.4.0 | SessionStart 時にプラグインの更新を検知・通知 |
-| cache-keepalive | 0.7.3 | prompt cache (extended cache, TTL 1h) の expire 前に keepalive を自動発火 |
-| cc-transcript | 0.7.0 | 現在セッションの直近やり取りを jq で整形して vim で開く |
-| usage-line | 0.1.1 | コンテキスト残量・レート制限残量を 1 行で出す。statusline からの JSON 書き出しが前提（plugin README 参照） |
+| plugin | 概要 |
+| --- | --- |
+| version-check | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
+| plugin-update | SessionStart 時にプラグインの更新を検知・通知 |
+| cache-keepalive | prompt cache (extended cache, TTL 1h) の expire 前に keepalive を自動発火 |
+| cc-transcript | 現在セッションの直近やり取りを jq で整形して vim で開く |
+| usage-line | コンテキスト残量・レート制限残量を 1 行で出す。statusline からの JSON 書き出しが前提（plugin README 参照） |
 
 ### dotclaude
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| dotclaude | 0.14.1 | `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビュー。doctor / cross-review / registry の 3 skill |
+| plugin | 概要 |
+| --- | --- |
+| dotclaude | `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビュー。doctor / cross-review / registry の 3 skill |
 
 ### session
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| session | 2.13.2 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査) / end (オーケストレーター) + handover-reviewer agent |
+| plugin | 概要 |
+| --- | --- |
+| session | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査) / end (オーケストレーター) + handover-reviewer agent |
 
 ### impl-spec
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| impl-spec | 0.5.5 | 実装のための仕様策定。requirements / design / test-plan の 3 skill + spec-reviewer agent |
+| plugin | 概要 |
+| --- | --- |
+| impl-spec | 実装のための仕様策定。requirements / design / test-plan の 3 skill + spec-reviewer agent |
 
 ### GitHub
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| github-pr | 0.4.11 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件を定める。`gh` CLI が必要 |
+| plugin | 概要 |
+| --- | --- |
+| github-pr | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件を定める。`gh` CLI が必要 |
 
 ### Authoring / tooling
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
-| mkdocs-setup | 0.2.1 | mkdocs-material のセットアップ手順とテンプレート |
-| security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
+| plugin | 概要 |
+| --- | --- |
+| markdownlint | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
+| mkdocs-setup | mkdocs-material のセットアップ手順とテンプレート |
+| security-guards | credentials 保護。.netrc への Write/Edit/Read をブロック |
+| [diffo](./plugins/diffo/README.md) | Diffo 公式 skill と併用し、Claude Code と Codex での通知受信と返信を補助する |
 
 ### Communication
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| ja-writing-ambiguity | 0.1.1 | 日本語の曖昧さ 3 分類 8 型を止める参照知識 skill `ref-ja-writing-ambiguity` の 1 skill。指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。一部は `rules/japanese-text-writing/references/core.md` にもあり、どちらが引かれるかを測るために重複させている中間状態 |
-| claude-user-communication | 0.43.1 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。本文は生成元 JSON (配信ディレクトリの src/。書式は references/page-format.md) に書き、閲覧用 HTML は assemble-page.mjs だけが生成する (読み取り専用。番号と参照マーカーは組み立てが付ける)。雛形は 1 / 2 / 3 pane のレスポンシブ (3 pane は 1340 / 1700 / 2100px。広い段では表と図だけを伸ばし、地の文は行長の上限で止める) と、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 / 生成元 JSON の検査の 4 層) と、提示前レビューの agent 2 本 (sentence-reviewer: 生成元 JSON だけを読んで意味の取れない文と定義の無い呼び名を挙げる / page-reviewer: 一次情報との突合 / 推奨の妥当性 / 構成と設問の自立性) を同梱。回答は record-answer.mjs が JSON に記録し、ページ・index・archive を 1 度で揃える。完了したページは削除せず、index は完了分を直近だけ出して残りを archive.html へ辿らせる (build-archive.mjs が生成)。ページの連番は claim-page-number.sh が発番と占有を 1 操作で行い、assemble-page.mjs は中身のある出力先を --force 無しでは上書きしない (並行セッションの発番の衝突を防ぐ)。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| plugin | 概要 |
+| --- | --- |
+| ja-writing-ambiguity | 日本語の曖昧さ 3 分類 8 型を止める参照知識 skill `ref-ja-writing-ambiguity` の 1 skill。指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。一部は `rules/japanese-text-writing/references/core.md` にもあり、どちらが引かれるかを測るために重複させている中間状態 |
+| claude-user-communication | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。本文は生成元 JSON (配信ディレクトリの src/。書式は references/page-format.md) に書き、閲覧用 HTML は assemble-page.mjs だけが生成する (読み取り専用。番号と参照マーカーは組み立てが付ける)。雛形は 1 / 2 / 3 pane のレスポンシブ (3 pane は 1340 / 1700 / 2100px。広い段では表と図だけを伸ばし、地の文は行長の上限で止める) と、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 / 生成元 JSON の検査の 4 層) と、提示前レビューの agent 2 本 (sentence-reviewer: 生成元 JSON だけを読んで意味の取れない文と定義の無い呼び名を挙げる / page-reviewer: 一次情報との突合 / 推奨の妥当性 / 構成と設問の自立性) を同梱。回答は record-answer.mjs が JSON に記録し、ページ・index・archive を 1 度で揃える。完了したページは削除せず、index は完了分を直近だけ出して残りを archive.html へ辿らせる (build-archive.mjs が生成)。ページの連番は claim-page-number.sh が発番と占有を 1 操作で行い、assemble-page.mjs は中身のある出力先を --force 無しでは上書きしない (並行セッションの発番の衝突を防ぐ)。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| claude-known-issues | 0.4.6 | Claude Code の既知バグ・制約の一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、`config/` の 2 本はエントリの書き方の例)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
+| plugin | 概要 |
+| --- | --- |
+| claude-known-issues | Claude Code の既知バグ・制約の一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、`config/` の 2 本はエントリの書き方の例)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
 
 ## rules
 
@@ -93,8 +99,8 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
 | rule-authoring | `.claude/rules/**` `rules/**` | rule ファイルの冒頭とロード方式の使い分け |
 | notes-authoring | `notes/**` | decision-record として運用する `notes/` を書く最中の規範。冒頭の目的・生存期間・対象議題、ファイルの構成（artifacts・確定事項・未解決課題・作業メモ）、確定項目の書き方、参照と出典、重複回避、消す手順 |
-| claude-doc-authoring | `.claude/rules/**` `rules/**` `.claude/skills/**` `plugins/*/skills/**` `.claude/agents/*` `plugins/*/agents/*` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・frontmatter・指示項目・参照・why・改訂 |
-| skill-authoring | `.claude/skills/**` `plugins/*/skills/**` | SKILL.md の書き方。2 種別の判定・frontmatter と description・スクリプト化・文体 |
+| claude-doc-authoring | `.claude/rules/**` `rules/**` `.claude/skills/**` `plugins/*/skills/**` `plugins/*/claude-skills/**` `plugins/*/codex-skills/**` `.claude/agents/*` `plugins/*/agents/*` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・frontmatter・指示項目・参照・why・改訂 |
+| skill-authoring | `.claude/skills/**` `plugins/*/skills/**` `plugins/*/claude-skills/**` `plugins/*/codex-skills/**` | SKILL.md の書き方。2 種別の判定・frontmatter と description・スクリプト化・文体 |
 | agent-authoring | `.claude/agents/*` `plugins/*/agents/*` | agent 定義の書き方。ファイル形式・frontmatter・冒頭に書く 6 つの責務・入出力 |
 | claude-md-authoring | `CLAUDE.md` | CLAUDE.md の書き方。役割とサイズ・書くもの / 書かないもの・rule との重複・更新の時期 |
 
@@ -102,6 +108,8 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 持たない rule はセッション開始時に無条件でロードされる。
 
 ## インストール
+
+### Claude Code
 
 ```bash
 # marketplace を追加
@@ -123,9 +131,20 @@ claude plugins install claude-known-issues@cc-tools
 claude plugins install usage-line@cc-tools                 # 要セットアップ (plugin README 参照)
 claude plugins install github-pr@cc-tools
 claude plugins install ja-writing-ambiguity@cc-tools
+claude plugins install diffo@cc-tools
 
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace
+```
+
+### Codex
+
+このリポジトリのルートで marketplace を登録し、必要な plugin をインストールする。
+現在 Codex に対応する plugin は `diffo`。
+
+```bash
+codex plugin marketplace add .
+codex plugin add diffo@cc-tools
 ```
 
 ## アップデート

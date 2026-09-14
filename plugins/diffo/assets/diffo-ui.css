@@ -1,0 +1,18 @@
+/* diffo に同梱されていない表示切替を補う。diffo のレビュー状態は変更しない。 */
+
+.diffo-resolved-toggle .icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+:root[data-diffo-hide-resolved="true"] .thread-resolved,
+:root[data-diffo-hide-resolved="true"] .crow-done,
+:root[data-diffo-hide-resolved="true"] .diffo-settled-section,
+:root[data-diffo-hide-resolved="true"] .diffo-resolved-only-row {
+  display: none !important;
+}

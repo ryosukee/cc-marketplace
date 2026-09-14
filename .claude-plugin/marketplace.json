@@ -86,7 +86,7 @@
     {
       "name": "diffo",
       "source": "./plugins/diffo",
-      "description": "diffo でレビューを受けるときの参照知識 skill と、markdown プレビューを GitHub 風にするユーザースタイルシート"
+      "description": "Diffo 公式 skill に追加するレビュー通知・返信の補足手順と、Markdown プレビュー調整ツール"
     }
   ]
 }

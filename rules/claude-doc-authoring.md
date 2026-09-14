@@ -4,6 +4,8 @@ paths:
   - "rules/**/*.md"
   - ".claude/skills/*/SKILL.md"
   - "plugins/*/skills/*/SKILL.md"
+  - "plugins/*/claude-skills/*/SKILL.md"
+  - "plugins/*/codex-skills/*/SKILL.md"
   - ".claude/agents/*.md"
   - "plugins/*/agents/*.md"
   - "CLAUDE.md"
