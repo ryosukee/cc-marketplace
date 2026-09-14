@@ -2,7 +2,10 @@
 
 対応 CodingAgent: `Claude Code + Codex`
 
-この plugin は、[Diffo 公式の `diffo` skill](https://github.com/DiffoHQ/diffo/blob/main/skills/diffo/SKILL.md)と併用してレビュー対応を補助する。
+この plugin は、[Diffo 公式の `diffo` skill](https://github.com/DiffoHQ/diffo/blob/main/skills/diffo/SKILL.md)と併用し、次の 2 つの機能を提供する。
+
+- CodingAgent のメイン会話を止めずに、バックグラウンドでポーリングを続けて Diffo のレビュー通知を受け取る仕組み
+- Diffo の Web UI の表示を変更し、機能を追加するパッチ
 
 ## 必要なものと導入
 
