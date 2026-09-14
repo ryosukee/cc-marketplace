@@ -11,11 +11,27 @@ Codex 用の手順は[Codex の ref-diffo](./codex-skills/ref-diffo/SKILL.md)に
 
 ## 必要なものと導入
 
-- Node.js と `npx`。Diffo CLI は `npx -y @diffohq/diffo` で実行する。
-- Codex の `queue` で通知後に同じ thread を再開する場合は、`codex queue` と
-  `codex app-server daemon` が使える Codex CLI、Bash、`git`、`shasum`、`awk` が必要。
-  `codex queue --help` で対応状況を確認できる。
-- Markdown プレビューの見た目を変更する場合は、`diffo-patch` が使う `npm`、`perl`、`cmp` も必要。
+Diffo CLI を実行する場合は、以下が必要。
+
+- Node.js
+- `npx`
+    - Diffo CLI を `npx -y @diffohq/diffo` で実行する
+
+Codex の `queue` で通知後に同じ thread を再開する場合は、上記に加えて以下が必要。
+
+- Codex CLI
+    - `codex queue` と `codex app-server daemon` を使用する
+    - `codex queue --help` で対応状況を確認する
+- Bash
+- `git`
+- `shasum`
+- `awk`
+
+`diffo-patch` で Markdown プレビューの見た目を変更する場合は、以下も必要。
+
+- `npm`
+- `perl`
+- `cmp`
 
 Claude Code では、このリポジトリを marketplace に追加して `diffo@cc-tools` をインストールする。
 Codex ではリポジトリルートで `codex plugin marketplace add .` を実行し、
