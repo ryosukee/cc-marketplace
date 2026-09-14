@@ -16,6 +16,13 @@ LLM 規範に持たせず textlint に委譲する方針にした。この文書
   冗長表現・弱い表現・接続詞連続など 23 ルール
 - textlint-rule-preset-ai-writing（MIT）: AI 文体の機械検出（強調箇条書き・誇張語・過剰太字・コロン構文）
 
+## 参考記事
+
+着手時に fetch して、委譲候補に足すルールや設定の書き方で参考になる箇所を確認する。記録した時点では中身を読んでいない。
+
+- [AIが書いた日本語に頻出する単語を指摘するtextlintプリセットを作った](https://blog.p1ass.com/posts/textlint-rule-preset-ai-words-ja/)
+  （AI が書いた日本語に頻出する語を指摘する textlint プリセットの作者による記事。2026-09-15 にユーザーが挙げた）
+
 ## 想定構成
 
 markdownlint plugin と同型の hook plugin を新設する（Write / Edit 後に textlint を実行して指摘を返す）。
