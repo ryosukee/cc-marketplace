@@ -13,12 +13,11 @@ README に記載する情報と requirements の管理方法は、次のとお�
 - requirements 情報
     - その plugin が依存する外部 CLI、バイナリ、環境変数、追加設定
     - 依存の確認方法、setup の方法、未 setup 時の挙動
+    - hook や skill は、実行時に未 setup を検出してもユーザーの環境を自動変更せず、
+      README に記載した setup 手順を案内する
     - 当面は独自の requirements manifest を作らない
 - 更新方法と削除方法
 - state を保存する場合は、その保存先
-
-hook や skill は、実行時に未 setup を検出してもユーザーの環境を自動変更しない。
-README に記載した setup 手順を案内する。
 
 ## 名前付き agent の定義・実装方法
 
