@@ -89,4 +89,4 @@ Claude Code と Codex の対応 CodingAgent、共有方式、requirements に関
 | claude-known-issues | 0.4.6 | meta | Claude Code の既知バグ一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、config/ の 2 本は書き方の例) + 更新検知・全件突合の時期を通知する SessionStart hook + 差分・全件の突合 agent |
 | usage-line | 0.1.1 | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | 0.4.11 | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill) + レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件。要 `gh` CLI |
-| diffo | 0.4.16 | authoring | Diffo 公式 skill を補う。Claude Code と Codex で別の参照知識 skill `ref-diffo` を読み、共通の返信規範を参照する。導入条件は plugin README を参照 |
+| diffo | 0.4.17 | authoring | Diffo 公式 skill を補う。Claude Code と Codex で別の参照知識 skill `ref-diffo` を読み、共通の返信規範を参照する。導入条件は plugin README を参照 |

@@ -2,17 +2,7 @@
 
 対応 CodingAgent: `Claude Code + Codex`
 
-この plugin は、[Diffo 公式の `diffo` skill](https://github.com/DiffoHQ/diffo/blob/main/skills/diffo/SKILL.md)
-と併用する補助 plugin。公式 skill がレビュー開始の入口となり、Diffo CLI の
-`help agent` が基本プロトコルを示す。この plugin の `ref-diffo` は通知の受け方、
-返信時の補足規範、Markdown プレビューの調整を追加する。
-Claude Code では追跡可能な background task で通知を受ける。Codex では
-追跡可能な poller で通知を受け、`codex queue` で作業中の会話へ届ける。
-いずれもレビュー開始と監視の起動は明示的に行う。
-Claude Code 用の手順は[Claude Code の ref-diffo](./claude-skills/ref-diffo/SKILL.md)、
-Codex 用の手順は[Codex の ref-diffo](./codex-skills/ref-diffo/SKILL.md)に分ける。
-両方に共通する返信の規範は[共通手順](./references/review-protocol.md)を読む。
-この plugin は、Diffo のブラウザ画面の表示を変更するスクリプト `bin/diffo-patch` も同梱する。
+この plugin は、[Diffo 公式の `diffo` skill](https://github.com/DiffoHQ/diffo/blob/main/skills/diffo/SKILL.md)と併用してレビュー対応を補助する。
 
 ## 必要なものと導入
 
@@ -32,7 +22,7 @@ Codex でレビュー通知を自動受信する場合は、上記に加えて�
 - `shasum`
 - `awk`
 
-`diffo-patch` で表示を変更する場合は、以下も必要。
+Diffo のブラウザ表示を変更する同梱スクリプト `bin/diffo-patch` を使う場合は、以下も必要。
 
 - `npm`
 - `perl`
@@ -45,7 +35,8 @@ npx skills add DiffoHQ/diffo --skill diffo -g
 ```
 
 plugin を導入するだけでは監視は始まらない。レビュー対象のリポジトリで
-`npx -y @diffohq/diffo --no-open` を実行し、skill の手順で poller を起動する。
+`npx -y @diffohq/diffo --no-open` を実行する。
+監視は[Claude Code で Diffo レビューを受ける](./claude-skills/ref-diffo/SKILL.md)または[Codex で Diffo レビューを受ける](./codex-skills/ref-diffo/SKILL.md)の手順で始める。
 
 Codex の queue 方式では、インストールした plugin の
 `bin/diffo-codex-poll` を絶対パスで呼び、レビュー対応中の Codex 会話を識別する
