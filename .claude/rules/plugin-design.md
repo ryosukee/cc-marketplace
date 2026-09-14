@@ -1,5 +1,8 @@
 # Plugin 設計原則
 
+Claude Code と Codex の両対応を設計するときは、
+[両対応の設計方針](../../docs/cross-client-architecture.md)を読む。
+
 ## README に導入・運用情報を記載する
 
 README に記載する情報と requirements の管理方法は、次のとおり。
@@ -13,9 +16,6 @@ README に記載する情報と requirements の管理方法は、次のとお�
     - 当面は独自の requirements manifest を作らない
 - 更新方法と削除方法
 - state を保存する場合は、その保存先
-
-Claude Code と Codex の両対応を設計するときは、
-[両対応の設計方針](../../docs/cross-client-architecture.md)を読む。
 
 hook や skill は、実行時に未 setup を検出してもユーザーの環境を自動変更しない。
 README に記載した setup 手順を案内する。
