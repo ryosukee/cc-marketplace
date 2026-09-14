@@ -43,10 +43,7 @@ Codex でレビュー通知を自動受信する場合は、上記に加えて�
 npx skills add DiffoHQ/diffo --skill diffo -g
 ```
 
-Claude Code では、このリポジトリを marketplace に追加して `diffo@cc-tools` をインストールする。
-Codex ではリポジトリルートで `codex plugin marketplace add .` を実行し、
-`codex plugin add diffo@cc-tools` でインストールする。
-両方とも plugin を導入するだけでは監視は始まらない。レビュー対象のリポジトリで
+plugin を導入するだけでは監視は始まらない。レビュー対象のリポジトリで
 `npx -y @diffohq/diffo --no-open` を実行し、skill の手順で poller を起動する。
 
 Codex の queue 方式では、インストールした plugin の
