@@ -1,58 +1,51 @@
-# session plugin
+# session
 
-セッションのライフサイクルを管理する。コンテキスト復元、棚卸し、学びの codify、引き継ぎ資料の生成までを一貫して行う。
+対応 CodingAgent: `Claude Code + Codex`
 
-## skills
+作業セッションの開始、棚卸し、振り返り、次セッションへの引き継ぎを管理する plugin。
+Claude Code と Codex は同じ `.handover/` の資料を読み書きする。
+セッション中の作業タスクは draft に記録し、終了時に次回へ残す作業を選ぶ。
 
-| skill | 発動例 | 概要 |
-| --- | --- | --- |
-| start | 「続きから」「今日の作業」 | 前回 handover の読み込み、タスク復元、方向提案 |
-| end | 「セッション終了」「今日はここまで」 | debrief → retrospective → handover のオーケストレーター |
-| debrief | 「棚卸し」「状態確認」 | 物理状態、タスク管理、完了事項、未完了の洗い出し → draft に記録 |
-| retrospective | 「振り返り」「codify」 | 学びの codify (rules/skills/CLAUDE.md 更新 → commit) |
-| handover | 「引き継ぎ」 | draft の最終化、タスク分類、todo/ への移動、機械検査、reviewer による検証 |
+## 提供する skill
 
-## agents
-
-| agent | 概要 |
+| skill | 役割 |
 | --- | --- |
-| handover-reviewer | handover を 4 観点 (節をまたいだ矛盾/やることの集約/却下の妥当性/外部ファイルへの主張の検算) で検証する read-only agent。識別子の実在と git の突合は機械検査が持つ |
+| start | 前回の引き継ぎ資料を読み、再開する作業をユーザーに提案する |
+| debrief | 作業状態と未完了事項を棚卸しし、draft に記録する |
+| retrospective | 学びの明文化を提案し、承認された内容を反映する |
+| handover | draft を確定し、機械検査と意味のレビューを行う |
+| end | debrief → retrospective → handover を順に実行する |
 
-## .handover/ ディレクトリ
+Claude Code 用 skill は `claude-skills/`、Codex 用 skill は `codex-skills/` に分ける。
+両方の SKILL.md は同じ `references/{skill名}.md` の手順を読み、
+呼び出し方法だけを CodingAgent ごとに定める。作業タスク・テンプレート・レビュー観点と
+`scripts/check-handover.mjs` の機械検査も共用する。
 
-CWD 直下または git root 直下に作成される。探索は CWD → git root の順。CWD と git root が異なる場合、初回作成時にどちらに置くかユーザーに確認する。
+Claude Code の `handover` は同梱の `handover-reviewer` agent を呼ぶ。
+Codex の `handover` は利用可能な子 agent に編集を禁止し、共通レビュー観点を渡す。
+子 agent が使えないときは、独立レビューを省略したことを報告する。
 
-```
+## 必要な環境
+
+- Node.js
+    - `check-handover.mjs` の実行に使う。`node --version` で確認する
+- Git
+    - 作業状態と handover の識別子の検査に使う。`git --version` で確認する
+
+不足するコマンドは利用する OS の手順で導入する。`node` が実行できなければ
+handover の機械検査を完了できない。`git` が実行できなければ作業状態を検証できない。
+どちらも検証済みとして扱わず、ユーザーへ不足項目を伝える。
+
+## 引き継ぎ資料
+
+`.handover/` は作業ディレクトリまたは Git root に置く。探索と初回作成の手順は
+[handover-init.md](./references/handover-init.md) にまとめている。
+
+```text
 .handover/
-├── draft/        # 進行中セッションの記録 (最大 1 ファイル)
-├── todo/         # 確定済み・次セッションで未消化
-└── archive/      # start で読み込み済み (全件保持)
+├── draft/    # 進行中セッションの記録
+├── todo/     # 次セッションで読む確定済み資料
+└── archive/  # 読み終えた資料
 ```
 
-ファイル名は slug 方式 (例: `refactor-auth.md`)。
-
-## フロー
-
-`.handover/` のパスは [.handover/ ディレクトリの初期化](./references/handover-init.md) の探索手順で特定される。
-
-```
-session:start
-  .handover/todo/ を全件 Read → ユーザーに提示・判断委譲
-  → TaskCreate 対象を復元 → todo/ を archive/ に移動
-  → .handover/draft/{slug}.md 作成 (★ draft 生成)
-  → 方向提案
-
-(作業中: draft は start で作成されたまま待機)
-
-session:end
-  → session:debrief
-      会話コンテキストから抽出 → draft に追記 (★ draft なければ新規作成)
-  ↓ ユーザー確認 (スキップ可)
-  → session:retrospective
-      学びの codify → commit
-  ↓ ユーザー確認 (スキップ可)
-  → session:handover
-      draft を最終化 → draft/ から todo/ に移動 (★ draft → todo)
-  → check-handover.mjs (機械検査)
-  → handover-reviewer (意味の一貫性と外部突合)
-```
+引き継ぎ資料を commit せず、作業リポジトリの working tree に残す。

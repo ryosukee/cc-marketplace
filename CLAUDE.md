@@ -87,7 +87,7 @@ Claude Code と Codex の対応 CodingAgent、共有方式、requirements に関
 | cache-keepalive | utility | prompt cache keepalive の自動発火 |
 | cc-transcript | utility | セッションの直近やり取りを jq 整形して vim で開く |
 | dotclaude | dotclaude | doctor/cross-review/registry |
-| session | session | start/debrief/retrospective/handover/end + handover の機械検査 + handover-reviewer agent |
+| session | session | Claude Code と Codex の start/debrief/retrospective/handover/end、共通の機械検査・意味レビュー |
 | impl-spec | impl-spec | requirements/design/test-plan + spec-reviewer agent |
 | markdownlint | authoring | Write/Edit 後に markdownlint-cli2 を実行 |
 | mkdocs-setup | authoring | MkDocs セットアップ手順 + テンプレート |

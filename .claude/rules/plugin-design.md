@@ -28,9 +28,9 @@ README に記載する情報と requirements の管理方法は、次のとお�
 
 ## 名前付き agent の定義・実装方法
 
-名前付き agent を両 CodingAgent へ配布する方式は未決定。
-名前付き agent を含む plugin の両対応に初めて着手するときに、配布方式を再検討する。
-候補と判断基準は [共通化方針](../../docs/cross-client-architecture.md#名前付き-agent-の配布方式は未決定) に記載する。
+名前付き agent を使う機能の両対応方式は
+[共通化方針](../../docs/cross-client-architecture.md#名前付き-agent-を使う機能の両対応) に記載する。
+名前付き agent 定義そのものを両方へ配布する方式は未決定。
 
 名前付き agent からのみ実行させる処理は、`skills/` に置かない。
 `skills/` に置くと、親 agent の skill 一覧に公開される。

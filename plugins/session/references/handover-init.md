@@ -9,7 +9,7 @@ skill が `.handover/` を使う前に実行する共通ワークフロー。
 1. CWD (primary working directory) 直下 (例: `ls .handover/`)
 2. git root 直下 (CWD と異なる場合のみ。非 git プロジェクトではスキップ)
 
-CWD は Claude Code 起動時の作業ディレクトリで、git root とは異なる場合がある。
+CWD は CodingAgent を起動した作業ディレクトリで、git root とは異なる場合がある。
 
 見つかった `.handover/` の絶対パスを以降すべての操作で使う。
 skill 側の `.handover/` への言及はすべてこの絶対パスに読み替える。
@@ -45,4 +45,5 @@ skill 側の `.handover/` への言及はすべてこの絶対パスに読み替
 ## draft の特定
 
 存在確認で特定された `.handover/` の `draft/` 内のファイルを対象とする。
-複数ファイルがある場合は最新 (mtime) を使用する。
+複数ファイルがある場合は全件を読み、必要な情報とセッション内タスクを
+1 ファイルへ統合する方法をユーザーに確認する。更新時刻だけで自動選択しない。
