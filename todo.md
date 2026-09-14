@@ -514,7 +514,7 @@ rule の中身は 7 点で、打ち消し（起動は原則許可）は 1 点だ
 モデルが Monitor ツールの呼び出しへ埋め込む。毎セッション Claude のターンを 1 つ使う。
 
 移行先は plugin の `monitors/monitors.json`。host が persistent Monitor task として自動 arm するので、
-Claude のターンを消費しない。`.claude/rules/plugin-design.md`「監視機構の選択」が
+Claude のターンを消費しない。`.claude/rules/plugin-design/references/claude-code.md`「監視機構の選択」が
 「継続的な監視は monitor」と定めており、cache-keepalive は常駐監視なのでこちらが本来の機構。
 
 ## 確認済み（Claude Code 2.1.267 のバイナリから）
