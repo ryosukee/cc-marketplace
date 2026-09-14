@@ -11,59 +11,59 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 
 ### Utility
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| version-check | 0.10.0 | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
-| plugin-update | 0.4.0 | SessionStart 時にプラグインの更新を検知・通知 |
-| cache-keepalive | 0.7.3 | prompt cache (extended cache, TTL 1h) の expire 前に keepalive を自動発火 |
-| cc-transcript | 0.7.0 | 現在セッションの直近やり取りを jq で整形して vim で開く |
-| usage-line | 0.1.1 | コンテキスト残量・レート制限残量を 1 行で出す。statusline からの JSON 書き出しが前提（plugin README 参照） |
+| plugin | 概要 |
+| --- | --- |
+| version-check | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
+| plugin-update | SessionStart 時にプラグインの更新を検知・通知 |
+| cache-keepalive | prompt cache (extended cache, TTL 1h) の expire 前に keepalive を自動発火 |
+| cc-transcript | 現在セッションの直近やり取りを jq で整形して vim で開く |
+| usage-line | コンテキスト残量・レート制限残量を 1 行で出す。statusline からの JSON 書き出しが前提（plugin README 参照） |
 
 ### dotclaude
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| dotclaude | 0.14.1 | `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビュー。doctor / cross-review / registry の 3 skill |
+| plugin | 概要 |
+| --- | --- |
+| dotclaude | `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビュー。doctor / cross-review / registry の 3 skill |
 
 ### session
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| session | 2.13.2 | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査) / end (オーケストレーター) + handover-reviewer agent |
+| plugin | 概要 |
+| --- | --- |
+| session | セッションのライフサイクル管理。start (コンテキスト復元) / debrief (棚卸し) / retrospective (学びの codify) / handover (引き継ぎ資料 + 機械検査) / end (オーケストレーター) + handover-reviewer agent |
 
 ### impl-spec
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| impl-spec | 0.5.5 | 実装のための仕様策定。requirements / design / test-plan の 3 skill + spec-reviewer agent |
+| plugin | 概要 |
+| --- | --- |
+| impl-spec | 実装のための仕様策定。requirements / design / test-plan の 3 skill + spec-reviewer agent |
 
 ### GitHub
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| github-pr | 0.4.11 | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件を定める。`gh` CLI が必要 |
+| plugin | 概要 |
+| --- | --- |
+| github-pr | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件を定める。`gh` CLI が必要 |
 
 ### Authoring / tooling
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
-| mkdocs-setup | 0.2.1 | mkdocs-material のセットアップ手順とテンプレート |
-| security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| [diffo](./plugins/diffo/README.md) | 0.4.0 | Diffo 公式 skill と併用し、Claude Code と Codex での通知受信と返信を補助する |
+| plugin | 概要 |
+| --- | --- |
+| markdownlint | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
+| mkdocs-setup | mkdocs-material のセットアップ手順とテンプレート |
+| security-guards | credentials 保護。.netrc への Write/Edit/Read をブロック |
+| [diffo](./plugins/diffo/README.md) | Diffo 公式 skill と併用し、Claude Code と Codex での通知受信と返信を補助する |
 
 ### Communication
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| ja-writing-ambiguity | 0.1.1 | 日本語の曖昧さ 3 分類 8 型を止める参照知識 skill `ref-ja-writing-ambiguity` の 1 skill。指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。一部は `rules/japanese-text-writing/references/core.md` にもあり、どちらが引かれるかを測るために重複させている中間状態 |
-| claude-user-communication | 0.43.1 | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。本文は生成元 JSON (配信ディレクトリの src/。書式は references/page-format.md) に書き、閲覧用 HTML は assemble-page.mjs だけが生成する (読み取り専用。番号と参照マーカーは組み立てが付ける)。雛形は 1 / 2 / 3 pane のレスポンシブ (3 pane は 1340 / 1700 / 2100px。広い段では表と図だけを伸ばし、地の文は行長の上限で止める) と、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 / 生成元 JSON の検査の 4 層) と、提示前レビューの agent 2 本 (sentence-reviewer: 生成元 JSON だけを読んで意味の取れない文と定義の無い呼び名を挙げる / page-reviewer: 一次情報との突合 / 推奨の妥当性 / 構成と設問の自立性) を同梱。回答は record-answer.mjs が JSON に記録し、ページ・index・archive を 1 度で揃える。完了したページは削除せず、index は完了分を直近だけ出して残りを archive.html へ辿らせる (build-archive.mjs が生成)。ページの連番は claim-page-number.sh が発番と占有を 1 操作で行い、assemble-page.mjs は中身のある出力先を --force 無しでは上書きしない (並行セッションの発番の衝突を防ぐ)。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| plugin | 概要 |
+| --- | --- |
+| ja-writing-ambiguity | 日本語の曖昧さ 3 分類 8 型を止める参照知識 skill `ref-ja-writing-ambiguity` の 1 skill。指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。一部は `rules/japanese-text-writing/references/core.md` にもあり、どちらが引かれるかを測るために重複させている中間状態 |
+| claude-user-communication | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。本文は生成元 JSON (配信ディレクトリの src/。書式は references/page-format.md) に書き、閲覧用 HTML は assemble-page.mjs だけが生成する (読み取り専用。番号と参照マーカーは組み立てが付ける)。雛形は 1 / 2 / 3 pane のレスポンシブ (3 pane は 1340 / 1700 / 2100px。広い段では表と図だけを伸ばし、地の文は行長の上限で止める) と、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 / 生成元 JSON の検査の 4 層) と、提示前レビューの agent 2 本 (sentence-reviewer: 生成元 JSON だけを読んで意味の取れない文と定義の無い呼び名を挙げる / page-reviewer: 一次情報との突合 / 推奨の妥当性 / 構成と設問の自立性) を同梱。回答は record-answer.mjs が JSON に記録し、ページ・index・archive を 1 度で揃える。完了したページは削除せず、index は完了分を直近だけ出して残りを archive.html へ辿らせる (build-archive.mjs が生成)。ページの連番は claim-page-number.sh が発番と占有を 1 操作で行い、assemble-page.mjs は中身のある出力先を --force 無しでは上書きしない (並行セッションの発番の衝突を防ぐ)。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
 
 ### meta
 
-| plugin | version | 概要 |
-| --- | --- | --- |
-| claude-known-issues | 0.4.6 | Claude Code の既知バグ・制約の一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、`config/` の 2 本はエントリの書き方の例)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
+| plugin | 概要 |
+| --- | --- |
+| claude-known-issues | Claude Code の既知バグ・制約の一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、`config/` の 2 本はエントリの書き方の例)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
 
 ## rules
 

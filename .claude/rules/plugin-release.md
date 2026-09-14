@@ -6,9 +6,8 @@ plugin に対する一連の変更を完了したら、PR を merge する前に
 
 ## 対応 CodingAgent にかかわらず行う変更
 
-1. README.md の該当 plugin のバージョン番号を更新する
-2. 構成を変更した場合は、CLAUDE.md の Plugin 一覧を更新する
-3. 変更の影響がある場合は、README に記載した対応 CodingAgent、requirements、setup 方法、未 setup 時の挙動を更新する
+1. 構成を変更した場合は、CLAUDE.md の Plugin 一覧を更新する
+2. 変更の影響がある場合は、README に記載した対応 CodingAgent、requirements、setup 方法、未 setup 時の挙動を更新する
 
 ## Claude Code に対応する場合
 
