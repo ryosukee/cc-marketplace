@@ -69,8 +69,6 @@ Codex poller の排他 lock は `${XDG_STATE_HOME:-$HOME/.local/state}/diffo-cod
 
 ## Markdown プレビューと表示の変更
 
-適用手順は[表示調整の手順](./references/display-customization.md)に置く。
-
 `diffo-patch` は Markdown プレビューを GitHub 風にし、改行 1 つで不要な `<br>` を作らない。
 解決済みスレッドは初期状態で非表示になり、表示切替の選択はブラウザに保存される。
 この切替は表示だけに作用し、スレッドの解決状態は変更しない。
