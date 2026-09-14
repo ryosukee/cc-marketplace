@@ -4,11 +4,24 @@
 | --- | --- |
 | 目的 | 並行して走る話題をカードで追う道具を決め、導入するまでの確定事項を積む |
 | 生存期間 | 道具を導入し、運用の手順を plugin か CLAUDE.md へ移すまで |
-| 対象タスク | ccm-f058 / ccm-f061 / ccm-f062 / ccm-f065 / ccm-f066 / ccm-f067 / ccm-f068 / ccm-f069 / ccm-f074 |
+| 対象議題 | kanban の導入（並行する話題をカードで追う道具の選定から、plugin での運用まで） |
 
-出典の実文は [kanban のタスク管理を求めた発言の実文](./artifacts/kanban-requirements-origin.md) にある。
-候補の比較の明細は [kanban の板の道具を、観点を定義して比較し直す](./artifacts/kanban-matrix.md) にあるが、
-確定 1 のとおり、記録に無い要件で観点を組んでいるため作り直しになる。
+## この decision-record が参照する artifacts
+
+artifacts は `notes/artifacts/` に置く。各 artifacts は冒頭でこの decision-record へ逆参照する。
+生存期間はこの decision-record と同じで、冒頭の表が持つ。どの artifacts をいつ処遇するかは計画のタスクにある。
+
+| artifacts | 目的 |
+| --- | --- |
+| [kanban のタスク管理を求めた発言の実文](./artifacts/kanban-requirements-origin.md) | kanban を求めたユーザー発言の実文 |
+| [kanban の板の道具を、観点を定義して比較し直す](./artifacts/kanban-matrix.md) | 道具の比較。観点の誤りで結論は失効（確定 1） |
+| [Linear Free プランの制限と repo の対応](./artifacts/kanban-linear-free-plan-2026-09-03.md) | Linear Free の上限と repo の対応の一次情報 |
+| [Plane Cloud Free と Community Edition の差](./artifacts/kanban-plane-cloud-vs-ce-2026-09-03.md) | Plane Cloud Free と Community Edition の差 |
+| [Plane Cloud Free の上限・公式 CLI・公式 MCP・API レート制限](./artifacts/kanban-plane-free-limits-cli-mcp-2026-09-04.md) | Plane Free の上限・CLI・MCP・レート制限 |
+| [OpenProject / YouTrack / Wekan / Beads の repo 切り分け単位と上限](./artifacts/kanban-candidates-repo-units-2026-09-03.md) | 他 4 候補の repo 切り分け単位と無料枠の上限 |
+| [Plane の階層構造とデータモデル](./artifacts/kanban-plane-hierarchy-2026-09-04.md) | Plane の階層構造・データモデル・REST API |
+| [kanban の候補を確定した要件で実測し直す](./artifacts/kanban-candidates-2026-09-02.md) | 確定した要件で候補を測り直した記録 |
+| [kanban-md の追加調査と比較検討](./artifacts/kanban-md-followup.md) | kanban-md の追加調査。不採用の根拠 |
 
 ## 確定事項
 

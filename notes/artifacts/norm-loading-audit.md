@@ -1,5 +1,7 @@
 # 規範テキストのコンテキスト搭載監査（前セッション 4f702d3b）
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 対象 transcript: `/Users/ryosuke/.claude/projects/-Users-ryosuke-ghq-root-github-com-ryosukee-cc-marketplace/4f702d3b-b49c-43c6-9f95-d6e76d05d1b4.jsonl`（4082 行、2026-08-31T10:53:48Z 〜 18:42:05Z）
 
 以下の時刻はすべて transcript の `timestamp`（UTC）。行番号は jsonl の行番号。

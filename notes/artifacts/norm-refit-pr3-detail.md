@@ -1,4 +1,6 @@
-# norm-refit PR 3 確認・質問の一本化: 作業明細
+# norm-refit PR 3 確認・質問の一本化
+
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
 
 実装者はこの明細だけを見て `rules/`（詳細規範 user-confirmation.md の新設と入口 rule の 3 行）、`plugins/claude-user-communication/`、
 `plugins/claude-known-issues/`、marketplace.json・README.md・CLAUDE.md を編集する。

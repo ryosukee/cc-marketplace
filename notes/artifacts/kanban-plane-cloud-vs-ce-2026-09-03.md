@@ -1,4 +1,6 @@
-# Plane Cloud Free と Community Edition の差（2026-09-03）
+# Plane Cloud Free と Community Edition の差
+
+本体は [kanban のタスク管理](../kanban-board.md)。生存期間は本体と同じ。
 
 `notes/kanban-board.md` の候補 Plane について、Cloud Free と self-host の Community Edition の
 制限・機能差・workspace / project の構造を公式の一次情報で確かめた記録。

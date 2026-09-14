@@ -1,5 +1,7 @@
 # レビュー工程のコストとターン数の調査
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 norm-refit-v2 群 A3「review 工程のコスト対効果の見直し」の入力。
 `todo.md` の「review でトークン使い過ぎ、何ターンもかかりすぎ問題がある / 何回やっても指摘が 0 にならない」を起点に、
 2026-08-31 に調査した。対象は cc-marketplace の reviewer agent 4 本と機械検査、

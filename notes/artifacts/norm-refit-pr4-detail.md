@@ -1,4 +1,6 @@
-# norm-refit PR 4 AskUserQuestion の除去: 作業明細
+# norm-refit PR 4 AskUserQuestion の除去
+
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
 
 実装者はこの明細だけを見て `plugins/impl-spec/`、`plugins/dotclaude/`、`plugins/mkdocs-setup/`、`plugins/session/`、
 `plugins/claude-user-communication/` と `README.md`・`CLAUDE.md` を編集する。

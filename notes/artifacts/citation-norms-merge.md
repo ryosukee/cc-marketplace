@@ -1,5 +1,7 @@
 # 引用・出典・エビデンス規範のマージ案
 
+本体は [norm-refit: 確定事項メモ](../norm-refit.md)。生存期間は本体と同じ。
+
 作成 2026-08-15。取り込み元は `efso-document` の `to-be/idp/.claude/` 配下（read-only で参照）。
 取り込み先は cc-marketplace の既存規範。条項 40 件を拾い、既存 21 件と突き合わせた。
 

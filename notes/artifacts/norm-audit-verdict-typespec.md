@@ -1,5 +1,7 @@
 # 処遇判定: 種別固有 60 / 判断保留 26 / MF 媒体固有 32（段階 1-4）
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 `type-specific-screening.md` の 3 群。
 語彙は `norm-audit-raw/verdict-schema.md` に従う。
 

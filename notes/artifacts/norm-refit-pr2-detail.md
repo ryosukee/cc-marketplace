@@ -1,4 +1,6 @@
-# norm-refit PR 2 記法規範の分割: 作業明細
+# norm-refit PR 2 記法規範の分割
+
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
 
 実装者はこの明細だけを見て `rules/markdown-formatting.md` と
 `rules/japanese-text-writing/references/core.md` を編集する。行番号はすべて main `f1baa36` の実読。

@@ -1,5 +1,7 @@
 # 処遇判定: 既存あり 70 件（段階 1-1）
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 `is-generic-screening.md` と `plugin-generic-screening.md` の `既存あり` 分類。
 突合で同趣旨が既存規範にあると確認された条項。
 

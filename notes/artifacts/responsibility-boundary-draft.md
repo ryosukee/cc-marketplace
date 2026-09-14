@@ -1,4 +1,6 @@
-# responsibility boundary の下書き（2026-08-18）
+# responsibility boundary の下書き
+
+本体は [norm-refit: 確定事項メモ](../norm-refit.md)。生存期間は本体と同じ。
 
 html-communication の見せ方のパターン集に入れる候補として作り、gallery で見たあとに
 「もう少し練りたい」として切り出したもの。この下書きは commit を経ずに作業ツリーだけに

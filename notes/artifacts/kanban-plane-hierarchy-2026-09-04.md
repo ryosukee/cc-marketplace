@@ -1,4 +1,6 @@
-# Plane の階層構造とデータモデル（2026-09-04）
+# Plane の階層構造とデータモデル
+
+本体は [kanban のタスク管理](../kanban-board.md)。生存期間は本体と同じ。
 
 `notes/kanban-board.md` の確定 11（道具は Plane）と確定 12（Claude 側のラップは cc-marketplace の plugin）を受け、
 導入時に `todo.md` の項目をどの単位へ載せるかと、plugin が叩く口を決めるために、

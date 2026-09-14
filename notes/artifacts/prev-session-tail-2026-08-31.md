@@ -1,5 +1,7 @@
 # 前セッション終盤の逐語抜き出し
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 出典: `/Users/ryosuke/.claude/projects/-Users-ryosuke-ghq-root-github-com-ryosukee-cc-marketplace/4f702d3b-b49c-43c6-9f95-d6e76d05d1b4.jsonl`（4082 行、全 446 の `user` レコード）
 
 ## 抽出の方法と範囲

@@ -1,5 +1,7 @@
 # 処遇判定: 部分的 92 件（段階 1-3）
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 既存規範に一部はあるが、限定・条件・判定基準が足りない条項。
 語彙は `norm-audit-raw/verdict-schema.md` に従う。
 

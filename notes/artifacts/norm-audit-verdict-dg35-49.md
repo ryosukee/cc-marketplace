@@ -1,5 +1,7 @@
 # 処遇判定: DG35〜DG49
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 `notes/artifacts/norm-audit-raw/t3-reconcile-dg35-49.md` の突合結果に対する判定。
 語彙と項目は `notes/artifacts/norm-audit-raw/verdict-schema.md` に従う。
 

@@ -2,11 +2,11 @@
 
 | 項目 | 内容 |
 | --- | --- |
-| 目的 | norm-refit をどの順で進めるかの正典。到達点・段階・PR の切り方・現在地 |
-| 生存期間 | norm-refit-v2（後続の改善。「norm-refit-v2」の節）まで完了し、台帳と一緒に処遇を決めて実行するまで |
-| 対象タスク | norm-refit |
+| 目的 | norm-refit をどの順で進めるかを定める文書。到達点・段階・PR の切り方・現在地 |
+| 生存期間 | norm-refit-v2（後続の改善。「norm-refit-v2」の節）まで完了し、decision-record と一緒に処遇を決めて実行するまで |
+| 対象議題 | norm-refit |
 
-norm-refit をどの順で進めるかの正典。何をどこまでやるか、依存が何か、次に何をするかは
+norm-refit をどの順で進めるかを定める文書。何をどこまでやるか、依存が何か、次に何をするかは
 この文書だけを見れば分かる。
 
 2026-08-20 に全面改訂した。条項 1349 件の全数監査（`notes/artifacts/norm-audit-*`）で
@@ -18,17 +18,43 @@ norm-refit をどの順で進めるかの正典。何をどこまでやるか、
 | 置き場 | 持つもの |
 | --- | --- |
 | この文書 | 到達点、段階の定義、作業の一覧と順序、依存、待ち条件 |
-| [norm-refit: 確定事項メモ](./norm-refit.md) | 何をどう決めたか、決め手、出典 |
-| `notes/artifacts/norm-audit-raw/` | 条項 1349 件の抽出と、既存規範との突合 |
-| `notes/artifacts/norm-audit-verdict-*.md` | 条項ごとの処遇の判定 |
-| `notes/artifacts/norm-audit-implementation-notes.md` | 実装で踏む注意 15 件 |
-| `notes/artifacts/norm-refit-form-sources.md` | 確認フォームの設問と回答の実文（掃除で消したページ分） |
-| `notes/artifacts/sentence-level-review-cases.md` | PR レビューの文レベル指摘の事例集（段階 4 群 3 の入力） |
+| [norm-refit: 確定事項メモ](./norm-refit.md) | 何をどう決めたか、なぜそう決まったか、出典 |
 | task list | いま何に取りかかっているか |
+
+## この計画が参照する artifacts
+
+artifacts は `notes/artifacts/` に置く。各 artifacts は冒頭でこの文書へ逆参照する。
+生存期間はこの文書と同じで、冒頭の表が持つ。どの artifacts をいつ処遇するかは計画のタスクにある。
+
+| artifacts | 目的 |
+| --- | --- |
+| [条項の全数抽出](./artifacts/norm-audit-raw/) | 条項 1349 件の抽出と、既存規範との突合 |
+| [条項の名簿](./artifacts/norm-audit-roster.md) | 条項 1350 行から判定ファイルを引く名簿 |
+| [処遇判定: 重複グループ外（機械的に決まる分）](./artifacts/norm-audit-verdict-auto.md) | 重複グループ外で機械的に決まる 657 件の処遇 |
+| [処遇判定: DG1〜DG17](./artifacts/norm-audit-verdict-dg1-17.md) | 重複グループ DG1〜DG17 の処遇判定 |
+| [処遇判定: DG18〜DG34](./artifacts/norm-audit-verdict-dg18-34.md) | 重複グループ DG18〜DG34 の処遇判定 |
+| [処遇判定: DG35〜DG49](./artifacts/norm-audit-verdict-dg35-49.md) | 重複グループ DG35〜DG49 の処遇判定 |
+| [処遇判定: 既存あり 70 件（段階 1-1）](./artifacts/norm-audit-verdict-existing.md) | 既存規範に同趣旨がある 70 件の処遇判定 |
+| [処遇判定: 既存なし 85 件（段階 1-2）](./artifacts/norm-audit-verdict-lift.md) | 既存規範に無い 85 件（引き上げ候補）の処遇判定 |
+| [処遇判定: 部分的 92 件（段階 1-3）](./artifacts/norm-audit-verdict-partial.md) | 既存が部分的な 92 件の処遇判定 |
+| [処遇判定: 種別固有 60 / 判断保留 26 / MF 媒体固有 32（段階 1-4）](./artifacts/norm-audit-verdict-typespec.md) | 種別固有 60 / 保留 26 / 媒体固有 32 の処遇判定 |
+| [実装時の申し送り](./artifacts/norm-audit-implementation-notes.md) | 実装で踏む注意 15 件 |
+| [PR #4 と判定の突合](./artifacts/norm-audit-pr4-reconcile.md) | PR #4 の実文と条項 252 件の処遇判定の突合 |
+| [norm-refit 実装の変更棚卸し](./artifacts/norm-refit-impl-inventory.md) | 実装の変更棚卸し。分割 PR の単位の根拠 |
+| [norm-refit PR 2 記法規範の分割](./artifacts/norm-refit-pr2-detail.md) | PR 2 記法規範の分割の作業手順書 |
+| [norm-refit PR 3 確認・質問の一本化](./artifacts/norm-refit-pr3-detail.md) | PR 3 確認・質問の一本化の作業手順書 |
+| [norm-refit PR 4 AskUserQuestion の除去](./artifacts/norm-refit-pr4-detail.md) | PR 4 AskUserQuestion の除去の作業手順書 |
+| [norm-refit PR 9 skill / agent の書き方の器: 作業明細](./artifacts/norm-refit-pr9-detail.md) | PR 9 skill / agent の書き方の器の作業手順書 |
+| [norm-refit PR 9 skill / agent の書き方の器: boilerplate からの抜き出し候補の調査](./artifacts/norm-refit-pr9-survey.md) | PR 9 の boilerplate からの抜き出し候補の調査 |
+| [レビューの構造レベル指摘 事例集](./artifacts/structure-level-review-cases.md) | レビューの構造の指摘（何をどこに置くか、何を書いて何を落とすか、表と地の文の役割分担、参照の張り方）を逐語で積む。文レベルとは分け、両方に当たる指摘は互いの事例番号で参照する |
+| [norm-refit の PR レビューの文レベル指摘 事例集](./artifacts/sentence-level-review-cases.md) | PR レビューの文レベル指摘の事例集。段階 4 群 3 の入力 |
+| [レビュー工程のコストとターン数の調査](./artifacts/review-cost-survey.md) | レビュー工程のコストとターン数の実測。段階 R の入力 |
+| [規範を引かない問題の調査](./artifacts/norm-adherence-survey.md) | 規範を引かない問題の調査の入口。artifacts 6 本を索引する |
+| [日本語の機械検知の試作](./artifacts/prototypes/) | 日本語の機械検知の試作 2 本。どちらも未完成 |
 
 ## 到達点
 
-norm-refit が終わった状態を、検証できる形で定義する。段階 5 の完了時点でこの 6 つが成立する。
+norm-refit が終わった状態を、検証できる形で定義する。段階 5 の完了時点でこの 7 つが成立する。
 
 | # | 到達点 | 検証方法 |
 | --- | --- | --- |
@@ -38,19 +64,50 @@ norm-refit が終わった状態を、検証できる形で定義する。段階
 | 4 | 条件ロードの穴が塞がっている | 記法規範が PR 本文・HTML ページ・確認フォーム・ターミナル返答の 4 媒体に届く。届かせる手段は段階 2 で決める |
 | 5 | impl-spec の汎用分が引き上げ済み | 移設先へ同行させる分と cc-marketplace へ残す分が分かれ、引き上げ分が詳細規範に実装されている |
 | 6 | 監査の対象外だった 18 ファイルが整理済み | 後続タスク #7 の完了。norm-refit の終了条件には含まない（下記「終了条件に含まないもの」） |
+| 7 | 生存期間が段階 5 を条件にしている artifacts が 0 件になっている | `notes/norm-refit.md` と この文書の「参照する artifacts」の表を全件見て、段階 5 の「artifacts の処遇を決めて実行する」で処遇が済んでいないものが無い |
 
-到達点 6 だけが終了条件の外にある。1〜5 が成立した時点で編集凍結が解け、norm-refit は完了する。
+到達点 6 だけが終了条件の外にある。1〜5 と 7 が成立した時点で編集凍結が解け、norm-refit は完了する。
 
 ## 現在地
 
-2026-09-08 時点。**段階 1・2・3-1 が完了し、段階 R・V を新設した。次に着手するのは段階 R で、
-起点の R1（`norm-review` を単機能 plugin として新設する）は着手前の 5 件が確定して実装待ち。
+2026-09-15 時点。**norm-refit を一時停止した。kanban（タスク管理の plugin）の整備を先に進めると決めたため。
+段階 1・2・3-1 は完了し、段階 R・V は新設したまま未着手。再開の起点は段階 R の R1
+（`norm-review` を単機能 plugin として新設する）で、着手前に決める 5 件は確定済み（ccm-f064）。
+停止の時点で、決定の記録の呼び名を「台帳」から decision-record へ変える用語統一は 3 群すべて main に入った
+（rules 群 PR #21、plugin 群 PR #22、notes 群は 2026-09-15 に main へ直接 commit）。
+ccm-f084（notes 配下 80 ファイルの処遇）は回答済みで、計画への反映も済んでいる。
+残っているのは「再開の手順」に挙げた未反映 2 件と未回答 1 件。**
+
+### 再開の手順
+
+1. `notes/norm-refit.md` の確定事項の末尾、2026-09-15 のエントリ 4 件を読む。ccm-f084 の回答と、
+   実装計画の置き場の判断がそこにある
+2. 未反映 2 件をどうするかを決める。どちらも kanban の仕組みが整うと置き場が変わる見込みなので、
+   停止の時点では着手していない
+    - `notes/norm-refit-plan.md` を `notes/artifacts/norm-refit-plan.md` へ移す（ccm-f084 Q4 の回答と、
+      その後の対話で決めた案）。`rules/notes-authoring.md` の artifacts の定義を広げる PR と、
+      `notes/README.md`・`notes/norm-refit.md`・`notes/kanban-board.md`・`.claude/rules/norm-refit-ops.md` のリンクの張り替えが要る
+    - `notes/` を `decision-record/` へ改名する PR（2026-09-07 の確定。影響範囲は同じエントリの反映先にある）
+3. 未回答 1 件: `rules/decision-record.md` 冒頭の「参照する予定のタスク」を「利用・消費する」に揃えるか。
+   PR #21 のまとめのコメントで問うたまま
+4. R1 に着手するなら「段階 R」の R1 の節を読む。R2 以降は R1 の後でないと判定できない
+5. 着手したら、この節の要約文を書き直し、ccm-r003（進捗レポート）も同じ状態にする
+
+### 停止までの経緯
+
 2026-09-05 に、条項が載る前に落ちる経路が 1 件見つかった。段階 V の対象をそこまで広げ、
 入口の誘導を直す作業を段階 3-2 へ足した。
 2026-09-07 に、文の意味を見る agent `sentence-reviewer` を html-communication 側で先行して入れた
 （ccm-f082、PR #20）。2026-09-08 のレビューで、造語と用語も sentence-reviewer に、構成と設問の自立性を
 page-reviewer に寄せる分担にしてマージした（claude-user-communication 0.42.0）。
-段階 R の R4 は、既存 reviewer agent を 5 本として取り込み方と統合を検討する。**
+段階 R の R4 は、既存 reviewer agent を 5 本として取り込み方と統合を検討する。
+2026-09-08 に、日本語の曖昧さ 3 分類 8 型を参照知識 skill `ref-ja-writing-ambiguity` として入れた
+（plugin `ja-writing-ambiguity` 0.1.0、main `1c7d98c`）。skill と詳細規範のどちらが引かれたかを測る項目を
+段階 V の未決に、重複の解消を v2 群 A6 に、型の分類と型名の定義を v2 群 B6 に置いた。
+同日、R5（本文テキストと script の分離）を段階 R から外し、norm-refit の外で別セッションが実装して
+PR #23 でマージした。
+2026-09-15 に ccm-f084 の回答を受け、段階 5 の対象を artifacts 全件へ広げて到達点 7 を足し、
+段階 4 に引き先を書き、`norm-audit-raw/README.md` の表に 2 件を足した。同日、norm-refit を一時停止した。
 段階 3 は 3-1（実装の PR 群）と 3-2（保守の手引き）に割り、あいだに段階 R を入れた。
 3-1 の 9 本のうち 7 本（PR 6・1・8・2・3・4・9）がマージ済みで、PR 5 は段階 R の R7 へ、
 PR 7 は 3-2 へ移した。残る 2 本が両方とも外へ出たので 3-1 は閉じた。
@@ -71,7 +128,7 @@ R1 は、着手前に決める 5 件が ccm-f064 で確定した（2026-09-02）
 2026-08-18 に外した clarity facet を判定の形を変えて復活させたもの。確定の実文は `notes/norm-refit.md` の
 2026-09-07 のエントリ。R4 の検討対象に入れる（「段階 R」の R4 の節）。
 段階 R は、PR 5・段階 4 のレビュー機構のゼロベース再設計・v2 群 A3 を解体して 1 つにまとめた段階
-（ccm-f056、2026-08-31）。旧 3 分類は使わない。調査の明細は
+（ccm-f056、2026-08-31）。旧 3 分類は使わない。調査の artifacts は
 [レビュー工程のコストとターン数の調査](./artifacts/review-cost-survey.md)。
 PR 9 で `rules/` は 15 本になった（常時ロード 8 + 条件ロード 7）。
 norm-refit の外では、PR のマージの合図を `approve` ラベルにする運用を決め（ccm-f052）、
@@ -83,24 +140,24 @@ github-pr 0.4.9（PR #15）で実装した。以後のマージはラベルの�
 - 段階 2 の 6 件が `ccm-f030` で決着した（2026-08-20）。判定への反映も済み。
   残る `保留` は T4 送り 18 件と RD20 の 1 件だけ
 - PR 1 の実体は PR #6（#4 はレビュー 30 件の失効に伴い close し作り直した。#4 の 30 件は全件処理済み）
-- 着手前の判断が決着した（台帳の 2026-08-22〜23 のエントリ）:
+- 着手前の判断が決着した（decision-record の 2026-08-22〜23 のエントリ）:
   配置基準の見直しと PR #4 内での再編（ccm-f031）、再編の 9 判断（ccm-f038）、
-  rule の書き方の記述の置き場（ccm-f040 / f041、条項単位の明細で確定）、
+  rule の書き方の記述の置き場（ccm-f040 / f041、条項単位の artifacts で確定）、
   設問のグルーピング（ccm-f042、実装済み 0.30.0）
 - 2026-08-25: PR 6 は PR #5 としてマージ済み。**PR 1 は PR #6 として main `5c0a187` にマージ済み**（レビュー第 4 巡 + 追加 4 件まで対応、squash）。
   第 4 巡で確定が 3 件動いた（媒体の選択は core へ = T6-1/2 の一部上書き / 「rule を書くとき」は rule-authoring へ /
-  複数分類の優先規定を core に追加）。文レベル指摘の蓄積は norm-refit 完了までのスコープで出所を区別する（台帳の同日エントリ）。
+  複数分類の優先規定を core に追加）。文レベル指摘の蓄積は norm-refit 完了までのスコープで出所を区別する（decision-record の同日エントリ）。
   **PR 8 は PR #8 として main `12967a4` に、codify 2 件の小 PR は PR #7 として `54c5975` にマージ済み**（同日）。
   PR 8 の後処理（notes/ 7 ファイルへ目的・生存期間・対象タスクの表、README 一覧、known-issues の監視範囲、ccm-r003）も同日に実施。
-  PR 2 の着手前の判断 2 件（caption 相当の形 / 余白規範の行き先）は ccm-f049 で決着（台帳の同日エントリ）。
+  PR 2 の着手前の判断 2 件（caption 相当の形 / 余白規範の行き先）は ccm-f049 で決着（decision-record の同日エントリ）。
   計画の見直し（同日）で洗い出した判断 3 件は ccm-f050 で決着し、rule の変更は PR #9（norm-refit の外、draft）、
-  pending-codify の削除は main 直接で実施。PR 2 の作業明細は `notes/artifacts/norm-refit-pr2-detail.md`
+  pending-codify の削除は main 直接で実施。PR 2 の作業の一覧は `notes/artifacts/norm-refit-pr2-detail.md`
   **PR 2 は PR #10 として main `7eb4600` にマージ済み**（同日。レビュー 1 件対応）。PR #9（f050 の rule 変更）も `67aecb0` にマージ済み
   PR 8 は同日に新設（ccm-f044）し、中身を ccm-f045 で決めてから実装した
-- 2026-08-25（3 セッション目）: PR 3 の作業明細を作った（13 件の計数は一致。未特定 11 件のうちユーザー判断 5 件）。
+- 2026-08-25（3 セッション目）: PR 3 の作業の一覧を作った（13 件の計数は一致。未特定 11 件のうちユーザー判断 5 件）。
 - 2026-08-26: 5 件（impl-spec 側の原文の扱い / IS52 と AQ36 手順 3 の両立 / HC の description / 既知バグ一覧の AQ 記述の PR /
   申し送り 13 の扱い）と、PR #10 で範囲外にした rules/ 外の表の caption を ccm-f051 で問い、決着した
-  （台帳の同日エントリ 5 件）。補足で PR 3 の構成が変わった（媒体非依存の確認規範は rule へ。冒頭ブロックの見出し語）。
+  （decision-record の同日エントリ 5 件）。補足で PR 3 の構成が変わった（媒体非依存の確認規範は rule へ。冒頭ブロックの見出し語）。
   置き場は同日に「入口 rule から参照する詳細規範」へ上書き。手順書を確定内容で更新し、worktree の subagent で実装、
   セルフレビュー（規範の欠落 1 件 = 入口 rule の参照を回答受領時にも効かせる、を反映）を経て **PR #12** を出した。
   レビュー 9 件 + チャット 2 件に対応して同日に main `207932c` へマージ。後処理 3 つも同日に実施。
@@ -117,7 +174,7 @@ github-pr 0.4.9（PR #15）で実装した。以後のマージはラベルの�
 | 既存なし | 86 |
 | 既存あり | 70 |
 
-重複グループ 47 の判定は旧明細に対して追認 113 / 訂正 24。
+重複グループ 47 の判定は旧 artifacts に対して追認 113 / 訂正 24。
 
 ## 段階の全体像
 
@@ -140,7 +197,7 @@ R の後でないと着手できない。3-1 は残る 2 本が両方とも外�
 並びの根拠は段階 R の「この段階の後の暫定の順序」にある。
 
 番号ではなく `R`（review）を振るのは、既存の段階 1〜5 の番号を他の文書
-（`.claude/rules/norm-refit-ops.md`、ccm-r003、台帳のエントリ）が参照しており、
+（`.claude/rules/norm-refit-ops.md`、ccm-r003、decision-record のエントリ）が参照しており、
 振り直すと参照が全部ずれるため。
 
 段階 4 の設計は実装の成果物に依存しないので、段階 R と時間軸で重ねられる。
@@ -172,7 +229,7 @@ R の後でないと着手できない。3-1 は残る 2 本が両方とも外�
 引き上げ候補。突合が `移設先の候補` を付けているので、それを検証して確定させる。
 
 - 候補が `core` / `判断` / `参照` / `読み物` → `移設`。一般化の要否が付いているものは
-  文案を実装明細へ書く
+  文案を実装の artifacts へ書く
 - 候補が `据え置き` → `維持`
 - impl-spec 由来のものは、引き上げる（cc-marketplace に残す）か
   同行させる（`移設先`）かを 1 件ずつ決める。**これが段階 1 の主作業**
@@ -181,7 +238,7 @@ R の後でないと着手できない。3-1 は残る 2 本が両方とも外�
 
 既存に一部あるが、限定・条件・判定基準が足りないもの。処遇は 2 通り。
 
-- 足りない部分だけを既存へ追記 → `統合`。追記する文案を実装明細へ書く
+- 足りない部分だけを既存へ追記 → `統合`。追記する文案を実装の artifacts へ書く
 - 既存とは別の規範として立てる → `移設`
 
 判定基準: 足りない部分を既存の条項へ足したとき、既存の条項が読めなくなるか。
@@ -205,7 +262,7 @@ R の後でないと着手できない。3-1 は残る 2 本が両方とも外�
 
 ## 段階 2 決着が要る 6 件
 
-**完了（2026-08-20、ccm-f030）。** 決定の内容と決め手は台帳のエントリにある。
+**完了（2026-08-20、ccm-f030）。** 決定の内容と決め手は decision-record のエントリにある。
 
 | # | 論点 | 決定 |
 | --- | --- | --- |
@@ -345,7 +402,7 @@ japanese-text-writing plugin を解体する（plugin は `docs/retired-plugins.
   （f006 の a 案。reference 系 rule は rule と同名の subdir を切る形式に揃える。
   `decision-record.md` のリンクも新パスへ直す）
 
-2026-08-22〜23 の決着分（ccm-f031 / f038 / f040 / f041。実文は台帳の各エントリ）。
+2026-08-22〜23 の決着分（ccm-f031 / f038 / f040 / f041。実文は decision-record の各エントリ）。
 
 - `core.md` を条項ごとに割って再編する。箇条書き 1 つを単位に共通 / 分類固有を振り、
   融合している条項は文を割る（f038 Q1）
@@ -363,7 +420,7 @@ japanese-text-writing plugin を解体する（plugin は `docs/retired-plugins.
 
 #### PR 2 記法規範の分割
 
-**完了。PR #10、main 7eb4600（2026-08-25）。作業明細は `notes/artifacts/norm-refit-pr2-detail.md`。**
+**完了。PR #10、main 7eb4600（2026-08-25）。作業の一覧は `notes/artifacts/norm-refit-pr2-detail.md`。**
 
 Q6 の決定を実装する。`markdown-formatting.md` から媒体非依存分を core へ移す。
 
@@ -387,7 +444,7 @@ Q6 の決定を実装する。`markdown-formatting.md` から媒体非依存分�
 
 ask-with-choices skill を廃止し、確認・質問の規範のうち媒体に依らないものは rule へ、
 HTML フォーム固有のものは html-communication へ置く（ccm-f051 の補足で 2026-08-26 に構成を変えた。
-旧計画は全部を html-communication へ寄せる形だった）。作業明細は `notes/artifacts/norm-refit-pr3-detail.md`。
+旧計画は全部を html-communication へ寄せる形だった）。作業の一覧は `notes/artifacts/norm-refit-pr3-detail.md`。
 
 - 媒体非依存の確認規範（impl-spec から引き上げる 13 件 = 1-2 の 3 件 + 1-3 の 10 件、AQ18 の上流決定の明示、
   回答後のフロー、入口 rule から移す質問の 2 条項）は `rules/japanese-text-writing/references/user-confirmation.md`
@@ -407,7 +464,7 @@ HTML フォーム固有のものは html-communication へ置く（ccm-f051 の�
   到達点 1 の検証条件「plugin 側に汎用の再実装が残らない」の穴を塞ぐ）
 - 「長い本文を HTML ページへそのまま移し替えない」（旧 user-communication-format 由来）を
   html-communication の SKILL.md へ入れる（PR #6 レビューで decision-docs から skill 側へ変更。
-  2026-08-23 の台帳エントリ）
+  2026-08-23 の decision-record エントリ）
 
 #### PR 4 AskUserQuestion の除去
 
@@ -462,7 +519,7 @@ claude-component-authoring / authoring）から、どのプロジェクトにも
 **完了。PR #5 が approve され squash マージ済み（main `8e7dc54`、2026-08-23）。**
 
 新設 2 ファイルと、3 箇所からの条項移動（ccm-f040 / f041 で条項単位に確定。
-実文の根拠は台帳の 2026-08-23 のエントリ）。PR 1〜5 と参照の依存が無い。
+実文の根拠は decision-record の 2026-08-23 のエントリ）。PR 1〜5 と参照の依存が無い。
 
 - `.claude/rules/user-global-rules.md` を新設する: フラット構成、symlink 配布、
   ネスト設計の根拠 3 つ、入口 rule と詳細規範の階層、分岐を知らない原則
@@ -478,36 +535,36 @@ claude-component-authoring / authoring）から、どのプロジェクトにも
 
 **完了。PR #8、main 12967a4（2026-08-25）。後処理も同日に実施。**
 
-2026-08-25 に新設（ccm-f044 Q5）。efso-document で `notes/` を運用して分かった穴を正典へ戻す。
+2026-08-25 に新設（ccm-f044 Q5）。efso-document で `notes/` を運用して分かった穴を rule へ戻す。
 PR 1〜5 の直列とは参照の依存が無い。**PR #6 のマージ後に main から分岐する**:
 `notes-format.md` は PR #6 が `rules/decision-record/references/` へ移動するファイルで、
 先に旧パスを編集するとマージ時にリネームと衝突する。
 
-決着済みの中身（台帳の 2026-08-25 エントリ）:
+決着済みの中身（decision-record の 2026-08-25 エントリ）:
 
 - `decision-record.md` に「出典の実文を repo 内に持つ」条項を足す。エントリ内の転記、専用 doc、
   エントリから参照する別ファイルのいずれも可。原文は commit 2654172 の
   `notes/artifacts/pending-codify-2026-08-25.md`（反映後に削除、ccm-f050 Q2）にあり、
   「必ずエントリの中へ」をこの形に緩めてから入れる
 - notes ファイルの冒頭に目的・生存期間（日付でなく終わりの条件）・対象タスクの 3 項目を置く条項
-- 台帳が参照する実文ファイルは、本体を消すときに一緒に消す条項
+- decision-record が参照する実文ファイルは、本体を消すときに一緒に消す条項
 
-ccm-f045 で決着した中身（台帳の 2026-08-25 f045 エントリ）:
+ccm-f045 で決着した中身（decision-record の 2026-08-25 f045 エントリ）:
 
 - 条項ごとのロード方式を分ける。「書いている最中に効く条項」（ファイル内の 2 節・冒頭の目的・生存期間・対象タスク・
   重複回避・消す手順と実文ファイルの削除連動）は新設する条件ロード rule
-  `rules/notes-authoring.md`（paths `notes/**`、冒頭で「decision-record の台帳としての notes/ にだけ
+  `rules/notes-authoring.md`（paths `notes/**`、冒頭で「decision-record として運用する notes/ にだけ
   適用」と宣言）へ。「作る前・消す判断で読む条項」（2 層構造・作成はユーザー承認後・完了時の処遇）は
   参照専用の `notes-format.md` に残す。確定事項のエントリ形式は常時ロードの `decision-record.md` のまま
 - project rule に残るのは固有分（重複確認先の dir 名・チケット番号の形式）だけ。`notes/` の作成時に
   作るかを問う条項を notes-format.md のライフサイクル節に足す
 - 条件ロードの不発火の検知は、claude-known-issues の `rule-paths-exclusion-undocumented` エントリが持つ
-  （後処理で判明: エントリは 0.3.0 移行で失われていたので再作成した。台帳の同日エントリ）
+  （後処理で判明: エントリは 0.3.0 移行で失われていたので再作成した。decision-record の同日エントリ）
 - 未コミット 2 件は実文を保存して作業ツリーから外した（2026-08-25）。primary-sources-first の条項は
   PR 8 と同時期に norm-refit の外の独立した小 PR で入れる
 
 マージ後に main で直接行った後処理（2026-08-25）: notes/ 7 ファイルへ目的・生存期間・対象タスクの表、README 一覧に `idea-hub-handoff.md`、
-台帳、`ccm-r003`。notes/artifacts/ の明細には置かず、参照元の本体の表に従うと決めた（ccm-f050 Q3、rule への反映は小 PR）。
+decision-record、`ccm-r003`。notes/artifacts/ には置かず、参照元の本体の表に従うと決めた（ccm-f050 Q3、rule への反映は小 PR）。
 
 ### PR に入れないもの
 
@@ -530,10 +587,12 @@ PR 5・段階 4 の「レビュー機構のゼロベース再設計」・v2 群 
 
 ### 何を直すのか
 
-実測で原因が 4 つに分かれた。明細は
+実測で原因が 4 つに分かれた。artifacts は
 [レビュー工程のコストとターン数の調査](./artifacts/review-cost-survey.md)。
 
-- agent に渡すファイルの 46〜62% を、agent の観点がどれも使わない CSS と JavaScript が占めている
+- agent に渡すファイルの 46〜62% を、agent の観点がどれも使わない CSS と JavaScript が占めている。
+  これを解く本文テキストと script の分離は norm-refit の外で進める
+  （「norm-refit の終了条件に含まないもの」の節）
 - 終了条件が 3 系統に割れ、2 つには実質の上限が無い（impl-spec の「0 件まで、最大 5 回」と、
   PR 前のセルフレビューの記述なし）
 - agent が突合先として読む配布 rule が 455 行から 1,515 行へ増え、最適化時の実測値が基準にならなくなった
@@ -585,13 +644,14 @@ norm カタログも同じ形で持つ。
 - 依存: R1
 
 norm と facet に付ける資材の扱いをここで設計する。最初の対象は、
-名前として使われがちな汎用語の一覧（`軸` `面` `層` `枠` `系` `帯` `明細` `台帳` `観点` `粒度` `論点` 等）。
+名前として使われがちな汎用語の一覧（`軸` `面` `層` `枠` `系` `帯` `明細` `台帳` `正典` `観点` `粒度` `論点` 等）。
 
 - 位置づけは検知の条件ではなく、norm または facet が参照する資材にする。
   語が含まれることは、それが読み手に伝わらない呼び名であることを意味しない。
   同じ語が普通名詞として正しく使われる場面がある
 - 一覧をどこに置くか（norm の側か facet の側か）、レビューがそれをどう使うか
-  （候補として挙げるだけか、指摘の条件に組み込むか）を、この段階で決める
+  （候補として挙げるだけか、指摘の条件に組み込むか）を、この段階で決める。
+  一覧を指摘のたびに増やす仕組みと、機械レビューへの接続は R9
 - ユーザー判断 2026-09-01「危険ワードを列挙するのは op-review の最適化において、
   このクソゴミ抽象エイリアスワードを検知するために参考として列挙するのは価値があると思う。
   norm か facet に対する asset, resorce として、ただこれが含まれたからといって
@@ -621,27 +681,13 @@ norm と facet に付ける資材の扱いをここで設計する。最初の�
   sentence-reviewer は、一次情報も議題の説明も渡さないこと（文脈を持たないこと）が検出の条件なので、
   `norm-review` へ統合するなら、その facet には一次情報を渡さない形が要る。
   取り込み方（facet として持つか、別 agent のまま呼ぶか）と、効果の測り方
-  （事例集 `sentence-level-review-cases.md` の出所別の件数。基準値と期間は未定）をここで決める。
+  （文の指摘は事例集 `sentence-level-review-cases.md`、構成の指摘は `structure-level-review-cases.md` の出所別の件数。基準値と期間は未定）をここで決める。
   試行の実文は `notes/artifacts/sentence-reviewer-trials.md`
 - 依存: R1・R2
 
-### R5 レビュー対象からテキストを分離する
-
-html-communication の作りを改修して、レビューに渡す対象を小さくする（ccm-f056 Q5）。
-
-- 本文テキストと、構造化された HTML・script を分離する。テキストは JSON に置き、script が読み込む
-- JSON だけで構造が辿れる形にする。ある文が説明 2 として説明 1 の後続に置かれること、
-  その注釈がどの文かが、JSON だけから分かること
-- 文どうしの依存関係が JSON だけで示せれば、JSON だけをレビューできる
-- 回答も JSON で保持する。ページに入力された回答が、そのページの改稿や削除で失われない形にする
-  （ユーザー判断 2026-09-01）
-- **未解決**: 図と画像をどう混ぜてレビューするか。テキストを JSON へ出すと図が外に残る。
-  方法を設計する
-- 依存: R2。何を facet にするかでレビュー対象に要る形が決まる。R1 とは並行できる
-
 ### R8 共通ページを消さない運用へ変える
 
-完了したページを掃除で削除する運用が、台帳の出典を壊している。実際に 3 ページが失われた
+完了したページを掃除で削除する運用が、decision-record の出典を壊している。実際に 3 ページが失われた
 （efso-idp の eidp-f003 / eidp-f004、cc-marketplace の ccm-f045。いずれも実文の写しは残っている）。
 
 - 「完了が 10 件を超えたら古い順にファイルと index エントリを削除する」条項を削る
@@ -649,12 +695,13 @@ html-communication の作りを改修して、レビューに渡す対象を小�
   （ユーザー判断 2026-09-01）。ファイルは消さない
 - 改稿で前の版が失われる経路（同名上書き）をどうするかは未決。
   回答や確認を受けた版を別ファイルにする案が `todo.md` の 13 番にある
-- 依存: なし。R5 とは別に進められるが、どちらも html-communication skill を触るので順序を決める
+- 依存: なし。html-communication skill を触るので、同じ skill を改修する本文テキストと script の分離
+  （norm-refit の外。「norm-refit の終了条件に含まないもの」の節）との順序を決める
 
-### R6 台帳のレビュー観点を運用 rule として定義する
+### R6 decision-record のレビュー観点を運用 rule として定義する
 
 外部セッションから持ち込まれた 3 観点を、レビュー時の観点ではなく、
-台帳を運用するときの rule として定義する（ccm-f056 Q7）。実文は `todo.md` にある。
+decision-record を運用するときの rule として定義する（ccm-f056 Q7）。実文は `todo.md` にある。
 
 - `norm-review` がこの rule を norm として読み込むかは R2 の設計次第
 - 依存: R2
@@ -668,6 +715,36 @@ html-communication の作りを改修して、レビューに渡す対象を小�
 - impl-spec から IS335（入力文書側の修正も指摘する）を両 agent へ引き上げる
 - 呼び出し元（handover skill / html-communication skill）の記述を、改善案が返らない前提へ合わせる
 - 依存: R3・R4。終了条件と統合の可否が決まってから agent 本文を触る
+
+### R9 汎用語・造語を指摘のたびに収集し、機械レビューの資材にする
+
+指すものが文の中で決まらない語（汎用語を物の名前に使う、その場で作った呼び名）は、
+書き手の判断に頼る事前の指示では止まらない。書き手は自分の圧縮を検出できない
+（[定義せずに作った呼び名を止める仕組み（外の実践）](./artifacts/coined-shorthand-controls.md) の結論）。
+指摘されるたびに語を 1 件ずつ集め、集めた語を機械レビューが読む資材にする（ユーザー判断 2026-09-08）。
+
+- 収集の仕組み。指摘の発生源は 4 つ: ユーザーの指摘（チャット・PR コメント・フォームの差し戻し）、
+  reviewer agent 3 本（sentence-reviewer / page-reviewer / handover-reviewer）の指摘、
+  機械検査（`check-page.mjs` と `check-handover.mjs` の `unglossed-alias`）、retrospective。
+  指摘を処理する工程（github-pr の address-review、html-communication の回答受領、session の retrospective、
+  事例集への追記）に「語を 1 件足す」手順を入れる。手順を持たない発生源からは拾えないので、発生源ごとに入口を決める
+- 1 件の形: 語 / 指摘された文（逐語） / 実際に指していた物（固有名） / 出所（人間 / agent / 機械 / スイープ） / 日付。
+  事例集 `sentence-level-review-cases.md` は文単位、こちらは語単位。初期投入は事例集の I-1 型の事例と、
+  R2 の一覧（`軸` `面` `層` `枠` `系` `帯` `明細` `台帳` `正典` `観点` `粒度` `論点`）
+- 保持場所（着手前に決める）。候補は 3 つ。(a) plugin 同梱の config（`ja-writing-ambiguity` に置き、
+  I-1 の条項と同居させる。plugin update で全環境へ配れるが、収集のたびに版が上がる）。
+  (b) plugin data（`~/.claude/plugins/data/` 配下。claude-known-issues と同じ形。追記に版が要らないが、
+  repo の外なので git 履歴に残らず、他のマシンと共有しにくい）。(c) repo の `notes/artifacts/`
+  （plugin が repo の notes を読む依存になり、plugin 自己完結に反する）。
+  推すのは (a) と (b) の二層。同梱 config を初期値、data 側を追記先にし、たまったら config へ取り込む
+- 機械レビューへの接続（着手前に決める）。読む側は `check-page.mjs`（claude-user-communication）、
+  `check-handover.mjs`（session）、`norm-review` の facet 資材（R2）、sentence-reviewer の入力。
+  他 plugin の `internal/` を読まない原則と両立させる方法を決める。候補は、`ja-writing-ambiguity` の
+  `scripts/` に語の一覧を JSON で出す入口を 1 つ置き、他 plugin はそのパスを `settings.json` の `env` で受け取る形
+- 判定の扱い: 語が含まれることは誤りの証拠ではない（R2。同じ語が普通名詞として正しく使われる場面がある）。
+  機械レビューは候補として挙げ、固有名へ置き換えられるかを問う形にする。指摘 0 件を終了条件にしない
+- 依存: R2（資材の位置づけと置き場）。収集の手順は R1・R2 を待たずに入れられる。
+  着手前に決めるのは 4 件（保持場所 / 1 件の形 / 読む側の接続方法 / 初期投入の範囲）
 
 ### 到達点
 
@@ -693,8 +770,9 @@ ccm-f056 Q1 が決めたのは段階 3 の残りの扱いまでで、以下は�
 4. v2 の各群。群 A（規範の運用と保守）から着手する。A3 は段階 R へ移したので、
    残るのは A1・A2・A4・A5。群 B・C・D の順序は未定
 
-段階 R の R5（テキストの分離）と R8（消さない運用）は html-communication skill を触るので、
-群 C（情報デザイン norm と HTML 雛形）と重なる。群 C の着手時に、段階 R で入った変更を前提にする。
+段階 R の R8（消さない運用）と、norm-refit の外で進める本文テキストと script の分離は
+html-communication skill を触るので、群 C（情報デザイン norm と HTML 雛形）と重なる。
+群 C の着手時に、両方で入った変更を前提にする。
 
 ## 段階 3-2 japanese-text-writing の保守の手引き
 
@@ -752,7 +830,7 @@ v2 の群 A〜D とも重ならない文字を選んだ。
 ### なぜ立てたか
 
 2026-08-31 のセッション終盤で、明文の条項が 3 回続けて守られなかった。
-原因を 2026-09-01 に調べ、素朴な仮説が 2 つとも否定された。調査の明細は
+原因を 2026-09-01 に調べ、素朴な仮説が 2 つとも否定された。調査の artifacts は
 [規範を引かない問題の調査](./artifacts/norm-adherence-survey.md)。
 
 - 条項は 3 回とも載っていた。載っていなかった時点は 0 件
@@ -795,7 +873,7 @@ HTML フォーム ccm-f076 を書くとき、入口の `rules/japanese-text-writ
 ### 自然環境の観測が 1 件ある
 
 エイリアスの条項について、条項が載った状態での遵守を自然環境で数えた
-（2026-09-01、明細は
+（2026-09-01、artifacts は
 [エイリアスの条項が守られなかった件の実測](./artifacts/alias-clause-adherence.md)）。
 同じ趣旨の条項が 3 ファイル 6 か所にあり、違反した 2 件では 4 か所が違反の直前に
 コンテキストへ届いていた。`core.md` が届いた後の assistant のテキストターン 135 件のうち
@@ -811,7 +889,7 @@ grader が機械で判定できる条項の実例になる。
 
 ### 測る対象になる機構が 4 つ増えた
 
-ccm-f063（2026-09-01、台帳の同日エントリ）で、エイリアスを止める機構を 4 つ入れると決めた。
+ccm-f063（2026-09-01、decision-record の同日エントリ）で、エイリアスを止める機構を 4 つ入れると決めた。
 どれも「効いたかどうか」を測る手段を持たないまま入るので、この段階の測定対象になる。
 
 | 機構 | 置き場 | 効いたと言える条件 |
@@ -829,7 +907,7 @@ ccm-f063（2026-09-01、台帳の同日エントリ）で、エイリアスを�
 条項がロードされた状態での遵守率を測る仕組み。`evals/` の `claude plugin eval` ハーネスが
 土台になるが、いまは skill の発動率を測るもので、遵守を測る形には組み替えが要る。
 
-測り方の骨子は調査の明細にある。同じ課題文を、条項が載った状態と載っていない状態で書かせ、
+測り方の骨子は調査の artifacts にある。同じ課題文を、条項が載った状態と載っていない状態で書かせ、
 条項が要求する形になっているかを grader で見る。
 
 条件をもう 1 軸足せることが分かった。規範の有無（条件 A / B）とは別に、
@@ -837,7 +915,7 @@ ccm-f063（2026-09-01、台帳の同日エントリ）で、エイリアスを�
 環境変数 `CLAUDE_CODE_ACT_DONT_REDERIVE=0` で、システムプロンプトの
 `act_dont_rederive`（278 文字）をセッション単位で外せる。
 これは「そのつど原文を開き直す」と最も直接に競合する指示になる。
-明細は [システムプロンプトの実測](./artifacts/system-prompt-survey.md)。
+artifacts は [システムプロンプトの実測](./artifacts/system-prompt-survey.md)。
 
 この軸を足すと、規範が載っていても守られない原因が「競合する指示の存在」にあるのかを
 切り分けられる。規範あり × 競合指示ありと、規範あり × 競合指示なしの 2 条件で差が出れば、
@@ -849,7 +927,7 @@ Opus 5 では GrowthBook の既定に関わらず入る。3 つを分離して�
 
 システムプロンプト側の指示は 4 つの向きに分かれ、3 つが「引き直さない・確認しない・委譲しない」を
 指している。引き戻す側は「実際に起きたことを報告する」の 1 つだけで、その強化版は既定で無効。
-向きの一覧と、手元の rule と同時に満たせない 5 組も同じ明細にある。
+向きの一覧と、手元の rule と同時に満たせない 5 組も同じ artifacts にある。
 
 ### 未決
 
@@ -866,6 +944,13 @@ Opus 5 では GrowthBook の既定に関わらず入る。3 つを分離して�
   遵守の測定と違い、成果物からは読めない。transcript の Read の有無で数えるのか、
   課題文の側で分類別にしかない条項を要求して差を見るのか
 - 「載る前に落ちる」と「載ったのに守らない」を、1 つの仕組みで測るのか分けるのか
+- 参照知識 skill が詳細規範より引かれやすいかを測る。2026-09-08 に
+  `ja-writing-ambiguity` plugin の `ref-ja-writing-ambiguity` skill を新設し、
+  `core.md` と重なる条項（造語と汎用語・非生物主語・比喩）を重複させた。
+  同じ内容が詳細規範と skill の両方にあり、入口 rule 側の条項は消してあるので、
+  どちらが引かれたかを分けて数えられる。
+  skill の description はセッション中つねに載り、本体は発動したときだけ載る。
+  詳細規範は入口 rule の分岐を通らないと存在が分からない。この差が効くかを見る
 
 ### 順序
 
@@ -899,13 +984,24 @@ Opus 5 では GrowthBook の既定に関わらず入る。3 つを分離して�
 
 保留 18 件が集まる先。段階 3 と並走できる。
 
+T4 送りの 18 件と RD20 は、次のファイルから引く（ccm-f084 Q3）。
+
+- 名簿: `notes/artifacts/norm-audit-roster.md`。条項 ID から判定ファイルを引く
+- 判定: `notes/artifacts/norm-audit-verdict-dg1-17.md`、`norm-audit-verdict-dg18-34.md`、`norm-audit-verdict-dg35-49.md`、
+  `norm-audit-verdict-typespec.md`。処遇が `保留` で T4 送りになっている行が対象
+- 原文: `notes/artifacts/norm-audit-raw/hc-fn-aq.md`（HC / FN / AQ の条項）と `norm-audit-raw/type-specific-screening.md`（種別固有の一次判定）
+
+`notes/artifacts/responsibility-boundary-draft.md`（html-communication のパターン集に入れる候補の下書き）は
+18 件にも RD20 にも属さない。「参考デザイン例の reference」でパターン集との関係を整理するときに、
+採否を決める。
+
 ### レビュー機構のゼロベース再設計（段階 R へ移した）
 
 2026-08-31 に段階 R へ移した（ccm-f056 Q1）。2 箇所の diff は 2026-08-31 に完了しており、
 結果は段階 R の R1 と `notes/artifacts/review-cost-survey.md` の 7 節にある。
 専用 reviewer の廃止可否は R4 が扱う。
 
-設計入力として、LLM によるレビューは可読性を判定できないという調査結果がある（台帳の作業メモ）。
+設計入力として、LLM によるレビューは可読性を判定できないという調査結果がある（decision-record の作業メモ）。
 
 ### 情報デザイン norm 48 本の置き場
 
@@ -917,7 +1013,7 @@ op-review リソースと作成時指針が候補だが、48 本をどう割る�
 この「op-review」は idea-hub Q81 の分類名の引用で、ccm-f064 で `norm-review` に改名した
 こちらの plugin と同じものを指すかは未確認。
 
-boilerplate repo の廃止判断と norm 1 本単位の明細も、この項目に含めて扱う。
+boilerplate repo の廃止判断と norm 1 本単位の artifacts も、この項目に含めて扱う。
 
 **暫定で先に書いたものが 1 件ある**（2026-08-22）。表・箇条書き・地の文の使い分けの HTML 適用を、
 html-communication skill に「並列列挙を表にしない」として書いた（0.25.0）。汎用の判定は
@@ -933,7 +1029,7 @@ T4 が 41 本の置き場を決めるとき、このパターン集との関係�
 
 `notes/artifacts/diagram-representation-research.md` の調査結論を入力に、
 構成図・概念図のパターンを `references/patterns/` へ足し、出典をパターン集側へ移す。
-移し終えたらこの明細を削除する。シーケンス図の素材が `~/Desktop/html-communication-sequence/` にある。
+移し終えたらこの artifacts を削除する。シーケンス図の素材が `~/Desktop/html-communication-sequence/` にある。
 
 ### 独立の設計入力 2 件
 
@@ -950,16 +1046,19 @@ T4 が 41 本の置き場を決めるとき、このパターン集との関係�
 切り替え直前に、写し元 commit `6dfddfc31b326d86c47d496646321551f07e5206` からの差分を取る。
 差分が出たら凍結が破れているので、写しへ反映してから切り替える。
 
-### 明細の処遇を決めて実行する
+### artifacts の処遇を決めて実行する
 
-`notes/norm-refit.md` の「この台帳が参照する明細」のうち、生存期間がこの段階を条件にしているものの
-処遇（正式な文書への昇格か削除か）を 1 件ずつ決めて実行する。
-対象は `notes/artifacts/norm-inventory.md` と `notes/artifacts/research-ledger.md`。
+`notes/norm-refit.md` の「この decision-record が参照する artifacts」と、この文書の「この計画が参照する artifacts」のうち、
+生存期間がこの段階を条件にしているものすべての処遇（正式な文書への昇格か削除か）を 1 件ずつ決めて実行する。
+生存期間を「本体と同じ」にしている artifacts は本体の生存期間を引き継ぐので、全部がここの対象になる。
+対象の数え上げは 2026-09-07 の棚卸し（ccm-f084）で、完了した工程の記録でしかないものが 41 件あった。
+この工程で個別に消す判断はせず、処遇を決める工程だけをここに置く（ccm-f084 Q1）。
+到達点 7 がこの工程の検証条件になる。
 
 ### idea-hub へ申し送る
 
 `notes/artifacts/idea-hub-handoff.md` を依頼文に編み、ユーザー経由で idea-hub へ渡す。
-渡し終えたらこの明細を削除する。渡した後に先方でどう扱うかは群 D の D3 が持つ。
+渡し終えたらこの artifacts を削除する。渡した後に先方でどう扱うかは群 D の D3 が持つ。
 
 ### 到達点の検証
 
@@ -967,13 +1066,13 @@ T4 が 41 本の置き場を決めるとき、このパターン集との関係�
 
 ## norm-refit-v2: norm-refit の後に続く改善
 
-norm-refit の段階 5 が終わったら、同じ台帳・計画・進捗レポートのまま norm-refit-v2 として続ける（ユーザー判断 2026-08-25）。
+norm-refit の段階 5 が終わったら、同じ decision-record・計画・進捗レポートのまま norm-refit-v2 として続ける（ユーザー判断 2026-08-25）。
 v2 は、norm-refit が「終了条件に含まないもの」として外に置いた作業と、実装中に積み上がった後続課題を扱う。
-段階 5 の到達点の検証が v2 の開始条件で、v2 の中の順序は固定しない。着手時に台帳の未解決課題と突き合わせて選ぶ。
+段階 5 の到達点の検証が v2 の開始条件で、v2 の中の順序は固定しない。着手時に decision-record の未解決課題と突き合わせて選ぶ。
 
 ### 群 A 規範の運用と保守
 
-- A1 規範の要否の吟味と常時更新の設計（台帳の未解決課題「規範の要否の吟味と常時更新の設計」、f008 Q1 補足）。
+- A1 規範の要否の吟味と常時更新の設計（decision-record の未解決課題「規範の要否の吟味と常時更新の設計」、f008 Q1 補足）。
   再配置した規範 1 件ずつの要否を吟味し、retrospective の codify とレビュー指摘の一般化で規範を更新し続ける設計を決める。
   段階 3-2（保守の手引き）が入口になる
 - A2 rule の eval 化（task「rule の eval 化」）。reference-docs から削除した「rule を書くとき」由来の 1 条項の仕組み化と、
@@ -982,20 +1081,51 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
   残りは commit ccdfc6c の `notes/trigger-eval-harness.md` にある
 - A3 review 工程のコスト対効果の見直し（2026-08-31 に段階 R へ移した。ccm-f056 Q1）。
   実測は段階 R の到達点と `notes/artifacts/review-cost-survey.md` にある
-- A4 「生成物への指摘は、まず規定を疑う」の置き場（台帳の未解決課題。内容は確定済み）
-- A5 文レベル指摘の事例集の後処理（段階 4 群 3 の入力として使った後、残すか eval の fixture へ移すか。段階 5 の notes の処遇と一緒に決める）
+- A4 「生成物への指摘は、まず規定を疑う」の置き場（decision-record の未解決課題。内容は確定済み）
+- A6 `ref-ja-writing-ambiguity` skill と `core.md` の重複の解消。
+  2026-09-08 に、どちらが引かれるかを測るために意図して重複させた中間状態を作った。
+  段階 V の測定で差が出たら、規定を片方へ寄せる。skill 側へ寄せるなら、
+  同じ形で他の条項も skill へ出すかを併せて決める。
+  この重複は到達点 4（記法規範が 4 媒体に届く）の解き方の再判定にあたるが、
+  段階 2 が閉じているのでここで受ける
+- A5 文レベル・構造レベル指摘の事例集 2 本の後処理（段階 4 群 3 の入力として使った後、残すか eval の fixture へ移すか。段階 5 の notes の処遇と一緒に決める）
 
 ### 群 B 日本語の機械検知
 
+型の分類と型名の定義を先に済ませる（B6）。B1 から B5 はその型を参照するので、
+型が決まらないと何を検知するかが決まらない。番号は着手の順序を表さない。
+
 - B1 名詞構文の機械検知（core の AI 口調の型には入った。検知は未着手。`notes/artifacts/prototypes/ja-no-nominalization.js` が試作）
-- B2 係り受けの多義の 2 条件（成立条件と解消法）を DG14 に取り込む（台帳の未解決課題、部分解消）
-- B3 経緯・出典注記の抑制のレビュー観点と機械検知（台帳の未解決課題、部分解消。textlint の日付括弧パターン等）
+- B2 係り受けの多義の 2 条件（成立条件と解消法）を DG14 に取り込む（decision-record の未解決課題、部分解消）
+- B3 経緯・出典注記の抑制のレビュー観点と機械検知（decision-record の未解決課題、部分解消。textlint の日付括弧パターン等）
 - B4 格配置・語順の熟慮（段階 4 群 3 で体系化する分。v2 では検知へ落とす）
+- B5 外部の AI 文体カタログの取り込み（未着手）。日本語の一次資料が 3 つある。
+  記事 [AI 語とは何なのか](https://ktrmnm.jp/blog/2026-08-29-what-is-ai-ism-jp/) と
+  その続き [AI 語を受容する](https://ktrmnm.jp/blog/2026-08-29-accept-ai-ism/)（Kentaro Minami、2026-08-29）、
+  そこから辿れる [stop-ai-slop-jp](https://github.com/iKora128/stop-ai-slop-jp)（SKILL.md と
+  `references/phrases.md` / `references/structures.md`）。
+  続きの記事は、直すものと我慢するものを読み手（自分 / 内部共有 / 公的な場）で分けており、
+  非生物主語を全面禁止にしない線引き（「結果が示す」は可、擬人化と換喩は不可）と、
+  否定文を 4 つに分類する手順、指示語だけで接続しない条項を持つ
+- B6 型の分類と型名の定義。2026-09-08 に `ref-ja-writing-ambiguity` skill へ 3 分類 8 型を置いた。
+  指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、
+  主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、
+  修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。
+  これをとっかかりにして、`notes/artifacts/sentence-level-review-cases.md` の型 1 から型 11 と、
+  B5 の外部カタログの型を突き合わせ、正式な型名を定義する。
+  この作業は「段階 4 群 3」の名前で A5・B4・事例集の冒頭・decision-record の
+  2026-08-19 の確定から参照されているが、計画は「終了条件に含まないもの」の後続 10 件に
+  「日本語の構造的曖昧性」として置いており、norm-refit の外にある。実体はここ
+  core の「AI 口調の禁止」に無い型と、機械検知へ落とせる語彙リスト（AI 偏愛語・必殺技造語・
+  翻訳調動詞・横文字メタファー）を取り出す。B1 の名詞構文は stop-ai-slop-jp が
+  「false agency」として同じ型を扱っており、検知の材料が重なる。
+  記事が挙げる他の資料（`avoid-ai-writing`、`humanizer`、Juzek &amp; Ward 2024、Sharma+2023、
+  The Atlantic の negative parallelism）は英語で、日本語への当てはめが要る
 
 ### 群 C 情報デザイン norm と HTML 雛形
 
 - C1 配色調査の置き場（`notes/artifacts/html-color-tokens.md` の調査部分。product-boilerplate の visual-readability V7 / V8 / V10 と重なり、
-  こちらの裏付けが強い）と、移した後の html-color-tokens.md の削除（台帳からの参照 3 箇所も外す）
+  こちらの裏付けが強い）と、移した後の html-color-tokens.md の削除（decision-record からの参照 3 箇所も外す）
 - C2 「静か + 強調」の言語化（雛形の方針を判定できる規範にする。V6 の強調の総量規制と合わせる）
 - C3 CLAUDE_CODE_ARTIFACT_DELETE の判断と html-communication のアーティファクト化の再検討（task）
 - C4 op-pr-review-assist の設計（段階 4 のレビュー機構の再設計と合流）
@@ -1011,7 +1141,7 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
 
 ### v2 で変わる運用
 
-- 台帳 `notes/norm-refit.md`・計画（この文書）・進捗レポート `ccm-r003` は v2 でも同じものを使う。
+- decision-record `notes/norm-refit.md`・計画（この文書）・進捗レポート `ccm-r003` は v2 でも同じものを使う。
   notes の生存期間は「v2 の完了」までに延ばす
 - `.claude/rules/norm-refit-ops.md` は v2 の間も効かせる。削除は v2 の完了時
 - 編集凍結は段階 5 で解除する（v2 には持ち越さない）
@@ -1053,6 +1183,10 @@ PR を出す前に、必ずセルフレビューを通す。順序は次のと�
 - **op-pr-review-assist の設計**。段階 4 のレビュー機構の再設計と合流させる
 - **impl-spec の内部重複の解消**（原文完全一致 36 種・91 条項）。
   3 skill を抱えたまま product-workflow へ統合されるので、idea-hub の PR 8 で扱う
+- **html-communication の本文テキストと script の分離**（旧 R5）。テキストを JSON に置いて script が
+  読み込む形にし、回答も JSON で保持する。段階 R から外し、別セッションが別 worktree で PR を出して
+  main へマージする（ユーザー判断 2026-09-08。確定の実文は decision-record の同日エントリ）。
+  別セッションはこの計画と decision-record を編集しない
 
 ## この計画で捨てたもの
 

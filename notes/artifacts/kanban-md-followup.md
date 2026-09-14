@@ -1,5 +1,7 @@
 # kanban-md の追加調査と比較検討
 
+本体は [kanban のタスク管理](../kanban-board.md)。生存期間は本体と同じ。
+
 調査日 2026-09-01。出発点は ccm-f058（`/Users/ryosuke/.local/share/claude-html-communication/ccm-f058.html`）の
 暫定採用（板の実体は自前のファイル、ツールは kanban-md）。
 

@@ -1,4 +1,6 @@
-# Plane Cloud Free の上限・公式 CLI・公式 MCP・API レート制限（2026-09-04）
+# Plane Cloud Free の上限・公式 CLI・公式 MCP・API レート制限
+
+本体は [kanban のタスク管理](../kanban-board.md)。生存期間は本体と同じ。
 
 `notes/kanban-board.md` の確定 11（道具は Plane、エディションは未定）を受け、ccm-f068 への回答の補足
 （Free の上限の実調査 / CLI の有無 / API のリクエスト制限）に答えるため、公式の一次情報で確かめた記録。

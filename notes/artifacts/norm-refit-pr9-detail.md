@@ -1,5 +1,7 @@
 # norm-refit PR 9 skill / agent の書き方の器: 作業明細
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 実装者はこの明細だけを見て `rules/` に 4 ファイルを新設し、`rules/rule-authoring.md` を削り、`README.md` を直す。
 行番号・件数・frontmatter の実態はすべて main `1681bfd` の実読・実測（2026-08-27）。
 boilerplate 側は `/Users/ryosuke/ghq_root/github.com/ryosukee/product-boilerplate` の `789f95f` の実読。

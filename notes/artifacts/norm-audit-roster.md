@@ -1,4 +1,6 @@
-# 条項の名簿（機械生成）
+# 条項の名簿
+
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
 
 全 1350 条項について、どの判定ファイルが処遇を決めているかを引けるようにしたもの。
 `scripts` は無く、`notes/artifacts/norm-audit-raw/` と `norm-audit-verdict-*.md` から生成した。

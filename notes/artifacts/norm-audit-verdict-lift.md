@@ -1,5 +1,7 @@
 # 処遇判定: 既存なし 85 件（段階 1-2）
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 既存規範に同趣旨が無い条項。引き上げ候補。
 語彙は `norm-audit-raw/verdict-schema.md` に従う。
 

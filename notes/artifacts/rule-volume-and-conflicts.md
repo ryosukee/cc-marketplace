@@ -1,5 +1,7 @@
 # user global rule 群の規模と条項の競合
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 セッションに載る rule の量を実測し、同時に満たせない条項の組を洗い出す。
 対象は `/Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace/rules/`（symlink で
 `~/.claude/rules/cc-marketplace` へ配布）と、同 repo の `.claude/rules/`。

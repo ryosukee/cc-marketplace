@@ -1,6 +1,6 @@
 # idea-hub への申し送りの下書き
 
-本体は [norm-refit: 確定事項メモ](../norm-refit.md)。目的と生存期間はそちらの「この台帳が参照する明細」にある。
+本体は [norm-refit: 確定事項メモ](../norm-refit.md)。生存期間は本体と同じ。
 
 idea-hub のセッションへ渡す伝達事項を、norm-refit の進行中に追記して貯める。
 idea-hub 側は norm-refit の全完了後に作業を開始する予定なので、

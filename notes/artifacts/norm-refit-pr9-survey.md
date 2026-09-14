@@ -1,5 +1,7 @@
 # norm-refit PR 9 skill / agent の書き方の器: boilerplate からの抜き出し候補の調査
 
+本体は [norm-refit: 実装計画](../norm-refit-plan.md)。生存期間は本体と同じ。
+
 調査日 2026-08-26、boilerplate の基準 commit 789f95f、cc-marketplace main ce29314。
 read-only の調査で、編集はしていない。行番号はこの 2 つの commit の実読。
 パスの表記: boilerplate 側は `/Users/ryosuke/ghq_root/github.com/ryosukee/product-boilerplate/bundles/core/rules/` からの相対、cc-marketplace 側は `/Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace/` からの相対で書く。

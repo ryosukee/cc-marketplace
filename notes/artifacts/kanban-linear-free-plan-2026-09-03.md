@@ -1,4 +1,6 @@
-# Linear Free プランの制限と repo の対応（2026-09-03）
+# Linear Free プランの制限と repo の対応
+
+本体は [kanban のタスク管理](../kanban-board.md)。生存期間は本体と同じ。
 
 `notes/kanban-board.md` の候補 Linear について、無料枠の上限・超過時の挙動・repo を Project に
 対応させる構成を公式の一次情報で確かめた記録。ccm-f068 の改稿（全 repo を 1 サービスに載せる前提）の根拠。

@@ -1,4 +1,6 @@
-# OpenProject / YouTrack / Wekan / Beads の repo 切り分け単位と上限（2026-09-03）
+# OpenProject / YouTrack / Wekan / Beads の repo 切り分け単位と上限
+
+本体は [kanban のタスク管理](../kanban-board.md)。生存期間は本体と同じ。
 
 `notes/kanban-board.md` の残った候補のうち Linear と Plane 以外の 4 件について、複数 repo を
 1 サービスに載せたときの切り分け単位・横断の kanban の可否・無料枠の上限を公式の一次情報で
