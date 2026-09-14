@@ -7,7 +7,6 @@
 - 名前付き agent
 - hook
 - skill、名前付き agent、hook が呼び出すスクリプト
-- requirements と setup 手順
 
 ユーザー環境の設定ファイルや symlink は dotfiles、作業リポジトリ固有の指示は
 各作業リポジトリで管理する。これらの共有設定は本書の対象にしない。
@@ -88,8 +87,3 @@ Claude Code 用と Codex 用の定義を別々に置き、共通の指示本文�
 
 選択時は、実行時参照の可否、共通部分の量、固有メタデータの差、生成物の保守負担を比べる。
 どちらを選んでも、agent 内部専用の資料を公開 `skills/` に置かない。
-
-## Requirements と setup を plugin ごとに管理する
-
-requirements と setup の正の所在は各 plugin の README とし、独自の requirements manifest は設けない。
-必要な項目と未 setup 時の扱いは [Plugin 設計原則](../.claude/rules/plugin-design.md) に記載する。
