@@ -9,6 +9,7 @@ user-invocable: false
 レビュー開始は Diffo 公式の `diffo` skill と CLI の `help agent` に従う。
 ここでは Claude Code の追跡可能なバックグラウンドタスクで通知を受け取る方法を補う。
 返信前に[共通手順](../../references/review-protocol.md)を読む。
+表示を調整するときは[表示調整の手順](../../references/display-customization.md)を読む。
 
 ## poll を監視する
 

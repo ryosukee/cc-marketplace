@@ -33,6 +33,17 @@ test('both skills resolve the same shared review protocol', () => {
   }
 });
 
+test('display customization has its own shared reference', () => {
+  assert.doesNotMatch(read('references/review-protocol.md'), /diffo-patch/);
+  for (const directory of ['claude-skills', 'codex-skills']) {
+    const skillPath = path.join(root, directory, 'ref-diffo', 'SKILL.md');
+    const skill = readFileSync(skillPath, 'utf8');
+    const reference = skill.match(/\]\((\.\.\/\.\.\/references\/display-customization\.md)\)/)?.[1];
+    assert.ok(reference);
+    assert.match(readFileSync(path.resolve(path.dirname(skillPath), reference), 'utf8'), /diffo-patch/);
+  }
+});
+
 test('both supplemental skills point to the official Diffo entry point', () => {
   assert.match(read('README.md'), /npx skills add DiffoHQ\/diffo --skill diffo -g/);
   assert.equal(existsSync(path.join(root, 'skills', 'diffo', 'SKILL.md')), false);

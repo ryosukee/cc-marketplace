@@ -9,6 +9,7 @@ user-invocable: false
 レビュー開始は Diffo 公式の `diffo` skill と CLI の `help agent` に従う。
 ここでは Codex の作業 thread に通知を届ける方法を補う。
 返信前に[共通手順](../../references/review-protocol.md)を読む。
+表示を調整するときは[表示調整の手順](../../references/display-customization.md)を読む。
 
 ## poll を監視する
 
