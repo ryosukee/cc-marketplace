@@ -253,6 +253,7 @@
   }
 
   const clearHiddenResolvedHover = () => {
+    // Clear Diffo's row-hover highlight when its resolved threads become hidden.
     for (const scope of document.querySelectorAll(
       '.thread-row-lit.diffo-resolved-only-row .thread-anchor-scope',
     )) {

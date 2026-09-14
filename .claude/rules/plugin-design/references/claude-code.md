@@ -76,7 +76,3 @@ plugin の skill / hook が環境固有の値 (ホスト名込みの URL、マ�
   シェル側に置くと、値を追加する前から起動していたセッションには入らない
 - 値は展開されずそのまま渡る。`~` や `$HOME` は使えないため絶対パスで書く
 - 既定値で足りる値は設定しない。skill 側に既定値を書き、環境ごとに違う値だけを env に置く
-
-## Rules 配布
-
-rule は plugin の外で管理する。Claude Code の plugin loader は plugin 内の `rules/` を読まない。

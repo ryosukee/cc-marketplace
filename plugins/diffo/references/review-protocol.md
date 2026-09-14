@@ -1,7 +1,7 @@
 # Diffo レビューの共通手順
 
 Diffo 公式の `diffo` skill と CLI の `help agent` にある基本プロトコルに加え、
-Claude Code と Codex の両方で payload を読んで返信するときに使う補足規範。
+payload を読んで返信するときに使う補足規範。
 
 ## 返信先は各スレッドの id から取る
 
@@ -92,4 +92,3 @@ CSS のファイル冒頭に書いてある。
 前回の選択を使う。
 
 この切替は `.thread-resolved` などの表示だけを変える。thread の `resolved` 状態や diffo の保存データは変更しない。
-解決によって非表示になるスレッドに行のホバー強調が残っている場合は、diffo 本体の `onMouseLeave` を発火させて解除する。
