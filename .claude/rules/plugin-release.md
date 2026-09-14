@@ -1,12 +1,14 @@
 # Plugin 更新手順
 
+plugin に対する一連の変更を完了したら、PR を merge する前に以下の版数更新と検証を一度行う。
+レビュー中の修正コミットごとには版数を上げない。
 `Claude Code + Codex` の plugin は、Claude Code と Codex の両方の手順を実行する。
 
 ## 対応 CodingAgent にかかわらず行う変更
 
 1. README.md の該当 plugin のバージョン番号を更新する
 2. 構成を変更した場合は、CLAUDE.md の Plugin 一覧を更新する
-3. README に記載した対応 CodingAgent、requirements、setup 方法、未 setup 時の挙動を更新する
+3. 変更の影響がある場合は、README に記載した対応 CodingAgent、requirements、setup 方法、未 setup 時の挙動を更新する
 
 ## Claude Code に対応する場合
 
@@ -26,7 +28,7 @@
 
 ## 公開と手元への反映
 
-変更と検証が済んだら、`git commit` と `git push` を実行する。
+版数更新と検証が済んだら、その変更を `git commit` と `git push` で反映する。
 manifest の変更と push だけでは、手元にインストール済みの plugin は更新されない。
 更新前から動いているセッションにも反映されない。再導入後に新しいセッションで確認する。
 
