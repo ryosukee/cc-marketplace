@@ -2,7 +2,7 @@
 
 `Claude Code + Codex` の plugin は、Claude Code と Codex の両方の手順を実行する。
 
-## 共通の変更
+## 対応 CodingAgent にかかわらず行う変更
 
 1. README.md の該当 plugin のバージョン番号を更新する
 2. 構成を変更した場合は、CLAUDE.md の Plugin 一覧を更新する
