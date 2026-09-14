@@ -32,3 +32,11 @@ test('both skills resolve the same shared review protocol', () => {
     assert.match(readFileSync(path.resolve(path.dirname(skillPath), reference), 'utf8'), /threadIds/);
   }
 });
+
+test('both supplemental skills point to the official Diffo entry point', () => {
+  assert.match(read('README.md'), /npx skills add DiffoHQ\/diffo --skill diffo -g/);
+  assert.equal(existsSync(path.join(root, 'skills', 'diffo', 'SKILL.md')), false);
+  for (const directory of ['claude-skills', 'codex-skills']) {
+    assert.match(read(`${directory}/ref-diffo/SKILL.md`), /Diffo 公式の `diffo` skill と CLI の `help agent`/);
+  }
+});

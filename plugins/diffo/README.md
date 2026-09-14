@@ -2,20 +2,25 @@
 
 対応 CodingAgent: `Claude Code + Codex`
 
-Diffo のレビュー通知を作業中のセッションで受け、各スレッドへの返信を支援する plugin。
-Claude Code では追跡可能な background task、Codex では追跡可能な poller または
-`codex queue` を使う。いずれもレビュー開始と監視の起動は明示的に行う。
+この plugin は、[Diffo 公式の `diffo` skill](https://github.com/DiffoHQ/diffo/blob/main/skills/diffo/SKILL.md)
+と併用する補助 plugin。公式 skill がレビュー開始の入口となり、Diffo CLI の
+`help agent` が基本プロトコルを示す。この plugin の `ref-diffo` は通知の受け方、
+返信時の補足規範、Markdown プレビューの調整を追加する。
+Claude Code では追跡可能な background task で通知を受ける。Codex では
+追跡可能な poller で通知を受け、`codex queue` で作業中の会話へ届ける。
+いずれもレビュー開始と監視の起動は明示的に行う。
 Claude Code 用の手順は[Claude Code の ref-diffo](./claude-skills/ref-diffo/SKILL.md)、
 Codex 用の手順は[Codex の ref-diffo](./codex-skills/ref-diffo/SKILL.md)に分ける。
 両方に共通する返信の規範は[共通手順](./references/review-protocol.md)を読む。
 
 ## 必要なものと導入
 
-Diffo CLI を実行する場合は、以下が必要。
+Diffo 公式 skill と CLI を使う場合は、以下が必要。
 
-- Node.js
+- Node.js 24 以上
 - `npx`
     - Diffo CLI を `npx -y @diffohq/diffo` で実行する
+- `git`
 
 Codex でレビュー通知を自動受信する場合は、上記に加えて以下が必要。
 
@@ -23,7 +28,6 @@ Codex でレビュー通知を自動受信する場合は、上記に加えて�
     - `codex queue` と `codex app-server daemon` を使用する
     - `codex queue --help` で対応状況を確認する
 - Bash
-- `git`
 - `shasum`
 - `awk`
 
@@ -33,12 +37,17 @@ Codex でレビュー通知を自動受信する場合は、上記に加えて�
 - `perl`
 - `cmp`
 
+公式 skill はこの plugin に同梱していない。利用する CodingAgent に別途導入する。
+
+```bash
+npx skills add DiffoHQ/diffo --skill diffo -g
+```
+
 Claude Code では、このリポジトリを marketplace に追加して `diffo@cc-tools` をインストールする。
 Codex ではリポジトリルートで `codex plugin marketplace add .` を実行し、
 `codex plugin add diffo@cc-tools` でインストールする。
 両方とも plugin を導入するだけでは監視は始まらない。レビュー対象のリポジトリで
 `npx -y @diffohq/diffo --no-open` を実行し、skill の手順で poller を起動する。
-別の setup skill はない。
 
 Codex の queue 方式では、インストールした plugin の
 `bin/diffo-codex-poll` を絶対パスで呼び、レビュー対応中の Codex 会話を識別する

@@ -1,7 +1,7 @@
 {
   "name": "diffo",
-  "version": "0.4.5",
-  "description": "Diffo のレビュー通知を Codex の作業セッションへ届ける",
+  "version": "0.4.6",
+  "description": "Diffo 公式 skill を補い、レビュー通知を Codex の作業セッションへ届ける",
   "author": {
     "name": "CC Tools"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Diffo",
     "shortDescription": "レビュー通知を作業セッションへ届ける",
-    "longDescription": "Diffo のレビュー通知を受け、スレッドへの対応を支援する。Codex では queue による再開も利用できる。",
+    "longDescription": "Diffo 公式 skill によるレビュー開始と CLI の基本プロトコルを補い、Codex での通知受信とスレッドへの対応を支援する。",
     "developerName": "CC Tools",
     "category": "Productivity",
     "capabilities": [],

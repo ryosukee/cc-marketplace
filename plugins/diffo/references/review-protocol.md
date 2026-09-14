@@ -1,6 +1,7 @@
 # Diffo レビューの共通手順
 
-Claude Code と Codex の両方で、Diffo の payload を読んで返信するときに使う。
+Diffo 公式の `diffo` skill と CLI の `help agent` にある基本プロトコルに加え、
+Claude Code と Codex の両方で payload を読んで返信するときに使う補足規範。
 
 ## 返信先は各スレッドの id から取る
 

@@ -1,12 +1,13 @@
 ---
 name: ref-diffo
-description: diffo でレビューを受ける作業の前に必ず読む。`diffo poll` で指摘を受け取る、スレッドへ返信する、指摘を資料へ反映する、のどれかを始める時点が発動点で、返信を書き終えてからでは遅い。返信先の取り違え、指定文言の言い換え、ターミナルへの重複報告を止める。markdown プレビューの見た目を変えるユーザースタイルシートの所在も持つ。
+description: `diffo poll` で指摘を受け取る、スレッドへ返信する、指摘を資料へ反映する、Markdown プレビューを調整する場合に読む。返信先の取り違え、指定文言の言い換え、ターミナルへの重複報告を防ぐ。
 user-invocable: false
 ---
 
 # Claude Code で Diffo レビューを受ける
 
-Claude Code の追跡可能なバックグラウンドタスクで Diffo の通知を受け取る。
+レビュー開始は Diffo 公式の `diffo` skill と CLI の `help agent` に従う。
+ここでは Claude Code の追跡可能なバックグラウンドタスクで通知を受け取る方法を補う。
 返信前に[共通手順](../../references/review-protocol.md)を読む。
 
 ## poll を監視する
