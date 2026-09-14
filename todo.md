@@ -651,3 +651,76 @@ handover の作成時とレビュー時に、引き継いだ項目がまだ要�
 - 工程をどこに置くか。handover skill の手順に入れるか、handover-reviewer agent の観点に足すか、
   `check-handover.mjs` で機械的に拾える部分（どこからも参照されない資料、日付の古い却下など）を検査へ寄せるか
 - 落とした項目の扱い。前回の handover が archive に残っているので消すだけでよいか、落としたことを 1 行残すか
+
+# ハーネス棚卸しの調査レポートを読んで、次に何を作るか決める
+
+依頼元: cc-marketplace の hernes-doctor ブランチのセッション（2026-09-08）。まだ読んでいない。
+
+「モデルが更新されたら指示ファイルを外して棚卸しすべきだ」という主張の裏付けと、
+その棚卸しを自動化する skill を作れるかを調べた結果が
+`https://mac-mini.hake-tarpon.ts.net/ccm-r008.html` にある
+（実体は `/Users/ryosuke/.local/share/claude-html-communication/ccm-r008.html`）。
+共通ページの index では未確認のまま登録してある。
+
+読むときに効きそうな結論を 3 つだけ書く。
+
+- rule ファイルとツール定義を走査して古い記述を挙げる監査は、`/claude-api prompt-audit` として
+  Claude Code 2.1.263 に同梱されていた。モデルのリリースごとに回すことまで書かれている。
+  自作する範囲はその分だけ狭くなる
+- Claude Code は、そのセッションのシステムプロンプト全文・ツール定義・読み込んだ指示ファイルを
+  セッション記録に残すようになった。版ごとに保存すれば差分を自分で取れる。
+  ただし記録が始まったのは 2.1.261 からで、それ以前は遡れない。
+  セッション記録には保持期間があるので、保存を始めるまでの版も失われる
+- この repo の rule と Claude Code のツール定義を突き合わせると、
+  同じことを言っている箇所が 3 件あった。ただし公式の監査は、
+  機能している重複を削除候補にしない規定を持っている
+
+読んだうえで決めてほしいのは、収集の側（版更新の検知とシステムプロンプトの記録）を作るか、
+先に `/claude-api prompt-audit` をこの repo に対して走らせて何が挙がるかを見るか。
+
+# ハーネスの記法と配置が、いまの Claude Code の仕様に合っているかを検査したい
+
+依頼元: cc-marketplace の hernes-doctor ブランチのセッション（2026-09-14）。
+
+rule・skill・agent・hook・plugin.json の書き方と置き場は、Claude Code 側の仕様で決まる。
+仕様は版ごとに変わるが、変わったことは手元のファイルからは分からない。
+frontmatter のフィールド名、置き場のパス、hook のイベント名、
+参照専用にするための書き方が現行仕様と食い違っても、
+読み込まれないまま動き続けるので気づかない。
+
+この検査は、rule がまだ要るかを判定する棚卸しとは別物になる。
+こちらは内容を見ずに、形式と配置が仕様どおりかだけを見る。
+
+## いま起きていること
+
+この todo.md に既に 1 件ある。「mkdocs-setup の frontmatter が効いていない」がそれに当たる。
+
+もう 1 件、hernes-doctor のセッションで見つけたものがある。
+`rules/rule-authoring.md` は、参照専用の rule を自動ロードから外す方法として、
+`paths` にどのファイルにも一致しない値（`never-match-reference-only`）を置く書き方を定めている。
+参照専用の指定が Claude Code に無いことへの回避策なので、正式な指定が入れば要らなくなる。
+`rule-authoring.md` には削除の条件も why も書かれておらず、正式な指定が入っても気づく仕組みが無い。
+
+## 公式の道具で埋まる範囲
+
+Claude Code 2.1.263 で確認したもの。
+
+- `claude plugin tag` は、plugin.json と marketplace のエントリが一致するかを検証する
+- `/doctor` は、インストールの健全性・遅い hook・版が最新かを見る。
+  CLAUDE.md と `.claude/rules/*.md` から、コードベースを読めば分かる内容を削る提案も持つ
+- `claude plugin details <plugin 名>` は、plugin の構成要素の一覧と常時ロードのトークン費用を出す
+
+frontmatter のフィールド名や hook のイベント名が現行仕様に合っているかを検査するものは、
+この 3 つには見当たらなかった。`/skill-doctor` は未確認。
+
+## やってほしいこと
+
+決めてほしいこと:
+
+- 検査の対象。rule の frontmatter、skill の frontmatter、agent の frontmatter、
+  hooks.json のイベント名、plugin.json と marketplace.json の整合、置き場のパスのどれを入れるか
+- 仕様の取り方。Claude Code のバイナリから読むか、公式ドキュメントを引くか、
+  実際に読み込ませてセッション記録に載ったかで確かめるか
+- 実行の契機。Claude Code の版が上がったときか、plugin の release 前か、その両方か
+- 置き場。dotclaude plugin の doctor skill に足すか、新しい plugin にするか、
+  markdownlint のように Write / Edit の後に走る hook にするか
