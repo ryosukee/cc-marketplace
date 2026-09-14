@@ -104,8 +104,6 @@ Claude Code 用と Codex 用の定義を別々に置き、共通の指示本文�
 
 選択時は、実行時参照の可否、共通部分の量、固有メタデータの差、生成物の保守負担を比べる。
 どちらを選んでも、agent 内部専用の資料を公開 `skills/` に置かない。
-Codex 側で登録が必要な定義は明示的な setup で配置し、plugin cache の
-version 付きパスを永続設定へ直接書かない。
 
 plugin 外で定義している名前付き agent のうち、`op-review` と `meta-improvement` の共通化は保留する。
 

@@ -5,12 +5,10 @@ Claude Code と Codex に共通する plugin 設計原則を定める。
 Claude Code と Codex の両対応を設計するときは、
 [両対応の設計方針](../../docs/cross-client-architecture.md)を読む。
 
-## CodingAgent 固有の規範
+## Claude Code 固有の規範
 
-- Claude Code の hook、monitor、settings.json、rule 配布を扱うときは
-  [Claude Code 用の規範](./plugin-design/references/claude-code.md)を読む
-- Codex の名前付き agent 登録を扱うときは
-  [Codex 用の規範](./plugin-design/references/codex.md)を読む
+Claude Code の hook、monitor、settings.json、rule 配布を扱うときは
+[Claude Code 用の規範](./plugin-design/references/claude-code.md)を読む。
 
 ## README に導入・運用情報を記載する
 
