@@ -12,6 +12,7 @@ Claude Code では追跡可能な background task で通知を受ける。Codex 
 Claude Code 用の手順は[Claude Code の ref-diffo](./claude-skills/ref-diffo/SKILL.md)、
 Codex 用の手順は[Codex の ref-diffo](./codex-skills/ref-diffo/SKILL.md)に分ける。
 両方に共通する返信の規範は[共通手順](./references/review-protocol.md)を読む。
+この plugin は、Diffo のブラウザ画面の表示を変更するスクリプト `bin/diffo-patch` も同梱する。
 
 ## 必要なものと導入
 
@@ -31,7 +32,7 @@ Codex でレビュー通知を自動受信する場合は、上記に加えて�
 - `shasum`
 - `awk`
 
-`diffo-patch` で Markdown プレビューの見た目を変更する場合は、以下も必要。
+`diffo-patch` で表示を変更する場合は、以下も必要。
 
 - `npm`
 - `perl`
@@ -59,6 +60,14 @@ Codex の queue が一時的に失敗した場合は、同じ通知を 5 秒間�
 Diffo のレビューと指摘は保持されるため、依存を直した後に poller を再起動できる。
 plugin がなくても Diffo CLI の手動 `poll` と `reply` は使用できる。
 
+## Markdown プレビューと表示の変更
+
+`diffo-patch` を適用すると、Markdown プレビューは GitHub 風の表示になり、
+1 行の改行から余分な `<br>` が生成されなくなる。
+解決済みスレッドは初期状態で非表示になり、表示切替の選択はブラウザに保存される。
+この切替は表示だけに作用し、スレッドの解決状態は変更しない。
+新規コメントと返信の下書きは、再描画後も同じブラウザタブ内で復元される。
+
 ## 更新・削除と状態
 
 更新後は各 CodingAgent で plugin を更新し、新しいセッションで使う。
@@ -66,10 +75,3 @@ plugin がなくても Diffo CLI の手動 `poll` と `reply` は使用できる
 Codex poller の排他 lock は `${XDG_STATE_HOME:-$HOME/.local/state}/diffo-codex-poll/` に置き、
 正常終了時に削除する。レビューとスレッドのデータは Diffo 側が保持する。
 `diffo-patch` は npx の Diffo パッケージを直接変更するため、Diffo 更新後は再適用する。
-
-## Markdown プレビューと表示の変更
-
-`diffo-patch` は Markdown プレビューを GitHub 風にし、改行 1 つで不要な `<br>` を作らない。
-解決済みスレッドは初期状態で非表示になり、表示切替の選択はブラウザに保存される。
-この切替は表示だけに作用し、スレッドの解決状態は変更しない。
-新規コメントと返信の下書きは、再描画後も同じブラウザタブ内で復元される。
