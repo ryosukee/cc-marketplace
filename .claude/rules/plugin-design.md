@@ -7,7 +7,7 @@ Claude Code と Codex の両対応を設計するときは、
 
 ## Claude Code 固有の規範
 
-Claude Code の hook、monitor、settings.json、rule 配布を扱うときは
+Claude Code 対応の plugin を扱うときは
 [Claude Code 用の規範](./plugin-design/references/claude-code.md)を読む。
 
 ## README に導入・運用情報を記載する

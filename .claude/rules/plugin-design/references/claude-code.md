@@ -5,8 +5,6 @@ paths:
 
 # Claude Code 固有の plugin 設計
 
-Claude Code の hook、monitor、settings.json、rule 配布を扱うときに適用する。
-
 ## Hook の state
 
 hook は `${CLAUDE_PLUGIN_ROOT}/internal/` に state を書く。
