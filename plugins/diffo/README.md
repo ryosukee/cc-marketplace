@@ -17,8 +17,7 @@ Diffo CLI を実行する場合は、以下が必要。
 - `npx`
     - Diffo CLI を `npx -y @diffohq/diffo` で実行する
 
-Codex で Diffo の監視を始めた作業 thread に、`codex queue` でレビュー通知を届ける場合は、
-上記に加えて以下が必要。
+Codex でレビュー通知を自動受信する場合は、上記に加えて以下が必要。
 
 - Codex CLI
     - `codex queue` と `codex app-server daemon` を使用する
@@ -42,7 +41,8 @@ Codex ではリポジトリルートで `codex plugin marketplace add .` を実�
 別の setup skill はない。
 
 Codex の queue 方式では、インストールした plugin の
-`bin/diffo-codex-poll` を絶対パスで呼び、親 thread の `CODEX_THREAD_ID` を渡す。
+`bin/diffo-codex-poll` を絶対パスで呼び、レビュー対応中の Codex 会話を識別する
+`CODEX_THREAD_ID` を渡す。
 このスクリプトは PATH に自動登録されない。利用する agent は、読み込んだ
 `codex-skills/ref-diffo/SKILL.md` のパスから plugin root を特定する。
 
