@@ -161,7 +161,7 @@ npx @tailwindcss/cli@4.3.3 -i in.css -o out.css --minify
 残すと決まったものだけをここへ入れる。
 
 ```sh
-node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/build-gallery.mjs" <出力先パス>
+node "{SKILL_DIR}/scripts/build-gallery.mjs" <出力先パス>
 ```
 
 出力は 1 枚。2 pane で、左にグループ別のリンク集、本文に全パターンを並べる。

@@ -505,10 +505,10 @@ export function renderPage(src, opts = {}) {
   if (isForm) {
     const res = answered ? `回答済み（${esc(answers.received)} 受領）` : "";
     const free = answered && answers.free ? esc(answers.free) : "";
-    parts.push(`<div id="bar">\n  <div id="bar-in">\n    <div class="bar-info">\n      <span id="proj">${esc(src.project)}</span>\n      <span id="cnt"></span>\n      <span id="res">${res}</span>\n      <span id="ver">${ver}</span>\n    </div>\n    <textarea id="free" aria-label="自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"${dis}>${free}</textarea>\n    <div class="bar-actions">\n      <a id="back" href="./">一覧に戻る</a>\n      <div class="action-cluster">\n        <button type="button" id="reset" class="subbtn"${dis}>リセット</button>\n        <button type="button" id="copy">回答をコピー</button>\n      </div>\n    </div>\n  </div>\n</div>`);
+    parts.push(`<div id="bar">\n  <div id="bar-in">\n    <div class="bar-info">\n      <span id="proj">${esc(src.project)}</span>\n      <span id="cnt"></span>\n      <span id="res">${res}</span>\n      <span id="ver">${ver}</span>\n    </div>\n    <textarea id="free" aria-label="自由記入" placeholder="気づいた点の自由記入（随時・自動保存）"${dis}>${free}</textarea>\n    <div class="bar-actions">\n      <a id="back" href="./index.html">一覧に戻る</a>\n      <div class="action-cluster">\n        <button type="button" id="reset" class="subbtn"${dis}>リセット</button>\n        <button type="button" id="copy">回答をコピー</button>\n      </div>\n    </div>\n  </div>\n</div>`);
   } else {
     const res = answered ? `\n    <span id="res">確認済み（${esc(answers.received)}）</span>` : "";
-    parts.push(`<div id="footer-nav">\n  <div>\n    <a id="back" href="./">一覧に戻る</a>\n    <span id="proj">${esc(src.project)}</span>${res}\n    <span id="ver">${ver}</span>\n  </div>\n</div>`);
+    parts.push(`<div id="footer-nav">\n  <div>\n    <a id="back" href="./index.html">一覧に戻る</a>\n    <span id="proj">${esc(src.project)}</span>${res}\n    <span id="ver">${ver}</span>\n  </div>\n</div>`);
   }
 
   for (const id of figures.templates.keys()) if (!usedFigs.has(id)) findings.push({ check: "source", where: `figures:${id}`, message: `figures ファイルの図 "${id}" を使うブロックが無い` });

@@ -37,7 +37,7 @@ const subs = [
     "<title>claude-html-communication アーカイブ$1</title>"],
   [/<h1>claude-html-communication 一覧 /, "<h1>claude-html-communication アーカイブ "],
   [/<h2>未完了（回答待ち・確認待ち）<\/h2>\s*<div id="awaiting"><\/div>/,
-    '<p class="sub">完了したページの全件。未完了は<a href="./">一覧</a>にある。</p>'],
+    '<p class="sub">完了したページの全件。未完了は<a href="./index.html">一覧</a>にある。</p>'],
   [/<h2>プロジェクト別（完了分）<\/h2>/, "<h2>プロジェクト別</h2>"],
 ];
 

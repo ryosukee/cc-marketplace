@@ -1,0 +1,18 @@
+{
+  "name": "claude-user-communication",
+  "version": "0.44.0",
+  "description": "調査報告や設計判断を HTML ページで提示し、回答を記録する",
+  "author": {
+    "name": "CC Tools"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "HTML Communication",
+    "shortDescription": "報告と確認を HTML ページで行う",
+    "longDescription": "調査報告、比較、確認フォームを HTML ページにまとめ、提示前の検査と回答記録まで行う。",
+    "developerName": "CC Tools",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "この内容を HTML ページにまとめて提示して"
+  }
+}
