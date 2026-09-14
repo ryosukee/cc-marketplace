@@ -28,7 +28,7 @@ plugin の `bin/diffo-codex-poll` を追跡可能なタスクまたは poll 専�
 - 異常終了時だけ出力を親 agent へ送る
 - ファイルの編集、スレッドへの返信、commit、push は行わない
 
-script は同じ Codex thread と repo の組み合わせを lock し、poller の重複起動を防ぐ。
+同じ Codex thread と repo の組み合わせで poller を重複起動しない。
 feedback を queue した後は次の poll を起動せず、終了する。
 
 親 agent は payload の全 `threadIds` に返信してから、新しい poller を起動する。
