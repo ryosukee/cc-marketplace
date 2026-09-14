@@ -4,11 +4,11 @@
 解決済みスレッドは初期状態で隠し、表示を切り替えられるようにする。
 コメントと返信の下書きも、同じブラウザタブ内で復元する。
 
-`diffo` を起動した後に、この plugin の `bin/diffo-patch` を実行する。
+Diffo 公式 skill の手順で `npx -y @diffohq/diffo --no-open` を起動した後に、
+この plugin の `bin/diffo-patch` を実行する。
 plugin root は、読み込んだ SKILL.md のパスから 2 階層上にある。
 
 ```bash
-npx -y @diffohq/diffo --no-open
 "<plugin root>/bin/diffo-patch"
 ```
 

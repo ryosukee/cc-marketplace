@@ -1,6 +1,6 @@
 ---
 name: ref-diffo
-description: `diffo poll` で指摘を受け取る、スレッドへ返信する、指摘を資料へ反映する、Markdown プレビューを調整する場合に読む。返信先の取り違え、指定文言の言い換え、ターミナルへの重複報告を防ぐ。
+description: "`diffo poll` で指摘を受け取る、スレッドへ返信する、指摘を資料へ反映する、Markdown プレビューを調整する場合に読む。返信先の取り違え、指定文言の言い換え、ターミナルへの重複報告を防ぐ。"
 user-invocable: false
 ---
 
@@ -9,7 +9,8 @@ user-invocable: false
 レビュー開始は Diffo 公式の `diffo` skill と CLI の `help agent` に従う。
 ここでは Codex の作業 thread に通知を届ける方法を補う。
 返信前に[共通手順](../../references/review-protocol.md)を読む。
-表示を調整するときは[表示調整の手順](../../references/display-customization.md)を読む。
+レビュー開始時は、Diffo CLI の起動後、poller の起動前に
+[表示調整の手順](../../references/display-customization.md)を読み、`diffo-patch` を適用する。
 
 ## poll を監視する
 
