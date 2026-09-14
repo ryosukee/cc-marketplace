@@ -1,0 +1,18 @@
+{
+  "name": "session",
+  "version": "2.14.0",
+  "description": "Codex のセッション開始、棚卸し、振り返り、引き継ぎを支援する",
+  "author": {
+    "name": "CC Tools"
+  },
+  "skills": "./codex-skills/",
+  "interface": {
+    "displayName": "Session",
+    "shortDescription": "セッションの引き継ぎを管理する",
+    "longDescription": "前セッションからの復元、作業状態の棚卸し、学びの明文化、次セッションへの引き継ぎを支援する。",
+    "developerName": "CC Tools",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "前回の引き継ぎから作業を再開して"
+  }
+}

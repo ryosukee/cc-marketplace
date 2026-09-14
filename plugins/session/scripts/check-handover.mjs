@@ -201,7 +201,7 @@ function checkFile(path) {
         });
       }
     });
-    if (!tableStarted) {
+    if (!tableStarted && taskSection.body.trim() !== "なし") {
       findings.push({
         check: "task-table",
         line: taskSection.line,
