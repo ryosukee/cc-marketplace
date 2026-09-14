@@ -1,6 +1,6 @@
 # Plugin 設計原則
 
-## 対応 CodingAgent を明記する
+## README に導入・運用情報を記載する
 
 plugin の README に、対応 CodingAgent として `Claude Code + Codex`、`Claude Code only`、
 `Codex only` のいずれかを記載する。
@@ -9,18 +9,14 @@ plugin の README に、対応 CodingAgent として `Claude Code + Codex`、`Cl
 Claude Code と Codex の両対応を設計するときは、
 [両対応の設計方針](../../docs/cross-client-architecture.md)を読む。
 
-## README に導入・運用情報を記載する
+README に記載する情報と requirements の管理方法は、次のとおり。
 
-plugin の README には、次の情報を書く。
-
-- 対応 CodingAgent
 - requirements 情報
     - その plugin が依存する外部 CLI、バイナリ、環境変数、追加設定
     - 依存の確認方法、setup の方法、未 setup 時の挙動
+    - 当面は独自の requirements manifest を作らない
 - 更新方法と削除方法
 - state を保存する場合は、その保存先
-
-当面は独自の requirements manifest を作らない。
 
 hook や skill は、実行時に未 setup を検出してもユーザーの環境を自動変更しない。
 README に記載した setup 手順を案内する。
@@ -28,7 +24,7 @@ README に記載した setup 手順を案内する。
 ## 名前付き agent の定義・実装方法
 
 名前付き agent を両 CodingAgent へ配布する方式は未決定。
-名前付き agent を含む plugin を両対応にする時に再検討する。
+名前付き agent を含む plugin の両対応に初めて着手するときに、配布方式を再検討する。
 候補と判断基準は [共通化方針](../../docs/cross-client-architecture.md#名前付き-agent-の配布方式は未決定) に記載する。
 
 名前付き agent からのみ実行させる処理は、`skills/` に置かない。
