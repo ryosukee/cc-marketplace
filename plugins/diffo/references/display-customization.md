@@ -1,6 +1,8 @@
 # Diffo の表示調整
 
-Markdown プレビューとスレッド表示を調整するときに使う手順。
+`diffo-patch` は Markdown プレビューを GitHub 風にし、改行 1 つで不要な `<br>` を作らない。
+解決済みスレッドは初期状態で隠し、表示を切り替えられるようにする。
+コメントと返信の下書きも、同じブラウザタブ内で復元する。
 
 `diffo` を起動した後に、この plugin の `bin/diffo-patch` を実行する。
 plugin root は、読み込んだ SKILL.md のパスから 2 階層上にある。
