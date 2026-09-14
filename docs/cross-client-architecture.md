@@ -1,7 +1,7 @@
 # Claude Code と Codex の共通化方針
 
 cc-marketplace は、複数の作業リポジトリで使う Claude Code と Codex の拡張機能を管理する。
-本書では、この二つをまとめて CodingAgent と呼ぶ。製品名は `Claude Code` と表記する。
+本書では、この二つをまとめて CodingAgent と呼ぶ。
 次のものを管理対象とする。
 
 - skill
