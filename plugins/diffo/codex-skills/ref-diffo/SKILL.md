@@ -32,6 +32,8 @@ plugin の `bin/diffo-codex-poll` を追跡可能なタスクまたは poll 専�
 
 同じ Codex thread と repo の組み合わせで poller を重複起動しない。
 feedback を queue した後は次の poll を起動せず、終了する。
+必要なコマンドがない場合や `diffo poll` が失敗した場合は、poller がエラーを出して終了する。
+原因を確認してから再起動する。`codex queue` が失敗した場合は、同じ通知を 5 秒間隔で再送する。
 
 親 agent は payload の全 `threadIds` に返信してから、新しい poller を起動する。
 返信前に再開すると、Diffo は前の配送を未回答として扱う。
