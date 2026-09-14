@@ -41,12 +41,6 @@ plugin を導入するだけでは監視は始まらない。レビュー対象�
 `npx -y @diffohq/diffo --no-open` を実行する。
 監視は[Claude Code で Diffo レビューを受ける](./claude-skills/ref-diffo/SKILL.md)または[Codex で Diffo レビューを受ける](./codex-skills/ref-diffo/SKILL.md)の手順で始める。
 
-Codex の queue 方式では、インストールした plugin の
-`bin/diffo-codex-poll` を絶対パスで呼び、レビュー対応中の Codex 会話を識別する
-`CODEX_THREAD_ID` を渡す。
-このスクリプトは PATH に自動登録されない。利用する agent は、読み込んだ
-`codex-skills/ref-diffo/SKILL.md` のパスから plugin root を特定する。
-
 ## 未導入・異常終了時
 
 依存コマンドがない場合、poller は標準エラーに不足項目を出して終了し、レビュー通知を queue しない。

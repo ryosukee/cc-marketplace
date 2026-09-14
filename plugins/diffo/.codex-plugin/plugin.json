@@ -1,6 +1,6 @@
 {
   "name": "diffo",
-  "version": "0.4.18",
+  "version": "0.4.19",
   "description": "Diffo 公式 skill を補い、レビュー通知を Codex の作業セッションへ届ける",
   "author": {
     "name": "CC Tools"

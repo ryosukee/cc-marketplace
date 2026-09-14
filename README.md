@@ -50,7 +50,7 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 | markdownlint | 0.3.2 | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
 | mkdocs-setup | 0.2.1 | mkdocs-material のセットアップ手順とテンプレート |
 | security-guards | 0.2.0 | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| [diffo](./plugins/diffo/README.md) | 0.4.18 | Diffo 公式 skill と併用し、Claude Code と Codex での通知受信と返信を補助する |
+| [diffo](./plugins/diffo/README.md) | 0.4.19 | Diffo 公式 skill と併用し、Claude Code と Codex での通知受信と返信を補助する |
 
 ### Communication
 
