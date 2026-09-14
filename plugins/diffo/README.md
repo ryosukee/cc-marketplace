@@ -69,3 +69,10 @@ plugin がなくても Diffo CLI の手動 `poll` と `reply` は使用できる
 Codex poller の排他 lock は `${XDG_STATE_HOME:-$HOME/.local/state}/diffo-codex-poll/` に置き、
 正常終了時に削除する。レビューとスレッドのデータは Diffo 側が保持する。
 `diffo-patch` は npx の Diffo パッケージを直接変更するため、Diffo 更新後は再適用する。
+
+## Markdown プレビューと表示の変更
+
+`diffo-patch` は Markdown プレビューを GitHub 風にし、改行 1 つで不要な `<br>` を作らない。
+解決済みスレッドは初期状態で非表示になり、表示切替の選択はブラウザに保存される。
+この切替は表示だけに作用し、スレッドの解決状態は変更しない。
+新規コメントと返信の下書きは、再描画後も同じブラウザタブ内で復元される。

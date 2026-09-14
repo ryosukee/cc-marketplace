@@ -29,9 +29,7 @@ plugin の `bin/diffo-codex-poll` を追跡可能なタスクまたは poll 専�
 - ファイルの編集、スレッドへの返信、commit、push は行わない
 
 script は同じ Codex thread と repo の組み合わせを lock し、poller の重複起動を防ぐ。
-feedback を queue した後は次の poll を起動せず、終了する。親 agent が待機中なら
-`codex queue` が次の turn を開始する。別の turn が動いていれば、その完了後に開始する。
-現在の permission mode は引き継がれ、承認を要する操作は通常どおり停止する。
+feedback を queue した後は次の poll を起動せず、終了する。
 
 親 agent は payload の全 `threadIds` に返信してから、新しい poller を起動する。
 返信前に再開すると、Diffo は前の配送を未回答として扱う。
