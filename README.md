@@ -56,7 +56,7 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
 | ja-writing-ambiguity | Claude Code only | 日本語の曖昧さ 3 分類 8 型を止める参照知識 skill `ref-ja-writing-ambiguity` の 1 skill。指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。一部は `rules/japanese-text-writing/references/core.md` にもあり、どちらが引かれるかを測るために重複させている中間状態 |
-| claude-user-communication | Claude Code only | ユーザーへの確認・提示。HTML ページ提示 (claude-html-communication) の 1 skill。本文は生成元 JSON (配信ディレクトリの src/。書式は references/page-format.md) に書き、閲覧用 HTML は assemble-page.mjs だけが生成する (読み取り専用。番号と参照マーカーは組み立てが付ける)。雛形は 1 / 2 / 3 pane のレスポンシブ (3 pane は 1340 / 1700 / 2100px。広い段では表と図だけを伸ばし、地の文は行長の上限で止める) と、本文の範囲・現在地の追従、設問のグループ化を持つ。図は Tailwind で組める (生成時に CLI を回し、図の中だけに適用)。生成ページの機械検査スクリプト (html-validate / linkinator / 雛形固有検査 / 生成元 JSON の検査の 4 層) と、提示前レビューの agent 2 本 (sentence-reviewer: 生成元 JSON だけを読んで意味の取れない文と定義の無い呼び名を挙げる / page-reviewer: 一次情報との突合 / 推奨の妥当性 / 構成と設問の自立性) を同梱。回答は record-answer.mjs が JSON に記録し、ページ・index・archive を 1 度で揃える。完了したページは削除せず、index は完了分を直近だけ出して残りを archive.html へ辿らせる (build-archive.mjs が生成)。ページの連番は claim-page-number.sh が発番と占有を 1 操作で行い、assemble-page.mjs は中身のある出力先を --force 無しでは上書きしない (並行セッションの発番の衝突を防ぐ)。環境変数 `CLAUDE_HTML_COMMUNICATION_DIR` / `CLAUDE_HTML_COMMUNICATION_BASE_URL` が必要（plugin README 参照） |
+| [claude-user-communication](./plugins/claude-user-communication/README.md) | Claude Code + Codex | HTML ページによる報告・確認と回答記録。生成・検査スクリプトと提示前レビューの判定基準を共有する |
 
 ### meta
 

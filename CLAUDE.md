@@ -93,7 +93,7 @@ Claude Code と Codex の対応 CodingAgent、共有方式、requirements に関
 | mkdocs-setup | authoring | MkDocs セットアップ手順 + テンプレート |
 | security-guards | tooling | .netrc 等の credentials 保護 hook |
 | ja-writing-ambiguity | authoring | 参照知識 skill `ref-ja-writing-ambiguity` 1 本。日本語の曖昧さ 3 分類 8 型を止める。`core.md` と一部を重複させ、どちらが引かれるかを測る中間状態 |
-| claude-user-communication | communication | HTML ページ提示 (claude-html-communication) + 生成ページの機械検査 + 提示前レビューの agent 2 本 (sentence-reviewer は文脈を持たずに文の意味と造語を見る。page-reviewer は一次情報との突合と構成)。本文は生成元 JSON (配信ディレクトリの src/) に書き、閲覧用 HTML は assemble-page.mjs だけが生成する (読み取り専用)。レビュー agent には JSON と図の markup ファイルだけを渡す。回答は record-answer.mjs が JSON に記録し、ページ・index・archive を揃える。雛形は 1 / 2 / 3 pane のレスポンシブ (3 pane は 1340 / 1700 / 2100px) + 現在地の追従 + 設問のグループ化。番号 (説明 / 設問 / 表 / 図 / 脚注 / 補足) は組み立てが付ける。完了ページは削除せず archive.html へ送る。連番は発番と占有を 1 操作で取り、既存ページを黙って上書きしない。図は Tailwind 可 (図の中だけ)。要環境変数 (plugin README) |
+| claude-user-communication | communication | Claude Code と Codex で共有する HTML 報告・確認 skill。生成・検査・回答記録のスクリプトと提示前レビューの判定資料を共有する。必要な環境変数は plugin README を参照 |
 | claude-known-issues | meta | Claude Code の既知バグ一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、config/ の 2 本は書き方の例) + 更新検知・全件突合の時期を通知する SessionStart hook + 差分・全件の突合 agent |
 | usage-line | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill) + レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件。要 `gh` CLI |

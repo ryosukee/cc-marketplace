@@ -1,9 +1,14 @@
 ---
 name: html-communication
-description: 調査報告・検証結果・比較表・設計判断の選択肢をユーザーに提示する前に必ず読む。ターミナルに長い報告を書き始める前が発動点で、書き終えてからでは遅い。該当するのは、調査・突合・検証の結果報告、複数案の比較、前提説明の長い説明、設問が多い確認（目安 4 問超）。ほかに「## HTML フォーム回答」を受け取ったとき、claude-html-communication の index・アセットを再生成するときにも使う。self-contained な HTML ページを共通ディレクトリ claude-html-communication に生成し、index 管理・serve URL 提示までの運用一式を定める。
+user-invocable: true
+description: 調査報告・検証結果・比較表・設計判断の選択肢をユーザーに提示する前に必ず読む。ターミナルに長い報告を書き始める前が発動点で、書き終えてからでは遅い。該当するのは、調査・突合・検証の結果報告、複数案の比較、前提説明の長い説明、設問が多い確認（目安 4 問超）。ほかに「## HTML フォーム回答」を受け取ったとき、claude-html-communication の index・アセットを再生成するときにも使う。self-contained な HTML ページを共通ディレクトリ claude-html-communication に生成し、index 管理・閲覧先の提示までの運用一式を定める。
 ---
 
 # 入り組んだ説明・報告・確認は HTML で行う
+
+`{SKILL_DIR}` は、この `SKILL.md` があるディレクトリの絶対パスを表す。
+以下のコマンドを実行するときは、この値を実際のパスに置き換える。
+Claude Code と Codex のどちらでも、同じ配信ディレクトリ・生成元 JSON・スクリプトを使う。
 
 調査報告・設計判断の比較・設問の多い確認など、前提や構造が入り組んだ内容は、
 ターミナルへのテキスト出力ではなく self-contained な HTML ページを生成して見せる。
@@ -17,21 +22,21 @@ description: 調査報告・検証結果・比較表・設計判断の選択肢�
 HTML にすると決めたら、ターミナル向けに書いた（書きかけた）長文をそのまま HTML へ移し替えない。
 まとめから詳細へ辿れる構造（セクション分け、比較表、出典の分離）に組み直す。
 
-## 配置先と URL の解決
+## 配置先と閲覧先の解決
 
-配置先ディレクトリと配信 URL は環境変数から解決する（値のセットアップは環境側の文書の管轄）。
+配置先ディレクトリと、配信する場合の URL は環境変数から解決する（値のセットアップは環境側の文書の管轄）。
 
 - `CLAUDE_HTML_COMMUNICATION_DIR`: 配信ディレクトリ。未設定なら既定値 `~/.local/share/claude-html-communication` を使う。
-  配信ディレクトリは全プロジェクトで 1 つだけ持ち、tailnet で配信する。
+  ディレクトリは全プロジェクトで 1 つだけ持つ。公開は任意。
   この skill が生成する HTML（以下、ページ）はここに置く
 - `CLAUDE_HTML_COMMUNICATION_BASE_URL`: 配信のベース URL（例: `https://<ホスト名>.<tailnet 名>.ts.net`）。
   ページの serve URL は `{CLAUDE_HTML_COMMUNICATION_BASE_URL}/{ファイル名}`、一覧のルート URL は `{CLAUDE_HTML_COMMUNICATION_BASE_URL}/`
-- `CLAUDE_HTML_COMMUNICATION_BASE_URL` が未設定・空の場合は、ページ提示の前にユーザーに URL を確認し、
-  そのセッションではその値を使う。あわせて環境変数としての恒久設定を提案する
+- `CLAUDE_HTML_COMMUNICATION_BASE_URL` が未設定・空の場合は、生成した HTML のファイルパスを提示する。
+  配信 URL が設定されている場合は、ファイルパスと URL の両方を提示する
 
 ## ページを出典に引ける範囲
 
-ページは tailnet 内限定で、ユーザー自身しか開けない。ユーザー以外が読む文書（repo の設計・調査ドキュメント、
+ローカルファイルまたは限定公開の URL は、ユーザー以外が開けることを前提にしない。ユーザー以外が読む文書（repo の設計・調査ドキュメント、
 PR 本文と PR コメント、issue、他チームへの依頼）で、ページを出典として引かない。
 ページで決めたことをそれらに書くときは、決定の内容と根拠（何を問われ、何を選んだか）を本文に写す。
 ページを出典に引いてよいのは、引き継ぎ資料と、ユーザー自身の decision-record だけ。
@@ -52,7 +57,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
     - 既存のページを参考にするときも、閲覧用 HTML ではなく `src/` の JSON を読む。
       JSON を持たない旧ページ（0.42.0 以前に作り、変換していないもの）だけ HTML を読む
     - JSON を持たない未完了のページは、そのプロジェクトを作業対象にしているセッションが
-      `node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/import-page.mjs" <ページ.html> <配信ディレクトリ>` で `src/` へ変換し、
+      `node "{SKILL_DIR}/scripts/import-page.mjs" <ページ.html> <配信ディレクトリ>` で `src/` へ変換し、
       `assemble-page.mjs --force` で組み直して機械検査を通す。他プロジェクトのページは変換しない。
       完了したページは変換しない（読み直す規定が無い）
 - 配信ディレクトリ（`CLAUDE_HTML_COMMUNICATION_DIR`。無ければ `mkdir -p` で作る）に
@@ -63,7 +68,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       対応表に無いプロジェクトなら、そのプロジェクトの最初のページを作るときに決めて登録する
       （3〜5 文字。既存の値と衝突しないことを対応表で確認する）
     - **発番は `scripts/claim-page-number.sh` で行う**:
-      `"${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/claim-page-number.sh" <配信ディレクトリ> <接頭辞> <f|r>` が最大連番 + 1 を取り、
+      `"{SKILL_DIR}/scripts/claim-page-number.sh" <配信ディレクトリ> <接頭辞> <f|r>` が最大連番 + 1 を取り、
       同じ操作でそのファイル名を 0 バイトで占有して絶対パスを返す（3 桁ゼロ埋め、
       該当が無ければ 001。欠番は再利用しない）。返ったパスの語幹で `src/{語幹}.json` を書き、
       `assemble-page.mjs` に渡す。出力先はその予約したファイルになる
@@ -71,16 +76,15 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
           並行するセッションが同じ番号を取り、先に書いたほうのページが消える
         - index のエントリから求めない。一覧の読み落としで既存ページを上書きする事故が起きている
     - 日付・内容はファイル名に持たせず、index のエントリ（`project` / `created` / `title`）と
-      ページの `<title>` で管理する。短い名前にするのは serve URL をタスクや通知の 1 行に
-      省略なしで収めるため（一覧 UI は末尾から省略され、途切れた URL はリンクとして機能しない）
+      ページの `<title>` で管理する。配信 URL を使う場合、短い名前ならタスクや通知の 1 行に
+      省略なしで収まる（一覧 UI は末尾から省略され、途切れた URL はリンクとして機能しない）
     - 既存ページの移行: 完了（`answered` / `confirmed`）のページは改名しない。
       未完了のページは、そのプロジェクトを作業対象にしているセッションが新名へ改名し、
       旧名を転送スタブにする。旧命名（`YYYY-MM-DD-<プロジェクト>-<内容>-<種別>.html`）と
       接頭辞なしの旧短名（`f008.html` 等）は、完了分をそのまま据え置く。
       3 世代が同居するが、index は `file` の値をそのまま使うので表示は壊れない
-    - ブラウザで自動で開かない（`open` コマンドを実行しない）。`file://` 直開きは
-      「一覧に戻る」等の相対リンクが serve 側の一覧と繋がらず不便なため。
-      閲覧はユーザーが提示された serve URL（またはファイルパス）から自分で行う
+    - ブラウザで自動で開かない（`open` コマンドを実行しない）。
+      閲覧はユーザーが提示されたファイルパスまたは配信 URL から自分で行う
     - ユーザーに見せる閲覧用 HTML（確認フォーム・調査レポートを含む全部）はここに置く。
       scratchpad は単一セッション内で使い切る中間物専用で、閲覧用 HTML は置かない
     - 種別は連番の直前の f = form（要回答）/ r = report（読むだけ）で表す。
@@ -88,7 +92,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
     - 閲覧用のサブディレクトリは作らない（生成元の `src/` だけが例外）。プロジェクトの分離はファイル名の接頭辞で、
       グルーピングは index.html 側で表現する
     - **改稿の形は、その版に対して既に回答や確認を受けたかで決める。**
-      受けていなければ JSON を直して同名で組み直す（`assemble-page.mjs --force`。URL は初版のまま維持）。
+      受けていなければ JSON を直して同名で組み直す（`assemble-page.mjs --force`。閲覧先は初版のまま維持）。
       受けていれば新しい連番で別のページにし、元の JSON と HTML はそのまま残す。
       同名で組み直すと、回答が根拠にした設問文と選択肢が復元できなくなる。
       実際に eidp-f017 で 5 問版が 3 問版に上書きされ、その回答が指す設問文が失われている
@@ -101,13 +105,13 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
           （`answered` / `confirmed`）のまま据え置き、新しいページを未完了で登録する
     - 別議題は新しい連番で作る。
       ファイル名を変える必要が生じたら、旧名を新名への転送スタブ
-      （0 秒 meta refresh + 通常リンク）にして配布済み URL を生かす
-    - 「一覧に戻る」ボタン（`./` = index へのリンク）は雛形が下部の固定領域の左端に置く。
+      （0 秒 meta refresh + 通常リンク）にして既に共有した参照先を生かす
+    - 「一覧に戻る」ボタン（`./index.html` へのリンク）は雛形が下部の固定領域の左端に置く。
       form は `#bar` の操作ゾーン、report は `#footer-nav` に入り、どちらもスクロールしても消えない
     - **生成に使った skill の版をページと index の両方に記録する。**
       ページ側（`<meta name="generator" content="claude-html-communication X.Y.Z">` と、
       下部バー（report は `#footer-nav`）の `#ver`）は `assemble-page.mjs` が plugin.json の `version` から入れる。
-      index 側はエントリの `skillVersion` に同じ値を Claude が書く。
+      index 側はエントリの `skillVersion` に同じ値を書く。
       古い雛形で作られたページを参考にしないための目印で、下の「既存のページを読んで
       参考にしない」を版で裏づける
     - **ページを作り直したら、JSON 側と index 側を同じターンで揃える。**
@@ -134,7 +138,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
     - ページは必ず生成元 JSON から `assemble-page.mjs` で組み立てる。既存のページの HTML をコピーして作らない。
       雛形 `templates/page.html` は head と script だけを持ち、本文の markup は組み立て script が出すので、
       雛形の更新は次に組み直したときに全ページへ届く
-    - 組み立ては `node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/assemble-page.mjs" <src/{語幹}.json> [--force]`。title・file・type・設問の一覧は
+    - 組み立ては `node "{SKILL_DIR}/scripts/assemble-page.mjs" <src/{語幹}.json> [--force]`。title・file・type・設問の一覧は
       JSON から取り、版は plugin.json から入る。図の markup は `src/{語幹}.figures.html` から、
       パターン集の CSS は JSON の `css` から取り込む。
       出力先に中身のあるファイルがあると止まる。通るのは `claim-page-number.sh` が作った
@@ -245,7 +249,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       使ったクラスだけの CSS を出し、figures ファイルの `<style data-scope="figures">` へ貼り込む。
       手順は [見せ方のパターン集](./references/patterns/README.md) にある。
       リセット（preflight）は読み込まない。読み込むと雛形の表・見出し・段落の作りが消える
-- 同ディレクトリの `index.html` で一覧と状態を管理する（Claude が生成・更新。
+- 同ディレクトリの `index.html` で一覧と状態を管理する（ページを作る CodingAgent が生成・更新。
   エントリは index 内のインライン JS 配列 `entries`）
     - 1 つの議題に複数ページを作るときは、代表ページ 1 件だけを index に登録する。
       代表は回答・確認を受けるページ（設問があれば form、無ければ主レポート）。
@@ -258,8 +262,8 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
     - エントリの `title` はページの `<title>` と一字一致させる。改稿でページ側の title を
       変えたら index も同時に更新する（一覧の表示名と遷移先の名前がずれると探せない）
     - form を `awaiting` で登録したら、TaskCreate で回答待ちタスクを作る。subject は
-      「{serve URL} ← {ページ title}に回答」の形で URL を先頭に置く（一覧 UI は末尾から
-      省略されるため。短名ファイルの URL なら省略なしで収まる）。report の `unconfirmed` も
+      「{閲覧先} ← {ページ title}に回答」の形で、配信 URL があれば URL、なければ
+      ページの絶対パスを先頭に置く（一覧 UI は末尾から省略されるため）。report の `unconfirmed` も
       同様に確認待ちタスクを作る。回答・確認を受領したターンで completed にする。
       task ツールが提供されない環境（subagent 等）では作らない
     - ページ作成時のエントリは必ず未完了で登録する。状態は form → `awaiting`（回答待ち）、
@@ -286,7 +290,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
     - セッションが操作してよいのは、自分のプロジェクトのページと index.html（+ PWA 固定アセット）だけ。
       他プロジェクトのページの改稿・削除はしない
     - index の最下部に運用元を明記する: この skill（cc-marketplace の claude-user-communication plugin、
-      `plugins/claude-user-communication/skills/html-communication/`）に基づく Claude Code の
+      `plugins/claude-user-communication/skills/html-communication/`）に基づく Claude Code と Codex 共用の
       HTML コミュニケーション用ディレクトリである旨と、skill の GitHub URL を footer に書く。
       index を再生成するときも維持する
     - PWA 固定アセットを配置する: `manifest.json`（name = claude-html-communication、start_url = index.html、
@@ -302,10 +306,11 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       配信ディレクトリへ置く。index からはリンクで辿らせ、一覧のエントリは持たせない
       （回答・確認の対象ではないため、状態遷移を持たない）
     - 雛形 `templates/index.html` の表示仕様（レンダリング JS・CSS）を変えたら、
-      配信中の index.html にも同じ変更を適用する。配信中の index は以後エントリだけを
+      既存の index.html にも同じ変更を適用する。既存の index は以後エントリだけを
       更新し続けるため、雛形の更新は自動では届かない
-- モバイル閲覧: claude-html-communication は tailnet 内限定の HTTPS 配信にしてある。
-  提示時のターミナル出力には、ファイルパス / ページの serve URL / 一覧のルート URL の 3 つを必ず併記する
+- モバイル閲覧などで配信する場合は、tailnet 内限定の HTTPS 配信を想定する。
+  提示時のターミナル出力にはファイルパスを必ず記載し、配信 URL が設定されている場合だけ
+  ページの URL と一覧のルート URL も併記する
   （出力の全体像は下記「提示時のターミナル出力」）
 - CSS/JS はすべてインラインで self-contained にする。外部 CDN・フォント・画像に依存しない
 - `prefers-color-scheme` でライト/ダーク両対応にする
@@ -536,7 +541,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
 - 選択肢に収まらない回答用に、設問ごとに「その他」の自由記述欄と補足記入欄（任意）が付く。組み立てが必ず付ける
 - ページ末尾の回答の live preview と「回答をコピー」ボタンは組み立てが置く。
   ボタンはそれまでの選択・自由記述を 1 つのテキストに整形してクリップボードへコピーする
-- 整形フォーマットは Claude Code にそのまま貼れる形（雛形の script が固定している）:
+- 整形フォーマットは作業中の CodingAgent にそのまま貼れる形（雛形の script が固定している）:
 
   ```text
   ## HTML フォーム回答（{テーマ}）
@@ -553,7 +558,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
 ページを生成・改稿したら、提示前のレビューより前に検査スクリプトを実行する。
 
 ```sh
-"${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/validate-page.sh" <ページのパス>
+"{SKILL_DIR}/scripts/validate-page.sh" <ページのパス>
 ```
 
 - 4 層（html-validate / linkinator --check-fragments / 雛形固有の自作検査 + onclick grep /
@@ -566,7 +571,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
   閲覧用 HTML との食い違い（`stale-html`）の 7 つを見る。
   `stale-html` は JSON を直したあと組み立てていないときに出る。
   脚注と補足の初出順は組み立てが採番するので、`ref-order` は落ちない
-- 「一覧に戻る」リンク（`./`）の解決に同ディレクトリの index.html が要る。
+- 「一覧に戻る」リンク（`./index.html`）の解決に同ディレクトリの index.html が要る。
   配信ディレクトリ内のファイルパスで実行する
 - npx のキャッシュがあればオフラインで動く。1 ページ約 7 秒（初回のみダウンロードで + 数秒）
 - Exit: 0 = 指摘なし、1 = 指摘あり、2 = 前提条件エラー（node / npx が無い等）
@@ -578,6 +583,15 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
 提示前に agent を 2 本、順に回す。先に `sentence-reviewer`、次に `page-reviewer`。
 `sentence-reviewer` は form と report の両方に回す。`page-reviewer` は設問を含む form だけに回し、
 設問の無い報告には回さない。
+
+- Claude Code では同梱の名前付き agent を起動する。両 agent は plugin の `references/` に置いた
+  判定手順を読む
+- Codex では各レビュー用に `fork_turns: "none"` で子 agent を起動し、`{SKILL_DIR}` の二階層上にある plugin の
+  `references/sentence-review.md` または `references/page-review.md` の絶対パスを渡す。
+  文のレビューには、この会話の履歴や議題の説明を渡さず、生成元と判定手順だけを渡す。
+  内容レビューには下記の一次情報も渡す。子 agent には対象ファイルを編集させない
+- 必要な子 agent を利用できない場合、そのレビューを実施済みと扱わない。
+  提示前に未実施のレビューと理由をユーザーへ伝え、続行するか確認する
 
 ### sentence-reviewer（文の意味）
 
@@ -592,9 +606,9 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
 agent は文ごとに「誰が何をどうするか」「何が事実として主張され、何を確かめれば真偽が決まるか」を
 取り出せるかで判定し、取り出せない文と、取り出せるが条件・動作主が文の外にしか無い文を分けて挙げる。
 あわせて、ページ内に定義の無い呼び名（汎用名詞 + 数字、その場で振った記号、名前として使われた汎用語）と
-用語の揺れを挙げる。ユーザーの語か Claude が作った語かは agent には分からないので、
+用語の揺れを挙げる。ユーザーの語か作成側が作った語かは agent には分からないので、
 ユーザーの発言に遡れるかは呼び出し元が判断する。
-直し方は書かない。手順と判定基準は [sentence-reviewer](../../agents/sentence-reviewer.md) にある。
+直し方は書かない。手順と判定基準は [文の提示前レビュー](../../references/sentence-review.md) にある。
 
 ### page-reviewer（一次情報との突合）
 
@@ -608,7 +622,7 @@ agent は文ごとに「誰が何をどうするか」「何が事実として�
 agent が見るのは、一次情報との突合（捏造と誤引用）と、推奨・選択肢集合の妥当性と、
 構成と設問の自立性（設問の節だけで答えられるか、脚注と補足の使い分け）だけ。
 文言・マークアップは上の機械検査と下の作成規範が、文の意味と造語は `sentence-reviewer` が持つので見ない。
-手順と観点は [page-reviewer](../../agents/page-reviewer.md) にある。
+手順と観点は [内容の提示前レビュー](../../references/page-review.md) にある。
 
 ### 反復の終了条件
 
@@ -651,7 +665,7 @@ opus は 30 文、sonnet は 1〜2 文を挙げた。model を opus にするの
 
 ターミナルに書いてよいのは次の 2 つだけ。
 
-- ページの serve URL / 一覧のルート URL / ファイルパス。
+- ファイルパス。配信 URL が設定されている場合は、ページの URL と一覧のルート URL も併記する。
   複数ページを作った議題では代表ページの分だけを出す（サブページは代表からリンクで辿る）
 - ユーザーへの問い（レビューを回すか、次にどちらへ進むか等）
 
@@ -672,13 +686,13 @@ opus は 30 文、sonnet は 1〜2 文を挙げた。model を opus にするの
 ユーザーから「## HTML フォーム回答」で始まるテキストが貼られたら HTML フォームの回答として扱う。
 
 - 貼られた全文を scratchpad のファイルに逐語で保存し、そのターンの最初の操作として
-  `node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/record-answer.mjs" <src/{語幹}.json> --answer <そのファイル>` を回す
+  `node "{SKILL_DIR}/scripts/record-answer.mjs" <src/{語幹}.json> --answer <そのファイル>` を回す
 - script は 4 つの手順を順に行い、手順ごとに done / skip を stdout に出す。
   JSON の `answers` に全文と設問ごとの解釈を書く → 閲覧用 HTML を回答済みの状態で組み直す →
   index.html の当該エントリを `answered` にする → `build-archive.mjs` を回す。
   途中で失敗したら stdout でどこまで済んだかを確かめ、もう 1 度回す。済んだ手順は skip になる
 - report は、ユーザーから内容への確認応答を受けたターンで
-  `node "${CLAUDE_PLUGIN_ROOT}/skills/html-communication/scripts/record-answer.mjs" <src/{語幹}.json> --confirm "<発言の逐語>"` を回す。status は `confirmed` になる
+  `node "{SKILL_DIR}/scripts/record-answer.mjs" <src/{語幹}.json> --confirm "<発言の逐語>"` を回す。status は `confirmed` になる
 - JSON を持たない旧ページは、先に `import-page.mjs` で変換してから回す。変換できないときは
   index.html の status を手で更新して `build-archive.mjs` を回す
 - 回答の実文は JSON の `answers.raw` に残る。decision-record へ写すときはそこから引く

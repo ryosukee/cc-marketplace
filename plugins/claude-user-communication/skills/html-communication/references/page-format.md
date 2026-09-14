@@ -11,9 +11,9 @@
 ```text
 claude-html-communication/
 ├── ccm-f085.html               # 閲覧用。assemble-page.mjs だけが書く。読み取り専用（0444）
-├── index.html                  # 一覧。Claude が編集し、record-answer.mjs が status を書く
+├── index.html                  # 一覧。ページを作る CodingAgent が編集し、record-answer.mjs が status を書く
 └── src/
-    ├── ccm-f085.json           # 本文の原本。Claude が書く
+    ├── ccm-f085.json           # 本文の原本。ページを作る CodingAgent が書く
     └── ccm-f085.figures.html   # 図の markup と CSS（図があるページだけ）
 ```
 
