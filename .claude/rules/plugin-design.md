@@ -6,7 +6,7 @@ README に記載する情報と requirements の管理方法は、次のとお�
 
 - 対応 CodingAgent
     - `Claude Code + Codex`、`Claude Code only`、`Codex only` のいずれか
-    - `Claude Code + Codex` と分類する前に、両方で動作を検証する
+    - `Claude Code + Codex` と分類するならば、両方で動作を検証する
 - requirements 情報
     - その plugin が依存する外部 CLI、バイナリ、環境変数、追加設定
     - 依存の確認方法、setup の方法、未 setup 時の挙動
