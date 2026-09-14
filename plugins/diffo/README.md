@@ -17,7 +17,8 @@ Diffo CLI を実行する場合は、以下が必要。
 - `npx`
     - Diffo CLI を `npx -y @diffohq/diffo` で実行する
 
-Codex の `queue` で通知後に同じ thread を再開する場合は、上記に加えて以下が必要。
+Codex で Diffo の監視を始めた作業 thread に、`codex queue` でレビュー通知を届ける場合は、
+上記に加えて以下が必要。
 
 - Codex CLI
     - `codex queue` と `codex app-server daemon` を使用する
