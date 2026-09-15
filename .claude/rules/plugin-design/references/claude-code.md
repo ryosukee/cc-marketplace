@@ -7,7 +7,9 @@ paths:
 
 ## Hook の state
 
-hook は `${CLAUDE_PLUGIN_ROOT}/internal/` に state を書く。
+`${CLAUDE_PLUGIN_ROOT}/internal/` に書く形は deprecated で、version-check だけが使う。
+新しい hook の state は
+[両対応の設計方針](../../../../docs/cross-client-architecture.md#環境変数と-state-の置き場)に従う。
 
 ## Hook 宣言方式
 
