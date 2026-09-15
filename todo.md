@@ -724,3 +724,25 @@ frontmatter のフィールド名や hook のイベント名が現行仕様に�
 - 実行の契機。Claude Code の版が上がったときか、plugin の release 前か、その両方か
 - 置き場。dotclaude plugin の doctor skill に足すか、新しい plugin にするか、
   markdownlint のように Write / Edit の後に走る hook にするか
+
+# plane-kanban: Keychain の API key を helper だけが読める形にする
+
+依頼元: cc-marketplace のセッション（2026-09-15、PR #28 のレビュー中）。
+
+いまは `scripts/lib/plane.sh` が `security find-generic-password` で読む。`/usr/bin/security` を呼ぶスクリプトは
+どれも同じ app として扱われるので、Claude が直接読むのを止めているのは permission の deny
+（`Bash(security find-generic-password*)` ほか）だけ。
+
+やりたいこと: コンパイル済みの小さな helper（Swift か Go）を Keychain 項目の ACL の唯一の app にし、
+helper は鍵を出力せず HTTP リクエストだけを代行する。`plane.sh` の `plane_api` を helper 経由にする。
+
+# diffo plugin: コメントで inline SVG・画像・Tailwind を使えるようにする
+
+依頼元: cc-marketplace のセッション（2026-09-15）。
+
+Diffo のコメントは `marked` → DOMPurify で、許可属性が `href` `title` `target` `rel` `class` だけ、
+画像の `src` は `https:` `mailto:` `#` だけ。`diffo-patch` は既に minify された JS を perl で書き換えているので、
+同じ手で DOMPurify の設定（許可タグに `img` と `svg` 系、許可属性に `style` と `src`、URI に `data:`）を広げられる。
+Tailwind は、コメントごとに使うクラスの CSS を Tailwind CLI で出して `<style>` として同梱する（`<style>` タグの許可が要る）か、
+patch のタイミングで Tailwind の実行時スクリプト（play CDN 相当）をローカルに置いて注入して任意のクラスを効かせるか。
+Diffo の版が上がると識別子と配列の並びが変わって置換が外れる脆さは、いまのパッチと同じ。
