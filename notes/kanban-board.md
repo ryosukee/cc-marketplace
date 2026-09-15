@@ -602,6 +602,49 @@ work item として作る。
 
 反映先。`todo.md` の削除（取り込みの後）。他 repo のセッションへの依頼の出し方の案内。
 
+### 確定 33 kanban 用に新しい workspace を作り、既存の workspace は残す（確定 20 を上書き）
+
+結論。kanban 用に Plane の workspace を新しく作る。既存の workspace とその project はそのまま残し、消さない。
+確定 20 の「既存 workspace の project を消して作り直す」を上書きする。plugin の設定に書く workspace slug は
+新しい workspace のもの。
+
+決めなかった範囲。新しい workspace の名前と slug。既存の workspace を将来消すかどうか。
+
+決め手。Free plan でも workspace を複数作れると確かめられたため。公式 docs に「Create additional workspaces」の
+手順があり、数の上限は書かれていない（`kanban-plane-cloud-vs-ce-2026-09-03.md` の 5 節）。
+ユーザーの発言は「free で複数作れるなら kanban 用に新しい workspace を作るで ok」。
+
+出典。ユーザーとの対話 2026-09-15（ccm-f086 の補足「plane って free plan で workspace 複数作れたっけ？
+作れるなら既存の workspace はそのままに kanban 用には新規で作ればいいかと思った」と、その後の返答）。
+
+反映先。確定 20 の「消す作業と引越し」は不要になる。導入の手順は、ユーザーが新しい workspace を作り、
+API key を発行し、slug と API key を settings.json の env に書くところから始める。
+
+### 確定 34 epic のような束ねは親 work item で表す。Module は併用の候補に残す
+
+結論。Jira の epic に当たる、複数のタスクを束ねる単位は、親 work item とその下の sub work item で表す。
+epic の中のタスクがさらに子タスクを持つ形（3 段以上）も同じ仕組みで作る。
+Module は epic の代わりには使わず、複数の epic を横切る別の切り口が要るときに親子と併用する候補として残す。
+確定 21 を epic の用途まで広げたもの。
+
+決めなかった範囲。UI と API が受け付ける入れ子の段数（docs に記載なし。データモデルでは `Issue.parent` が
+work item 自身への参照で、段数の制限は無い）。新しい workspace と API key ができたら実際の API で確かめる。
+Module を併用する場面。
+
+決め手。Plane の Epic は work item type の 1 つで、docs は「An epic is still the parent layer above individual work items.
+Work items still link to an epic through the Parent field.」と書く。Free では型が使えないだけで、
+「Without hierarchy, any work item can be a sub-work item of any other, regardless of type.」のとおり親子は使える。
+親 work item は 1 枚のカードなので、epic 自体が state・担当・説明を持ち board に出る。Module は
+「A module can span multiple Cycles」の説明どおり cycle をまたぐ仕事を束ねる器で、カードではなく state も担当も持たない。
+ユーザーは「ok」と答えた。
+
+出典。ユーザーとの対話 2026-09-15。docs の引用は
+[Plane の階層構造とデータモデル](./artifacts/kanban-plane-hierarchy-2026-09-04.md)の 1.4 節・2.4 節・2.6 節。
+`Issue.parent` の定義は同 2.9 節。
+
+反映先。plugin `plane-kanban` の work item 作成の `parent` の扱い（段数を制限しない）。
+norm-refit を移すときの構造（norm-refit を親、段階を sub work item）。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
@@ -680,10 +723,8 @@ Claude が API を叩くための token の置き場。後者は
 サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜32 で決まった。
 残るのは workspace の扱いの見直しと、実際に作る作業。
 
-1. workspace を新しく作るか決める。確定 20 は既存 workspace の project を消して作り直すと決めたが、
-   ccm-f086 の補足でユーザーが「作れるなら既存の workspace はそのままに kanban 用には新規で作ればいい」と述べた。
-   Plane の docs には「Create additional workspaces」の手順があり、数の上限は書かれていない
-   （`kanban-plane-cloud-vs-ce-2026-09-03.md`）。新しく作るなら確定 20 を上書きする確定を積む
+1. ユーザーが kanban 用の workspace を新しく作り、API key を発行する（確定 33）。
+   できたら、親子の入れ子の段数を API で確かめる（確定 34 の決めなかった範囲）
 2. plugin `plane-kanban` を作る（確定 24〜32）。API key と workspace slug は settings.json の env
 3. `todo.md` の依頼を work item として取り込む（確定 31）。取り込んだら `todo.md` を消す（確定 32）
 4. norm-refit の計画とタスクを kanban へ移すかを決める。ccm-f086 の補足でユーザーが移したいと述べた。
