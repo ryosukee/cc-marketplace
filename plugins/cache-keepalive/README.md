@@ -44,9 +44,10 @@ plugin を install すると plugin monitor が有効になる。ユーザーの
 セッションを開始した時点で Claude Code 本体が監視スクリプトを起動する。
 
 監視スクリプトの起動は、セッション JSONL が作られるより先になる。
-スクリプトは JSONL が現れるまで最大 120 秒待ってから監視を始め、
+JSONL がディスクに現れるのはセッション開始から数分遅れることがある。
+スクリプトは JSONL が現れるまで 2 秒間隔で最大 1800 秒 (30 分) 待ってから監視を始め、
 待つことになった場合は `waited-for-jsonl` の行をログに残す。
-120 秒待っても見つからなければ exit 2 で落ち、`keepalive-error.log` に記録する。
+1800 秒待っても見つからなければ exit 2 で落ち、`keepalive-error.log` に記録する。
 
 閾値は既定 3000 秒 (50 分)。変えるときは `CACHE_KEEPALIVE_THRESHOLD_SECONDS` を
 Claude Code の `settings.json` の `env` に置く。
@@ -61,8 +62,9 @@ Claude Code 本体は、次のどれかに当たると monitor を起動せず�
 - Monitor ツールが使えない host
 
 起動しなかったことは `/cache-keepalive status` で分かる。ログが 1 行も無ければ `never-armed` を返す。
-このとき `last_error` が空なら Claude Code 本体が起動しなかった。値が入っていれば、
-起動したうえで監視スクリプトが前提を満たせずに落ちている。
+このとき `last_error` が空なら、Claude Code 本体が起動しなかったか、監視スクリプトが JSONL の生成を
+待っている最中のどちらかで、status はこの 2 つを区別しない。セッション開始から 30 分の間は後者でありうる。
+`last_error` に値が入っていれば、起動したうえで監視スクリプトが前提を満たせずに落ちている。
 `never-armed` の状態でスクリプトを手で起動して代用しない。起動しなかった事実が記録から消える。
 
 ## 更新

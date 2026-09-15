@@ -14,7 +14,7 @@ data_arg=""
 jsonl=""
 threshold="${CACHE_KEEPALIVE_THRESHOLD_SECONDS:-3000}"
 log_retention_days=30
-jsonl_wait_seconds=120
+jsonl_wait_seconds=1800
 jsonl_poll_seconds=2
 
 while [ $# -gt 0 ]; do
@@ -60,6 +60,8 @@ log() {
 
 # セッション JSONL は plugin monitor の起動より後に作られる。生成を待たずに落ちると、
 # そのセッションでは keepalive が起動しないまま終わる (同一セッションでは起動し直せない)。
+# ディスクへの最初の flush はセッション開始から数分遅れることがあり、遅れの上限は分からない。
+# JSONL が無い間は idle を測る対象も無いので、待ちは長くとる。
 # --jsonl で明示されたパスは待たない。存在しなければ指定の誤りなので、その場で落とす。
 if [ -z "$jsonl" ]; then
   waited=0
