@@ -743,6 +743,14 @@ helper は鍵を出力せず HTTP リクエストだけを代行する。`plane.
 Diffo のコメントは `marked` → DOMPurify で、許可属性が `href` `title` `target` `rel` `class` だけ、
 画像の `src` は `https:` `mailto:` `#` だけ。`diffo-patch` は既に minify された JS を perl で書き換えているので、
 同じ手で DOMPurify の設定（許可タグに `img` と `svg` 系、許可属性に `style` と `src`、URI に `data:`）を広げられる。
-Tailwind は、コメントごとに使うクラスの CSS を Tailwind CLI で出して `<style>` として同梱する（`<style>` タグの許可が要る）か、
-patch のタイミングで Tailwind の実行時スクリプト（play CDN 相当）をローカルに置いて注入して任意のクラスを効かせるか。
 Diffo の版が上がると識別子と配列の並びが変わって置換が外れる脆さは、いまのパッチと同じ。
+
+着手は、Tailwind の CSS をどう注入するかの 2 方針から選ぶところから始める（2026-09-15 のユーザー指示）。
+
+1. コメントごとに CSS を同梱する。markup を書いてから Tailwind CLI で使ったクラスだけの CSS を出し、
+   コメントの中に `<style>` として入れる。patch はサニタイザに `<style>` タグと `style` 属性を許させる 1 回だけ。
+   コメントを書くたびに CLI を回す手間と、コメントごとに CSS が重複する難点がある
+2. Tailwind の実行時スクリプト（play CDN 相当）を patch のタイミングでローカルに置いて注入する。
+   DOM を監視してクラスからその場で CSS を作るので、使えるクラスをあらかじめ決めなくてよく、任意のクラスが効く。
+   数百 KB のスクリプトが毎回のページ読み込みに乗ることと、外部 CDN を読まない前提なら実体を plugin に同梱することが難点。
+   Claude の推しはこちら（コメントは短命で、毎回 CSS を作って同梱する手間に見合わない）
