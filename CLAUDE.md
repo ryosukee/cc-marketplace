@@ -55,7 +55,7 @@ cc-marketplace/
         │   ├── hooks/            # hooks 実装
         │   ├── lib/              # source 用の共通ヘルパ（あれば）
         │   └── *.sh              # skill/hook が invoke するエントリスクリプト（あれば）
-        ├── internal/             # 永続化された状態（外部参照禁止）
+        ├── internal/             # 永続化された状態。deprecated で version-check だけが持つ
         │   └── {resource}/
         ├── skills/               # consumer skills
         │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）

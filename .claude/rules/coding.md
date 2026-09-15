@@ -27,7 +27,7 @@ Script ファイル名:
 
 ## スクリプト設計
 
-スクリプトは役割で配置を分ける (詳細は [Plugin 設計原則](./plugin-design.md) の kernel パターン)。
+スクリプトは役割で配置を分ける。
 
 - `scripts/hooks/`: hook 実装
 - `scripts/`: 複数 skill / hook が共有する plugin 内エントリスクリプト
