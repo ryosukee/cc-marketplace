@@ -11,10 +11,11 @@ description: Plane（kanban）の work item を読み書きする。「kanban」
 
 ## 前提
 
-環境変数 `PLANE_API_KEY`（Personal Access Token）と `PLANE_WORKSPACE_SLUG` が要る。
-Claude Code では `settings.json` の `env`、Codex では Codex を起動する環境に置く。
-無いときはスクリプトが exit 2 で止まり、置き場を stderr に出す。その内容をそのまま伝え、設定を促す。
-値の発行と置き方は plugin の README にある。
+macOS 限定。Plane の Personal Access Token と workspace の slug は macOS の Keychain に入っていることが要る
+（service 名は `plane-kanban-api-key` と `plane-kanban-workspace-slug`）。スクリプトが `security` コマンドで読む。
+環境変数では渡さない。GUI にログインしていて login keychain が開いているときだけ読める。
+無いときはスクリプトが exit 2 で止まり、登録のコマンドを stderr に出す。その内容をそのまま伝え、登録を促す。
+API key を自分で読み出して表示しない。値の発行と登録の手順は plugin の README にある。
 
 repo と Plane の project は 1 対 1 で、project の name は repo のディレクトリ名と同じにする。
 スクリプトは name で project を引き、引いた id を保存して次回から使う。

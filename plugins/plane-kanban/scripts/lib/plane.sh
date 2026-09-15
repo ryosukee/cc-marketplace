@@ -1,41 +1,55 @@
 #!/bin/bash
 # Plane Cloud の REST API を呼ぶ共通ヘルパ。エントリスクリプトが source して使う
 #
-# 前提の環境変数
-#   PLANE_API_KEY        必須。Plane の Personal Access Token
-#   PLANE_WORKSPACE_SLUG 必須。workspace の slug（https://app.plane.so/{slug}/ の部分）
-#   PLANE_API_BASE       任意。既定 https://api.plane.so/api/v1
-#   PLANE_KANBAN_DATA_DIR 任意。repo と project の対応を保存する場所。
-#                        無ければ CLAUDE_PLUGIN_DATA、それも無ければ
-#                        ~/.claude/plugins/data/plane-kanban-cc-tools
+# 秘密と接続先は macOS の Keychain から読む（環境変数では渡さない）
+#   service plane-kanban-api-key        Plane の Personal Access Token
+#   service plane-kanban-workspace-slug workspace の slug（https://app.plane.so/{slug}/ の部分）
+#   登録: security add-generic-password -s plane-kanban-api-key -a "$USER" -w '<token>'
+#         security add-generic-password -s plane-kanban-workspace-slug -a "$USER" -w '<slug>'
+#   読めるのは GUI にログインしていて login keychain が開いているときだけ
+#
+# 任意の環境変数
+#   PLANE_API_BASE        既定 https://api.plane.so/api/v1
+#   PLANE_KANBAN_DATA_DIR repo と project の対応を保存する場所。
+#                         無ければ CLAUDE_PLUGIN_DATA、それも無ければ
+#                         ~/.claude/plugins/data/plane-kanban-cc-tools
 #
 # 出力は JSON を stdout、エラーは stderr。exit 0 = 成功、1 = 該当なし、2 = 前提条件エラー
+# API key は stdout・stderr・ログに出さない
 
 set -euo pipefail
 
 PLANE_API_BASE="${PLANE_API_BASE:-https://api.plane.so/api/v1}"
 PLANE_RETRY_MAX="${PLANE_RETRY_MAX:-3}"
+PLANE_KEYCHAIN_API_KEY_SERVICE="plane-kanban-api-key"
+PLANE_KEYCHAIN_SLUG_SERVICE="plane-kanban-workspace-slug"
 
 plane_err() {
   echo "plane-kanban: $*" >&2
 }
 
-# 必須の環境変数を確かめる。無ければ exit 2
+# Keychain から 1 項目を読む。引数: $1 = service 名。無ければ return 1
+plane_keychain_read() {
+  security find-generic-password -s "$1" -w 2>/dev/null
+}
+
+# 前提（curl・jq・security と Keychain の 2 項目）を確かめ、PLANE_API_KEY と PLANE_WORKSPACE_SLUG を
+# この process の中だけの変数として持つ。無ければ exit 2
 plane_require_env() {
-  if [ -z "${PLANE_API_KEY:-}" ]; then
-    plane_err "PLANE_API_KEY が未設定。Plane の Profile Settings で Personal Access Token を発行し、settings.json の env に置く"
-    exit 2
-  fi
-  if [ -z "${PLANE_WORKSPACE_SLUG:-}" ]; then
-    plane_err "PLANE_WORKSPACE_SLUG が未設定。https://app.plane.so/{slug}/ の slug を settings.json の env に置く"
-    exit 2
-  fi
-  for cmd in curl jq; do
+  for cmd in curl jq security; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
-      plane_err "$cmd が無い"
+      plane_err "$cmd が無い。この plugin は macOS の Keychain（security コマンド）を前提にする"
       exit 2
     fi
   done
+  if ! PLANE_API_KEY=$(plane_keychain_read "$PLANE_KEYCHAIN_API_KEY_SERVICE") || [ -z "$PLANE_API_KEY" ]; then
+    plane_err "Keychain に service '${PLANE_KEYCHAIN_API_KEY_SERVICE}' が無いか読めない。Plane の Profile Settings で Personal Access Token を発行し、security add-generic-password -s ${PLANE_KEYCHAIN_API_KEY_SERVICE} -a \"\$USER\" -w '<token>' で登録する。GUI にログインしていて login keychain が開いていることが要る"
+    exit 2
+  fi
+  if ! PLANE_WORKSPACE_SLUG=$(plane_keychain_read "$PLANE_KEYCHAIN_SLUG_SERVICE") || [ -z "$PLANE_WORKSPACE_SLUG" ]; then
+    plane_err "Keychain に service '${PLANE_KEYCHAIN_SLUG_SERVICE}' が無いか読めない。https://app.plane.so/{slug}/ の slug を security add-generic-password -s ${PLANE_KEYCHAIN_SLUG_SERVICE} -a \"\$USER\" -w '<slug>' で登録する"
+    exit 2
+  fi
 }
 
 # 対応の保存先ディレクトリ。無ければ作る

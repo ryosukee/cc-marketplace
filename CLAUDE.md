@@ -100,4 +100,4 @@ Claude Code と Codex の対応 CodingAgent、共有方式、requirements に関
 | usage-line | utility | コンテキスト残量・レート制限残量を 1 行で出す。要セットアップ (plugin README) |
 | github-pr | github | PR の作成・更新 (create skill) + `@claude` 宛レビュー対応 (address-review skill) + レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件。要 `gh` CLI |
 | diffo | authoring | Diffo 公式 skill を補う。Claude Code と Codex で別の参照知識 skill `ref-diffo` を読み、共通の返信規範を参照する。導入条件は plugin README を参照 |
-| plane-kanban | kanban | Plane（kanban）の work item を repo 単位の project で読み書きする。skill 1 本と、REST API を直接呼ぶ bash スクリプト（一覧・作成・state の更新・一括取り込み）。セッションは label で残す。要 `PLANE_API_KEY` と `PLANE_WORKSPACE_SLUG`（plugin README を参照） |
+| plane-kanban | kanban | Plane（kanban）の work item を repo 単位の project で読み書きする。skill 1 本と、REST API を直接呼ぶ bash スクリプト（一覧・作成・state の更新・一括取り込み）。セッションは label で残す。macOS 限定で、API key と workspace slug は Keychain から読む（plugin README を参照） |
