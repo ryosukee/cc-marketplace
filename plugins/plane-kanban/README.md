@@ -14,44 +14,61 @@ hook と agent は持たない。
 
 ## Requirements
 
-- macOS。API key と workspace の slug を macOS の Keychain から `security` コマンドで読む。Linux では動かない
+- macOS。API key を macOS の Keychain から `security` コマンドで読む。Linux では動かない
 - GUI にログインしていて、login keychain が開いていること。SSH だけで入った状態では Keychain を読めないことがある
 - `curl` と `jq`
 - Plane Cloud の workspace と、Personal Access Token
 
-## Keychain に入れる 2 項目
+## Keychain に入れる API key
 
-API key と slug は環境変数では渡さない。Keychain の次の 2 項目をスクリプトが読む。
+API key は秘密なので環境変数では渡さない。Keychain の次の 1 項目をスクリプトが読む。
 
 | service 名 | 内容 |
 | --- | --- |
 | `plane-kanban-api-key` | Personal Access Token。Plane の Profile Settings → Personal Access Tokens で発行する |
-| `plane-kanban-workspace-slug` | workspace の slug。`https://app.plane.so/{slug}/` の部分 |
 
 登録は一度だけ、ターミナルで行う。
 
 ```sh
 security add-generic-password -s plane-kanban-api-key -a "$USER" -w '<token>'
-security add-generic-password -s plane-kanban-workspace-slug -a "$USER" -w '<slug>'
 ```
 
 無いときは、スクリプトが exit 2 で止まり、登録のコマンドを stderr に出す。plugin は Keychain を自動で書き換えない。
 スクリプトは API key を stdout・stderr・ログに出さない。
+
+## 必須の環境変数
+
+| 変数 | 内容 |
+| --- | --- |
+| `PLANE_WORKSPACE_SLUG` | workspace の slug。`https://app.plane.so/{slug}/` の部分。秘密ではない |
+
+無いか空なら、スクリプトが exit 2 で止まる。
 
 ## 任意の環境変数
 
 | 変数 | 内容 |
 | --- | --- |
 | `PLANE_API_BASE` | API の base URL。既定 `https://api.plane.so/api/v1` |
-| `PLANE_KANBAN_DATA_DIR` | repo と project の対応を保存する場所。既定は `CLAUDE_PLUGIN_DATA`、それも無ければ `~/.claude/plugins/data/plane-kanban-cc-tools` |
+| `PLANE_RETRY_MAX` | 429 が返ったときの再試行の上限。既定 `3` |
+| `PLANE_KANBAN_DATA_DIR` | repo と project の対応を保存する場所。既定は `${XDG_DATA_HOME}/plane-kanban`、それも無ければ `~/.local/share/plane-kanban` |
 
-置くなら Claude Code は `~/.claude/settings.json` の `env`、Codex は Codex を起動する環境（シェルの環境変数）。
+環境変数の置き場は CodingAgent ごとに違う。どちらも設定ファイル 1 か所で、シェルの起動経路に依存しない。
+
+| CodingAgent | 置き場 |
+| --- | --- |
+| Claude Code | `~/.claude/settings.json` の `env` |
+| Codex | `~/.codex/config.toml` の `[shell_environment_policy]` の `set` |
+
+```toml
+[shell_environment_policy]
+set = { PLANE_WORKSPACE_SLUG = "<slug>" }
+```
 
 ## セットアップ
 
 1. Plane で kanban 用の workspace を作り、slug を控える
 2. Personal Access Token を発行する
-3. 上の 2 項目を Keychain に登録する
+3. API key を Keychain に登録し、slug を使う CodingAgent の設定ファイルに置く
 4. repo の作業ツリーで `scripts/init-project.sh --identifier <接頭辞>` を回し、repo と同じ name の project を作る。
    既に同じ name の project があれば作らずにその id を保存する
 

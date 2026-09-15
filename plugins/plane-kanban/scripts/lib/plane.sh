@@ -1,18 +1,21 @@
 #!/bin/bash
 # Plane Cloud の REST API を呼ぶ共通ヘルパ。エントリスクリプトが source して使う
 #
-# 秘密と接続先は macOS の Keychain から読む（環境変数では渡さない）
-#   service plane-kanban-api-key        Plane の Personal Access Token
-#   service plane-kanban-workspace-slug workspace の slug（https://app.plane.so/{slug}/ の部分）
+# 秘密は macOS の Keychain から読む（環境変数では渡さない）
+#   service plane-kanban-api-key  Plane の Personal Access Token
 #   登録: security add-generic-password -s plane-kanban-api-key -a "$USER" -w '<token>'
-#         security add-generic-password -s plane-kanban-workspace-slug -a "$USER" -w '<slug>'
 #   読めるのは GUI にログインしていて login keychain が開いているときだけ
+#
+# 必須の環境変数
+#   PLANE_WORKSPACE_SLUG  workspace の slug（https://app.plane.so/{slug}/ の部分）。秘密ではない
+#                         Claude Code は ~/.claude/settings.json の env、
+#                         Codex は ~/.codex/config.toml の [shell_environment_policy] の set に置く
 #
 # 任意の環境変数
 #   PLANE_API_BASE        既定 https://api.plane.so/api/v1
 #   PLANE_KANBAN_DATA_DIR repo と project の対応を保存する場所。
-#                         無ければ CLAUDE_PLUGIN_DATA、それも無ければ
-#                         ~/.claude/plugins/data/plane-kanban-cc-tools
+#                         無ければ ${XDG_DATA_HOME}/plane-kanban、それも無ければ
+#                         ~/.local/share/plane-kanban
 #
 # 出力は JSON を stdout、エラーは stderr。exit 0 = 成功、1 = 該当なし、2 = 前提条件エラー
 # API key は stdout・stderr・ログに出さない
@@ -22,7 +25,6 @@ set -euo pipefail
 PLANE_API_BASE="${PLANE_API_BASE:-https://api.plane.so/api/v1}"
 PLANE_RETRY_MAX="${PLANE_RETRY_MAX:-3}"
 PLANE_KEYCHAIN_API_KEY_SERVICE="plane-kanban-api-key"
-PLANE_KEYCHAIN_SLUG_SERVICE="plane-kanban-workspace-slug"
 
 plane_err() {
   echo "plane-kanban: $*" >&2
@@ -33,8 +35,8 @@ plane_keychain_read() {
   security find-generic-password -s "$1" -w 2>/dev/null
 }
 
-# 前提（curl・jq・security と Keychain の 2 項目）を確かめ、PLANE_API_KEY と PLANE_WORKSPACE_SLUG を
-# この process の中だけの変数として持つ。無ければ exit 2
+# 前提（curl・jq・security、Keychain の API key、環境変数 PLANE_WORKSPACE_SLUG）を確かめる。
+# API key は PLANE_API_KEY としてこの process の中だけに持つ。足りなければ exit 2
 plane_require_env() {
   for cmd in curl jq security; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -46,15 +48,22 @@ plane_require_env() {
     plane_err "Keychain に service '${PLANE_KEYCHAIN_API_KEY_SERVICE}' が無いか読めない。Plane の Profile Settings で Personal Access Token を発行し、security add-generic-password -s ${PLANE_KEYCHAIN_API_KEY_SERVICE} -a \"\$USER\" -w '<token>' で登録する。GUI にログインしていて login keychain が開いていることが要る"
     exit 2
   fi
-  if ! PLANE_WORKSPACE_SLUG=$(plane_keychain_read "$PLANE_KEYCHAIN_SLUG_SERVICE") || [ -z "$PLANE_WORKSPACE_SLUG" ]; then
-    plane_err "Keychain に service '${PLANE_KEYCHAIN_SLUG_SERVICE}' が無いか読めない。https://app.plane.so/{slug}/ の slug を security add-generic-password -s ${PLANE_KEYCHAIN_SLUG_SERVICE} -a \"\$USER\" -w '<slug>' で登録する"
+  if [ -z "${PLANE_WORKSPACE_SLUG:-}" ]; then
+    plane_err "環境変数 PLANE_WORKSPACE_SLUG が空。https://app.plane.so/{slug}/ の slug を入れる。Claude Code は ~/.claude/settings.json の env、Codex は ~/.codex/config.toml の [shell_environment_policy] の set に置く"
     exit 2
   fi
 }
 
-# 対応の保存先ディレクトリ。無ければ作る
+# 対応の保存先ディレクトリ。無ければ作る。client 固有の変数は見ない
 plane_data_dir() {
-  local dir="${PLANE_KANBAN_DATA_DIR:-${CLAUDE_PLUGIN_DATA:-$HOME/.claude/plugins/data/plane-kanban-cc-tools}}"
+  local dir
+  if [ -n "${PLANE_KANBAN_DATA_DIR:-}" ]; then
+    dir="${PLANE_KANBAN_DATA_DIR}"
+  elif [ -n "${XDG_DATA_HOME:-}" ]; then
+    dir="${XDG_DATA_HOME}/plane-kanban"
+  else
+    dir="${HOME}/.local/share/plane-kanban"
+  fi
   mkdir -p "$dir"
   echo "$dir"
 }

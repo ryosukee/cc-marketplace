@@ -16,10 +16,10 @@ export PLANE_KANBAN_DATA_DIR="$TMP/data"
 export FAKE_CURL_STATE="$TMP/state"
 export FAKE_KEYCHAIN_DIR="$TMP/keychain"
 export CLAUDE_CODE_SESSION_ID="abcdef12-3456-7890-abcd-ef1234567890"
-unset PLANE_SESSION_ID CLAUDE_SESSION_ID CODEX_THREAD_ID CLAUDE_PLUGIN_ROOT CLAUDE_PLUGIN_DATA PLANE_API_KEY PLANE_WORKSPACE_SLUG
+export PLANE_WORKSPACE_SLUG="ws"
+unset PLANE_SESSION_ID CLAUDE_SESSION_ID CODEX_THREAD_ID CLAUDE_PLUGIN_ROOT CLAUDE_PLUGIN_DATA PLANE_API_KEY XDG_DATA_HOME
 mkdir -p "$FAKE_KEYCHAIN_DIR"
 printf 'test-key' > "$FAKE_KEYCHAIN_DIR/plane-kanban-api-key"
-printf 'ws' > "$FAKE_KEYCHAIN_DIR/plane-kanban-workspace-slug"
 today=$(date +%Y-%m-%d)
 
 fail=0
@@ -35,8 +35,18 @@ assert_eq() {
 
 # 1. Keychain に API key が無ければ exit 2（環境変数に入れても使わない）
 set +e
-(FAKE_KEYCHAIN_DIR="$TMP/empty-keychain" PLANE_API_KEY=x PLANE_WORKSPACE_SLUG=x "$S/resolve-project.sh" cc-marketplace) >/dev/null 2>&1
-assert_eq 2 $? "Keychain に無ければ exit 2"
+(FAKE_KEYCHAIN_DIR="$TMP/empty-keychain" PLANE_API_KEY=x "$S/resolve-project.sh" cc-marketplace) >/dev/null 2>&1
+assert_eq 2 $? "Keychain に API key が無ければ exit 2"
+
+# 1b. PLANE_WORKSPACE_SLUG が空なら exit 2
+(PLANE_WORKSPACE_SLUG= "$S/resolve-project.sh" cc-marketplace) >/dev/null 2>&1
+assert_eq 2 $? "slug の環境変数が空なら exit 2"
+
+# 1c. データの保存先は client 固有の変数を見ず、XDG_DATA_HOME に従う
+(PLANE_KANBAN_DATA_DIR= XDG_DATA_HOME="$TMP/xdg" CLAUDE_PLUGIN_DATA="$TMP/claude" \
+  "$S/resolve-project.sh" nosuch) >/dev/null 2>&1
+assert_eq "true" "$([ -d "$TMP/xdg/plane-kanban" ] && echo true || echo false)" "XDG_DATA_HOME の下に作る"
+assert_eq "false" "$([ -d "$TMP/claude" ] && echo true || echo false)" "CLAUDE_PLUGIN_DATA は見ない"
 
 # 2. project が無ければ exit 1
 "$S/resolve-project.sh" nosuch >/dev/null 2>&1
