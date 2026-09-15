@@ -49,6 +49,8 @@ cc-marketplace/
         │   └── plugin.json       # Codex 対応時の plugin マニフェスト
         ├── hooks/
         │   └── hooks.json        # hooks 定義
+        ├── monitors/
+        │   └── monitors.json     # plugin monitor 定義（あれば）
         ├── scripts/
         │   ├── hooks/            # hooks 実装
         │   ├── lib/              # source 用の共通ヘルパ（あれば）
@@ -84,7 +86,7 @@ Claude Code と Codex の対応 CodingAgent、共有方式、requirements に関
 | --- | --- | --- |
 | version-check | utility | Claude Code のバージョン追跡・更新検知 |
 | plugin-update | utility | SessionStart 時にプラグイン更新を検知・通知 |
-| cache-keepalive | utility | prompt cache keepalive の自動発火 |
+| cache-keepalive | utility | prompt cache keepalive の自動発火。plugin monitor がセッション開始時に監視を起動する |
 | cc-transcript | utility | セッションの直近やり取りを jq 整形して vim で開く |
 | dotclaude | dotclaude | doctor/cross-review/registry |
 | session | session | Claude Code と Codex の start/debrief/retrospective/handover/end、共通の機械検査・意味レビュー |

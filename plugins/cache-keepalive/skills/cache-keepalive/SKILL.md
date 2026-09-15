@@ -1,12 +1,21 @@
 ---
 name: cache-keepalive
 description: >-
-  prompt cache (extended cache, TTL 1h) の keepalive を管理する。
-  Monitor でバックグラウンド監視し、アイドル時のみ keepalive を発火する。
+  prompt cache (extended cache, TTL 1h) の keepalive の状態を確認し、停止する。
+  監視自体は plugin monitor がセッション開始時に起動するので、この skill は起動を行わない。
   "cache-keepalive" "キャッシュキープアライブ" "keep cache alive" 等で発動。
 user-invocable: true
-allowed-tools: Monitor, Bash
-argument-hint: "[on|off|status|list]"
+allowed-tools: Bash
+argument-hint: "[status|off|on]"
+note: >-
+  この skill が起動を持たないのはワークアラウンド。Monitor ツールの入力スキーマから persistent が消え、
+  timeout_ms が 1,800,000 ms (30 分) で頭打ちになったため、期限切れのたびに Claude が起動し直すことになり、
+  その応答でセッション JSONL が更新されて閾値 3000 秒に到達しなくなった。
+  changelog 2.1.271 "Changed Monitor watches to always have a deadline (at most 30 minutes;
+  10 in single-prompt `-p` runs) and notify Claude to re-arm, replacing the no-timeout `persistent` option"。
+  v2.1.271 で binary 側の既定も false から true へ変わっている。
+  解除の条件は、セッションに送られる Monitor の入力スキーマに persistent が戻ること。
+  そのときは起動を Monitor ツールへ戻すかを判断する。
 ---
 
 # cache-keepalive
@@ -19,77 +28,78 @@ expire 前に軽量プロンプトを発火して TTL を延長することで�
 
 ## 仕組み
 
-Monitor (persistent) でバックグラウンドスクリプトを動かす。
+plugin monitor `cache-keepalive-watch` が、セッション開始時に `scripts/watch-idle.sh` を起動する。
+Claude Code 本体が直接起動するので、Monitor ツールの `timeout_ms` の上限も `persistent` の有無も影響しない。
 
 スクリプトはセッション JSONL の mtime を監視し、
 最終活動から 3000 秒 (50 分) 以上経過した時だけ stdout に 1 行出力する。
-Monitor はこの行を Claude への通知として配信し、Claude が OK と応答することで cache が refresh される。
+Claude Code 本体はこの行を Claude への通知として配信し、Claude が OK と応答することで cache が refresh される。
 
 - スクリプトの stat 実行は bash プロセスなので JSONL mtime を更新しない
 - JSONL mtime は Claude の API コール (ユーザー操作 or keepalive 応答) でのみ更新される
 - アクティブ時はスクリプトが sleep するだけで、会話ターンは一切発生しない
-
-## セッション JSONL
-
-このセッションの JSONL パス:
-
-!`find ~/.claude/projects -name "${CLAUDE_SESSION_ID}.jsonl" 2>/dev/null | head -1`
+- 起動・発火・停止は `${CLAUDE_PLUGIN_DATA}` のログへ 1 行ずつ記録する。
+  プロセスが生きたまま通知が届かない状態と、そもそも起動していない状態を、status で区別できる
 
 ## サブコマンド
 
-`<command-args>` で分岐する。
+`<command-args>` で分岐する。引数が無ければ status とみなす。
 
-### on (引数なし / `on`)
+### status (引数なし / `status` / `state` / `list`)
 
-1. Bash でこのセッションの cache-keepalive プロセスを探す: `pgrep -f '{JSONL}.*cache-keepalive'`
-2. PID が見つかる → 「cache-keepalive は既に有効です」で終了
-3. セッション JSONL セクションのパスが空なら、エラー報告して終了
-4. Monitor を起動する (詳細は「Monitor パラメータ」参照)
-5. 「cache-keepalive を有効にしました」と報告
+1. 状態を取る。
+
+    ```bash
+    CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" "${CLAUDE_PLUGIN_ROOT}/scripts/report-status.sh"
+    ```
+
+2. 出力 JSON の `state` で報告を分ける。
+
+    - `running`: 「cache-keepalive: 有効」と報告し、`armed_at`・`launcher`・`last_fired_at`・`fired_count` を添える
+    - `stopped`: 「cache-keepalive: 停止中」と報告し、このセッションでは起動し直せないことを伝える
+    - `never-armed`: 「cache-keepalive: 未起動」と報告する。`last_error` が `null` なら
+      Claude Code 本体が起動していないので、下記「monitor が起動しないとき」の確認手順を案内する。
+      `last_error` に値があれば、起動したうえで監視スクリプトが落ちているので、その文言をそのまま報告する
+
+3. exit 2 のときは stderr の文言をそのまま報告し、原因を推測で埋めない。
 
 ### off
 
-1. Bash でこのセッションの cache-keepalive プロセスを探す: `pgrep -f '{JSONL}.*cache-keepalive'`
-2. PID が見つかる → `kill` で停止し「cache-keepalive を停止しました」と報告
-3. 見つからない → 「現在有効な cache-keepalive はありません」と報告
+1. 監視プロセスを止める。
 
-### status / state / list
+    ```bash
+    CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" "${CLAUDE_PLUGIN_ROOT}/scripts/stop-watch.sh"
+    ```
 
-1. Bash でこのセッションの cache-keepalive プロセスを探す: `pgrep -f '{JSONL}.*cache-keepalive'`
-2. PID が見つかる → 「cache-keepalive: 有効」と報告
-3. 見つからない → 「cache-keepalive: 無効」と報告
+2. exit 0 → 「cache-keepalive を停止しました」と報告し、
+   このセッションでは起動し直せないこと、次のセッションの開始で自動的に起動し直すことを伝える
+3. exit 1 → 「現在有効な cache-keepalive はありません」と報告する
+4. exit 2 → stderr の文言をそのまま報告する
 
-## Monitor パラメータ
+### on
 
-セッション JSONL セクションで解決済みのパスを `{JSONL}` として埋め込む。
+plugin monitor がセッション開始時に起動するので、`on` から起動する手順は持たない。
+status と同じコマンドで状態を取り、次のとおり報告する。
 
-- description: `cache-keepalive monitor`
-- persistent: `true`
-- timeout_ms: `300000` (persistent=true なので無視される)
-- command:
+- `running` → 「cache-keepalive は既に有効です」
+- `stopped` / `never-armed` → 起動していないことを報告する。
+  Claude Code 本体は plugin 名と monitor 名の組をセッション単位で重複排除するので、
+  同じセッションでは起動し直せない。新しいセッションを開始すると plugin monitor が起動し直す
 
-```bash
-while true; do
-  T=$(stat -f %m "{JSONL}" 2>/dev/null) || { sleep 60; continue; }
-  N=$(date +%s)
-  E=$((N - T))
-  if [ "$E" -ge 3000 ]; then
-    echo "[cache-keepalive] キャッシュキープアライブです。OK とだけ返答してください。"
-    sleep 3000
-  else
-    sleep $((3000 - E))
-  fi
-done
-```
+## monitor が起動しないとき
 
-スクリプトの動き:
+Claude Code 本体は、次のどれかに当たると monitor を起動せず、そのことを通知しない。
+`state` が `never-armed` のときは、この順に確認する。
 
-- JSONL の mtime から経過秒数を算出
-- 3000 秒以上経過 → 1 行出力 (Claude への keepalive 通知)、その後 3000 秒 sleep
-- 3000 秒未満 → `(3000 - elapsed)` 秒 sleep して再チェック
-- stat 失敗時は 60 秒待って retry
+1. 対話 CLI セッションでない (`claude -p` の単発実行では起動しない)
+2. workspace trust が未承認である
+3. plugin が有効になっていない (`claude plugins list` で確認する)
+4. plugin の版が古い (`claude plugins update cache-keepalive@cc-tools` で更新し、新しいセッションで確認する)
+
+いずれにも当たらないのに起動しないときは、状況を報告して止まる。
+ログが無いこと自体が「Claude Code 本体が起動しなかった」ことの証拠になるので、
+スクリプトを手で起動して代用しない。
 
 ## keepalive 通知への応答
 
-Monitor から `[cache-keepalive]` タグ付きの通知が届いた場合、
-OK とだけ返答する。それ以外の作業は一切しない。
+`[cache-keepalive]` タグ付きの通知が届いた場合、OK とだけ返答する。それ以外の作業は一切しない。

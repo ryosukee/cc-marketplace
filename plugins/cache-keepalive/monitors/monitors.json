@@ -1,0 +1,8 @@
+[
+  {
+    "name": "cache-keepalive-watch",
+    "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/watch-idle.sh --launcher monitors --session-id \"${CLAUDE_CODE_SESSION_ID}\" --data-dir \"${CLAUDE_PLUGIN_DATA}\"",
+    "description": "prompt cache の keepalive (アイドル 50 分で 1 行出力)",
+    "when": "always"
+  }
+]
