@@ -12,12 +12,14 @@ TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
 export PATH="$PLUGIN_ROOT/tests/fake-curl:$PATH"
-export PLANE_API_KEY="test-key"
-export PLANE_WORKSPACE_SLUG="ws"
 export PLANE_KANBAN_DATA_DIR="$TMP/data"
 export FAKE_CURL_STATE="$TMP/state"
+export FAKE_KEYCHAIN_DIR="$TMP/keychain"
 export CLAUDE_CODE_SESSION_ID="abcdef12-3456-7890-abcd-ef1234567890"
-unset PLANE_SESSION_ID CLAUDE_SESSION_ID CODEX_THREAD_ID CLAUDE_PLUGIN_ROOT CLAUDE_PLUGIN_DATA
+unset PLANE_SESSION_ID CLAUDE_SESSION_ID CODEX_THREAD_ID CLAUDE_PLUGIN_ROOT CLAUDE_PLUGIN_DATA PLANE_API_KEY PLANE_WORKSPACE_SLUG
+mkdir -p "$FAKE_KEYCHAIN_DIR"
+printf 'test-key' > "$FAKE_KEYCHAIN_DIR/plane-kanban-api-key"
+printf 'ws' > "$FAKE_KEYCHAIN_DIR/plane-kanban-workspace-slug"
 today=$(date +%Y-%m-%d)
 
 fail=0
@@ -31,10 +33,10 @@ assert_eq() {
   fi
 }
 
-# 1. 環境変数が無ければ exit 2
+# 1. Keychain に API key が無ければ exit 2（環境変数に入れても使わない）
 set +e
-(env -u PLANE_API_KEY "$S/resolve-project.sh" cc-marketplace) >/dev/null 2>&1
-assert_eq 2 $? "PLANE_API_KEY 無しは exit 2"
+(FAKE_KEYCHAIN_DIR="$TMP/empty-keychain" PLANE_API_KEY=x PLANE_WORKSPACE_SLUG=x "$S/resolve-project.sh" cc-marketplace) >/dev/null 2>&1
+assert_eq 2 $? "Keychain に無ければ exit 2"
 
 # 2. project が無ければ exit 1
 "$S/resolve-project.sh" nosuch >/dev/null 2>&1

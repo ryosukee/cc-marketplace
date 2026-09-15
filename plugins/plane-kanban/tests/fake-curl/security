@@ -1,0 +1,23 @@
+#!/bin/bash
+# テスト用の偽の security。`security find-generic-password -s <service> -w` だけを受け付け、
+# FAKE_KEYCHAIN_DIR/<service> の中身を返す。無ければ exit 44（本物の security と同じ errSecItemNotFound）
+
+set -euo pipefail
+
+dir="${FAKE_KEYCHAIN_DIR:?FAKE_KEYCHAIN_DIR が未設定}"
+[ "${1:-}" = "find-generic-password" ] || { echo "fake security: 未対応のサブコマンド ${1:-}" >&2; exit 3; }
+shift
+service=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -s) service="$2"; shift 2 ;;
+    -w) shift ;;
+    *) shift ;;
+  esac
+done
+if [ -n "$service" ] && [ -f "$dir/$service" ]; then
+  cat "$dir/$service"
+else
+  echo "security: SecKeychainSearchCopyNext: The specified item could not be found in the keychain." >&2
+  exit 44
+fi

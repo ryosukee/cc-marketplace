@@ -14,39 +14,44 @@ hook と agent は持たない。
 
 ## Requirements
 
+- macOS。API key と workspace の slug を macOS の Keychain から `security` コマンドで読む。Linux では動かない
+- GUI にログインしていて、login keychain が開いていること。SSH だけで入った状態では Keychain を読めないことがある
 - `curl` と `jq`
 - Plane Cloud の workspace と、Personal Access Token
-- 環境変数 2 つ（下記）
 
-## 必要な環境変数
+## Keychain に入れる 2 項目
 
-| 変数 | 必須 | 内容 |
-| --- | --- | --- |
-| `PLANE_API_KEY` | 必須 | Personal Access Token。Plane の Profile Settings → Personal Access Tokens で発行する |
-| `PLANE_WORKSPACE_SLUG` | 必須 | workspace の slug。`https://app.plane.so/{slug}/` の部分 |
-| `PLANE_API_BASE` | 任意 | API の base URL。既定 `https://api.plane.so/api/v1` |
-| `PLANE_KANBAN_DATA_DIR` | 任意 | repo と project の対応を保存する場所。既定は `CLAUDE_PLUGIN_DATA`、それも無ければ `~/.claude/plugins/data/plane-kanban-cc-tools` |
+API key と slug は環境変数では渡さない。Keychain の次の 2 項目をスクリプトが読む。
 
-Claude Code では `~/.claude/settings.json` の `env` に置く。値は展開されないので絶対パスで書く。
+| service 名 | 内容 |
+| --- | --- |
+| `plane-kanban-api-key` | Personal Access Token。Plane の Profile Settings → Personal Access Tokens で発行する |
+| `plane-kanban-workspace-slug` | workspace の slug。`https://app.plane.so/{slug}/` の部分 |
 
-```json
-{
-  "env": {
-    "PLANE_API_KEY": "plane_api_...",
-    "PLANE_WORKSPACE_SLUG": "my-workspace"
-  }
-}
+登録は一度だけ、ターミナルで行う。
+
+```sh
+security add-generic-password -s plane-kanban-api-key -a "$USER" -w '<token>'
+security add-generic-password -s plane-kanban-workspace-slug -a "$USER" -w '<slug>'
 ```
 
-Codex では Codex を起動する環境（シェルの環境変数）に同じ名前で置く。
+無いときは、スクリプトが exit 2 で止まり、登録のコマンドを stderr に出す。plugin は Keychain を自動で書き換えない。
+スクリプトは API key を stdout・stderr・ログに出さない。
 
-未設定のときは、スクリプトが exit 2 で止まり、置き場を stderr に出す。plugin は設定を自動で書き換えない。
+## 任意の環境変数
+
+| 変数 | 内容 |
+| --- | --- |
+| `PLANE_API_BASE` | API の base URL。既定 `https://api.plane.so/api/v1` |
+| `PLANE_KANBAN_DATA_DIR` | repo と project の対応を保存する場所。既定は `CLAUDE_PLUGIN_DATA`、それも無ければ `~/.claude/plugins/data/plane-kanban-cc-tools` |
+
+置くなら Claude Code は `~/.claude/settings.json` の `env`、Codex は Codex を起動する環境（シェルの環境変数）。
 
 ## セットアップ
 
 1. Plane で kanban 用の workspace を作り、slug を控える
 2. Personal Access Token を発行する
-3. 上の環境変数を置く
+3. 上の 2 項目を Keychain に登録する
 4. repo の作業ツリーで `scripts/init-project.sh --identifier <接頭辞>` を回し、repo と同じ name の project を作る。
    既に同じ name の project があれば作らずにその id を保存する
 
