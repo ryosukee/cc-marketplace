@@ -64,6 +64,42 @@ adapter は各 CodingAgent の入力を共通 script の入力契約へ変換し
 各 CodingAgent の応答形式へ戻す。判定は共通 script に置き、固有の環境変数や JSON 形式を
 渡さない。adapter はこの入出力の境界を指し、skill の分割や agent 定義の生成物には使わない。
 
+## 環境変数と state の置き場
+
+スクリプトが読む環境変数と、state を書く場所は CodingAgent 中立にする。
+
+### CodingAgent 固有の名前を値の唯一の供給元にしない
+
+plugin が自分で名前を決めた変数を読む。`CLAUDE_` や `CODEX_` で始まる名前は、
+両方を並べて読むときか、無いときのフォールバックがあるときにだけ使う。
+設定が要る値は、置き場を CodingAgent ごとに README へ書く。
+
+| CodingAgent | 環境変数の置き場 |
+| --- | --- |
+| Claude Code | `~/.claude/settings.json` の `env` |
+| Codex | `~/.codex/config.toml` の `[shell_environment_policy]` の `set` |
+
+どちらも設定ファイル 1 か所で、シェルの起動経路に依存しない。
+
+why: 片方の CodingAgent にしか無い変数を唯一の供給元にすると、もう片方では既定値に落ちる。
+既定値が妥当に動くため、落ちたことは実行結果から分からない。
+
+### plugin root と plugin data を、skill から呼ぶスクリプトで当てにしない
+
+Codex が plugin root と plugin data を渡すのは、plugin が宣言したコマンドの中の
+`${PLUGIN_ROOT}` と `${PLUGIN_DATA}` としてだけで、skill の手順でモデルが起動するスクリプトには渡らない。
+
+- plugin root は、スクリプト自身の位置からの相対で解決する
+- state の置き場は、plugin が名前を決めた変数、`XDG_DATA_HOME` の下、`~/.local/share/{plugin}` の順に解決する
+
+why: CodingAgent の名前が入ったディレクトリを state の既定にすると、もう片方の CodingAgent の
+セッションがそのディレクトリへ書く。state の所在と、それを書いた CodingAgent が一致しなくなる。
+
+### セッション id は両方の名前を読む
+
+`CLAUDE_CODE_SESSION_ID` と `CODEX_THREAD_ID` を並べて読み、
+どちらも無いときに明示で上書きする変数を plugin 自身の名前で用意する。
+
 ## 名前付き agent を使う機能の両対応
 
 名前付き agent を使う機能を両対応にする方式には、次の三案がある。
