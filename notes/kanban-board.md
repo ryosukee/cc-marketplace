@@ -645,6 +645,26 @@ Work items still link to an epic through the Parent field.」と書く。Free �
 反映先。plugin `plane-kanban` の work item 作成の `parent` の扱い（段数を制限しない）。
 norm-refit を移すときの構造（norm-refit を親、段階を sub work item）。
 
+### 確定 35 API key と workspace slug は macOS の Keychain からだけ読む
+
+結論。plugin のスクリプトは Plane の Personal Access Token と workspace slug を macOS の Keychain
+（service `plane-kanban-api-key` と `plane-kanban-workspace-slug`）から `security find-generic-password` で読む。
+環境変数や `settings.json` の `env` には置かず、環境変数の分岐も持たない。
+plugin は macOS 限定で、GUI にログインして login keychain が開いていることを前提にする。この前提は README の Requirements に書く。
+
+決めなかった範囲。Claude が `security` を直接呼んで鍵を読むのを止める仕組み（Claude Code の permission の deny を置くか、
+コンパイル済みの helper を Keychain の ACL の唯一の app にするか）。Linux で使う必要が出たときの手段。
+
+決め手。ユーザーの発言「keychain only はだめなん？分岐とか secrets.fish とか使わず」と、
+「macOS 限定、GUI が必要で ok, requierments にちゃんと書いておいて」。Claude が示した比較は、
+`settings.json` の `env` は 0644 の平文に鍵が残る、dotfiles の `secrets.fish` 経由はシェルを経由しない起動で空になる、
+Keychain を直接読めば両方の問題が無い、というもの。
+
+出典。ユーザーとの対話 2026-09-15（PR #28 の Diffo レビュー中）。
+
+反映先。`plugins/plane-kanban/scripts/lib/plane.sh` の `plane_require_env`、README の Requirements と
+「Keychain に入れる 2 項目」、SKILL.md の前提、`tests/fake-curl/security`（PR #28 の `6cae20d`）。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
