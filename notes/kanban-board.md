@@ -725,7 +725,8 @@ Claude が API を叩くための token の置き場。後者は
 
 1. ユーザーが kanban 用の workspace を新しく作り、API key を発行する（確定 33）。
    できたら、親子の入れ子の段数を API で確かめる（確定 34 の決めなかった範囲）
-2. plugin `plane-kanban` を作る（確定 24〜32）。API key と workspace slug は settings.json の env
+2. plugin `plane-kanban` を作る（確定 24〜32）。実装は PR #28（2026-09-15）。API key と workspace slug は settings.json の env。
+   マージして導入したら、実際の API で `init-project.sh` と `create-work-item.sh` を試す
 3. `todo.md` の依頼を work item として取り込む（確定 31）。取り込んだら `todo.md` を消す（確定 32）
 4. norm-refit の計画とタスクを kanban へ移すかを決める。ccm-f086 の補足でユーザーが移したいと述べた。
    Cloud Free で使える束ねは親 work item と sub work item（確定 21）と Module で、
