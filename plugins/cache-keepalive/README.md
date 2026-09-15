@@ -43,6 +43,11 @@ prompt cache の期限が延びる。ユーザーが作業している間はス�
 plugin を install すると plugin monitor が有効になる。ユーザーの操作は要らない。
 セッションを開始した時点で Claude Code 本体が監視スクリプトを起動する。
 
+監視スクリプトの起動は、セッション JSONL が作られるより先になる。
+スクリプトは JSONL が現れるまで最大 120 秒待ってから監視を始め、
+待つことになった場合は `waited-for-jsonl` の行をログに残す。
+120 秒待っても見つからなければ exit 2 で落ち、`keepalive-error.log` に記録する。
+
 閾値は既定 3000 秒 (50 分)。変えるときは `CACHE_KEEPALIVE_THRESHOLD_SECONDS` を
 Claude Code の `settings.json` の `env` に置く。
 

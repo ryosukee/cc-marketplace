@@ -14,6 +14,8 @@ data_arg=""
 jsonl=""
 threshold="${CACHE_KEEPALIVE_THRESHOLD_SECONDS:-3000}"
 log_retention_days=30
+jsonl_wait_seconds=120
+jsonl_poll_seconds=2
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -45,12 +47,6 @@ fail() {
 session_id="$(ck_session_id "$session_arg")"
 [ -n "$session_id" ] || fail "session id が解決できない (--session-id と CLAUDE_CODE_SESSION_ID のどちらも空)"
 
-if [ -z "$jsonl" ]; then
-  jsonl="$(find "$HOME/.claude/projects" -name "${session_id}.jsonl" 2>/dev/null | head -1)"
-fi
-[ -n "$jsonl" ] || fail "session ${session_id} の JSONL が ~/.claude/projects 配下に見つからない"
-[ -f "$jsonl" ] || fail "JSONL が存在しない: $jsonl"
-
 log_file="$(ck_log_file "$data_dir" "$session_id")"
 pid_file="$(ck_pid_file "$data_dir" "$session_id")"
 
@@ -61,6 +57,23 @@ find "$data_dir" -maxdepth 1 \( -name 'keepalive-*.log' -o -name 'keepalive-*.pi
 log() {
   printf '%s %s\n' "$(date +%Y-%m-%dT%H:%M:%S%z)" "$1" >> "$log_file"
 }
+
+# セッション JSONL は plugin monitor の起動より後に作られる。生成を待たずに落ちると、
+# そのセッションでは keepalive が起動しないまま終わる (同一セッションでは起動し直せない)。
+# --jsonl で明示されたパスは待たない。存在しなければ指定の誤りなので、その場で落とす。
+if [ -z "$jsonl" ]; then
+  waited=0
+  while true; do
+    jsonl="$(find "$HOME/.claude/projects" -name "${session_id}.jsonl" 2>/dev/null | head -1)"
+    [ -z "$jsonl" ] || break
+    [ "$waited" -lt "$jsonl_wait_seconds" ] || break
+    sleep "$jsonl_poll_seconds"
+    waited=$((waited + jsonl_poll_seconds))
+  done
+  [ "$waited" -eq 0 ] || log "waited-for-jsonl seconds=${waited}"
+  [ -n "$jsonl" ] || fail "session ${session_id} の JSONL が ${jsonl_wait_seconds} 秒待っても ~/.claude/projects 配下に見つからない"
+fi
+[ -f "$jsonl" ] || fail "JSONL が存在しない: $jsonl"
 
 echo "$$" > "$pid_file"
 
