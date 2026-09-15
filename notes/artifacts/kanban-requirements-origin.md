@@ -394,6 +394,54 @@ Q4 は推奨の案を選びつつ、消す作業をユーザー自身が行う�
 Q6 は決まっておらず、既定の state が一般的でないのではないかという疑問が付いている。
 補足は 2 つの問い（module とは何か / cycle は sprint 的なものか）で、回答の上書きではない。
 
+## 実文 24 ccm-f086 への回答
+
+セッション `124dd508-edc6-499b-a9fd-469676872b82`、2026-09-15。
+ccm-f086（kanban plugin の設計: 名前・構成・Plane との対応・todo.md の取り込み、設問 9 問）への回答。
+設問 1「plugin の名前」の選択肢は `plane-kanban`（推奨）/ `kanban` / `plane` / その他。
+設問 2「skill と hook の構成」の選択肢は 作業手順 skill 1 本 + SessionStart hook 1 本（推奨）/
+作業手順 skill だけ / 作業手順 skill + SessionStart hook + Stop hook / その他。
+設問 3「スクリプトの言語」の選択肢は bash + curl + jq（推奨）/ node（`.mjs`）/ その他。
+設問 4「Codex 対応」の選択肢は Claude Code only で始める（推奨）/ 最初から Claude Code + Codex / その他。
+設問 5「repo と project の対応」の選択肢は
+project の name を repo のディレクトリ名に揃え、スクリプトが API で id を引いて保存する（推奨）/
+対応表を plugin の `config/` に手で書く / 各 repo の `.claude/settings.json` の `env` に project id を書く / その他。
+設問 6「project が無いとき」の選択肢は ユーザーが `init` を呼んだときだけ作る（推奨）/ 無ければ自動で作る /
+スクリプトは作らない / その他。
+設問 7「セッションの label の名前」の選択肢は `session:<日付>-<id の先頭 8 桁>`（推奨）/
+セッション id をそのまま / 日付だけ / その他。
+設問 8「取り込みの単位」の選択肢は
+Claude が取り込み一覧を書き、スクリプトはその一覧に従って work item を 1 件ずつ作る（推奨）/
+第 1 階層の見出しだけを 1 枚ずつ / 第 1 階層と第 2 階層を全部 1 枚ずつ / その他。
+設問 9「取り込んだ後の todo.md」の選択肢は 削除し、以後の依頼は work item として作る（推奨）/
+残して冒頭に取り込み済みと書く / 取り込んだ依頼だけ消す / その他。
+設問と選択肢の全文は `~/.local/share/claude-html-communication/src/ccm-f086.json` にあり、
+回答は同じファイルの `answers` に記録されている。
+
+<!-- markdownlint-disable MD032 -->
+> "## HTML フォーム回答（kanban plugin の設計: 名前・構成・Plane との対応・todo.md の取り込み）
+> - Q1（plugin の名前）: plane-kanban
+> - Q2（skill と hook の構成）: 作業手順 skill だけ  ※ 各タスクの管理や詳細は plane, kanban に寄せるが、今その中のどれをどういう目的で進めているのかなどの背景はまだ session plugin 管理にするということでいいと思う。ただ、そことどう疎結合にするか、どこまでは依存を埋め込むかなどは要検討。実際に session 側のスキルの内容を変更する際に考える
+> - Q3（スクリプトの言語）: bash + curl + jq
+> - Q4（Codex 対応）: 最初から Claude Code + Codex
+> - Q5（repo と project の対応）: project の name を repo のディレクトリ名に揃え、スクリプトが API で id を引いて保存する
+> - Q6（project が無いとき）: ユーザーが init を呼んだときだけ作る  ※ skill を読んだ時に project がなければ案内するみたいなことは入れたい
+> - Q7（セッションの label の名前）: session:<日付>-<id の先頭 8 桁>
+> - Q8（取り込みの単位）: Claude が取り込み一覧を書き、スクリプトはその一覧に従って work item を 1 件ずつ作る
+> - Q9（取り込んだ後の todo.md）: 削除し、以後の依頼は work item として作る
+> - 補足: これで norm-refit みたいに長いタスクをエピックとして捉えて cc-marketplace project ないにおいて複数のタスクを束ねる norm-refit epic みたいな構造って作れるんだっけ？
+> 親子構造とか？それ以外に使える仕組みってあるんだっけ？
+> その上でその仕組みを使って todo.md だけでなく norm-refit の plan やタスクも kanban 移行したいかも
+> plane って free plan で workspace 複数作れたっけ？作れるなら既存の workspace はそのままに kanban 用には新規で作ればいいかと思った"
+<!-- markdownlint-enable MD032 -->
+
+Q1・Q3・Q5・Q7・Q8・Q9 は推奨どおり。Q2 は推奨（SessionStart hook あり）を採らず skill だけを選び、
+タスクの背景は当面 session plugin の引き継ぎ資料が持つという条件を添えた。
+Q4 は推奨（Claude Code only）を採らず、最初から両対応を選んだ。
+Q6 は推奨どおりで、project が無いときに skill が案内するという条件を足した。
+補足は 3 件の問いで、epic のような束ねの構造、norm-refit の計画とタスクの kanban への移行、
+Free plan での複数 workspace の可否。回答の上書きではない。
+
 ## kanban-matrix.md の 6 要件と、実文との対応
 
 `notes/artifacts/kanban-matrix.md` の 36-43 行が挙げる 6 件について、

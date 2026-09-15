@@ -462,6 +462,146 @@ module の方が相性良さそうに思えた」という提案に対し、上�
 
 反映先。確定 18 のまま。plugin のスクリプトは Module を触らない。
 
+### 確定 24 plugin の名前は `plane-kanban`
+
+結論。cc-marketplace に新設する plugin の名前は `plane-kanban`。
+
+決めなかった範囲。skill の名前と、スクリプトのファイル名。
+
+決め手。ccm-f086 の設問 1 で推奨どおり。Claude が示した根拠は、サービス名 + 対象の形が `github-pr` と同じ命名になり、
+Plane に依存していることが名前から読めること。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`plugins/plane-kanban/`（新設）、`.claude-plugin/marketplace.json`、README.md、CLAUDE.md の plugin 一覧。
+
+### 確定 25 構成は作業手順 skill だけ。hook は持たない
+
+結論。plugin は作業手順 skill 1 本だけを持ち、SessionStart hook も Stop hook も agent も持たない。
+skill は work item の一覧・作成・state の変更と、いまのセッションの label を付ける操作を 1 本で持つ。
+`todo.md` の取り込みは同じスクリプトの 1 回限りの使い方で、別の skill にしない。
+各タスクの管理と詳細は Plane に寄せるが、いまどのタスクをどういう目的で進めているかという背景は、
+当面は session plugin の引き継ぎ資料が持つ。
+
+決めなかった範囲。session plugin との疎結合の形と、依存をどこまで埋め込むか。
+session 側の skill の内容を変えるときに決める。SessionStart hook を後から足すかどうか。
+
+決め手。ccm-f086 の設問 2 で、推奨（作業手順 skill 1 本 + SessionStart hook 1 本）を採らずに選んだ。
+補足は「各タスクの管理や詳細は plane, kanban に寄せるが、今その中のどれをどういう目的で進めているのかなどの
+背景はまだ session plugin 管理にするということでいいと思う」。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`plugins/plane-kanban/skills/` の構成（skill 1 本）。`hooks/` は作らない。
+session plugin の handover skill は当面変えない。
+
+### 確定 26 スクリプトは bash + curl + jq で書く
+
+結論。plugin のスクリプトは bash + curl + jq で書く。work item の説明（`description_html`）の変換は、
+段落と改行だけを扱う。
+
+決めなかった範囲。markdown の見出しや箇条書きの記法を Plane 上で再現するか。
+
+決め手。ccm-f086 の設問 3 で推奨どおり。既存の plugin と同じ規約で読めることによる。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`plugins/plane-kanban/scripts/`。`.claude/rules/coding.md` の Bash 規約が当たる。
+
+### 確定 27 対応 CodingAgent は最初から Claude Code + Codex
+
+結論。plugin は最初から Claude Code と Codex の両方で使える形にし、両方で検証してから公開する。
+Codex 用には skill の入口と、Codex で同じ発火点を作る実装（adapter）を足す。
+
+決めなかった範囲。skill の入口を共通の SKILL.md にするか CodingAgent 別にするか
+（`docs/cross-client-architecture.md` の A / B）。hook を持たないので hook の実装方式の選択は無い。
+
+決め手。ccm-f086 の設問 4 で、推奨（Claude Code only で始める）を採らずに選んだ。理由は述べていない。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`plugins/plane-kanban/` の `.claude-plugin/plugin.json` と `.codex-plugin/plugin.json`、
+`.agents/plugins/marketplace.json`、README の対応 CodingAgent。
+
+### 確定 28 repo と project の対応は、project の name を repo のディレクトリ名に揃えて API で引く
+
+結論。ユーザーが project の name を repo のディレクトリ名に揃える。スクリプトは project の一覧 API で
+name が一致する project の id を引き、`CLAUDE_PLUGIN_DATA` に保存する。対応表は持たない。
+
+決めなかった範囲。保存したファイルの形式と、保存した id が古くなったとき（project を作り直したとき）の引き直し方。
+
+決め手。ccm-f086 の設問 5 で推奨どおり。repo が増えても plugin 側に手を入れないことによる。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`plugins/plane-kanban/scripts/` の project 解決の処理。保存先は `CLAUDE_PLUGIN_DATA`。
+
+### 確定 29 project が無い repo では、ユーザーが `init` を呼んだときだけ作る。skill は無ければ案内する
+
+結論。project の作成は、ユーザーが skill の `init` の操作を呼んだときだけスクリプトが行う。
+どの操作でも自動では作らない。skill を読んだときに対応する project が無ければ、
+skill は `init` で作れることを案内する。
+
+決めなかった範囲。identifier の決め方（ユーザーが指定するか、repo 名から機械的に作るか）。
+
+決め手。ccm-f086 の設問 6 で推奨どおり。補足は「skill を読んだ時に project がなければ案内するみたいなことは入れたい」。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`plugins/plane-kanban/skills/` の SKILL.md（project が無いときの案内）と `init` のスクリプト。
+
+### 確定 30 セッションの label は `session:<日付>-<セッション id の先頭 8 桁>`
+
+結論。セッションを表す label の名前は `session:<日付>-<セッション id の先頭 8 桁>`。
+スクリプトは作る前に label の一覧を引き、同名があればそれを使う。
+
+決めなかった範囲。label の色。増え続けた label をいつ消すか（確定 18 が残した論点のまま）。
+
+決め手。ccm-f086 の設問 7 で推奨どおり。Plane の UI で日付順に読め、古い日付の label をまとめて消せることによる。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`plugins/plane-kanban/scripts/` の label を付ける処理。
+
+### 確定 31 `todo.md` は Claude が書いた取り込み一覧から、スクリプトが 1 件ずつ work item にする
+
+結論。Claude が `todo.md` を読み、依頼ごとの題名・本文・親を取り込み一覧のファイルに書く。
+スクリプトはその一覧に従って work item を 1 件ずつ作り、作成した work item の id を一覧に書き戻す。
+途中で失敗しても、再実行で作成済みの行を飛ばせる。
+下に独立した依頼を持つ 3 つの見出し（「cc-marketplace への依頼」「norm-refit と無関係で、引き継ぎの復元タスクに
+長く残っていたもの」「efso-idp セッション（2026-09-02）からの依頼」）は親 work item にし、その依頼を sub work item にする。
+
+決めなかった範囲。取り込み一覧のファイルの形式と置き場。
+
+決め手。ccm-f086 の設問 8 で推奨どおり。見出しの階層だけでは依頼と節を区別できず、
+コードブロック内の見出しを誤検出することによる。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`plugins/plane-kanban/scripts/` の一括作成の処理。`todo.md` の取り込み手順。
+
+### 確定 32 取り込んだ後の `todo.md` は削除し、以後の依頼は work item として作る
+
+結論。取り込みが終わったら `todo.md` を削除する。以後、他のセッションからの依頼は plugin のスクリプトで
+work item として作る。
+
+決めなかった範囲。plugin を入れていない環境のセッションから依頼を出す手段。
+
+決め手。ccm-f086 の設問 9 で推奨どおり。同じ依頼が 2 か所にある状態を作らないことによる。
+
+出典。ccm-f086 への回答（2026-09-15）。実文は
+[実文 24](./artifacts/kanban-requirements-origin.md#実文-24-ccm-f086-への回答)。
+
+反映先。`todo.md` の削除（取り込みの後）。他 repo のセッションへの依頼の出し方の案内。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
@@ -535,18 +675,22 @@ Claude が API を叩くための token の置き場。後者は
 
 公式資料どうしの矛盾 5 件と未確認 11 件を、実文の側に残してある。
 
-### 次にやること（2026-09-05 更新）
+### 次にやること（2026-09-15 更新）
 
-道具・エディション・接続手段・Plane の中の構成は確定 11〜21 で決まった。
-残るのは state の集合（未確定）と、実際に作る作業。
+サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜32 で決まった。
+残るのは workspace の扱いの見直しと、実際に作る作業。
 
-1. state の集合を決める。Plane が project を作った時点で入る state の名前を確かめ、
-   そのままでよいかを問い直す
-2. ユーザーが既存 workspace の引越しを終えるのを待つ（確定 20。Claude は消さない）
-3. plugin を作る（確定 12・15）。名前と skill / hook の構成は未定。
-   API key は settings.json の env
-4. `todo.md` の項目をカードとして取り込む（確定 9 のとおり 1 項目 1 枚、
-   確定 16 のとおりスクリプトで 1 件ずつ、確定 21 のとおり束ねは親 work item）
+1. workspace を新しく作るか決める。確定 20 は既存 workspace の project を消して作り直すと決めたが、
+   ccm-f086 の補足でユーザーが「作れるなら既存の workspace はそのままに kanban 用には新規で作ればいい」と述べた。
+   Plane の docs には「Create additional workspaces」の手順があり、数の上限は書かれていない
+   （`kanban-plane-cloud-vs-ce-2026-09-03.md`）。新しく作るなら確定 20 を上書きする確定を積む
+2. plugin `plane-kanban` を作る（確定 24〜32）。API key と workspace slug は settings.json の env
+3. `todo.md` の依頼を work item として取り込む（確定 31）。取り込んだら `todo.md` を消す（確定 32）
+4. norm-refit の計画とタスクを kanban へ移すかを決める。ccm-f086 の補足でユーザーが移したいと述べた。
+   Cloud Free で使える束ねは親 work item と sub work item（確定 21）と Module で、
+   Plane の Epic は work item type の 1 つで Pro 以上（`kanban-plane-hierarchy-2026-09-04.md` 1.4 節）。
+   移すなら、`notes/norm-refit-plan.md` を `notes/artifacts/` へ移す 2026-09-15 の確定
+   （`notes/norm-refit.md`）との関係も決め直す
 
 ### 落とした候補の理由
 
