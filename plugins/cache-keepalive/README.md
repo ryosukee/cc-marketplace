@@ -11,7 +11,7 @@ prompt cache (extended cache, TTL 1h) の expire 前に軽量プロンプトを�
 | --- | --- |
 | plugin monitor `cache-keepalive-watch` | セッション開始時に監視スクリプトを起動する。`when` は `always` |
 | `scripts/watch-idle.sh` | セッション JSONL の mtime を監視し、閾値を超えたときだけ stdout に 1 行出す |
-| `scripts/report-status.sh` | 起動時刻・起動手段・最後に発火した時刻を JSON で返す |
+| `scripts/report-status.sh` | 起動時刻・JSONL の検出状態・最後に発火した時刻を JSON で返す |
 | `scripts/stop-watch.sh` | 監視プロセスを止める |
 | cache-keepalive skill | 状態の報告と停止。起動は持たない |
 
@@ -23,9 +23,9 @@ prompt cache の期限が延びる。ユーザーが作業している間はス�
 
 | データ | 場所 |
 | --- | --- |
-| 起動・発火・停止の記録 | `${CLAUDE_PLUGIN_DATA}/keepalive-{session-id}.log` |
+| 起動・JSONL 検出・発火・停止の記録 | `${CLAUDE_PLUGIN_DATA}/keepalive-{session-id}.log` |
 | 監視プロセスの pid | `${CLAUDE_PLUGIN_DATA}/keepalive-{session-id}.pid` |
-| 起動に失敗した記録 | `${CLAUDE_PLUGIN_DATA}/keepalive-error.log` |
+| 前提を満たせなかった記録 (session id 等) | `${CLAUDE_PLUGIN_DATA}/keepalive-error.log` |
 
 `${CLAUDE_PLUGIN_DATA}` は plugin 更新をまたいで残る永続ディレクトリで、
 実体は `~/.claude/plugins/data/cache-keepalive-cc-tools/`。
@@ -44,10 +44,10 @@ plugin を install すると plugin monitor が有効になる。ユーザーの
 セッションを開始した時点で Claude Code 本体が監視スクリプトを起動する。
 
 監視スクリプトの起動は、セッション JSONL が作られるより先になる。
-JSONL がディスクに現れるのはセッション開始から数分遅れることがある。
-スクリプトは JSONL が現れるまで 2 秒間隔で最大 1800 秒 (30 分) 待ってから監視を始め、
-待つことになった場合は `waited-for-jsonl` の行をログに残す。
-1800 秒待っても見つからなければ exit 2 で落ち、`keepalive-error.log` に記録する。
+JSONL はセッションに最初の入力が入るまで作られないため、
+スクリプトは見つかるまで 60 秒間隔で探し、発火せずに待つ。待ちに上限は無く、
+見つからないことをエラーとして扱わない (最初の入力より前は cache が無く、発火の出番も無い)。
+起動時と検出時にログへ 1 行ずつ残し、status が待機中 (`waiting-jsonl`) を区別できる。
 
 閾値は既定 3000 秒 (50 分)。変えるときは `CACHE_KEEPALIVE_THRESHOLD_SECONDS` を
 Claude Code の `settings.json` の `env` に置く。
@@ -61,11 +61,11 @@ Claude Code 本体は、次のどれかに当たると monitor を起動せず�
 - plugin が無効、または `pluginMonitors` が無効
 - Monitor ツールが使えない host
 
-起動しなかったことは `/cache-keepalive status` で分かる。ログが 1 行も無ければ `never-armed` を返す。
-このとき `last_error` が空なら、Claude Code 本体が起動しなかったか、監視スクリプトが JSONL の生成を
-待っている最中のどちらかで、status はこの 2 つを区別しない。セッション開始から 30 分の間は後者でありうる。
-`last_error` に値が入っていれば、起動したうえで監視スクリプトが前提を満たせずに落ちている。
-`never-armed` の状態でスクリプトを手で起動して代用しない。起動しなかった事実が記録から消える。
+起動しなかったことは `/cache-keepalive status` で分かる。ログが 1 行も無ければ `never-started` を返す。
+このとき `last_error` が空なら Claude Code 本体が monitor を起動していない。値が入っていれば、
+起動したうえで監視スクリプトが前提 (session id 等) を満たせずに落ちている。
+JSONL の生成を待っている間は `waiting-jsonl` を返すので、未起動と待機は区別できる。
+`never-started` の状態でスクリプトを手で起動して代用しない。起動しなかった事実が記録から消える。
 
 ## 更新
 

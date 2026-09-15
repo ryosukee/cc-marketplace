@@ -1,5 +1,5 @@
 {
   "name": "cache-keepalive",
   "description": "prompt cache (extended cache, TTL 1h) の expire 前に keepalive プロンプトを自動発火し、キャッシュを維持する。plugin monitor がセッション開始時に監視を起動する",
-  "version": "0.8.2"
+  "version": "0.9.0"
 }

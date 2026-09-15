@@ -35,11 +35,15 @@ Claude Code 本体が直接起動するので、Monitor ツールの `timeout_ms
 最終活動から 3000 秒 (50 分) 以上経過した時だけ stdout に 1 行出力する。
 Claude Code 本体はこの行を Claude への通知として配信し、Claude が OK と応答することで cache が refresh される。
 
+- セッション JSONL は、セッションに最初の入力が入るまで作られない。
+  スクリプトは見つかるまで 60 秒間隔で探し、発火せずに待つ。待ちに上限は無く、
+  見つからないことをエラーとして扱わない (最初の入力より前は cache が無く、発火の出番も無い)
 - スクリプトの stat 実行は bash プロセスなので JSONL mtime を更新しない
-- JSONL mtime は Claude の API コール (ユーザー操作 or keepalive 応答) でのみ更新される
+- JSONL は Claude Code 本体が会話の entry を追記するたびに更新される。
+  ローカルコマンドの記録など、API コールを伴わない書き込みでも進むことがある
 - アクティブ時はスクリプトが sleep するだけで、会話ターンは一切発生しない
-- 起動・発火・停止は `${CLAUDE_PLUGIN_DATA}` のログへ 1 行ずつ記録する。
-  プロセスが生きたまま通知が届かない状態と、そもそも起動していない状態を、status で区別できる
+- 起動・JSONL の検出・発火・停止は `${CLAUDE_PLUGIN_DATA}` のログへ 1 行ずつ記録する。
+  起動していない・JSONL 待ち・監視中・停止済みを、status で区別できる
 
 ## サブコマンド
 
@@ -55,11 +59,14 @@ Claude Code 本体はこの行を Claude への通知として配信し、Claude
 
 2. 出力 JSON の `state` で報告を分ける。
 
-    - `running`: 「cache-keepalive: 有効」と報告し、`armed_at`・`launcher`・`last_fired_at`・`fired_count` を添える
+    - `running`: 「cache-keepalive: 有効」と報告し、`started_at`・`launcher`・`last_fired_at`・`fired_count` を添える
+    - `waiting-jsonl`: 「cache-keepalive: 起動済み。セッション JSONL の生成を待っている」と報告する。
+      最初の入力より前の正常な待機で、対処は要らない
     - `stopped`: 「cache-keepalive: 停止中」と報告し、このセッションでは起動し直せないことを伝える
-    - `never-armed`: 「cache-keepalive: 未起動」と報告する。`last_error` が `null` なら
+    - `never-started`: 「cache-keepalive: 未起動」と報告する。`last_error` が `null` なら
       Claude Code 本体が起動していないので、下記「monitor が起動しないとき」の確認手順を案内する。
-      `last_error` に値があれば、起動したうえで監視スクリプトが落ちているので、その文言をそのまま報告する
+      `last_error` に値があれば、起動したうえで監視スクリプトが前提を満たせず落ちているので、
+      その文言をそのまま報告する
 
 3. exit 2 のときは stderr の文言をそのまま報告し、原因を推測で埋めない。
 
@@ -81,15 +88,15 @@ Claude Code 本体はこの行を Claude への通知として配信し、Claude
 plugin monitor がセッション開始時に起動するので、`on` から起動する手順は持たない。
 status と同じコマンドで状態を取り、次のとおり報告する。
 
-- `running` → 「cache-keepalive は既に有効です」
-- `stopped` / `never-armed` → 起動していないことを報告する。
+- `running` / `waiting-jsonl` → 「cache-keepalive は既に有効です」
+- `stopped` / `never-started` → 起動していないことを報告する。
   Claude Code 本体は plugin 名と monitor 名の組をセッション単位で重複排除するので、
   同じセッションでは起動し直せない。新しいセッションを開始すると plugin monitor が起動し直す
 
 ## monitor が起動しないとき
 
 Claude Code 本体は、次のどれかに当たると monitor を起動せず、そのことを通知しない。
-`state` が `never-armed` のときは、この順に確認する。
+`state` が `never-started` のときは、この順に確認する。
 
 1. 対話 CLI セッションでない (`claude -p` の単発実行では起動しない)
 2. workspace trust が未承認である
