@@ -740,15 +740,18 @@ Claude が API を叩くための token の置き場。後者は
 
 ### 次にやること（2026-09-15 更新）
 
-サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜32 で決まった。
-残るのは workspace の扱いの見直しと、実際に作る作業。
+サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜35 で決まった。
+残るのは実際に作る作業。
 
-1. ユーザーが kanban 用の workspace を新しく作り、API key を発行する（確定 33）。
-   できたら、親子の入れ子の段数を API で確かめる（確定 34 の決めなかった範囲）
-2. plugin `plane-kanban` を作る（確定 24〜32）。実装は PR #28（2026-09-15）。API key と workspace slug は settings.json の env。
-   マージして導入したら、実際の API で `init-project.sh` と `create-work-item.sh` を試す
-3. `todo.md` の依頼を work item として取り込む（確定 31）。取り込んだら `todo.md` を消す（確定 32）
-4. norm-refit の計画とタスクを kanban へ移すかを決める。ccm-f086 の補足でユーザーが移したいと述べた。
+1. plugin `plane-kanban` のレビューを終えてマージする（確定 24〜32、確定 35）。
+   実装は PR #28（2026-09-15 時点で open、Diffo でレビュー中）
+2. ユーザーが kanban 用の workspace を新しく作り、API key を発行する（確定 33）。
+   API key と workspace slug は macOS の Keychain の `plane-kanban-api-key` と
+   `plane-kanban-workspace-slug` に入れる（確定 35）
+3. plugin を導入し、実際の API で `init-project.sh` と `create-work-item.sh` を試す。
+   あわせて親子の入れ子の段数を API で確かめる（確定 34 の決めなかった範囲）
+4. `todo.md` の依頼を work item として取り込む（確定 31）。取り込んだら `todo.md` を消す（確定 32）
+5. norm-refit の計画とタスクを kanban へ移すかを決める。ccm-f086 の補足でユーザーが移したいと述べた。
    Cloud Free で使える束ねは親 work item と sub work item（確定 21）と Module で、
    Plane の Epic は work item type の 1 つで Pro 以上（`kanban-plane-hierarchy-2026-09-04.md` 1.4 節）。
    移すなら、`notes/norm-refit-plan.md` を `notes/artifacts/` へ移す 2026-09-15 の確定
