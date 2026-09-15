@@ -45,3 +45,5 @@ invoke されるエントリスクリプトの規約:
 - plugin root は `${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/<相対パス>" && pwd)}` で解決する。
   フォールバックの `$0` 相対パスは配置階層に依存する: `scripts/*.sh` なら `..`、`scripts/hooks/*.sh` なら `../..`。
   スクリプトを移動したらこの相対パスも必ず合わせて直す
+- 環境変数と state の置き場は
+  [両対応の設計方針](../../docs/cross-client-architecture.md#環境変数と-state-の置き場)に従う
