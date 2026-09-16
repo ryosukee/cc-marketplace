@@ -1,6 +1,6 @@
 {
   "name": "claude-user-communication",
-  "version": "0.44.0",
+  "version": "0.45.0",
   "description": "調査報告や設計判断を HTML ページで提示し、回答を記録する",
   "author": {
     "name": "CC Tools"

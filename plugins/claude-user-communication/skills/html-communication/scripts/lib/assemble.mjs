@@ -63,12 +63,13 @@ export function assemblePage(jsonPath, { force = false, out = null } = {}) {
 
   let html = fs.readFileSync(TEMPLATE_PATH, "utf8");
   const isForm = src.type === "form";
-  if (!isForm) {
-    // report は下部バーの操作が無いので script ごと落とす。雛形の末尾にある 1 つだけが対象なので後ろから探す
-    const a = html.lastIndexOf("<script>"), b = html.lastIndexOf("</script>");
-    if (a < 0 || b < 0) return { ok: false, out: outPath, findings: [{ check: "template", where: TEMPLATE_PATH, message: "雛形に <script> が無い" }] };
-    html = html.slice(0, a) + html.slice(b + "</script>".length).replace(/^\n/, "");
-  }
+  // 雛形は report 用（見出しツリーの現在地）と form 用（回答の操作）の script を持つ。
+  // 使わないほうを種別で落とす。位置ではなく data-scope で決めるので、script が増えても取り違えない
+  const unused = isForm ? "report" : "form";
+  const open = `<script data-scope="${unused}">`;
+  const a = html.indexOf(open), b = html.indexOf("</script>", a);
+  if (a < 0 || b < 0) return { ok: false, out: outPath, findings: [{ check: "template", where: TEMPLATE_PATH, message: `雛形に data-scope="${unused}" の script が無い` }] };
+  html = html.slice(0, a) + html.slice(b + "</script>".length).replace(/^\n/, "");
   const rep = (from, to) => { html = html.split(from).join(to); };
   rep("{{タイトル}}", esc(src.title));
   rep("{{skill のバージョン}}", version);

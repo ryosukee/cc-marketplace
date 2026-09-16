@@ -484,6 +484,11 @@ export function renderPage(src, opts = {}) {
   if (isForm) {
     const grps = groupList.filter((g) => groupCount.has(g.id)).map((g) => `<div class="qgrp" data-grp="${esc(g.id)}"><p class="qgrp-h" data-grp-name="${esc(g.name)}">${esc(g.name)}</p></div>`).join("\n");
     parts.push(`<aside id="q-pane" aria-label="設問">\n<p class="pane-h">設問 ${NQ} 件（読んでいる範囲のものが開く／見出しで開閉）</p>${grps ? "\n" + grps : ""}\n</aside>`);
+  } else {
+    // report の見出しツリー。節の見出しだけを並べ、参考資料と生成に関する補足は載せない
+    // （どちらも読み飛ばしてよい節なので）。3 pane のときだけ CSS が出す
+    const items = sections.filter((s) => s.kind === "explain").map((s) => `<a href="#s-${s.id}">${esc(plain(s.heading))}</a>`).join("\n");
+    if (items) parts.push(`<aside id="toc-pane" aria-label="節の一覧">\n<p class="pane-h">節</p>\n${items}\n</aside>`);
   }
 
   // 脚注と補足の pane。参照の数だけ戻りリンクを並べる

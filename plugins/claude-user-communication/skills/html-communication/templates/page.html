@@ -9,15 +9,17 @@
   二重の波括弧で囲んだ語は assemble-page.mjs が埋めるスロット（このコメントには書かない。
   書くと置換がここにも当たる）。タイトル・skill のバージョン・生成元・追加 CSS・図の CSS・
   アイコン・本文・テーマ・下書きキー・設問一覧・回答済み の 11 個。
-  report は末尾の script 要素ごと落ちる（操作が無い）。form / report の本文の違いは page-source.mjs が持つ。
+  雛形は form 用と report 用の script を data-scope で分けて持ち、assemble-page.mjs が使わないほうを落とす。
+  form / report の本文の違いは page-source.mjs が持つ。
     form   : 下部バー #bar（情報・入力・操作の 3 ゾーン）と設問 pane #q-pane。冒頭ブロックの見出し語は「推奨案のまとめ」
-    report : #bar の代わりに #footer-nav。#q-pane と .rng[data-q] は無い。冒頭ブロックの見出し語は「まとめ」
+    report : #bar の代わりに #footer-nav。#q-pane と .rng[data-q] は無く、左の列には見出しツリー #toc-pane。
+             冒頭ブロックの見出し語は「まとめ」
 
-  構造は 3 pane（左に設問・中央に本文・右に脚注）。1340px 以上で 3 列になり、
+  構造は 3 pane（左に設問、report では見出しツリー・中央に本文・右に脚注）。1340px 以上で 3 列になり、
   それ未満は DOM 順のまま 本文 → 設問 → 脚注 の 1 列で流れる。
   DOM 順をこの並びにするのは、狭幅で読み終えた直後に答えられるようにするため。
 
-  幅の段は 5 つ。列幅は 設問 / 本文 / 脚注 の順。
+  幅の段は 5 つ。列幅は 左（設問 / 見出しツリー） / 本文 / 脚注 の順。
     〜1023px  1 列（本文 640px） / 1024px〜  2 pane（— / 640 / 300）
     1340px〜  3 pane（300 / 640 / 300） / 1700px〜（320 / 960 / 320） / 2100px〜（360 / 1240 / 360）
   広い段で伸ばすのは表・図・コードだけ。地の文には上限を掛ける（720px / 800px）。
@@ -257,6 +259,15 @@
      #q-pane を既定で隠すのは、設問が本文側にある状態では見出しだけが残るため。 */
   #q-pane { display: none; }
 
+  /* report の見出しツリー。設問が無いぶん左の列が空くので、本文の節の一覧を置く。
+     出すのは 3 pane のときだけ。1 列と 2 pane で出すと本文の冒頭に目次が生えるのと同じ形になる。 */
+  #toc-pane { display: none; }
+  #toc-pane a { display: block; font-size: 0.875em; color: var(--link); text-decoration: none;
+                padding: 3px 0 3px 10px; border-left: 2px solid transparent; }
+  #toc-pane a:hover { text-decoration: underline; }
+  /* 現在地は本文の範囲の縦罫と同じ当て方にする。2px の --link で、面は敷かない */
+  #toc-pane a.on { border-left-color: var(--link); font-weight: 700; }
+
   /* 2 pane。640 + 24 + 300 = 964px + main の左右 padding 40px */
   @media screen and (min-width: 1024px) and (max-width: 1339px) {
     main { max-width: 1004px; display: grid;
@@ -275,12 +286,16 @@
            grid-template-columns: 300px 640px 300px; column-gap: 24px;
            grid-template-areas: "q bd fn"; align-items: start; }
     #bd { grid-area: bd; min-width: 0; }
-    #q-pane { grid-area: q; display: block; }
+    #q-pane, #toc-pane { grid-area: q; display: block; }
     #fn-pane { grid-area: fn; }
-    #q-pane, #fn-pane { position: sticky; top: 24px; overflow-y: auto; }
-    /* 下部バーは右列の下に敷くので、丈を削るのは脚注 pane だけ */
+    #q-pane, #toc-pane, #fn-pane { position: sticky; top: 24px; overflow-y: auto; }
+    /* form の下部バーは右列の下に敷くので、form で丈を削るのは脚注 pane だけ */
     #q-pane { max-height: calc(100vh - 60px); }
     #fn-pane { max-height: calc(100vh - 240px); }
+    /* report の追従ナビは全幅に敷くので、その分だけ両方の pane の丈を削る。ナビの高さは約 60px で、
+       ホームインジケータのある端末ではセーフエリアがそれに足される。
+       脚注 pane の 240px は form の 3 段のバーに合わせた値なので、report では緩める */
+    #toc-pane, main:has(#toc-pane) #fn-pane { max-height: calc(100vh - 100px - env(safe-area-inset-bottom)); }
   }
 
   /* 3 pane のワイド段。本文の列と両 pane を広げ、表と図を大きく見せる。
@@ -320,9 +335,13 @@
   .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
   /* report 用の追従ナビ。操作が無いので 1 段だけ */
   #footer-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg);
-                border-top: 1px solid var(--rule); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+                border-top: 1px solid var(--rule); padding: 8px 20px calc(8px + env(safe-area-inset-bottom));
                 z-index: 100; }
-  #footer-nav > div { max-width: 640px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+  /* 中身の幅と左端は本文の列に合わせる（段ごとの上書きは下部バーの後ろにまとめてある）。
+     1 列の段では main の内容幅 600px（640 から左右の padding 40 を引いた値）と揃うので、
+     左右の padding も main と同じ 20px にする */
+  #footer-nav > div { max-width: 600px; margin: 0 auto; display: flex; align-items: center;
+                      flex-wrap: wrap; gap: 10px; }
   #back { display: inline-block; background: none; border: 1px solid var(--rule); color: var(--sub);
           border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 0.875em; white-space: nowrap; }
   #back:hover { border-color: var(--link); color: var(--link); }
@@ -375,10 +394,32 @@
   @media screen and (min-width: 2100px) {
     #bar { left: calc(50% + 644px); }
   }
+
+  /* report の追従ナビの中身を本文の列に合わせる。#bar と違って帯は全幅に敷いたままにし、
+     中の div だけを動かす（操作ボタンが無いので右へ寄せる理由が無い）。
+     margin-left の 50% は #footer-nav の内容幅に対する割合で、左右の padding が main と
+     同じ 20px なので、本文の列の左端と画面中央の差をそのまま書ける */
+  @media screen and (min-width: 1024px) and (max-width: 1339px) {
+    /* 2 pane。画面中央 - (1004 / 2) + 左 padding 20 = 50% - 482px */
+    #footer-nav > div { max-width: 640px; margin-left: calc(50% - 482px); margin-right: 0; }
+  }
+  @media screen and (min-width: 1340px) {
+    /* 3 pane。画面中央 - (1328 / 2) + 左 padding 20 + 300 + 24 = 50% - 320px */
+    #footer-nav > div { max-width: 640px; margin-left: calc(50% - 320px); margin-right: 0; }
+  }
+  @media screen and (min-width: 1700px) {
+    /* 画面中央 - (1688 / 2) + 左 padding 20 + 320 + 24 = 50% - 480px */
+    #footer-nav > div { max-width: 960px; margin-left: calc(50% - 480px); }
+  }
+  @media screen and (min-width: 2100px) {
+    /* 画面中央 - (2048 / 2) + 左 padding 20 + 360 + 24 = 50% - 620px */
+    #footer-nav > div { max-width: 1240px; margin-left: calc(50% - 620px); }
+  }
+
   @media print {
     #bar, #footer-nav { display: none; }
     main, main > * { max-width: none; display: block; }
-    #q-pane, #fn-pane { position: static; max-height: none; overflow: visible; }
+    #q-pane, #toc-pane, #fn-pane { position: static; max-height: none; overflow: visible; }
     h1, h2, h3 { break-after: avoid; }
     table, pre, .qd { break-inside: avoid; }
     @page { margin: 16mm; }
@@ -387,7 +428,34 @@
 {{図の CSS}}</head>
 <body>
 {{アイコン}}{{本文}}
-<script>
+<script data-scope="report">
+/* report の見出しツリーの現在地。report の節は要素で包まれていないので、h2 の位置で決める。
+   読み位置の線は form 用の追従と同じ画面の上から 35% にして、2 つの判定をずらさない。 */
+(function () {
+  var pane = document.getElementById('toc-pane');
+  if (!pane) return;
+  var links = [].slice.call(pane.querySelectorAll('a'));
+  if (!links.length) return;
+  var heads = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+  function spy() {
+    var line = window.innerHeight * 0.35, cur = 0;
+    heads.forEach(function (h, i) { if (h && h.getBoundingClientRect().top <= line) cur = i; });
+    links.forEach(function (a, i) {
+      a.classList.toggle('on', i === cur);
+      if (i === cur) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+    /* 項目が多いと現在地が pane の表示領域から出る。pane の中だけを動かして見える位置へ戻す */
+    var pr = pane.getBoundingClientRect(), ar = links[cur].getBoundingClientRect();
+    if (ar.top < pr.top) pane.scrollTop -= pr.top - ar.top;
+    else if (ar.bottom > pr.bottom) pane.scrollTop += ar.bottom - pr.bottom;
+  }
+  window.addEventListener('scroll', spy, { passive: true });
+  window.addEventListener('resize', spy);
+  spy();
+})();
+</script>
+<script data-scope="form">
 (function () {
   var THEME = {{テーマ}};
   var KEY = {{下書きキー}};
