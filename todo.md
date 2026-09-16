@@ -1,6 +1,12 @@
 外のセッションからの依頼など
 内容はちゃんと確認してないので、解釈・咀嚼した上でユーザーと議論して判断すること
 
+# cc-marketplace と dotfiles の統合
+
+cc-marketplace を dotfiles に統合し、dotfiles 内に marketplace を作る方針。
+dotfiles の Tailscale 設定などには既に cc-marketplace との依存があるため、
+両 repo の依存を完全に断ち切る方針にはしない。
+
 # marketplace ID と GitHub リポジトリ名の変更
 
 marketplace ID の `cc-tools` と GitHub リポジトリ名の `cc-marketplace` を
@@ -499,64 +505,6 @@ rule の中身は 7 点で、打ち消し（起動は原則許可）は 1 点だ
 
 - server の本数の既定値（今回は 8 本にした）
 - Chrome を手で立てる運用のままにするか、MCP server 起動時に `--isolated` で自前起動させる形へ寄せるか。403 回避は非 headless の専用プロファイルで成立しているので、後者に寄せるなら headless にしないこと
-
-# cache-keepalive を monitors.json へ移行できないか検討する
-
-依頼元: efso-document/to-be/idp のセッション（2026-09-10）。
-
-毎セッション手で `/cache-keepalive` を叩いているので自動起動にしたい、という要求から出た。
-このセッションでは SessionStart hook 方式で作る判断になった（ユーザー選択）。
-`monitors/monitors.json` への移行は、下の未確認 1 点が解ければ成立する。
-
-## いまの形と移行先
-
-いまは skill が Monitor ツールで張る。SKILL.md がセッション JSONL のパスを解決し、
-モデルが Monitor ツールの呼び出しへ埋め込む。毎セッション Claude のターンを 1 つ使う。
-
-移行先は plugin の `monitors/monitors.json`。host が persistent Monitor task として自動 arm するので、
-Claude のターンを消費しない。`.claude/rules/plugin-design/references/claude-code.md`「監視機構の選択」が
-「継続的な監視は monitor」と定めており、cache-keepalive は常駐監視なのでこちらが本来の機構。
-
-## 確認済み（Claude Code 2.1.267 のバイナリから）
-
-- スキーマはトップレベルが配列。フィールドは `name` / `command` / `description` / `when`。
-  `persistent` に相当するフィールドは無く、持続性は機構の前提
-- `when` は `always`（セッション開始と plugin リロードで arm）か `on-skill-invoke:<skill>`。既定は `always`
-- 宣言の経路は 3 つ。`plugin.json` の `monitors` に配列を直接書く / 同じキーに plugin root からの
-  相対パス文字列を書く / どちらも書かなければ `<pluginRoot>/monitors/monitors.json` が自動でロードされる
-- command で置換されるのは `${CLAUDE_PLUGIN_ROOT}` / `${CLAUDE_PROJECT_DIR}` / `${CLAUDE_PLUGIN_DATA}` と、
-  host の `process.env` から解決される `${ENV_VAR}`。`${user_config.*}` は例外を投げて拒否される
-- 二重 arm の防止は 2 段。同一 plugin 内の `name` 重複を zod が弾き、実行時は
-  `${pluginName}:${name}` をキーにしたセッション単位の Set で重複排除する
-- 機能ゲート `pluginMonitors` があり、通常セッションでは有効
-
-## 障害: セッション JSONL のパスを渡す公式経路が無い
-
-monitor は stdin で何も受け取らない。hook は stdin の JSON で `session_id` / `transcript_path` /
-`scratchpad_dir` を受け取れるが、monitor にはこの経路が無い。監視対象の JSONL を特定できないと
-keepalive が成立しないので、ここが移行の可否を決める。
-
-未確認: plugin monitor の子プロセスに `CLAUDE_CODE_SESSION_ID` が注入されるか。
-バイナリには子プロセスの env を組む関数があり `CLAUDE_CODE_SESSION_ID` を入れているが、
-monitor の spawn がその経路を通るかはバイナリからは読めなかった。
-`ps -Eww` は他プロセスの env を返さないため実測もできていない。
-monitors.json を作って新セッションを開けば分かる。
-
-波括弧付きの `${CLAUDE_CODE_SESSION_ID}` は host 側の `process.env` からロード時に展開されるので、
-monitor スクリプトへ渡すなら波括弧なしの `$CLAUDE_CODE_SESSION_ID` を使う。
-
-## 過去に monitors.json を入れて消した経緯
-
-`plugins/claude-known-issues/monitors/monitors.json` が commit `aa7079e`（0.1.0）で入り、
-`6ac9006`（0.2.0）で削除されている。削除理由は「one-shot スクリプトを monitor に置いたため、
-host が即終了ストリームを stream ended として検知し、毎セッション開始時に無意味な終了通知が出た」。
-cache-keepalive は常駐監視なのでこの理由は当たらない。
-
-## 一緒に直すもの
-
-SKILL.md の「セッション JSONL」セクションが `${CLAUDE_SESSION_ID}` を使っているが、
-この変数は空。実際に値を持つのは `CLAUDE_CODE_SESSION_ID`（2026-09-10 に実測）。
-hook 方式でも monitors.json 方式でもこれは直す。
 
 # github-pr の Pre-open checklist から、セルフレビューの項目が落ちる
 
