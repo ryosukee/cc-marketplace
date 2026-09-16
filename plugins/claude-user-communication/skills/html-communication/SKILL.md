@@ -266,6 +266,16 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       図のための CSS だけを入れる。組み立てが雛形の `<style>` の後ろに置く。
       色役割とフォント段の制限は、この `style` の中には適用しない。
       機械検査もこの `style` を対象から外す
+    - **図の生成手段は、本文へ埋め込むか、独立した Viewer で見せるかによって選ぶ。**
+      既存パターンで表せる図はパターン集を使う。独自の図を本文へ埋め込む場合は Tailwind を使ってよい。
+      architecture、workflow、sequence、data flow、lifecycle / state diagram のいずれかで、
+      pan / zoom、探索、trace、export に価値があり、現在の skill 一覧で Archify が利用できる場合は、
+      Archify を起動して検証済みの独立 HTML Viewer を作る。詳細な使い分けは
+      [見せ方のパターン集](./references/patterns/README.md) にある
+        - Archify を自動で導入しない。利用できなければ、既存パターンまたは Tailwind のインライン図へ戻す
+        - HTML レポートも必要なら、本文には要点だけを置き、独立 Viewer へのリンクを置く。
+          Archify の成果物は `fig`、パターン集、html-communication のサブページには含めず、
+          Archify が検証・確定した HTML を後から編集しない
     - 図を Tailwind で組んでよい。外部 CDN は使えないので、生成時に CLI を回して
       使ったクラスだけの CSS を出し、figures ファイルの `<style data-scope="figures">` へ貼り込む。
       手順は [見せ方のパターン集](./references/patterns/README.md) にある。

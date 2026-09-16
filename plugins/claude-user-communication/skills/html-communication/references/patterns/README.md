@@ -88,6 +88,21 @@ group: 進行と状態
 生成ページは self-contained が必須なので、CSS は組み立てが必ずページの中へ貼り込む。
 外部ファイルとして参照しない。
 
+## 図の生成手段を選ぶ
+
+図を本文へ埋め込むか、独立した Viewer で見せるかによって生成手段を選ぶ。
+
+| 要件 | 生成手段 |
+| --- | --- |
+| 既存のカード、比較、進行、差分、境界の表現で足りる | このパターン集を使い、本文へ埋め込む |
+| パターン集に無い独自の図を本文へ埋め込む | Tailwind で markup と CSS を生成する |
+| architecture、workflow、sequence、data flow、lifecycle / state diagram を探索・trace・export できる形で見せる | 利用可能なら Archify で独立 HTML Viewer を生成する |
+| HTML レポートの要点と、操作可能な詳細図の両方が要る | 本文にはパターン集か Tailwind で要点を置き、Archify の独立 Viewer へリンクする |
+
+Archify は独立した HTML Viewer を作る skill であり、ページへ取り込む CSS と markup のパターンではない。
+このディレクトリや gallery には追加しない。現在の skill 一覧で Archify が利用できなければ、
+既存パターンまたは Tailwind のインライン図を使う。html-communication から Archify を自動で導入しない。
+
 ## 図を Tailwind で組む
 
 図に限り Tailwind を使ってよい。外部 CDN は読み込めないので、生成のたびに CLI を回して
