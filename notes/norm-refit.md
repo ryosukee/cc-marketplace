@@ -3606,6 +3606,38 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
   notes 群（`notes/norm-refit-plan.md` の移動と、`notes/README.md`・`notes/norm-refit.md`・`notes/kanban-board.md` のリンク）、
   `.claude/rules/norm-refit-ops.md`（「置き場と着手手順」のパス。別 PR）
 
+### 2026-09-16 report の左に空く列へ節の見出しツリーを置き、`#footer-nav` の左端を本文の列に合わせる
+
+- 結論: html-communication の report 形式に次の 6 つを入れる
+    - 画面の幅が 1340px 以上で左に空く列へ、本文の見出しツリーを置く。
+      ツリーはすべての report に出るので `templates/page.html` が持ち、見せ方のパターン集には入れない
+    - ツリーに載せるのは節の見出しだけ。参考資料（`s-ref`）と生成に関する補足（`s-gen`）は載せない。
+      選り分けは id の接頭辞で行う
+    - ツリーに出す見出しは `h2` だけ。`h3` には id を付けない
+    - ツリーは節の件数にかかわらず常に出す。閾値で切らない
+    - いま読んでいる節をツリーに示す。判定は `h2` の画面上の位置で行い、本文の markup は変えない。
+      report にも script を残すため、`scripts/lib/assemble.mjs` の切り取り方を変える
+    - `#footer-nav` の左端を本文の列の左端に合わせる。form の `#bar` と同じく段ごとに位置を書く
+- 決めなかった範囲:
+    - 左の列の幅。form の設問の列と同じ 300 / 320 / 360px のままにする。設問に出していない
+    - 本文の列の拡大。1700px と 2100px の段は report にも form と同じ CSS が既に効いているので変更しない。
+      ユーザーの補足はこの実装を求めるものだったが、既に効いていることを実物で確かめて確認したところ
+      「現状のままでよい」と決着した
+    - 既に書き出した report の HTML。生成元 JSON が残っているものは組み直せるが、
+      残りはツリーを持たないままになる
+- 決め手: 列の幅は固定トラックなので、ツリーを入れても本文の列の位置は動かない。
+  列を空けて 2 列にする案は、本文の列が左へ動いて `#footer-nav` との差を新しく作る。
+  参考資料と生成に関する補足を載せないのは、本文で読み飛ばしてよいと書いている節がツリーの項目になるため。
+  `h3` を外すのは、`h2` には既に id があって本文の markup を変えずに済み、
+  手元の report の多くが `h3` を持たないため。
+  現在地の判定を `h2` の位置にするのは、変更が report 用の CSS と script に収まるため。
+  `#footer-nav` を直すのは、ずれ幅が 100px を超える段が 3 つあり、最も広い段で 300px 離れるため
+- 出典: ccm-f091 の回答 2026-09-16（実文: [norm-refit-form-sources.md の ccm-f091](./artifacts/norm-refit-form-sources.md#ccm-f091)）
+- 反映先: claude-user-communication の `templates/page.html`（ツリーの CSS と script、`#footer-nav` の位置）、
+  `scripts/lib/page-source.mjs`（ツリーの markup）、
+  `scripts/lib/assemble.mjs`（report のときの script の切り取り）、
+  `skills/html-communication/SKILL.md`（report の作りの規定）
+
 ## 未解決課題
 
 フォーム往復・対話で出た課題を 1 件 1 行で積む。解消したら「解消済み（出典）」を付けて残す。
