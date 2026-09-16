@@ -1,12 +1,12 @@
 ---
 name: cache-keepalive
 description: >-
-  prompt cache (extended cache, TTL 1h) の keepalive の状態を確認し、停止する。
-  監視自体は plugin monitor がセッション開始時に起動するので、この skill は起動を行わない。
+  prompt cache (extended cache, TTL 1h) の keepalive の監視状態を確認する。
+  監視自体は plugin monitor がセッション開始時に起動するので、この skill は起動も停止も行わない。
   "cache-keepalive" "キャッシュキープアライブ" "keep cache alive" 等で発動。
 user-invocable: true
 allowed-tools: Bash
-argument-hint: "[status|off|on]"
+argument-hint: "[status]"
 note: >-
   この skill が起動を持たないのはワークアラウンド。Monitor ツールの入力スキーマから persistent が消え、
   timeout_ms が 1,800,000 ms (30 分) で頭打ちになったため、期限切れのたびに Claude が起動し直すことになり、
@@ -42,14 +42,11 @@ Claude Code 本体はこの行を Claude への通知として配信し、Claude
 - JSONL は Claude Code 本体が会話の entry を追記するたびに更新される。
   ローカルコマンドの記録など、API コールを伴わない書き込みでも進むことがある
 - アクティブ時はスクリプトが sleep するだけで、会話ターンは一切発生しない
-- 起動・JSONL の検出・発火・停止は `${CLAUDE_PLUGIN_DATA}` のログへ 1 行ずつ記録する。
-  起動していない・JSONL 待ち・監視中・停止済みを、status で区別できる
+- 動いていることの記録は pid ファイル (`${CLAUDE_PLUGIN_DATA}/keepalive-{session id}.pid`) だけが持つ
 
-## サブコマンド
+## status の確認
 
-`<command-args>` で分岐する。引数が無ければ status とみなす。
-
-### status (引数なし / `status` / `state` / `list`)
+引数が何であっても状態の確認だけを行う。
 
 1. 状態を取る。
 
@@ -59,44 +56,20 @@ Claude Code 本体はこの行を Claude への通知として配信し、Claude
 
 2. 出力 JSON の `state` で報告を分ける。
 
-    - `running`: 「cache-keepalive: 有効」と報告し、`started_at`・`launcher`・`last_fired_at`・`fired_count` を添える
-    - `waiting-jsonl`: 「cache-keepalive: 起動済み。セッション JSONL の生成を待っている」と報告する。
-      最初の入力より前の正常な待機で、対処は要らない
-    - `stopped`: 「cache-keepalive: 停止中」と報告し、このセッションでは起動し直せないことを伝える
-    - `never-started`: 「cache-keepalive: 未起動」と報告する。`last_error` が `null` なら
-      Claude Code 本体が起動していないので、下記「monitor が起動しないとき」の確認手順を案内する。
-      `last_error` に値があれば、起動したうえで監視スクリプトが前提を満たせず落ちているので、
-      その文言をそのまま報告する
+    - `running`: 「cache-keepalive: 有効」と報告し、`pid` を添える
+    - `not-running`: 「cache-keepalive: 動いていない」と報告し、下記「monitor が起動しないとき」の
+      確認手順を案内する。Claude Code 本体は plugin 名と monitor 名の組をセッション単位で
+      重複排除するので、同じセッションでは起動し直せない。新しいセッションの開始で起動し直す
 
 3. exit 2 のときは stderr の文言をそのまま報告し、原因を推測で埋めない。
 
-### off
-
-1. 監視プロセスを止める。
-
-    ```bash
-    CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" "${CLAUDE_PLUGIN_ROOT}/scripts/stop-watch.sh"
-    ```
-
-2. exit 0 → 「cache-keepalive を停止しました」と報告し、
-   このセッションでは起動し直せないこと、次のセッションの開始で自動的に起動し直すことを伝える
-3. exit 1 → 「現在有効な cache-keepalive はありません」と報告する
-4. exit 2 → stderr の文言をそのまま報告する
-
-### on
-
-plugin monitor がセッション開始時に起動するので、`on` から起動する手順は持たない。
-status と同じコマンドで状態を取り、次のとおり報告する。
-
-- `running` / `waiting-jsonl` → 「cache-keepalive は既に有効です」
-- `stopped` / `never-started` → 起動していないことを報告する。
-  Claude Code 本体は plugin 名と monitor 名の組をセッション単位で重複排除するので、
-  同じセッションでは起動し直せない。新しいセッションを開始すると plugin monitor が起動し直す
+停止のサブコマンドは無い。止めたいときは `state` が `running` のときの `pid` を
+ユーザーが手で kill する (pid ファイルは監視プロセスが終了時に消す)。
 
 ## monitor が起動しないとき
 
 Claude Code 本体は、次のどれかに当たると monitor を起動せず、そのことを通知しない。
-`state` が `never-started` のときは、この順に確認する。
+`state` が `not-running` のときは、この順に確認する。
 
 1. 対話 CLI セッションでない (`claude -p` の単発実行では起動しない)
 2. workspace trust が未承認である
@@ -104,8 +77,8 @@ Claude Code 本体は、次のどれかに当たると monitor を起動せず�
 4. plugin の版が古い (`claude plugins update cache-keepalive@cc-tools` で更新し、新しいセッションで確認する)
 
 いずれにも当たらないのに起動しないときは、状況を報告して止まる。
-ログが無いこと自体が「Claude Code 本体が起動しなかった」ことの証拠になるので、
-スクリプトを手で起動して代用しない。
+スクリプトを手で起動して代用しない。本体が起動しなかった事実が隠れ、
+次のセッションでも同じ原因で起動しないまま気づけなくなる。
 
 ## keepalive 通知への応答
 

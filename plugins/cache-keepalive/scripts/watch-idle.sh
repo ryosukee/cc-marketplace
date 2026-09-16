@@ -5,7 +5,7 @@
 # セッション JSONL は、セッションに最初の入力が入るまで作られない。それまでは cache も
 # 無く keepalive の出番も無いので、「JSONL が無い」はエラーではなく正常な待機として扱う。
 # 見つかるまで発火せずに探し続け、待ちに上限を設けない (ccm-f088 / ccm-f090 の決定)。
-# 起動と検出をログに残し、status が「本体が起動していない」と「JSONL 待ち」を区別できるようにする。
+# 動いていることの記録は pid ファイルだけが持つ。status はこれを照合する。
 set -euo pipefail
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
@@ -17,7 +17,7 @@ session_arg=""
 data_arg=""
 jsonl=""
 threshold="${CACHE_KEEPALIVE_THRESHOLD_SECONDS:-3000}"
-log_retention_days=30
+retention_days=30
 jsonl_search_seconds=60
 
 while [ $# -gt 0 ]; do
@@ -35,34 +35,19 @@ done
 [ -n "$threshold" ] || threshold=3000
 data_dir="$(ck_data_dir "$data_arg")"
 
-# data dir が無いと、失敗したことを残す先が無い
 [ -n "$data_dir" ] || ck_die "data dir が解決できない (--data-dir と CLAUDE_PLUGIN_DATA のどちらも空)"
 mkdir -p "$data_dir"
 
-# 前提 (session id・明示された jsonl) を満たせず動けないことを残す。これが無いと、
-# 動けなかったのか Claude Code 本体がそもそも起動しなかったのかを status が区別できない
-fail() {
-  printf '%s %s launcher=%s %s\n' "$(date +%Y-%m-%dT%H:%M:%S%z)" "failed" "$launcher" "$1" \
-    >> "$data_dir/keepalive-error.log"
-  ck_die "$1"
-}
-
 session_id="$(ck_session_id "$session_arg")"
-[ -n "$session_id" ] || fail "session id が解決できない (--session-id と CLAUDE_CODE_SESSION_ID のどちらも空)"
+[ -n "$session_id" ] || ck_die "session id が解決できない (--session-id と CLAUDE_CODE_SESSION_ID のどちらも空)"
 
-log_file="$(ck_log_file "$data_dir" "$session_id")"
 pid_file="$(ck_pid_file "$data_dir" "$session_id")"
 
-# 古いセッションの記録を落とす (data dir が無制限に増えるのを防ぐ)
+# 古いセッションの pid と、旧版が残したログを落とす (data dir が無制限に増えるのを防ぐ)
 find "$data_dir" -maxdepth 1 \( -name 'keepalive-*.log' -o -name 'keepalive-*.pid' \) \
-  ! -name 'keepalive-error.log' -mtime "+${log_retention_days}" -delete 2>/dev/null || true
+  -mtime "+${retention_days}" -delete 2>/dev/null || true
 
-log() {
-  printf '%s %s\n' "$(date +%Y-%m-%dT%H:%M:%S%z)" "$1" >> "$log_file"
-}
-
-# pid と起動ログは JSONL の解決より前に書く。JSONL 待ちの間も stop / status が
-# このプロセスを扱えるようにし、「起動したが JSONL がまだ無い」を記録で示す
+# pid は JSONL の解決より前に書く。JSONL 待ちの間も status がこのプロセスを扱えるようにする
 echo "$$" > "$pid_file"
 
 # sleep は子プロセスなので、親を kill しただけでは残る。
@@ -88,11 +73,9 @@ resolve_jsonl() {
   find "$HOME/.claude/projects" -name "${session_id}.jsonl" 2>/dev/null | head -1
 }
 
-log "started launcher=${launcher} session=${session_id} threshold=${threshold}"
-
 # --jsonl で明示されたパスは待たない。存在しなければ指定の誤りなので、その場で落とす
 if [ -n "$jsonl" ] && [ ! -f "$jsonl" ]; then
-  fail "JSONL が存在しない: $jsonl"
+  ck_die "JSONL が存在しない: $jsonl"
 fi
 
 # 最初の入力で JSONL が作られるまで、発火せずに探し続ける
@@ -101,16 +84,12 @@ while [ -z "$jsonl" ]; do
   [ -n "$jsonl" ] || nap "$jsonl_search_seconds"
 done
 
-# jsonl はパスに空白が入りうるので行末に置く (status のパースが行末まで取る)
-log "detected mtime=$(stat -f %m "$jsonl" 2>/dev/null || echo unknown) jsonl=${jsonl}"
-
 while true; do
   if ! mtime="$(stat -f %m "$jsonl" 2>/dev/null)"; then
     # JSONL が消えた・移動した場合は探し直す。見つかるまでは発火しない
     found="$(resolve_jsonl)"
     if [ -n "$found" ] && [ "$found" != "$jsonl" ]; then
       jsonl="$found"
-      log "redetected jsonl=${jsonl}"
       continue
     fi
     nap "$jsonl_search_seconds"
@@ -120,7 +99,6 @@ while true; do
   elapsed=$((now - mtime))
   if [ "$elapsed" -ge "$threshold" ]; then
     echo "[cache-keepalive] キャッシュキープアライブです。OK とだけ返答してください。"
-    log "fired elapsed=${elapsed}"
     nap "$threshold"
   else
     nap $((threshold - elapsed))

@@ -32,10 +32,6 @@ ck_data_dir() {
   printf '%s' "$value"
 }
 
-ck_log_file() {
-  printf '%s/keepalive-%s.log' "$1" "${2:-nosession}"
-}
-
 ck_pid_file() {
   printf '%s/keepalive-%s.pid' "$1" "${2:-nosession}"
 }
