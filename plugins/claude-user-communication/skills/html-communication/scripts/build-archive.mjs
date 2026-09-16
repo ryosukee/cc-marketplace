@@ -12,7 +12,7 @@
 //
 // usage:
 //   node build-archive.mjs [配信ディレクトリ]
-//   省略時は $CLAUDE_HTML_COMMUNICATION_DIR、それも無ければ ~/.local/share/claude-html-communication
+//   省略時は $HTML_COMMUNICATION_DIR、それも無ければ ~/.local/share/claude-html-communication
 //
 // Exit: 0 = 生成した, 2 = 前提条件エラー（index.html が無い・差し替え対象が見つからない）
 import fs from "node:fs";
@@ -20,7 +20,7 @@ import os from "node:os";
 import path from "node:path";
 
 const dir = process.argv[2]
-  || process.env.CLAUDE_HTML_COMMUNICATION_DIR
+  || process.env.HTML_COMMUNICATION_DIR
   || path.join(os.homedir(), ".local/share/claude-html-communication");
 
 const indexPath = path.join(dir, "index.html");

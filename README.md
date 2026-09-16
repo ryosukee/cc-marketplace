@@ -139,12 +139,13 @@ ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-mar
 ### Codex
 
 このリポジトリのルートで marketplace を登録し、必要な plugin をインストールする。
-現在 Codex に対応する plugin は `diffo` と `session`。
+現在 Codex に対応する plugin は `diffo`、`session`、`claude-user-communication`。
 
 ```bash
 codex plugin marketplace add .
 codex plugin add diffo@cc-tools
 codex plugin add session@cc-tools
+codex plugin add claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
 ```
 
 ## アップデート

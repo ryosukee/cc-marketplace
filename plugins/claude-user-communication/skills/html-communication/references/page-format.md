@@ -6,7 +6,7 @@
 
 ## ファイルの配置
 
-配信ディレクトリ（`CLAUDE_HTML_COMMUNICATION_DIR`）の直下に閲覧用 HTML、`src/` に生成元を置く。
+配信ディレクトリ（`HTML_COMMUNICATION_DIR`）の直下に閲覧用 HTML、`src/` に生成元を置く。
 
 ```text
 claude-html-communication/

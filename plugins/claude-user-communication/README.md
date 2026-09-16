@@ -27,10 +27,27 @@ html-communication skill は配置先と、配信する場合の URL を環境�
 
 | 変数 | 必須 | 内容 |
 | --- | --- | --- |
-| `CLAUDE_HTML_COMMUNICATION_DIR` | 任意 | claude-html-communication の配置先。未設定なら `~/.local/share/claude-html-communication` |
-| `CLAUDE_HTML_COMMUNICATION_BASE_URL` | 任意 | 配信する場合のベース URL（例: `https://<host>.<tailnet>.ts.net`）。未設定ならローカルの HTML ファイルパスを提示する |
+| `HTML_COMMUNICATION_DIR` | 任意 | claude-html-communication の配置先。未設定なら `~/.local/share/claude-html-communication` |
+| `HTML_COMMUNICATION_BASE_URL` | 任意 | 配信する場合のベース URL（例: `https://<host>.<tailnet>.ts.net`）。未設定ならローカルの HTML ファイルパスを提示する |
 
-Claude Code では `settings.json` の `env` に、Codex では Codex を起動する環境に値を設定する。
+Claude Code では `settings.json` の `env` に値を設定する。
+
+```json
+{
+  "env": {
+    "HTML_COMMUNICATION_BASE_URL": "https://<host>.<tailnet>.ts.net"
+  }
+}
+```
+
+Codex では `~/.codex/config.toml` の `shell_environment_policy.set` に値を設定する。
+
+```toml
+[shell_environment_policy.set]
+HTML_COMMUNICATION_BASE_URL = "https://<host>.<tailnet>.ts.net"
+```
+
+設定後に新しいセッションを開始する。
 値のセットアップと配信側の構築は環境側の文書の管轄で、この plugin には含まれない。
 配信は任意。ローカルファイルをそのままブラウザで開くか、Tailscale Serve 等で配信する。
 Node.js または `npx` が使えなければ生成・検査は実行できない。

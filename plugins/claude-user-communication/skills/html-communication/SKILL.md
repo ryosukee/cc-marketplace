@@ -26,12 +26,12 @@ HTML にすると決めたら、ターミナル向けに書いた（書きかけ
 
 配置先ディレクトリと、配信する場合の URL は環境変数から解決する（値のセットアップは環境側の文書の管轄）。
 
-- `CLAUDE_HTML_COMMUNICATION_DIR`: 配信ディレクトリ。未設定なら既定値 `~/.local/share/claude-html-communication` を使う。
+- `HTML_COMMUNICATION_DIR`: 配信ディレクトリ。未設定なら既定値 `~/.local/share/claude-html-communication` を使う。
   ディレクトリは全プロジェクトで 1 つだけ持つ。公開は任意。
   この skill が生成する HTML（以下、ページ）はここに置く
-- `CLAUDE_HTML_COMMUNICATION_BASE_URL`: 配信のベース URL（例: `https://<ホスト名>.<tailnet 名>.ts.net`）。
-  ページの serve URL は `{CLAUDE_HTML_COMMUNICATION_BASE_URL}/{ファイル名}`、一覧のルート URL は `{CLAUDE_HTML_COMMUNICATION_BASE_URL}/`
-- `CLAUDE_HTML_COMMUNICATION_BASE_URL` が未設定・空の場合は、生成した HTML のファイルパスを提示する。
+- `HTML_COMMUNICATION_BASE_URL`: 配信のベース URL（例: `https://<ホスト名>.<tailnet 名>.ts.net`）。
+  ページの serve URL は `{HTML_COMMUNICATION_BASE_URL}/{ファイル名}`、一覧のルート URL は `{HTML_COMMUNICATION_BASE_URL}/`
+- `HTML_COMMUNICATION_BASE_URL` が未設定・空の場合は、生成した HTML のファイルパスを提示する。
   配信 URL が設定されている場合は、ファイルパスと URL の両方を提示する
 
 ## ページを出典に引ける範囲
@@ -60,7 +60,7 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       `node "{SKILL_DIR}/scripts/import-page.mjs" <ページ.html> <配信ディレクトリ>` で `src/` へ変換し、
       `assemble-page.mjs --force` で組み直して機械検査を通す。他プロジェクトのページは変換しない。
       完了したページは変換しない（読み直す規定が無い）
-- 配信ディレクトリ（`CLAUDE_HTML_COMMUNICATION_DIR`。無ければ `mkdir -p` で作る）に
+- 配信ディレクトリ（`HTML_COMMUNICATION_DIR`。無ければ `mkdir -p` で作る）に
   `{接頭辞}-f{NNN}.html`（form）/ `{接頭辞}-r{NNN}.html`（report）の名前で書く。
   番号空間をプロジェクトごとに閉じることで、並行セッションが同じ番号を取り合わなくなり、
   他プロジェクトのページを上書きすることが命名上ありえなくなる
