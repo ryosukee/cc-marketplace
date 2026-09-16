@@ -527,6 +527,178 @@ Claude（2026-09-15T06:31:53.372Z）。
 レビュアーは、Claude が最初の返信で勧めた「Keychain のまま」を採らず、両方の CodingAgent から環境変数で読む方法の調査を求めた。
 「ok」は調査の後に出した提案 4 点への回答。2 行目はデータの持ち方を定める規範も直すよう求めた補足で、回答の上書きではない。
 
+## 実文 26 repo と project の対応の置き場を決めた Diffo のスレッド
+
+PR #28 の Diffo レビュー、2026-09-16。実文 25 と同じく、Diffo のレビューの記録から取った。
+所在は `~/.diffo/diffo.db` の `reviews` テーブルで、repo `/Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace-wt-plane-kanban`、
+ブランチ `feat/plane-kanban`、base `main` の行の `state_json` にある thread `f487cf76-2d90-4d63-a4a3-8f9eeea476d1`。
+スレッドは `plugins/plane-kanban/README.md` の次の行に付いている。
+
+```text
+| `PLANE_KANBAN_DATA_DIR` | repo と project の対応を保存する場所。既定は `${XDG_DATA_HOME}/plane-kanban`、それも無ければ `~/.local/share/plane-kanban` |
+```
+
+レビュアーの最初の問いから、候補 3 つへの回答「1」までの 7 件を順に置く。
+このあとスレッドには、実装の報告（2026-09-16T22:26:36.739Z）と、workspace の slug の置き場についてのやり取りが続く。
+確定 38 を生んだ問いと答えではないので省いた。
+
+レビュアー（2026-09-16T13:51:51.510Z）。
+
+> "同名にすることでこれは無くすみたいな話なかったっけ"
+
+Claude（2026-09-16T13:56:28.606Z）。
+
+> "name を揃えることで無くしたのは、手で書く対応表です。API で引いた id を保存すること自体は、そのとき選んだ案に入っていました。
+>
+> ccm-f086 の設問 5「repo と project の対応」の選択肢は次の 3 つで、1 つ目が選ばれています（`notes/kanban-board.md` の確定 28）。
+>
+> - project の name を repo のディレクトリ名に揃え、スクリプトが API で id を引いて保存する
+> - 対応表を plugin の `config/` に手で書く
+> - 各 repo の `.claude/settings.json` の `env` に project id を書く
+>
+> `PLANE_KANBAN_DATA_DIR` は、その保存先（`projects.json`）を変えるための変数です。保存しているのは API で引いた結果の控えで、消しても次の実行で引き直せます。
+>
+> 保存をやめることもできます。やめた場合の差は次のとおりです。
+>
+> - 増えるもの: スクリプトを 1 回実行するたびに `GET /projects/` が 1 回増えます。レート制限は API key 1 本あたり 60 回 / 分です。一括取り込みは project を最初に 1 回引いて使い回すので、件数が多くても増えるのは 1 回です
+> - 消えるもの: `PLANE_KANBAN_DATA_DIR`、`projects.json`、README の State の節、保存先を決める処理とそのテスト。確定 28 が未定のまま残した「project を作り直して保存した id が古くなったときの引き直し方」も、考える必要がなくなります
+>
+> 私は保存をやめる方を勧めます。増える呼び出しは 1 回分で済み、古くなる state と設定が 1 つずつ減るためです。やめる場合は `plane.sh` の `plane_project_id`、`resolve-project.sh`、`init-project.sh`、テストを直し、保存先を決めた確定 37 を覆す確定を積みます。どちらにしますか。"
+
+レビュアー（2026-09-16T14:02:52.587Z）。
+
+> "おくなら repo におくべきでは？ .plane_project_id とかで commit させちゃえばいい"
+
+Claude（2026-09-16T14:42:53.639Z）。
+
+> "repo に置くほうがよいと思います。調べていて、いまの「ディレクトリ名で引く」形は worktree で壊れることが分かりました。スクリプトは `git rev-parse --show-toplevel` の basename を repo 名にします。この worktree で実行すると `cc-marketplace-wt-plane-kanban` が返り、`cc-marketplace` という name の project を引けません（実行して確認）。id を repo に commit しておけば、worktree でも同じ id を読めます。
+>
+> ## 案
+>
+> - repo のルートに `.plane_project_id` を置き、project の id を 1 行だけ書いて commit する
+> - スクリプトは `$(git rev-parse --show-toplevel)/.plane_project_id` を読む。無ければ exit 1 で止まり、`init-project.sh` を案内する。name で引き直す処理は持たない
+> - `init-project.sh` は、project を作るか既存の project を指定して、`.plane_project_id` を書く。commit はスクリプトではせず、ユーザーか Claude が普段の git の流れで行う
+> - 消えるもの: `PLANE_KANBAN_DATA_DIR`、`projects.json`、保存先を決める `plane_data_dir`、README の State の節、そのテスト。「project の name を repo のディレクトリ名と同じにする」という制約も要らなくなる
+> - decision-record では、確定 28（name で引いて保存する）と確定 37（保存先）を覆す確定を積む。`docs/cross-client-architecture.md` の state の置き場の規範は、plugin 全般の規範なので残す
+>
+> ## 決めてほしいこと
+>
+> 1. ファイルの中身を id だけにするか、workspace の slug も書くか。id は 1 つの workspace の中でだけ有効です。slug を書けば、`PLANE_WORKSPACE_SLUG` が別の workspace を指しているときに、404 ではなく「workspace が違う」と止められます。私は id だけを勧めます。kanban 用の workspace は 1 つと決めており（確定 33）、ファイルを 1 行で読めるためです
+> 2. 他の人と共有する repo にも commit してよいか。Plane を使わない人には意味の無いファイルが 1 つ増えます。私は、`init` を呼んだ repo にだけできるので許容でよいと考えます
+>
+> この案で進めてよいですか。変えたい点があれば言ってください。"
+
+レビュアー（2026-09-16T22:12:56.474Z）。
+
+> "ちなみにその id は commit して問題ないんだっけ？秘匿情報ではない？workspace slug も
+> あと思ったのは efso-document みたいにみんなで開発してるけど、plane を使いたいのは自分だけみたいな repo ではこの運用はできないなって思った（commit したくない）"
+
+Claude（2026-09-16T22:14:00.269Z）。
+
+> "## id と slug は秘匿情報か
+>
+> どちらも秘匿情報ではない、と判断します。Plane の API で何かを読み書きするには、`X-API-Key` ヘッダに API key が要ります。id と slug だけでは何もできません。
+>
+> - 根拠（一次情報）: `notes/artifacts/kanban-plane-hierarchy-2026-09-04.md` の「REST API は `X-API-Key` ヘッダ 1 本」と、`kanban-plane-free-limits-cli-mcp-2026-09-04.md` の「CE の v1 認証は `X-Api-Key` のみ（`api_authentication.py`）」。Cloud の OAuth 経路は未確認です
+> - slug は `https://app.plane.so/{slug}/` として URL に出る値です。ただし、slug は自分で付けた workspace の名前なので、個人名や会社名を入れていれば、それが見えます
+> - project の id は UUID で、それ自体から読み取れる情報はありません
+>
+> ## commit できない repo への対応
+>
+> efso-document のような repo では、commit する案は使えません。commit せず、しかも worktree でも読める置き場として、git の repo ローカル設定があります。
+>
+> - `git config --local plane-kanban.projectId <id>` で書くと、`.git/config` に入ります。作業ツリーのファイルではないので、commit にも `git status` にも出ません
+> - worktree から書いた値を、元の checkout から読めることを確かめました。scratchpad の使い捨て repo で、worktree 側で書き、両方で読んで同じ値が返り、書かれた先が共通の `.git/config` でした
+>
+> 置き場の候補は 3 つです。
+>
+> 1. git の repo ローカル設定だけ。どの repo でも同じ方法で使える。clone し直したときや別のマシンでは、`init-project.sh` で既存の project を指定し直す
+> 2. commit する `.plane_project_id` だけ。efso-document のような repo では使えない
+> 3. commit された `.plane_project_id` があればそれを、無ければ git の設定を読む。両方の repo で使えるが、読む場所が 2 つになる
+>
+> 私は 1 を勧めます。自分だけが Plane を使う repo でも同じ手順で済み、読む場所が 1 つだからです。clone し直すたびの `init` は、既存の project の id を指定するだけです。
+>
+> 未確認が 1 つあります。Codex の sandbox が `.git/config` への書き込みを許すかは確かめていません。止められた場合は、`init-project.sh` を利用者がターミナルで 1 回実行します。
+>
+> どれにしますか。"
+
+レビュアー（2026-09-16T22:22:17.490Z）。
+
+> "1"
+
+レビュアーは、Claude が勧めた「保存をやめる」を採らず、repo に commit する置き場を提案した。
+続けて、id と slug を commit してよいかを問い、自分だけが Plane を使う共同開発の repo では commit できないと補足した。
+「1」は、その後に出した候補 3 つのうち「git の repo ローカル設定だけ」への回答。
+
+## 実文 27 skill からスクリプトを指す書き方を問うた Diffo のスレッド
+
+PR #28 の Diffo レビュー、2026-09-16。実文 25 と同じく、Diffo のレビューの記録から取った。
+所在は実文 26 と同じ行の `state_json` にある thread `e551b1b6-a4bb-43f6-a0e9-b7951311776d`。
+スレッドは `plugins/plane-kanban/skills/plane-kanban/SKILL.md` の次の行に付いている。
+
+```text
+この SKILL.md の所在から二階層上を plugin root とする。スクリプトは plugin root の `scripts/` にある。
+```
+
+レビュアーの問いから、候補 3 つへの回答までの 4 件を順に置く。
+このあとスレッドには、実装の報告（2026-09-16T22:30:33.521Z）が続く。確定 39 を生んだ問いと答えではないので省いた。
+
+レビュアー（2026-09-16T13:56:53.876Z）。
+
+> "こういう書き方って複数 coding agent 向けの書き方において主流なの？ちょっとコミュニティでのワークアラウンドをちゃんと調査してみて"
+
+Claude（2026-09-16T13:57:53.501Z）。
+
+> "調べます。見るのは次の 3 つです。
+>
+> skill から同梱のスクリプトを指す書き方が、Claude Code・Codex・Agent Skills の仕様と、そのほかの CodingAgent でそれぞれどう定められているか。
+>
+> skill の所在のディレクトリを本文へ渡す変数や、読み込み時にモデルへ示す情報が、CodingAgent ごとにあるか。
+>
+> 複数の CodingAgent に配る skill で、実際に多く使われている書き方と、この plugin への当てはめ。
+>
+> 結果が出たらこのスレッドへ返します。"
+
+Claude（2026-09-16T14:39:15.860Z）。
+
+> "調べました。「SKILL.md の二階層上を plugin root とし、skill の外のスクリプトを指す」書き方は主流ではありません。主流は、スクリプトを skill のディレクトリに置き、SKILL.md のあるディレクトリからの相対パスで書く形です。
+>
+> ## 仕様が定める基準は、どれも SKILL.md のあるディレクトリ
+>
+> - Agent Skills 仕様: "When referencing other files in your skill, use relative paths from the skill root"（[Specification](https://agentskills.io/specification.md)）
+> - Codex の組み込み prompt: "When `SKILL.md` references relative paths (e.g., `scripts/foo.py`), resolve them relative to the directory containing that expanded `SKILL.md` first"。手元の codex 0.154.0 のバイナリにこの文字列があることを、私も確かめました
+> - Claude Code: skill を読み込むとき、本文の先頭に `Base directory for this skill: <dir>` を付けます。本文中の `${CLAUDE_SKILL_DIR}` は skill のディレクトリ、`${CLAUDE_PLUGIN_ROOT}` は plugin root に置き換わります。ただし Bash の環境変数には入りません（[skills](https://code.claude.com/docs/en/skills.md)、[plugins-reference](https://code.claude.com/docs/en/plugins-reference.md)）
+> - Goose・OpenCode・VS Code・Cursor・Amp も、skill のディレクトリからの相対で解決するか、そう書くよう定めています（subagent がソースか docs で確認。実行はしていません）
+>
+> いまの SKILL.md は本文で `scripts/resolve-project.sh` とだけ書いています。Codex の既定どおりに解決すると `skills/plane-kanban/scripts/` を指し、そこには何もありません。解決先を plugin root へ変えているのは 9 行目の 1 文だけです。
+>
+> ## 実例の件数
+>
+> - スクリプトを同梱する公式 4 repo（anthropics/skills、openai/skills、openai/codex の system skill、claude-plugins-official）の 44 skill
+>     - skill 相対が 25（うち 7 は基準の文を添える）
+>     - `<skill-dir>` のようなプレースホルダが 7、インストール先の固定パスが 7、`${CLAUDE_PLUGIN_ROOT}` が 1、その他が 4
+>     - plugin root を推論させるものは 0
+> - openai/plugins の 22 plugin（正規表現で分類）: plugin root を推論させる形が 4 件あります。例: zotero の "Resolve `<plugin-root>` by going two directories up from this `SKILL.md` file."
+> - 複数エージェント向けの repo 4 つ（superpowers、huggingface/skills、wshobson/agents、K-Dense-AI）: 推論は 0 件。superpowers は v5.0.1 で `${CLAUDE_PLUGIN_ROOT}` を skill 相対の `scripts/` へ置き換えています
+> - この書き方で困った報告もあります。[openai/codex#30792](https://github.com/openai/codex/issues/30792)（open）は "agents can incorrectly search under the skill directory." と書き、`skill_dir` と `plugin_root` を明示するよう提案しています
+>
+> repo 内では、session と diffo の codex-skills 側が同じ推論の書き方です。claude-user-communication は、Codex 対応の `7d5caca` でスクリプトを skill のディレクトリに置き、`{SKILL_DIR}` を「この SKILL.md があるディレクトリの絶対パス」と定義する形に変えています。
+>
+> ## plane-kanban で取れる形
+>
+> 1. 配置はそのままで、書き方だけ変える。本文を `<plugin root>/scripts/…` にし、9 行目で `<plugin root>` を定義する。openai/plugins の zotero と同じ形。移動するファイルは無い
+> 2. `scripts/` を `skills/plane-kanban/scripts/` へ移し、本文を `{SKILL_DIR}/scripts/…` で書く。claude-user-communication と同じ形。仕様・Codex の既定・Claude Code の Base directory の行と基準が揃い、`.claude/rules/coding.md` の「単一 skill 専用のスクリプトは `skills/{skill-name}/scripts/`」とも合う。スクリプト 7 本と `lib/plane.sh` の移動、`tests/run.sh`、README のパス、各スクリプト冒頭の `${CLAUDE_PLUGIN_ROOT:-…}` を直す
+> 3. CodingAgent ごとに SKILL.md を分ける。session・diffo と同じ形。Claude Code 側は `${CLAUDE_PLUGIN_ROOT}/scripts/…`、Codex 側は推論のまま。SKILL.md が 2 本になる
+>
+> 私は 2 を勧めます。仕様と実例の多数派に合い、推論の 1 文が要らなくなり、repo の規約とも一致するためです。2 にするなら、`docs/cross-client-architecture.md` の「plugin root は `CLAUDE_PLUGIN_ROOT` が空でなければその値」という書き方も、skill のディレクトリに置くスクリプトに合わせて見直します。どれにしますか。"
+
+レビュアー（2026-09-16T22:24:44.758Z）。
+
+> "2 にした上で規範側もアップデートして。docs だけでなく rule も"
+
+レビュアーの回答は、候補 3 つのうち「`scripts/` を `skills/plane-kanban/scripts/` へ移す」を選んだうえで、
+`docs/cross-client-architecture.md` と rule の規範も更新するよう求めたもの。
+
 ## kanban-matrix.md の 6 要件と、実文との対応
 
 `notes/artifacts/kanban-matrix.md` の 36-43 行が挙げる 6 件について、

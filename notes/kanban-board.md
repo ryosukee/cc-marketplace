@@ -542,6 +542,7 @@ name が一致する project の id を引き、`CLAUDE_PLUGIN_DATA` に保存�
 反映先。`plugins/plane-kanban/scripts/` の project 解決の処理。保存先は `CLAUDE_PLUGIN_DATA`。
 
 後の確定。保存先は確定 37 で `CLAUDE_PLUGIN_DATA` から CodingAgent に依存しない場所へ変えた。name で引く方式は変わらない。
+その後、確定 38 で、name で引いて保存する方式そのものをやめ、project の id を repo の git の設定に持つ形へ変えた。
 
 ### 確定 29 project が無い repo では、ユーザーが `init` を呼んだときだけ作る。skill は無ければ案内する
 
@@ -730,6 +731,74 @@ repo 内の両対応 plugin で、保存先に CodingAgent に依存しない変
 README の「任意の環境変数」、`tests/run.sh`（PR #28 の `c51e9ca`）。
 `docs/cross-client-architecture.md` の「環境変数と state の置き場」と、そこへリンクする `.claude/rules/coding.md`（PR #28 の `cca0c7d`）。
 
+後の確定。project の対応の保存先（`PLANE_KANBAN_DATA_DIR`、`XDG_DATA_HOME` の下、`~/.local/share/plane-kanban`）は、確定 38 で repo の git の設定に変えた。
+`docs/cross-client-architecture.md` に足した規範は変わらない。
+
+### 確定 38 repo と project の対応は repo の git の設定に持つ（確定 28 の引き方、確定 37 の保存先を覆す）
+
+結論。project の id を、repo の git の設定 `plane-kanban.projectId`（`git config --local`）に持つ。
+スクリプトはこの設定だけを読み、無ければ exit 1 で `init-project.sh` を案内する。name で project を引き直す処理は持たない。
+`init-project.sh` は、設定済みなら何もしない。未設定なら、workspace に同じ name の project があればそれを使い、
+無ければ `--identifier` を付けたときだけ作る。どちらの場合も id を git の設定に書く。name を省くと、repo のディレクトリ名を使う。
+worktree の中でも元の repo のディレクトリ名になるよう、git の共通ディレクトリの親の名前から求める。
+
+確定 28 のうち、次の 2 つを覆す。
+
+- ユーザーが project の name を repo のディレクトリ名に揃えること
+- スクリプトが project の一覧 API で name の一致する project の id を引き、保存すること
+
+確定 37 の保存先（`PLANE_KANBAN_DATA_DIR`、`XDG_DATA_HOME` の下、`~/.local/share/plane-kanban`）も覆す。
+確定 37 のうち、両対応の規範を `docs/cross-client-architecture.md` に定めたことは変えない。
+
+決めなかった範囲。workspace の slug の置き場（環境変数のままか、git の設定に id と対で置くか）は、同じスレッドで問うている途中。
+Codex の sandbox が `.git/config` への書き込みを許すかは確かめていない。
+
+決め手。
+
+- name で引く形は worktree で壊れる。スクリプトは `git rev-parse --show-toplevel` の basename を repo 名にしていた。
+  PR #28 の worktree で実行すると `cc-marketplace-wt-plane-kanban` が返り、`cc-marketplace` の project を引けない（Claude が実行して確認）
+- レビュアーは「おくなら repo におくべき」と提案した。ただ、repo に commit するファイルは、
+  efso-document のように共同で開発していて自分だけが Plane を使う repo では使えない
+- git の repo ローカル設定は `.git/config` に入り、commit にも `git status` にも出ない。
+  worktree で書いた値を元の checkout で読めることを、Claude が scratchpad の使い捨て repo で確かめた
+- id と slug は秘匿情報ではない。Plane の API は `X-API-Key` を必須とし、id と slug だけでは読み書きできない
+- 候補 3 つ（git の設定だけ / commit する `.plane_project_id` だけ / 両方を読む）から、レビュアーが git の設定だけを選んだ
+
+出典。PR #28 の Diffo レビューのスレッド（2026-09-16）。実文は
+[実文 26](./artifacts/kanban-requirements-origin.md#実文-26-repo-と-project-の対応の置き場を決めた-diffo-のスレッド)。
+
+反映先。`plugins/plane-kanban/skills/plane-kanban/scripts/lib/plane.sh` の `plane_project_id`・`plane_set_project_id`・`plane_repo_name`、
+`init-project.sh`、`resolve-project.sh`、`tests/run.sh`、`tests/fake-curl/curl`、
+README の「Plane の使い方の決め事」「セットアップ」「State」、SKILL.md（PR #28）。
+
+### 確定 39 1 つの skill だけが起動するスクリプトは skill のディレクトリに置き、SKILL.md のディレクトリを基準に指す
+
+結論。plane-kanban のスクリプトを `plugins/plane-kanban/skills/plane-kanban/scripts/` に置く。
+SKILL.md は `{SKILL_DIR}` を「この `SKILL.md` があるディレクトリの絶対パス」と定義し、コマンドを `{SKILL_DIR}/scripts/<スクリプト名>` で書く。
+スクリプトは自分のディレクトリを `$0` から求め、`CLAUDE_PLUGIN_ROOT` を読まない。
+同じ方針を、1 つの skill だけが起動するスクリプト全般の規範として、`docs/cross-client-architecture.md` と `.claude/rules/coding.md` に定める。
+
+決めなかった範囲。複数の skill や hook が共有するスクリプトと資料を、SKILL.md からどう指すか。
+session と diffo の codex-skills は、plugin root の位置をモデルに推論させる書き方のまま。
+
+決め手。
+
+- Agent Skills の仕様（"use relative paths from the skill root"）と Codex の組み込み prompt
+  （"resolve them relative to the directory containing that expanded `SKILL.md` first"）は、SKILL.md のあるディレクトリを基準にする。
+  Codex の文字列は、手元の codex 0.154.0 のバイナリにあることを Claude が確かめた
+- スクリプトを同梱する公式 4 repo の 44 skill では、skill 相対が 25、plugin root の位置を推論させる書き方が 0（subagent の調査。
+  openai/plugins の 22 plugin では推論が 4）
+- 以前の SKILL.md は、本文で `scripts/…` とだけ書いていた。Codex の既定どおりに解決すると、スクリプトの無い `skills/plane-kanban/scripts/` を指す
+- 候補 3 つ（書き方だけ変える / skill のディレクトリへ移す / CodingAgent 別の SKILL.md）から、レビュアーが移す案を選び、
+  docs と rule の規範も更新するよう求めた
+
+出典。PR #28 の Diffo レビューのスレッド（2026-09-16）。実文は
+[実文 27](./artifacts/kanban-requirements-origin.md#実文-27-skill-からスクリプトを指す書き方を問うた-diffo-のスレッド)。
+
+反映先。スクリプト 7 本と `lib/plane.sh` の移動と各スクリプトの冒頭、SKILL.md、README、`tests/run.sh`（PR #28）。
+`docs/cross-client-architecture.md` の「1 つの skill だけが起動するスクリプトは、skill のディレクトリに置く」と
+「skill から起動するスクリプトは、自分の場所と state の置き場を自分で決める」、`.claude/rules/coding.md` のエントリスクリプトの規約（PR #28）。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
@@ -805,10 +874,10 @@ Claude が API を叩くための token の置き場。後者は
 
 ### 次にやること（2026-09-16 更新）
 
-サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜37 で決まった。
+サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜39 で決まった。
 残るのは実際に作る作業。
 
-1. plugin `plane-kanban` のレビューを終えてマージする（確定 24〜32、確定 35〜37）。
+1. plugin `plane-kanban` のレビューを終えてマージする（確定 24〜27、確定 29〜39）。
    実装は PR #28（2026-09-16 時点で open、Diffo でレビュー中）
 2. ユーザーが kanban 用の workspace を新しく作り、API key を発行する（確定 33）。
    API key は macOS の Keychain の `plane-kanban-api-key` に入れる（確定 35）。
