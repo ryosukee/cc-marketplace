@@ -47,6 +47,17 @@ if [ -z "$REVIEWED" ] && [ -z "$PENDING" ]; then
     "[known-issues] claude-known-issues を導入した直後です。review skill を full で実行し、一覧の全エントリの how_to_verify を確かめてください。"
 fi
 
+# 進行中の突合 (claim) が生きているあいだは、どの通知も出さない。
+# 別セッションが同じ突合を重複起動するのを止めるため。
+# 版の変化だけは pending に記録し、claim が解けた後のセッションの通知で拾わせる。
+# claim が TTL (2 時間) を超えていたら claim_alive が消すので、放置されても通知は復活する
+if claim_alive; then
+  if [ "$CURRENT_VERSION" != "$REVIEWED" ] && [ -z "$PENDING" ]; then
+    state_set "pending_version=$CURRENT_VERSION"
+  fi
+  exit 0
+fi
+
 # 未完了の突合が残っている場合は再通知する
 # (前回セッションで agent が起動されなかった / 失敗した場合の救済)
 if [ -n "$PENDING" ]; then

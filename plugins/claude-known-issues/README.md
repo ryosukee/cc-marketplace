@@ -8,7 +8,7 @@ Claude Code の更新を検知したら changelog と突合し、たまに全エ
 
 | 要素 | 役割 |
 | --- | --- |
-| SessionStart hook | 版の変化と、全件突合の時期（導入直後 / 180 日超過）を検知して通知する。判定はしない |
+| SessionStart hook | 版の変化と、全件突合の時期（導入直後 / 180 日超過）を検知して通知する。判定はしない。進行中の突合（claim）が生きているあいだは通知しない |
 | entry skill | 一覧への追記手順とエントリの型 |
 | review skill | agent の起動と、結果の一覧・state への反映 |
 | known-issues-reviewer agent | 差分（changelog との突合）と全件（`how_to_verify` の実行）の判定 |
@@ -20,6 +20,7 @@ Claude Code の更新を検知したら changelog と突合し、たまに全エ
 | 未解決の一覧 | `${CLAUDE_PLUGIN_DATA}/known-issues.yml` |
 | 解除済みの一覧 | `${CLAUDE_PLUGIN_DATA}/known-issues.resolved.yml` |
 | 突合の状態 | `${CLAUDE_PLUGIN_DATA}/state.json` |
+| 進行中の突合の claim | `${CLAUDE_PLUGIN_DATA}/review.claim`（突合の完了で消える。TTL 2 時間） |
 | エントリの書き方の例 | `config/known-issues.template.yml` と `config/known-issues.resolved.template.yml`（plugin 同梱） |
 
 一覧はどちらも空（`entries: []`）で作られる。`config/` の 2 つは書き方の例で、
@@ -41,8 +42,11 @@ resolved を別ファイルへ移す（0.3.0 で 1 度行った）。
 ## 状態の遷移
 
 1. hook が更新を検知 → `pending_version` に記録して通知
-2. Claude が agent を起動 → 判定
-3. review skill が結果を反映 → `reviewed_version` を進めて `pending_version` を消す
-4. `pending_version` が残ったまま次のセッションが始まったら再通知する
+2. Claude が review skill で claim（`review.claim`）を取り、agent を起動 → 判定。
+   claim を取れなければ別セッションが突合中なので、agent を起動せずに止まる
+3. review skill が結果を反映 → `reviewed_version` を進めて `pending_version` と claim を消す
+4. `pending_version` が残ったまま次のセッションが始まったら再通知する。
+   ただし claim が生きているあいだは、別セッションの突合が進行中なので通知しない。
+   claim が TTL（2 時間）を超えたまま残っていたら、無効として消して再通知する
 
 全件突合は `last_full_review_at` で別に追う。null（導入直後）または 180 日超過で hook が通知する。

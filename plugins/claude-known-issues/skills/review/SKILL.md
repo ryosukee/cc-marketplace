@@ -27,7 +27,24 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
 状態を見るだけなら `cat "$STATE_PATH"`、現在の版は `claude --version`、未解決の件数は
 `grep -c '^  - id:' "$LEDGER_PATH"`。
 
-### ステップ 2: agent の起動
+### ステップ 2: claim の取得
+
+agent を起動する前に claim を取り、別セッションとの重複起動を止める。
+
+```
+CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}" \
+  bash -c 'source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/state.sh"; claim_acquire "<diff|full>" "<FROM>" "<TO>"'
+```
+
+- exit 0: 取れた。ステップ 3 へ進む
+- exit 1: 別セッションの claim が生きている。stderr の claim の中身（セッション id・取得時刻・範囲）を
+  そのまま報告し、agent を起動せずに終了する。その突合の完了は claim を持つセッションが反映する
+- exit 2: stderr の文言をそのまま報告して終了する
+
+claim は `${CLAUDE_PLUGIN_DATA}/review.claim`。TTL は 2 時間で、超えた claim は無効として
+見つけた側が消す（取得し直せる）。
+
+### ステップ 3: agent の起動
 
 `known-issues-reviewer` agent を **background で** 起動する。プロンプトに渡すもの:
 
@@ -39,7 +56,7 @@ CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_R
 agent は一覧と state を編集しない。`how_to_verify` の実行でプローブファイルを作ることはあり、
 自分で消す。
 
-### ステップ 3: 結果の反映
+### ステップ 4: 結果の反映
 
 1. 各エントリの `log` に、agent の追記案の 1 行を加える。単引用符で囲み、中の単引用符は `''` にする。
    複数行に折り返さない
@@ -49,17 +66,21 @@ agent は一覧と state を編集しない。`how_to_verify` の実行でプロ
    最後に `grep -c resolved_at known-issues.yml` が 0 であることを確かめる（移し忘れの検知）
 3. プローブの残存を確かめる: `find ~/.claude "$PWD" -name '.known-issues-probe-*'` が空でなければ消し、
    log に書く
-4. state を更新する。差分では `reviewed_version` を TO に、`pending_version` を null に。
+4. state を更新し、claim を解除する。差分では `reviewed_version` を TO に、`pending_version` を null に。
    全件では `last_full_review_at` を更新し、`reviewed_version` は進めない
 
 ```
 CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}" \
   bash -c 'source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/state.sh"; \
     state_set "reviewed_version=<TO>" "pending_version=null" \
-      "last_review_at=<ISO8601>" "last_result=<no_match|matched|error>"'
+      "last_review_at=<ISO8601>" "last_result=<no_match|matched|error>"; \
+    claim_release'
 ```
 
-agent が `error` を報告した場合は `reviewed_version` を進めない。次回の起動で再試行される。
+agent が `error` を報告した場合は `reviewed_version` を進めない（claim の解除だけを行う）。
+次回の起動で再試行される。`claim_release` が「別のセッションのもの」と報告したときは消さずに従い、
+自分の claim が TTL 切れで回収されて別セッションが取り直したことを意味するので、
+反映が二重になっていないかをそのセッションの完了後に確かめるようユーザーへ報告する。
 
 ## 全件突合を回す時期
 

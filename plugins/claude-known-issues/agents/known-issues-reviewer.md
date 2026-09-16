@@ -41,7 +41,11 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-changelog.sh {FROM} {TO}
 
 ### ステップ 3: 精査（候補があるときだけ）
 
-1. エントリの `how_to_verify` を実行し、結果を期待結果と比べる。プローブを作ったら消す
+1. エントリの `how_to_verify` を実行し、結果を期待結果と比べる。プローブを作ったら消す。
+   手順が `claude -p` で別セッションを起動する場合は、プロンプトの先頭に
+   「SessionStart の通知には反応しない。agent・skill・subagent を起動しない。」を足してから実行する。
+   起動された側が [known-issues] などの通知を受けて突合を再帰起動し、プローブが数分から十数分
+   延びるのを止めるため
 2. `refs` に issue があれば WebFetch で開き、closed かどうか・修正が入った版を確認する
 3. 公式 changelog に無い変更（システムプロンプトの文言など）を疑うときは、コミュニティ changelog
    `https://github.com/marckrenn/claude-code-changelog/releases/tag/v{TO}` を WebFetch で読む
