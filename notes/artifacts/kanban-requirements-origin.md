@@ -539,7 +539,7 @@ PR #28 の Diffo レビュー、2026-09-16。実文 25 と同じく、Diffo の�
 ```
 
 レビュアーの最初の問いから、候補 3 つへの回答「1」までの 7 件を順に置く。
-このあとスレッドには、実装の報告（2026-09-16T22:26:36.739Z）と、workspace の slug の置き場についてのやり取りが続く。
+このあとスレッドには、実装の報告（2026-09-16T22:26:36.739Z）と、workspace の slug の置き場についてのやり取り（実文 28）が続く。
 確定 38 を生んだ問いと答えではないので省いた。
 
 レビュアー（2026-09-16T13:51:51.510Z）。
@@ -698,6 +698,46 @@ Claude（2026-09-16T14:39:15.860Z）。
 
 レビュアーの回答は、候補 3 つのうち「`scripts/` を `skills/plane-kanban/scripts/` へ移す」を選んだうえで、
 `docs/cross-client-architecture.md` と rule の規範も更新するよう求めたもの。
+
+## 実文 28 workspace の slug の置き場を決めた Diffo のスレッド
+
+PR #28 の Diffo レビュー、2026-09-16。実文 26 と同じスレッド（thread `f487cf76-2d90-4d63-a4a3-8f9eeea476d1`）の続きで、
+実文 26 の後の実装の報告（2026-09-16T22:26:36.739Z）に対するレビュアーの問いから、候補 3 つへの回答までの 3 件を順に置く。
+このあとスレッドには、実装の報告（2026-09-16T22:51:09.984Z）が続く。確定 40 を生んだ問いと答えではないので省いた。
+
+レビュアー（2026-09-16T22:28:01.475Z）。
+
+> "workspace name はどうする？"
+
+Claude（2026-09-16T22:32:16.899Z）。
+
+> "いまは workspace の slug だけが環境変数 `PLANE_WORKSPACE_SLUG` に残り、project の id は repo の git の設定にあります。project の id は 1 つの workspace の中でだけ有効なので、この 2 つを別々の場所に置くと食い違いが起きえます。環境変数が別の workspace を指していれば、resolve は project を読めずに exit 1 で止まります（そのときの案内は実装済み）。
+>
+> 候補は 3 つです。
+>
+> 1. slug は環境変数のまま（いまの実装）。全 repo で 1 つの workspace を使う（確定 33 の「kanban 用の workspace を 1 つ作る」のとおり）
+> 2. slug も repo の git の設定（例: `plane-kanban.workspaceSlug`）に置き、環境変数をやめる。`init-project.sh --workspace <slug>` で id と一緒に書く
+> 3. git の設定に slug があればそれを、無ければ環境変数を読む
+>
+> 2 にすると次の点が変わります。
+>
+> - id と slug が同じ場所に対で入るので、食い違わない
+> - repo ごとに別の workspace を使える
+> - Claude Code の `settings.json` と Codex の `config.toml` に何も書かなくてよくなる。Codex の `config.toml` に直接書く形が未確認だった件も、確かめる必要がなくなる
+> - 代わりに、clone し直すたびの `init` に `--workspace` を付ける
+> - 確定 36（slug を環境変数から読む）をもう一度覆す確定を積む
+>
+> 未確認が 1 つあります。API key（Personal Access Token）は Profile Settings で発行するので、ユーザーに紐づく key です。ただ、その key が複数の workspace にまたがって使えるかは、公式の資料に書かれていません（`notes/artifacts/kanban-plane-hierarchy-2026-09-04.md` の 5.1 節）。workspace を 1 つしか使わない限り、この点は影響しません。
+>
+> 私は 2 を勧めます。id と slug が必ず対になり、CodingAgent ごとの設定ファイルを編集する手順が無くなるためです。どれにしますか。"
+
+レビュアー（2026-09-16T22:47:16.541Z）。
+
+> "2、ただ構造上複数 workspace 使えるだけであり、運用の方針は変わらない。もし複数 workspace 運用したくなったらその時運用規範ごと変更するし、workspace ごとに token が必要なら発行する。今は考慮しなくてよい"
+
+レビュアーの回答は、候補 3 つのうち「slug も repo の git の設定に置き、環境変数をやめる」を選んだもの。
+構造上は複数の workspace を使えるが運用の方針は変えない、という条件と、
+複数の workspace の運用と workspace ごとの token は今は考えない、という補足が付いている。
 
 ## kanban-matrix.md の 6 要件と、実文との対応
 

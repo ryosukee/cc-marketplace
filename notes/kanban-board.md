@@ -669,6 +669,7 @@ Keychain を直接読めば両方の問題が無い、というもの。
 「Keychain に入れる 2 項目」、SKILL.md の前提、`tests/fake-curl/security`（PR #28 の `6cae20d`）。
 
 後の確定。slug の読み元は確定 36 で環境変数 `PLANE_WORKSPACE_SLUG` に変えた。API key の読み元は変わらない。
+その後、確定 40 で slug の読み元を repo の git の設定に変えた。
 
 ### 確定 36 workspace slug は環境変数 `PLANE_WORKSPACE_SLUG` から読む（確定 35 の slug の部分を覆す）
 
@@ -697,6 +698,8 @@ Codex にも設定ファイルで環境変数を渡す `shell_environment_policy
 反映先。`plugins/plane-kanban/scripts/lib/plane.sh` の冒頭のコメントと `plane_require_env`、
 README の Requirements・「Keychain に入れる API key」・「必須の環境変数」、SKILL.md の前提、`tests/run.sh`、
 CLAUDE.md の plugin 一覧の行（PR #28 の `c51e9ca`）。
+
+後の確定。slug の読み元は確定 40 で repo の git の設定 `plane-kanban.workspaceSlug` に変え、環境変数 `PLANE_WORKSPACE_SLUG` は読まなくなった。
 
 ### 確定 37 repo と project の対応の保存先を CodingAgent に依存させない（確定 28 の保存先を覆す）
 
@@ -799,6 +802,34 @@ session と diffo の codex-skills は、plugin root の位置をモデルに推
 `docs/cross-client-architecture.md` の「1 つの skill だけが起動するスクリプトは、skill のディレクトリに置く」と
 「skill から起動するスクリプトは、自分の場所と state の置き場を自分で決める」、`.claude/rules/coding.md` のエントリスクリプトの規約（PR #28）。
 
+### 確定 40 workspace の slug も repo の git の設定に project の id と対で持つ（確定 36 を覆す）
+
+結論。workspace の slug を、repo の git の設定 `plane-kanban.workspaceSlug` に、`plane-kanban.projectId` と対で持つ。
+書くのは `init-project.sh --workspace <slug>` で、未設定の repo では `--workspace` を必須にする。スクリプトは環境変数 `PLANE_WORKSPACE_SLUG` を読まない。
+確定 36 のうち、slug を環境変数 `PLANE_WORKSPACE_SLUG` から読むことと、その置き場
+（Claude Code の `settings.json` の `env`、Codex の `config.toml` の `set`）を覆す。API key を Keychain からだけ読むこと（確定 35）は変えない。
+
+運用の方針は変えない。kanban 用の workspace は 1 つに決め（確定 33）、すべての repo でその workspace を使う。
+repo ごとに別の workspace を設定できるのは、置き場を repo に移した結果として構造上できるだけで、運用としては使わない。
+
+決めなかった範囲。複数の workspace を運用するときの方針と、workspace ごとに API key が要るかどうか。
+レビュアーは、複数の workspace を運用したくなったらそのときに運用の規範ごと変え、workspace ごとに token が要るならそのときに発行する、今は考慮しなくてよい、と述べた。
+
+決め手。
+
+- project の id は 1 つの workspace の中でだけ有効なので、slug と別の場所に置くと食い違いうる
+- slug を id と対で置けば、Claude Code の `settings.json` と Codex の `config.toml` を編集する手順が無くなる。
+  Codex の `config.toml` に直接書く形が未確認だった件（確定 36 の決めなかった範囲）も、確かめる必要がなくなる
+- 候補 3 つ（環境変数のまま / git の設定に対で置き環境変数をやめる / 両方を読む）から、レビュアーが対で置く案を選んだ
+
+出典。PR #28 の Diffo レビューのスレッド（2026-09-16）。実文は
+[実文 28](./artifacts/kanban-requirements-origin.md#実文-28-workspace-の-slug-の置き場を決めた-diffo-のスレッド)。
+
+反映先。`plugins/plane-kanban/skills/plane-kanban/scripts/lib/plane.sh` の `plane_require_env`・`plane_load_workspace`・`plane_save_repo_config`・`plane_api`、
+各エントリスクリプトの冒頭、`init-project.sh`、`resolve-project.sh`、`tests/run.sh`、`tests/fake-curl/curl`、
+README の「Plane の使い方の決め事」「任意の環境変数」「セットアップ」「State」、SKILL.md、
+`docs/cross-client-architecture.md` の環境変数の名前の例（PR #28）。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
@@ -874,16 +905,15 @@ Claude が API を叩くための token の置き場。後者は
 
 ### 次にやること（2026-09-16 更新）
 
-サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜39 で決まった。
+サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜40 で決まった。
 残るのは実際に作る作業。
 
-1. plugin `plane-kanban` のレビューを終えてマージする（確定 24〜27、確定 29〜39）。
+1. plugin `plane-kanban` のレビューを終えてマージする（確定 24〜27、確定 29〜40）。
    実装は PR #28（2026-09-16 時点で open、Diffo でレビュー中）
 2. ユーザーが kanban 用の workspace を新しく作り、API key を発行する（確定 33）。
-   API key は macOS の Keychain の `plane-kanban-api-key` に入れる（確定 35）。
-   workspace slug は環境変数 `PLANE_WORKSPACE_SLUG` として、Claude Code なら `~/.claude/settings.json` の `env`、
-   Codex なら `~/.codex/config.toml` の `[shell_environment_policy]` の `set` に置く（確定 36）
-3. plugin を導入し、実際の API で `init-project.sh` と `create-work-item.sh` を試す。
+   API key は macOS の Keychain の `plane-kanban-api-key` に入れる（確定 35）
+3. plugin を導入し、repo ごとに `init-project.sh --workspace <slug>` で workspace と project を設定する（確定 38・40）。
+   実際の API で `init-project.sh` と `create-work-item.sh` を試す。
    あわせて親子の入れ子の段数を API で確かめる（確定 34 の決めなかった範囲）
 4. `todo.md` の依頼を work item として取り込む（確定 31）。取り込んだら `todo.md` を消す（確定 32）
 5. norm-refit の計画とタスクを kanban へ移すかを決める。ccm-f086 の補足でユーザーが移したいと述べた。
