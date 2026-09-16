@@ -6,7 +6,7 @@
 ユーザーの発言に遡れないものを含む。この文書は、遡れる発言の実文をそのまま置く。
 要約はしない。
 
-実文はすべて Claude Code の transcript から取り、行番号とタイムスタンプを付けた。
+実文は、断りの無い限り Claude Code の transcript から取り、行番号とタイムスタンプを付けた。
 transcript の所在は `~/.claude/projects/-Users-ryosuke-ghq-root-github-com-ryosukee-cc-marketplace/`。
 タイムスタンプは UTC。
 
@@ -441,6 +441,91 @@ Q4 は推奨（Claude Code only）を採らず、最初から両対応を選ん�
 Q6 は推奨どおりで、project が無いときに skill が案内するという条件を足した。
 補足は 3 件の問いで、epic のような束ねの構造、norm-refit の計画とタスクの kanban への移行、
 Free plan での複数 workspace の可否。回答の上書きではない。
+
+## 実文 25 slug を環境変数でよいかと問うた Diffo のスレッド
+
+PR #28 の Diffo レビュー、2026-09-15。この実文は transcript ではなく、Diffo のレビューの記録から取った。
+所在は `~/.diffo/diffo.db` の `reviews` テーブルで、repo `/Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace-wt-plane-kanban`、
+ブランチ `feat/plane-kanban`、base `main` の行の `state_json` にある thread `16a40d05-86cc-4f25-b858-b3fbb90dbbc3`。
+スレッドは `plugins/plane-kanban/scripts/lib/plane.sh` の 6 行目（`6cae20d` の時点）に付いている。その行は次のとおり。
+
+```text
+#   service plane-kanban-workspace-slug workspace の slug（https://app.plane.so/{slug}/ の部分）
+```
+
+レビュアーの最初の問いから、提案 4 点への「ok」までの 6 件を順に置く。
+このあとスレッドには、実装の報告（2026-09-15T07:28:35.016Z）と、kernel パターンについてのやり取り 2 件が続く。
+確定 36・37 を生んだ問いと答えではないので省いた。
+
+レビュアー（2026-09-15T06:00:59.616Z）。
+
+> "slug は環境変数でいいのでは？"
+
+Claude（2026-09-15T06:03:30.791Z）。
+
+> "指摘のとおり、slug は秘密ではありません。`https://app.plane.so/{slug}/` としてブラウザの URL に出ています。確定 35 が挙げた「0644 の平文に鍵が残る」という理由は、slug には当たりません。
+>
+> 2 項目とも Keychain にしたのは、Claude Code と Codex で読み方が 1 つで済むからです。環境変数にすると置き場が client ごとに分かれます。Claude Code は `~/.claude/settings.json` の `env`、Codex は起動したシェルの環境変数です（手元の `~/.codex/config.toml` に env の設定はありません）。Codex をシェル以外から起動すると slug が空になり、スクリプトが exit 2 で止まります。
+>
+> 環境変数にする利点は 2 つあります。Keychain への登録が 1 項目で済むこと。もう 1 つは、`security find-generic-password` を permission の deny で止めているため今は Claude が slug を確認できませんが、環境変数なら読めるようになることです。
+>
+> どちらでも実装します。client ごとに置き場が分かれてよいなら環境変数、1 か所で済ませたいなら Keychain のままです。私は Keychain のままを勧めます。client ごとの分岐を作らずに済むためです。"
+
+レビュアー（2026-09-15T06:06:10.071Z）。
+
+> "他にも環境変数を使おうとしている上に、一部 claude  のみを前提にしてるものがあるけど、それはどうするの？
+> 環境変数にして両方からうまく読み込む方法がないかもっと調査して"
+
+Claude（2026-09-15T06:07:58.718Z）。
+
+> "調べます。出すのは次の 3 つです。
+>
+> この plugin がいま読んでいる環境変数の全件と、そのうち Claude Code のみを前提にしているもの（`CLAUDE_PLUGIN_DATA` と既定の保存先 `~/.claude/plugins/data/...`）。
+>
+> Codex が設定ファイルで環境変数を渡す仕組みを持つか。持つならキー名と書式。
+>
+> Codex が plugin のスクリプトへ自動で与える環境変数に、plugin root・データ保存先・セッション id に当たるものがあるか。
+>
+> 結果が出たらこのスレッドへ返します。"
+
+Claude（2026-09-15T06:31:53.372Z）。
+
+> "調べました。まず前の返信の「Codex は起動したシェルの環境変数です」は誤りでした。訂正します。
+>
+> ## 両方から読む方法はある
+>
+> Codex には `~/.codex/config.toml` の `[shell_environment_policy]` の `set` があり、Claude Code の `~/.claude/settings.json` の `env` に相当します。`codex exec -c 'shell_environment_policy.set={MY_TEST_VAR="hello-from-config"}'` を実行し、shell tool が走らせたコマンドの env に入ることを実測しました。書く場所は client ごとに違いますが、どちらも設定ファイル 1 か所で、シェルの起動経路に依存しません。
+>
+> ## Claude のみを前提にしているもの
+>
+> 3 つあります。
+>
+> `CLAUDE_PLUGIN_ROOT`（エントリスクリプト 7 本）。Codex は shell tool のコマンドに plugin root を渡さず、`CODEX_PLUGIN_ROOT` という名前も存在しません。`${PLUGIN_ROOT}` は plugin が宣言したコマンドの中でだけ展開されますが、この plugin は hook を持たないので届きません。いまの `$0` 相対のフォールバックが Codex での実際の経路になります。動きはします。
+>
+> `CLAUDE_PLUGIN_DATA`（`scripts/lib/plane.sh:57`）。Codex では設定されないので、既定の `~/.claude/plugins/data/plane-kanban-cc-tools` に落ちます。Codex のセッションが Claude の名前のディレクトリへ書きます。ここが直すべき箇所です。
+>
+> `CLAUDE_CODE_SESSION_ID` と `CLAUDE_SESSION_ID`（`scripts/lib/plane.sh:221`）。同じ連鎖に `CODEX_THREAD_ID` が入っていて、Codex はこれを実際に渡します（`CODEX_SESSION_ID` も同じ UUID で渡ります）。直さなくても両方で動きます。
+>
+> ## repo 内の前例
+>
+> 両対応の plugin は claude-user-communication・diffo・session の 3 本で、どれも `CODEX_` の環境変数を参照していません。データの保存先で client 中立の変数を使っているのは diffo だけで、`XDG_STATE_HOME` を見ています（`plugins/diffo/bin/diffo-codex-poll:32`）。`docs/cross-client-architecture.md` に環境変数の扱いの規定はありません。
+>
+> ## 提案
+>
+> 1. slug を `PLANE_WORKSPACE_SLUG` の環境変数にする。Claude Code は `settings.json` の `env`、Codex は `config.toml` の `shell_environment_policy.set`。API key は Keychain のまま
+> 2. データの保存先の既定を client 中立にする。`PLANE_KANBAN_DATA_DIR` → `XDG_DATA_HOME` → `~/.local/share/plane-kanban` の順にし、`CLAUDE_PLUGIN_DATA` は外す。diffo の前例に合わせる
+> 3. `CLAUDE_PLUGIN_ROOT` はそのまま。Codex 側に対応する名前が無く、`$0` 相対のフォールバックで足りる
+> 4. セッション id の連鎖はそのまま
+>
+> 1 は確定 35 を一部覆すので、決まったら decision-record に確定として積みます。この 4 点で進めてよければ実装します。"
+
+レビュアー（2026-09-15T07:21:30.536Z）。
+
+> "ok
+> データの持ち方を規定したルールやドキュメント自体にも変更を入れた方が良さそう"
+
+レビュアーは、Claude が最初の返信で勧めた「Keychain のまま」を採らず、両方の CodingAgent から環境変数で読む方法の調査を求めた。
+「ok」は調査の後に出した提案 4 点への回答。2 行目はデータの持ち方を定める規範も直すよう求めた補足で、回答の上書きではない。
 
 ## kanban-matrix.md の 6 要件と、実文との対応
 
