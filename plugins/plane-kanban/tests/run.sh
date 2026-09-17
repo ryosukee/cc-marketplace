@@ -141,9 +141,12 @@ assert_eq "In Progress" "$(jq -r .state <<<"$out")" "--state"
 assert_eq "0" "$(jq '.labels | length' <<<"$out")" "--no-session"
 
 # 8. update: state を変え、session の label は残る（重複しない）
+# 偽の curl は work item 1 件の GET で label をオブジェクトに展開し、PATCH に id 以外の label が来たら 400 を返す
 out=$("$S/update-work-item.sh" w1 --project p1 --state Done)
 assert_eq "Done" "$(jq -r .state <<<"$out")" "update の state"
 assert_eq "1" "$(jq '.labels | length' <<<"$out")" "label が重複しない"
+assert_eq "session:${today}-abcdef12" "$(jq -r '.labels[0]' <<<"$out")" "update の出力は label の名前"
+assert_eq "true" "$(jq '.[] | select(.id=="w1") | .labels | all(type == "string")' "$FAKE_CURL_STATE/items.json")" "update は label の id だけを送る"
 
 # 9. list: 既定は Done を除き、--all で含み、--session で絞る
 out=$("$S/list-work-items.sh" --project p1)

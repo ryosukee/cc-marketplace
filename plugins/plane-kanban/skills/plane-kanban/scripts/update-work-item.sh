@@ -50,7 +50,8 @@ plane_load_workspace || exit 1
 project="${project:-$(plane_project_id)}" || exit 1
 
 current=$(plane_api GET "/projects/${project}/work-items/${item_id}/") || exit 1
-label_ids=$(jq -c '(.labels // .label_ids // [])' <<<"$current")
+# work item 1 件の GET は label をオブジェクトで返すが、PATCH は label の id しか受け付けない
+label_ids=$(jq -c '(.labels // .label_ids // []) | map(if type == "object" then .id else . end)' <<<"$current")
 
 if [ "$no_session" -eq 0 ]; then
   sid=$(plane_session_id "$session")
