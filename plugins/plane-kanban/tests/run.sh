@@ -78,16 +78,29 @@ assert_eq "p1" "$(jq -r .id <<<"$out")" "作った project の id"
 assert_eq "ws p1" "$(git config --local --get plane-kanban.workspaceSlug) $(git config --local --get plane-kanban.projectId)" "slug と id を git の設定に書く"
 assert_eq "ws" "$(tail -1 "$FAKE_CURL_STATE/workspaces.log")" "API は --workspace の slug を使う"
 
-# 4. 設定済みなら init は作らない。別の workspace を指定すると exit 2
+# 3a. init は Needs Input の state（group started）を足し、In Progress と Done の間に並べる
+assert_eq "Needs Input true" "$(jq -r '"\(.needs_input_state.name) \(.needs_input_state.created)"' <<<"$out")" "init が Needs Input を足す"
+assert_eq "started" "$(jq -r '.[] | select(.name=="Needs Input") | .group' "$FAKE_CURL_STATE/states.json")" "Needs Input の group は started"
+assert_eq "true" "$(jq '(map(select(.name=="Needs Input")) | first | .sequence) as $n | (map(select(.name=="In Progress")) | first | .sequence) < $n and $n < (map(select(.name=="Done")) | first | .sequence)' "$FAKE_CURL_STATE/states.json")" "Needs Input は In Progress と Done の間"
+
+# 4. 設定済みなら init は project も state も作らない。別の workspace を指定すると exit 2
 before=$(grep -c "^POST /projects/ " "$FAKE_CURL_STATE/requests.log" || true)
+before_state=$(grep -c "^POST /projects/p1/states/ " "$FAKE_CURL_STATE/requests.log" || true)
 out=$("$SETUP/init-project.sh")
 after=$(grep -c "^POST /projects/ " "$FAKE_CURL_STATE/requests.log" || true)
+after_state=$(grep -c "^POST /projects/p1/states/ " "$FAKE_CURL_STATE/requests.log" || true)
 assert_eq "false" "$(jq -r .created <<<"$out")" "設定済みなら init は作らない"
 assert_eq "$before" "$after" "設定済みなら POST しない"
+assert_eq "false $before_state" "$(jq -r .needs_input_state.created <<<"$out") $after_state" "Needs Input があれば作らない"
 set +e
 "$SETUP/init-project.sh" --workspace other >/dev/null 2>&1
 assert_eq 2 $? "設定済みの repo で別の workspace を指定すると exit 2"
 set -e
+
+# 4a. Needs Input が無い設定済みの project（0.2.0 より前に設定した repo）でも、init を実行し直すと足す
+jq -c 'map(select(.name != "Needs Input"))' "$FAKE_CURL_STATE/states.json" > "$TMP/states.json" && mv "$TMP/states.json" "$FAKE_CURL_STATE/states.json"
+out=$("$SETUP/init-project.sh")
+assert_eq "false true" "$(jq -r '"\(.created) \(.needs_input_state.created)"' <<<"$out")" "設定済みの repo でも Needs Input を足す"
 
 # 5. resolve は git の設定の slug と id で project を引く
 out=$("$SETUP/resolve-project.sh")
@@ -115,7 +128,7 @@ assert_eq "p1" "$(jq -r .id <<<"$out")" "worktree でも同じ id"
 # 5c. 設定の無い clone で init すると、同じ name の既存 project を使う
 git clone -q "$REPO" "$TMP/clone/cc-marketplace"
 out=$(cd "$TMP/clone/cc-marketplace" && "$SETUP/init-project.sh" --workspace ws)
-assert_eq "false p1" "$(jq -r '"\(.created) \(.id)"' <<<"$out")" "clone では既存の project を使う"
+assert_eq "false p1 false" "$(jq -r '"\(.created) \(.id) \(.needs_input_state.created)"' <<<"$out")" "clone では既存の project と Needs Input を使う"
 assert_eq "p1" "$(git -C "$TMP/clone/cc-marketplace" config --local --get plane-kanban.projectId)" "clone の git の設定に書く"
 
 # 5d. 設定された id の project が Plane に無ければ resolve は exit 1
@@ -157,6 +170,14 @@ out=$("$S/list-work-items.sh" --project p1 --all --session)
 assert_eq "w1" "$(jq -r 'map(.id) | join(",")' <<<"$out")" "--session で絞る"
 out=$("$S/list-work-items.sh" --project p1 --all --state Done --state "In Progress")
 assert_eq "w1,w2" "$(jq -r 'map(.id) | join(",")' <<<"$out")" "--state 複数"
+
+# 9a. 確認を出すときに Needs Input へ動かし、既定の一覧にも出る。返答を受けたら In Progress に戻す
+out=$("$S/update-work-item.sh" w2 --project p1 --state "Needs Input")
+assert_eq "Needs Input" "$(jq -r .state <<<"$out")" "Needs Input へ動かす"
+out=$("$S/list-work-items.sh" --project p1)
+assert_eq "w2 Needs Input" "$(jq -r '.[] | "\(.id) \(.state)"' <<<"$out")" "Needs Input は既定の一覧に出る"
+out=$("$S/update-work-item.sh" w2 --project p1 --state "In Progress")
+assert_eq "In Progress" "$(jq -r .state <<<"$out")" "In Progress に戻す"
 
 # 10. import: 親を先に作り、子の parent に入る。id を書き戻し、再実行は飛ばす
 cat > "$TMP/manifest.json" <<'JSON'

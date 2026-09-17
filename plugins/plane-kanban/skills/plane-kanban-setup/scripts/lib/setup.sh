@@ -15,6 +15,9 @@ SETUP_API_BASE="${PLANE_API_BASE:-https://api.plane.so/api/v1}"
 SETUP_KEYCHAIN_SERVICE="plane-kanban-api-key"
 SETUP_GIT_CONFIG_WORKSPACE="plane-kanban.workspaceSlug"
 SETUP_GIT_CONFIG_PROJECT="plane-kanban.projectId"
+# 確認待ちの work item を置く state。既定の 5 つに加えて setup が足す
+SETUP_NEEDS_INPUT_STATE="Needs Input"
+SETUP_NEEDS_INPUT_COLOR="#8B5CF6"
 
 setup_err() {
   echo "plane-kanban-setup: $*" >&2
@@ -79,15 +82,15 @@ setup_api() {
   esac
 }
 
-# workspace の project を、ページを辿って全件 JSON の配列で出す。引数: $1 = workspace の slug
-setup_list_projects() {
-  local workspace="$1" cursor="" page all
+# 一覧 API をページを辿って全件 JSON の配列で出す。引数: $1 = workspace の slug, $2 = パス（query 無し）
+setup_get_all() {
+  local workspace="$1" path="$2" cursor="" page all
   all='[]'
   while :; do
     if [ -n "$cursor" ]; then
-      page=$(setup_api "$workspace" GET "/projects/?per_page=100&cursor=${cursor}") || return 1
+      page=$(setup_api "$workspace" GET "${path}?per_page=100&cursor=${cursor}") || return 1
     else
-      page=$(setup_api "$workspace" GET "/projects/?per_page=100") || return 1
+      page=$(setup_api "$workspace" GET "${path}?per_page=100") || return 1
     fi
     all=$(jq -n --argjson a "$all" --argjson p "$page" '$a + ($p.results // [])')
     if [ "$(jq -r '.next_page_results // false' <<<"$page")" != "true" ]; then
@@ -97,6 +100,38 @@ setup_list_projects() {
     { [ -z "$cursor" ] || [ "$cursor" = "null" ]; } && break
   done
   echo "$all"
+}
+
+# workspace の project を全件 JSON の配列で出す。引数: $1 = workspace の slug
+setup_list_projects() {
+  setup_get_all "$1" "/projects/"
+}
+
+# project に Needs Input の state（group started）が無ければ作り、board の列で In Progress と Done の間に並べる
+# 引数: $1 = workspace の slug, $2 = project id
+# 出力: {"name", "id", "created": true|false, "placed": true|false|null}。placed は作ったときだけ、間へ動かせたか
+setup_ensure_needs_input_state() {
+  local workspace="$1" project="$2" states existing body created id seq placed
+  states=$(setup_get_all "$workspace" "/projects/${project}/states/") || return 1
+  existing=$(jq -c --arg n "$SETUP_NEEDS_INPUT_STATE" '[.[] | select(.name == $n)] | first // empty' <<<"$states")
+  if [ -n "$existing" ]; then
+    jq -c '{name: .name, id: .id, created: false, placed: null}' <<<"$existing"
+    return 0
+  fi
+  body=$(jq -n --arg n "$SETUP_NEEDS_INPUT_STATE" --arg c "$SETUP_NEEDS_INPUT_COLOR" '{name: $n, color: $c, group: "started"}')
+  created=$(setup_api "$workspace" POST "/projects/${project}/states/" "$body") || return 1
+  id=$(jq -r '.id' <<<"$created")
+  # 作成の API は sequence を既存の最大値 + 15000 にするので、作った state は列の末尾に並ぶ
+  seq=$(jq -r '(map(select(.name == "In Progress")) | first | .sequence) as $a
+    | (map(select(.name == "Done")) | first | .sequence) as $b
+    | if ($a | type) == "number" and ($b | type) == "number" and $a < $b then (($a + $b) / 2 | floor) else empty end' <<<"$states")
+  if [ -n "$seq" ] && setup_api "$workspace" PATCH "/projects/${project}/states/${id}/" "{\"sequence\": ${seq}}" >/dev/null; then
+    placed=true
+  else
+    setup_err "Needs Input を In Progress と Done の間へ動かせなかった。board の列の末尾に並んでいる"
+    placed=false
+  fi
+  jq -c --argjson p "$placed" '{name: .name, id: .id, created: true, placed: $p}' <<<"$created"
 }
 
 # repo の git の設定に、workspace の slug と project の id を対で書く。引数: $1 = slug, $2 = project id

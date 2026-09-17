@@ -18,7 +18,8 @@ Plane は、作業を work item（カード）として project ごとの board 
 - project: workspace の中の単位。board・state・label は project ごとに持つ
 - work item: board に載る 1 枚のカード。1 つの project に属する
 - sub work item: 親の work item を持つ work item
-- state: work item の進み具合で、board の列になる。project を作ると Backlog / Todo / In Progress / Done / Cancelled の 5 つが入る
+- state: work item の進み具合で、board の列になる。project を作ると Backlog / Todo / In Progress / Done / Cancelled の 5 つが入る。
+  どの state も backlog / unstarted / started / completed / cancelled のいずれかの group に属する
 - label: work item に複数付けられる名前付きの印。board で絞り込みに使える
 
 ## Plane の使い方の決め事
@@ -31,7 +32,7 @@ Plane は、作業を work item（カード）として project ごとの board 
 
 - kanban 用の workspace を 1 つに決め、すべての repo でその workspace を使う
 - 1 つの repo に 1 つの project を対応させる。repo が使う workspace と project は、repo の git の設定に対で持つ（「repo ごとの設定」の節）
-- state の名前を変えない。skill は project を作ったときに入る 5 つの名前で state を指定し、スクリプトは名前で state を引く
+- state の名前を変えない。skill は project を作ったときに入る 5 つと、setup が足す Needs Input の名前で state を指定し、スクリプトは名前で state を引く
 
 ### この plugin が従う決め事
 
@@ -40,6 +41,8 @@ Plane 側の運用には課さないが、この plugin が work item を扱う�
 - work item を作る・更新するとき、いまのセッションを表す label `session:<日付>-<セッション id の先頭 8 桁>` を付ける。
   セッションごとの一覧は、この label で絞り込んで見る
 - 複数のタスクに分けられる仕事（Jira の epic に当たるもの）は、その仕事を親の work item にし、分けたタスクを sub work item にする。段数は制限しない
+- In Progress の work item についてユーザーに確認（質問・承認・選んでもらうこと）を出すときは、先に Needs Input に動かす。
+  返答を受けて作業を再開するときに In Progress に戻す
 - work item・label・project を消さない。スクリプトに削除の経路は無く、消すなら人が Plane の画面で消す
 - project をまたいだ一覧は作らない。見るのは常に 1 つの project の board
 
@@ -87,6 +90,9 @@ security add-generic-password -s plane-kanban-api-key -a "$USER" -w '<token>'
 repo の作業ツリーで CodingAgent に「plane-kanban のセットアップ」と頼む。
 足りないもの（コマンド、Keychain の API key、repo の workspace と project）を確かめ、人が作業する段では案内して待つ。
 repo を clone し直したときや別のマシンでも、同じ skill で設定し直す。
+
+setup は、project に確認待ちの work item を置く state の Needs Input（group は started）が無ければ足し、
+board の列で In Progress と Done の間に並べる。0.2.0 より前にセットアップした repo は、同じ skill を実行し直すと足される。
 
 ## repo ごとの設定
 
