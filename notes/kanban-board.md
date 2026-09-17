@@ -497,6 +497,8 @@ session 側の skill の内容を変えるときに決める。SessionStart hook
 反映先。`plugins/plane-kanban/skills/` の構成（skill 1 本）。`hooks/` は作らない。
 session plugin の handover skill は当面変えない。
 
+後の確定。確定 42 で、セットアップを人と進める作業手順 skill `plane-kanban-setup` を足し、skill 1 本だけの構成を覆した。hook と agent を持たないことは変わらない。
+
 ### 確定 26 スクリプトは bash + curl + jq で書く
 
 結論。plugin のスクリプトは bash + curl + jq で書く。work item の説明（`description_html`）の変換は、
@@ -830,6 +832,80 @@ repo ごとに別の workspace を設定できるのは、置き場を repo に�
 README の「Plane の使い方の決め事」「任意の環境変数」「セットアップ」「State」、SKILL.md、
 `docs/cross-client-architecture.md` の環境変数の名前の例（PR #28）。
 
+### 確定 41 Plane の使い方の決め事は、人が Plane 側で守る制約と、plugin が従う決め事に分けて書く
+
+結論。plugin `plane-kanban` の README と SKILL.md に「Plane の使い方の決め事」の節を置き、2 つに分けて書く。
+分ける基準は、人が Plane の workspace・project・state をどう作り、どう運用するかについて課すものかどうか。
+
+- Plane 側で守る制約
+    - kanban 用の workspace を 1 つに決め、すべての repo でその workspace を使う
+    - 1 つの repo に 1 つの project を対応させる
+    - state の名前を変えない
+- この plugin が従う決め事（Plane 側の運用には課さない）
+    - work item を作る・更新するとき、いまのセッションを表す label を付ける
+    - 複数のタスクに分けられる仕事は、親 work item と sub work item で表す
+    - work item・label・project を消さない
+    - project をまたいだ一覧を作らない
+
+決めなかった範囲。制約と決め事の中身は、この確定で新しく決めていない。
+中身を決めたのは確定 17・18・19・20・21・22・30・33・34・40。
+
+決め手。
+
+- レビュアーが最初の指摘で基準を示した。「label を付与するというのは Plane 側の使い方として課す制約ではない」、
+  「1 repo 1 project の対応づけは Plane 側の運用として課す制約」
+- Claude は最初、「守らないとスクリプトが止まるか」で分けた。その後、workspace と project の対応を repo の git の設定に移したとき（確定 38・40）、
+  workspace を 1 つにすることと 1 repo = 1 project を、この基準で決め事の側へ動かした
+- レビュアーが「Plane 側で守る制約でもあるのでは？どう区分けしたの？」と問い、Claude は最初の指摘の基準に戻って分け直した。
+  この返信の後にレビュアーの発言は無く、レビューは「lgtm」で閉じられた
+
+出典。PR #28 の Diffo レビューの 2 つのスレッド（2026-09-16 と 2026-09-17）と、レビューの締めの記録（2026-09-17）。実文は
+[実文 29](./artifacts/kanban-requirements-origin.md#実文-29-plane-の使い方の決め事を制約と決め事に分けるよう求めた-diffo-のスレッド)と、
+[実文 30](./artifacts/kanban-requirements-origin.md#実文-30-セットアップを人と進める-skill-を足すよう提案した-diffo-のスレッド)の末尾。
+
+反映先。`plugins/plane-kanban/README.md` の「Plane の使い方の決め事」と、
+`plugins/plane-kanban/skills/plane-kanban/SKILL.md` の「Plane の使い方の決め事」（PR #28 の `100f367`、マージは `211e11f`）。
+
+### 確定 42 セットアップを人と 1 段ずつ進める skill `plane-kanban-setup` を足す（確定 25 の skill 1 本を覆す）
+
+結論。plugin `plane-kanban` に作業手順 skill `plane-kanban-setup` を足す。
+確定 25 のうち「作業手順 skill 1 本だけを持つ」を覆す。hook と agent を持たないことは変えない。
+
+- `plane-kanban-setup` は、足りないもの（macOS、`curl`、`jq`、Keychain の API key、git の作業ツリー、repo の workspace と project）を確かめ、1 段ずつ埋める。
+  人が作業する段では、終わったと言われるまで次の段へ進まない
+- API key は人が Keychain に登録する。skill は token を受け取らず、Keychain から API key を読み出さない
+- setup でだけ使うスクリプト（`check-setup.sh`、`init-project.sh`、`resolve-project.sh`）は、必要な部分だけで作り直して `skills/plane-kanban-setup/scripts/` に置く。
+  共通ヘルパも setup 専用の `lib/setup.sh` を持ち、`skills/plane-kanban/scripts/lib/plane.sh` は読まない
+- `plane-kanban` の SKILL.md からは setup の情報を外し、前提条件が足りないときと repo が未設定のときに `plane-kanban-setup` を案内する
+- レビューが終わったら、`plane-kanban-setup` で cc-marketplace の project を作り、work item を 1 件登録するところまで検証する
+
+決めなかった範囲。
+
+- `lib/setup.sh` が 429 の再試行を持たないのは Claude の判断（セットアップで呼ぶ API は数回だけのため）で、レビュアーには問うていない
+- evals のケース。`.claude/rules/plugin-release.md` は新しい skill を足したときに evals のケースを作るよう定めているが、まだ作っていない
+- `ensure-session-label.sh` を消す案。Claude が別のスレッド（thread `71ef85a5-9b9c-4762-af6b-eea9b3a2484c`）で出したが、回答が無いままレビューが閉じられた
+
+決め手。
+
+- レビュアーが、setup を人と協調しながら段階的に進める skill を作ることを提案した
+- Claude が出した置き方の候補 3 つから、レビュアーが A を選び、skill 名を `plane-kanban-setup` にするよう求めた。
+  候補は、A が新しい skill にして `init-project.sh` と `resolve-project.sh` は plane-kanban の skill のものを呼ぶ、
+  B が新しい skill にしてスクリプト 3 本を移し `lib/plane.sh` を plugin 直下で 2 つの skill が共有する、
+  C が skill にせず plane-kanban の skill の中にセットアップの手順のファイルを置く
+- その後レビュアーが、setup でだけ使うスクリプトは必要な部分だけで作り直して setup skill の下に置くよう求めた。
+  これで A のうち「plane-kanban の skill のスクリプトを呼ぶ」の部分が変わった。
+  `lib` を 2 つの skill で共有しないので、B で要るとした「共有スクリプトの指し方の規範」も要らない
+- 検証の範囲は、レビュアーの最初の提案にある「cc-marketplace の project を作って試しに何か work item を登録してみるところまで」
+
+出典。PR #28 の Diffo レビューのスレッド（2026-09-17）。実文は
+[実文 30](./artifacts/kanban-requirements-origin.md#実文-30-セットアップを人と進める-skill-を足すよう提案した-diffo-のスレッド)。
+
+反映先。`plugins/plane-kanban/skills/plane-kanban-setup/`（SKILL.md、`scripts/check-setup.sh`、`scripts/init-project.sh`、`scripts/resolve-project.sh`、`scripts/lib/setup.sh`）、
+`plugins/plane-kanban/skills/plane-kanban/SKILL.md` の「project が無いとき」と「失敗したとき」、
+`plugins/plane-kanban/skills/plane-kanban/scripts/lib/plane.sh` の未設定の案内、README の冒頭と「セットアップ」、
+`tests/run.sh`（PR #28 の `100f367`、マージは `211e11f`）。
+evals のケースと、`plane-kanban-setup` での検証は、まだ行っていない。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
@@ -903,18 +979,16 @@ Claude が API を叩くための token の置き場。後者は
 
 公式資料どうしの矛盾 5 件と未確認 11 件を、実文の側に残してある。
 
-### 次にやること（2026-09-16 更新）
+### 次にやること（2026-09-17 更新）
 
-サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜40 で決まった。
-残るのは実際に作る作業。
+サービス・エディション・接続手段・Plane の中の構成は確定 11〜23 で、plugin の設計は確定 24〜42 で決まった。
+plugin `plane-kanban` は PR #28 でマージし（`211e11f`）、Claude Code と Codex に導入した。残るのは実際に使い始める作業。
 
-1. plugin `plane-kanban` のレビューを終えてマージする（確定 24〜27、確定 29〜40）。
-   実装は PR #28（2026-09-16 時点で open、Diffo でレビュー中）
-2. ユーザーが kanban 用の workspace を新しく作り、API key を発行する（確定 33）。
+1. ユーザーが kanban 用の workspace を新しく作り、API key を発行する（確定 33）。
    API key は macOS の Keychain の `plane-kanban-api-key` に入れる（確定 35）
-3. plugin を導入し、repo ごとに `init-project.sh --workspace <slug>` で workspace と project を設定する（確定 38・40）。
-   実際の API で `init-project.sh` と `create-work-item.sh` を試す。
+2. 導入後に立ち上げたセッションで `plane-kanban-setup` を使い、cc-marketplace の project を作って work item を 1 件登録する（確定 42）。
    あわせて親子の入れ子の段数を API で確かめる（確定 34 の決めなかった範囲）
+3. plane-kanban と plane-kanban-setup の evals のケースを作る（`.claude/rules/plugin-release.md`、確定 42 の決めなかった範囲）
 4. `todo.md` の依頼を work item として取り込む（確定 31）。取り込んだら `todo.md` を消す（確定 32）
 5. norm-refit の計画とタスクを kanban へ移すかを決める。ccm-f086 の補足でユーザーが移したいと述べた。
    Cloud Free で使える束ねは親 work item と sub work item（確定 21）と Module で、

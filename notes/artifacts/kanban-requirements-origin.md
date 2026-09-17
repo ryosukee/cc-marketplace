@@ -739,6 +739,188 @@ Claude（2026-09-16T22:32:16.899Z）。
 構造上は複数の workspace を使えるが運用の方針は変えない、という条件と、
 複数の workspace の運用と workspace ごとの token は今は考えない、という補足が付いている。
 
+## 実文 29 Plane の使い方の決め事を、制約と決め事に分けるよう求めた Diffo のスレッド
+
+PR #28 の Diffo レビュー、2026-09-16 と 2026-09-17。実文 25 と同じく、Diffo のレビューの記録から取った。
+所在は `~/.diffo/diffo.db` の `reviews` テーブルで、repo `/Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace-wt-plane-kanban`、
+ブランチ `feat/plane-kanban`、base `main` の行の `state_json`。
+
+確定 41 を生んだスレッドは 2 つある。区分けを求めた最初のスレッドと、区分けの基準を問うたスレッドで、それぞれの全件を時刻の順に置く。
+どちらのスレッドも `plugins/plane-kanban/README.md` に付いている（最初のスレッドは 9 行目、2 つ目は 34 行目）。
+付いていた行の内容は `state_json` に残っていない（どちらも `codeContext` が null）。
+
+最初のスレッド（thread `83567ed5-1da3-4476-b593-229d8ba4d1a6`）。
+
+レビュアー（2026-09-16T13:50:10.737Z）。
+
+> "この skill を扱う上での Plane 側の使い方の制約・プロトコル的な決め事としてセクション立ててちゃんとまとめて書いてほしい
+> 例えば label を付与するというのは Plane 側の使い方として課す制約ではない。制約ではないが決め事として立項はした方がよい。一方で 1 repo 1 project の対応づけは Plane 側の運用として課す制約。
+> Plane をどう使うかという決め事としてまとめて。"
+
+Claude（2026-09-16T13:55:57.433Z）。
+
+> "直しました。冒頭の箇条書きを「Plane の使い方の決め事」の節（`plugins/plane-kanban/README.md:24-45`）に置き換え、制約と決め事を分けました。
+>
+> Plane 側で守る制約（守らないとスクリプトが止まる）は 3 つです。
+>
+> - kanban 用の workspace を 1 つ決め、slug を `PLANE_WORKSPACE_SLUG` に置く
+> - 1 repo に 1 project を対応させ、project の name を repo のディレクトリ名と同じにする
+> - state の名前を変えない（skill が既定の 5 つの名前で指定し、スクリプトが名前で引くため）
+>
+> この plugin が従う決め事（Plane 側は強制しない）は 4 つです。
+>
+> - 作成・更新のときにセッションの label を付け、セッションごとの一覧はその label で絞る
+> - 複数セッションにまたがる仕事は親 work item と sub work item で束ねる
+> - work item・label・project を消さない
+> - project をまたいだ一覧を作らない
+>
+> 冒頭にあった「取り込み一覧の JSON から 1 件ずつ作る」は Plane の使い方ではなく plugin の機能なので、節に入れず「スクリプト」の表（`import-work-items.sh`）に任せました。「セットアップ」の末尾にあった「project の name は repo のディレクトリ名と同じにする」も、この節と重なるので消しました。
+>
+> markdownlint は 0 件です。"
+
+レビュアーの指摘は、Plane をどう使うかの決め事を節に立てることと、その中で「Plane 側の運用として課す制約」と、制約ではない決め事を分けることを求めたもの。
+例として、1 repo 1 project の対応づけを制約に、label の付与を制約ではない決め事に挙げている。
+Claude の返信は、制約を「守らないとスクリプトが止まる」ものとして分けている。
+このスレッドに、Claude の返信の後のレビュアーの発言は無い。
+
+2 つ目のスレッド（thread `97b508c0-d700-4859-8c39-eaa3df4dfc72`）。
+
+レビュアー（2026-09-17T01:04:01.202Z）。
+
+> "Plane 側で守る制約でもあるのでは？どう区分けしたの？"
+
+Claude（2026-09-17T01:05:03.030Z）。
+
+> "区分けの基準がずれていました。
+>
+> 直す前は「守らないとスクリプトが止まるか」で分けていました。止まるのは state の名前だけなので、制約はそれ 1 つにしていました。workspace を 1 つにすることと、1 repo = 1 project は、git の設定に移したときに決め事の側へ動かしていました。
+>
+> しかし最初の指摘の基準は、「Plane 側の運用として課すか」でした。1 repo = 1 project はその例として制約に挙がっていて、label の付与は決め事でした。この基準で分け直しました（README L28-44、SKILL.md L15-31）。
+>
+> - Plane 側で守る制約（人が Plane の workspace・project・state をどう作り、どう運用するか）
+>     - kanban 用の workspace を 1 つに決め、すべての repo でその workspace を使う
+>     - 1 つの repo に 1 つの project を対応させる
+>     - state の名前を変えない
+> - この plugin が従う決め事（Plane 側の運用には課さず、plugin が work item を扱うときに従う）
+>     - セッションの label を付ける
+>     - 親 work item と sub work item で束ねる
+>     - 消さない
+>     - project をまたいだ一覧を作らない
+>
+> 各節の冒頭の文も、この基準を書く形に替えました。markdownlint は 0 件です。"
+
+このスレッドにも、Claude の返信の後のレビュアーの発言は無い。
+レビューは、実文 30 の末尾に置いた締めの記録で「lgtm」として閉じられている。
+
+## 実文 30 セットアップを人と進める skill を足すよう提案した Diffo のスレッド
+
+PR #28 の Diffo レビュー、2026-09-17。所在は実文 29 と同じ `state_json` の thread `6a36e458-78b8-48af-b1f7-b92be89a4a70`。
+スレッドは `plugins/plane-kanban/README.md` の 84 行目に付いている。付いていた行の内容は `state_json` に残っていない（`codeContext` が null）。
+
+スレッドの全件を時刻の順に置く。`state_json` の中では、Claude の 2026-09-17T01:20:35.629Z の発言が、
+レビュアーの 2026-09-17T01:19:59.846Z の発言より前に並んでいる。
+Claude の 2026-09-17T01:20:35.629Z の報告は、その直前のレビュアーの発言に触れていない。
+
+レビュアー（2026-09-17T01:13:48.351Z）。
+
+> "setup も setup skill にしてしまって人間と協調しながらステップバイステップでセットアップを進める skill を作ったら？
+> で、それを使って cc-marketplace の project を作って試しに何か work item を登録してみるところまで、diffo review が終わったらこのあと検証しよう"
+
+Claude（2026-09-17T01:14:40.545Z）。
+
+> "作ります。レビューが終わったら、その skill で cc-marketplace の project を作り、work item を 1 件登録するところまで一緒に確かめます。作る前に形を決めたいので、案を出します。
+>
+> ## setup skill の流れ
+>
+> 1. `check-setup.sh` で、足りないものを JSON で返す。見るのは macOS・`curl`・`jq`・Keychain に API key があるか（値は出さない）・git の作業ツリーか・repo に workspace と project が設定済みか
+> 2. 足りないものを 1 つずつ人に案内し、人が済ませたら再び確認する
+>     - workspace が無い: Plane で作ってもらい、slug を聞く
+>     - API key が無い: Personal Access Token を発行してもらい、Keychain に登録するコマンドを渡す（実行は人。Claude は key を読まない）
+> 3. `init-project.sh --workspace <slug>` を実行する。同じ name の project があればそれを使い、無ければ接頭辞を聞いて作る
+> 4. `resolve-project.sh` で、repo に設定された workspace と project を表示して終える
+>
+> 別スレッドで尋ねた `resolve-project.sh` の使い道は、この 4 になります。`ensure-session-label.sh` を消す案はそのままです。
+>
+> ## 決めてほしいこと: skill とスクリプトの置き方
+>
+> - A. `skills/setup/SKILL.md` を新しい skill にする。`check-setup.sh` は `skills/setup/scripts/` に置く。`init-project.sh` と `resolve-project.sh` は plane-kanban skill のものを `{SKILL_DIR}/../plane-kanban/scripts/` で呼ぶ
+> - B. A と同じく新しい skill にする。ただし `init-project.sh`・`resolve-project.sh`・`check-setup.sh` は setup の skill に移す。2 つの skill が使う `lib/plane.sh` は plugin 直下の `scripts/lib/` に移す。「skill 専用のスクリプト」の規範の外になるので、共有スクリプトの指し方を docs に足す必要がある
+> - C. skill にせず、`skills/plane-kanban/setup.md` にセットアップの手順を置く。SKILL.md は、exit 1・2 で止まったときだけこれを読むよう指示する
+>
+> A を勧めます。セットアップの手順は使うときだけ読み込まれ、スクリプトの移動も規範の追加も要らないためです。skill を 1 本足すと、`.claude/rules/plugin-release.md` の規定で evals のケースも要ります。
+>
+> どれにしますか。"
+
+レビュアー（2026-09-17T01:17:57.453Z）。
+
+> "A 、ただ skill 名を plane-kanban-setup とかにしたい"
+
+レビュアー（2026-09-17T01:19:59.846Z）。
+
+> "setup のみで使う script は専用の script を必要な部分内容のみで作り直して setup skill 配下に置くのがいいのでは"
+
+Claude（2026-09-17T01:20:35.629Z）。
+
+> "A で作りました。skill 名は `plane-kanban-setup` です。
+>
+> - `plugins/plane-kanban/skills/plane-kanban-setup/SKILL.md`: 段は 6 つ
+>     1. 足りないものを確かめる
+>     2. macOS とコマンド
+>     3. API key
+>     4. workspace
+>     5. project
+>     6. 結果を示す
+>     - 人が作業する段では、終わったと言われるまで次へ進まず、終わるたびに確認のスクリプトを実行し直す
+>     - API key は人が Keychain に登録し、Claude は token を受け取らず読み出さない
+>     - project は `{SKILL_DIR}/../plane-kanban/scripts/init-project.sh` で設定し、無ければ接頭辞を聞いて作る。最後に `resolve-project.sh` で結果を示す
+> - `plugins/plane-kanban/skills/plane-kanban-setup/scripts/check-setup.sh`: macOS・`curl`・`jq`・Keychain の API key の有無・git の作業ツリーか・repo の workspace と project を JSON で返し、揃っていれば exit 0、足りなければ exit 1。API key は `security find-generic-password` に `-w` を付けずに有無だけを見るので、値を読まない
+> - plane-kanban の SKILL.md: 「project が無いとき」と exit 2 の案内を、`plane-kanban-setup` skill を案内する 1 文にした（init の手順の重複を消した）
+> - README: 「セットアップ」の節を、`plane-kanban-setup` skill に頼む形にした。冒頭の「skill 1 本」も 2 本に直した
+>
+> 確かめたこと: `tests/run.sh` に `check-setup.sh` のケースを足し、45 件すべて通ります。
+>
+> - 未設定の repo で workspace と project が `null`・`ready` が `false`・exit 1
+> - 設定済みの repo で `ready` が `true`
+> - API key が無ければ exit 1
+>
+> `claude plugin validate` と markdownlint も通ります。
+>
+> まだのもの:
+>
+> - `.claude/rules/plugin-release.md` は新しい skill に evals のケースを求めているが、作っていない（plane-kanban skill の分も無い）
+> - decision-record の確定 25（skill は 1 本）を覆す確定を、main に積む必要がある
+> - `ensure-session-label.sh` を消す案（thread `71ef85a5`）は、まだ答えをもらっていないので消していない"
+
+Claude（2026-09-17T01:23:32.067Z）。
+
+> "setup でだけ使うスクリプトを、必要な部分だけで作り直して `plugins/plane-kanban/skills/plane-kanban-setup/scripts/` に置きました。
+>
+> - `init-project.sh` と `resolve-project.sh` を、plane-kanban の skill の下から `git mv` で移し、中身を書き直した
+> - 2 本が source する `lib/setup.sh` を新しく作った。持つのはセットアップに要る関数だけで、plane-kanban の `lib/plane.sh` は読まない
+>     - 前提の確認（curl・jq・security と Keychain の API key）
+>     - git の作業ツリーの確認と、repo の名前
+>     - API を 1 回呼ぶ関数と、project の一覧をページを辿って取る関数
+>     - repo の git の設定に workspace と project を対で書く関数
+>     - 429 の再試行は持たない。セットアップで呼ぶ API は数回だけのため
+> - plane-kanban の `lib/plane.sh` から、setup でだけ使っていた `plane_repo_name` と `plane_save_repo_config` を消した。未設定のときの案内も「plane-kanban-setup skill で設定する」にした
+> - setup の SKILL.md の呼び出し先を `{SKILL_DIR}/scripts/init-project.sh` と `{SKILL_DIR}/scripts/resolve-project.sh` にした。別の skill のディレクトリを指す参照は 0 件
+>
+> 確かめたこと: `tests/run.sh` は 47 件すべて通ります。次の 2 件を足しました。
+>
+> - plane-kanban の skill のスクリプト（`list-work-items.sh`）も、未設定なら exit 1
+> - `CLAUDE_PLUGIN_ROOT` を別の場所に向けても、setup と plane-kanban の両方のスクリプトが動く
+>
+> 全スクリプトの `bash -n` と markdownlint も通ります。"
+
+レビュアーの 2026-09-17T01:17:57.453Z の回答は、置き方の候補 3 つのうち A を選び、skill 名を `plane-kanban-setup` にするよう求めたもの。
+2026-09-17T01:19:59.846Z の発言は、A のうち「`init-project.sh` と `resolve-project.sh` は plane-kanban skill のものを呼ぶ」の部分を変え、
+setup でだけ使うスクリプトを必要な部分だけで作り直して setup skill の下に置くよう求めたもの。
+
+レビュー全体の締めの記録は、`state_json` の `lastFinish` にある。
+2026-09-17T01:39:00.442Z の記録で、`coverage` の `viewedHunks` と `totalHunks` が同じ値になっており、`coverage.note` に次の文が残っている。
+
+> "lgtm, 返答不要 diffo も閉じてよい。一旦ここでセッションを閉じて、retrospective は skip"
+
 ## kanban-matrix.md の 6 要件と、実文との対応
 
 `notes/artifacts/kanban-matrix.md` の 36-43 行が挙げる 6 件について、
