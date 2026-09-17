@@ -2,7 +2,8 @@
 # テスト用の偽の curl。lib/plane.sh が呼ぶ形（-sS -X METHOD URL -H ... -D 出力 -o 出力 -w '%{http_code}' [--data BODY]）
 # だけを受け付け、Plane の API の応答を FAKE_CURL_STATE 配下の JSON で真似る。ネットワークは使わない
 #
-# 状態: FAKE_CURL_STATE/projects.json, labels.json, items.json, seq（連番）, requests.log（呼び出しの記録）
+# 状態: FAKE_CURL_STATE/projects.json, states.json, labels.json, items.json, seq（連番）, requests.log（呼び出しの記録）
+# states.json は project を作ったときに入る既定の 5 つで始まる（project ごとには分けない）
 # 429 の再現: FAKE_CURL_STATE/429-once があれば 1 回だけ 429 を返してそのファイルを消す
 #
 # label の形は実際の API に合わせる。work item の一覧・作成・PATCH の応答は label の id の配列、
@@ -14,6 +15,15 @@ set -euo pipefail
 state="${FAKE_CURL_STATE:?FAKE_CURL_STATE が未設定}"
 mkdir -p "$state"
 [ -f "$state/projects.json" ] || echo '[]' > "$state/projects.json"
+[ -f "$state/states.json" ] || cat > "$state/states.json" <<'JSON'
+[
+  {"id":"s1","name":"Backlog","group":"backlog","sequence":15000},
+  {"id":"s2","name":"Todo","group":"unstarted","sequence":25000},
+  {"id":"s3","name":"In Progress","group":"started","sequence":35000},
+  {"id":"s4","name":"Done","group":"completed","sequence":45000},
+  {"id":"s5","name":"Cancelled","group":"cancelled","sequence":55000}
+]
+JSON
 [ -f "$state/labels.json" ] || echo '[]' > "$state/labels.json"
 [ -f "$state/items.json" ] || echo '[]' > "$state/items.json"
 [ -f "$state/seq" ] || echo 0 > "$state/seq"
@@ -81,14 +91,6 @@ if [ -f "$state/429-once" ]; then
   exit 0
 fi
 
-states='[
-  {"id":"s1","name":"Backlog","group":"backlog"},
-  {"id":"s2","name":"Todo","group":"unstarted"},
-  {"id":"s3","name":"In Progress","group":"started"},
-  {"id":"s4","name":"Done","group":"completed"},
-  {"id":"s5","name":"Cancelled","group":"cancelled"}
-]'
-
 case "$method $path" in
   "GET /projects/")
     respond 200 "$(paginate < "$state/projects.json")" ;;
@@ -98,7 +100,24 @@ case "$method $path" in
     jq -c --argjson e "$new" '. + [$e]' "$state/projects.json" > "$state/tmp" && mv "$state/tmp" "$state/projects.json"
     respond 201 "$new" ;;
   "GET /projects/"*"/states/")
-    respond 200 "$(paginate <<<"$states")" ;;
+    respond 200 "$(paginate < "$state/states.json")" ;;
+  "POST /projects/"*"/states/")
+    # 実際の API と同じく、同名の state があれば 409 で既存の id を返し、sequence は既存の最大値 + 15000 にする
+    name=$(jq -r '.name' <<<"$body")
+    dup=$(jq -r --arg n "$name" '[.[] | select(.name == $n)] | first | .id // empty' "$state/states.json")
+    if [ -n "$dup" ]; then
+      respond 409 "$(jq -cn --arg id "$dup" '{error: "State with the same name already exists in the project", id: $id}')"
+      exit 0
+    fi
+    n=$(next_seq state)
+    new=$(jq -c --arg id "sn$n" --slurpfile st "$state/states.json" \
+      '{id: $id, name: .name, color: .color, group: (.group // "backlog"), sequence: (($st[0] | map(.sequence) | max) + 15000)}' <<<"$body")
+    jq -c --argjson e "$new" '. + [$e]' "$state/states.json" > "$state/tmp" && mv "$state/tmp" "$state/states.json"
+    respond 200 "$new" ;;
+  "PATCH /projects/"*"/states/"*"/")
+    id="${path%/}"; id="${id##*/}"
+    jq -c --arg id "$id" --argjson b "$body" 'map(if .id == $id then . + $b else . end)' "$state/states.json" > "$state/tmp" && mv "$state/tmp" "$state/states.json"
+    respond 200 "$(jq -c --arg id "$id" '[.[] | select(.id == $id)] | first' "$state/states.json")" ;;
   "GET /projects/"*"/labels/")
     respond 200 "$(paginate < "$state/labels.json")" ;;
   "POST /projects/"*"/labels/")
