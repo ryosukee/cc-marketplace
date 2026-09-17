@@ -12,57 +12,63 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
-| version-check | Claude Code only | Claude Code のバージョン追跡。hooks でバージョンをキャプチャし、更新検知・changelog 表示 |
-| plugin-update | Claude Code only | SessionStart 時にプラグインの更新を検知・通知 |
-| cache-keepalive | Claude Code only | prompt cache (extended cache, TTL 1h) の expire 前に keepalive を自動発火 |
-| cc-transcript | Claude Code only | 現在セッションの直近やり取りを jq で整形して vim で開く |
-| usage-line | Claude Code only | コンテキスト残量・レート制限残量を 1 行で出す。statusline からの JSON 書き出しが前提（plugin README 参照） |
+| version-check | Claude Code only | Claude Code の更新を見逃さないための plugin。版の変化をセッション開始時に知らせ、changelog で変更内容を確かめる |
+| plugin-update | Claude Code only | インストール済みの plugin を最新に保つための plugin。marketplace に新しい版があればセッション開始時に知らせる |
+| cache-keepalive | Claude Code only | アイドル中に prompt cache が切れないようにするための plugin。期限が切れる前に keepalive を自動で発火する |
+| cc-transcript | Claude Code only | 画面から流れた会話を読み返すための plugin。直近のやり取りを折りたたみ付きの markdown にして vim で開く |
+| usage-line | Claude Code only | コンテキストとレート制限の残りを手早く確かめるための plugin。statusline が書き出した値を 1 行にまとめる |
 
 ### dotclaude
 
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
-| dotclaude | Claude Code only | `.claude/` を参考リポジトリと原則に基づいて診断・合成・相互レビュー。doctor / cross-review / registry の 3 skill |
+| dotclaude | Claude Code only | プロジェクトの `.claude/` 構成を、参考リポジトリと原則に照らして整えるための plugin。診断・合成・相互レビューを行う |
 
 ### session
 
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
-| [session](./plugins/session/README.md) | Claude Code + Codex | セッション開始・棚卸し・振り返り・引き継ぎを管理する |
+| [session](./plugins/session/README.md) | Claude Code + Codex | 作業を次のセッションへ途切れずに引き継ぐための plugin。開始・棚卸し・振り返り・引き継ぎの運用を、Claude Code と Codex で同じ資料を使って定める |
 
 ### impl-spec
 
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
-| impl-spec | Claude Code only | 実装のための仕様策定。requirements / design / test-plan の 3 skill + spec-reviewer agent |
+| impl-spec | Claude Code only | 実装に入る前に仕様の曖昧さをなくすための plugin。要件定義・設計・テスト計画の文書を、ユーザーへのインタビューとレビューを通して作る |
 
 ### GitHub
 
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
-| github-pr | Claude Code only | Pull Request の作成・更新と `@claude` 宛レビューコメントへの対応。規模でテンプレートを選び、本文・タイトル・行指定コメントを生成。レビューの 2 系統 (セルフレビューは `approve` ラベル / 他人レビューは approve) と open・マージの条件を定める。`gh` CLI が必要 |
+| github-pr | Claude Code only | GitHub の PR を同じ型で作り、レビューに対応するための plugin。本文の型、`@claude` 宛の指摘への対応、open とマージの条件を定める |
 
 ### Authoring / tooling
 
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
-| markdownlint | Claude Code only | Write/Edit 後に markdownlint-cli2 を実行し lint エラーをフィードバック |
-| mkdocs-setup | Claude Code only | mkdocs-material のセットアップ手順とテンプレート |
-| security-guards | Claude Code only | credentials 保護。.netrc への Write/Edit/Read をブロック |
-| [diffo](./plugins/diffo/README.md) | Claude Code + Codex | Diffo 公式 skill と併用し、レビュー通知の受信と返信を補助する |
+| markdownlint | Claude Code only | Claude が書く Markdown を lint の規約に保つための plugin。編集のたびに lint を実行し、結果を Claude に返す |
+| mkdocs-setup | Claude Code only | MkDocs Material のドキュメントサイトを共通の設定で立ち上げるための plugin。設定とテンプレートを提供する |
+| security-guards | Claude Code only | Claude が credentials を読み書きしないようにするための plugin。`.netrc` などへのアクセスを hook で止める |
+| [diffo](./plugins/diffo/README.md) | Claude Code + Codex | Diffo でのレビューを、会話を止めずに受けるための plugin。Diffo 公式 skill を補い、通知の受け取り方と返信の規範、画面の表示の調整を定める |
 
 ### Communication
 
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
-| ja-writing-ambiguity | Claude Code only | 日本語の曖昧さ 3 分類 8 型を止める参照知識 skill `ref-ja-writing-ambiguity` の 1 skill。指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。一部は `rules/japanese-text-writing/references/core.md` にもあり、どちらが引かれるかを測るために重複させている中間状態 |
-| [claude-user-communication](./plugins/claude-user-communication/README.md) | Claude Code + Codex | HTML ページによる報告・確認と回答記録。生成・検査スクリプトと提示前レビューの判定基準を共有する |
+| ja-writing-ambiguity | Claude Code only | 日本語の文章で読み手が意味を決められなくなる書き方を防ぐための plugin。書く前に読む参照知識として、止める型を定める |
+| [claude-user-communication](./plugins/claude-user-communication/README.md) | Claude Code + Codex | 入り組んだ報告・比較・確認を、ターミナルではなく HTML ページでユーザーに示すための plugin。ページの作り方・提示前のレビュー・回答の記録の運用を、Claude Code と Codex で共有して定める |
+
+### kanban
+
+| plugin | 対応 CodingAgent | 概要 |
+| --- | --- | --- |
+| [plane-kanban](./plugins/plane-kanban/README.md) | Claude Code + Codex | Plane（kanban）を利用して、repo 単位で todo とタスクを kanban 管理するための plugin。Plane をどう使うかのプロトコルと運用規約も同時に定める |
 
 ### meta
 
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
-| claude-known-issues | Claude Code only | Claude Code の既知バグ・制約の一覧 (未解決と解除済みを別ファイル。一覧は空で作られ、`config/` の 2 本はエントリの書き方の例)。更新検知 → agent が公式 CHANGELOG.md と突合、全件突合は各エントリの再現手順を実行。`jq` / `gh` が必要 |
+| claude-known-issues | Claude Code only | Claude Code の既知バグへのワークアラウンドを、不要になったら外せるように管理するための plugin。更新のたびに一覧を changelog と突き合わせ、解除できるものを見つける |
 
 ## rules
 
@@ -131,6 +137,7 @@ claude plugins install usage-line@cc-tools                 # 要セットアッ�
 claude plugins install github-pr@cc-tools
 claude plugins install ja-writing-ambiguity@cc-tools
 claude plugins install diffo@cc-tools
+claude plugins install plane-kanban@cc-tools          # 要セットアップ (plugin README 参照)
 
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace
@@ -139,13 +146,14 @@ ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-mar
 ### Codex
 
 このリポジトリのルートで marketplace を登録し、必要な plugin をインストールする。
-現在 Codex に対応する plugin は `diffo`、`session`、`claude-user-communication`。
+現在 Codex に対応する plugin は `diffo`、`session`、`claude-user-communication`、`plane-kanban`。
 
 ```bash
 codex plugin marketplace add .
 codex plugin add diffo@cc-tools
 codex plugin add session@cc-tools
 codex plugin add claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
+codex plugin add plane-kanban@cc-tools               # 要セットアップ (plugin README 参照)
 ```
 
 ## アップデート
