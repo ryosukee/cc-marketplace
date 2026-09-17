@@ -53,7 +53,7 @@ rule は plugin の外で管理し、plugin 内の `rules/` がインストー�
 - 関連する skills / hooks は同一 plugin 内で束ねる (internal state を共有できる)
 - domain が異なるなら分ける
 
-## Internal 隔離 (kernel パターン) — deprecated
+## Internal 隔離 (kernel パターン、deprecated)
 
 新しい plugin でこのパターンを採らない。適用しているのは version-check だけで、
 そのまま残す。state の置き場は
