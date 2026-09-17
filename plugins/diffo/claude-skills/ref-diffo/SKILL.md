@@ -42,3 +42,7 @@ done
 
 payload の全 `threadIds` への返信後に、新しい追跡可能なバックグラウンドタスクを起動する。
 スレッドの解決はレビュアーが行う。
+
+`finish` の payload で締めが承認だけ（LGTM・approve・「merge して OK」等）なら、返信も再 poll も不要。
+`diffo end` で閉じる（[共通手順](../../references/review-protocol.md)の「承認だけの締めには返信しない」）。
+

@@ -1,6 +1,6 @@
 {
   "name": "diffo",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Diffo 公式 skill を補い、Claude Code の background task でレビュー通知を受け取り、Markdown プレビューを調整する plugin",
   "author": {
     "name": "CC Tools"
