@@ -441,6 +441,8 @@ state の名前は後から `PATCH` で変えられるので、いま決め切�
 
 反映先。plugin が work item を作るときに引く state の名前。project の作成手順（state を触らない）。
 
+後の確定。確定 43 で、確認待ちの state の Needs Input を足し、「Claude の作業に固有の state は足さない」を覆した。既定の 5 つを列にすることは変わらない。
+
 ### 確定 23 セッションの軸を Module に置き換える案は採らない（確定 18 を維持）
 
 結論。セッションごとの絞り込みは Label のままにする。Module へ移す案は採らない。
@@ -866,6 +868,8 @@ README の「Plane の使い方の決め事」「任意の環境変数」「セ�
 反映先。`plugins/plane-kanban/README.md` の「Plane の使い方の決め事」と、
 `plugins/plane-kanban/skills/plane-kanban/SKILL.md` の「Plane の使い方の決め事」（PR #28 の `100f367`、マージは `211e11f`）。
 
+後の確定。確定 43 で、制約の「state の名前を変えない」の対象に、setup が足す Needs Input を加えた。区分けの基準は変わらない。
+
 ### 確定 42 セットアップを人と 1 段ずつ進める skill `plane-kanban-setup` を足す（確定 25 の skill 1 本を覆す）
 
 結論。plugin `plane-kanban` に作業手順 skill `plane-kanban-setup` を足す。
@@ -905,6 +909,58 @@ README の「Plane の使い方の決め事」「任意の環境変数」「セ�
 `plugins/plane-kanban/skills/plane-kanban/scripts/lib/plane.sh` の未設定の案内、README の冒頭と「セットアップ」、
 `tests/run.sh`（PR #28 の `100f367`、マージは `211e11f`）。
 evals のケースと、`plane-kanban-setup` での検証は、まだ行っていない。
+
+### 確定 43 確認待ちの state の Needs Input を足し、ユーザーに確認を出すたびに動かす（確定 22 を覆す）
+
+結論。plane-kanban の project の state に、既定の 5 つに加えて Needs Input（group は started）を置く。
+
+- 用意の仕方: `plane-kanban-setup` の `init-project.sh` が API で足す。project を作ったときも、設定済みの repo で実行し直したときも、
+  無ければ作り、board の列で In Progress と Done の間に並べる
+- 動かす規則: In Progress の work item についてユーザーに確認（質問・承認・選んでもらうこと）を出すとき、先に Needs Input へ動かしてから確認を出す。
+  返答を受けて作業を再開するときに In Progress へ戻す。返答で作業が終わるなら Done、やめるなら Cancelled へ直接動かす。
+  規則は plane-kanban の SKILL.md の手順と description の発動する場面に書く
+- rate limit: 429 が続いても、確認の前の移動を含めて、いつもどおり再試行と再実行を終えてから進む
+
+確定 22 のうち「Claude の作業に固有の state（回答待ち・レビュー待ちなど）は足さない」を覆す。既定の 5 つをそのまま列にすることは変えない。
+確定 41 の制約「state の名前を変えない」は、対象に Needs Input を加える。区分けの基準は変えない。
+
+ユーザーが個別には選んでいないもの。実装の計画でユーザーに示し、rate limit の回答（B）のときにほかの項目への指摘が無く、Claude が承認と解釈して伝えた。
+
+- 色は `#8B5CF6`
+- `check-setup.sh` は API を呼ばないので、`ready: true` でも setup の 5 段目（`init-project.sh`）を通す
+
+rate limit の B を SKILL.md に書くときに、Claude が決めて伝えたもの。
+
+- 「1 分待ってから再実行する」は、Claude Code が前景の `sleep` を止めるので、`PLANE_RETRY_MAX=6` を付けた 1 回の再実行で表す
+- 再実行も失敗したら、確認の前の移動なら確認は出し、動かせなかったことを添える
+
+決めなかった範囲。
+
+- 更新 1 回あたりの API の呼び出し回数を減らす改善（`update-work-item.sh` は 1 回で 6 回呼ぶ）。別のタスクにした
+- Needs Input にある work item が、返答の無いまま長く置かれたときの扱い
+- 名前の候補のうち、判断に絞った名前（`Awaiting Decision` など）が他のツールで使われているか。集めた資料には無かったが、絞っては調べていない
+
+決め手。
+
+- 最初の要望は「デフォルトの state に加えて waiting_user 的なもの加えたいな in progress で何か確認必要なものが出てきたときに waiting_user に動かしてほしい」
+- 用意の仕方: ユーザーが「setup skill が API で足す」を選んだ。人が Plane の画面で足す案は、repo を足すたびの手作業と名前の打ち間違いが残る
+- 名前: ユーザーが他のツールで使われる名前を求め、Claude が subagent に公式の資料で集めさせた。
+  OpenAI の `Needs input` の定義は "A chat needs your approval, answer, or another decision." で、確認が必要になる場面を覆う。
+  `Pending` は Plane の Intake が状態の名前に使っていて紛れ、`Blocked` と `On Hold` は待つ相手も理由も読めない。
+  ユーザーの回答は「NeedsInput」で、Claude は推奨した空白入りの `Needs Input` と解釈して伝え、訂正は無かった
+- group: ユーザーが started を選んだ。In Progress と同じ group で、plane-kanban の一覧に既定で出て、Plane の集計でも着手済みに数えられる
+- 動かす規則: ユーザーが「確認を出すたびに動かす」を選んだ。「確認を出したまま手を止めるときだけ動かす」案は、手を止めたかの判定が曖昧で動かし漏れが起きやすい
+- rate limit: ユーザーが「いつもどおり待つ」を選んだ。Claude が推奨した「確認を優先し、Needs Input への移動だけ 1 回で諦める」は採らなかった
+- 列の位置を PATCH の `sequence` で変えられることは、Claude が Plane Cloud の cc-marketplace の project で確かめた（In Progress 35000 と Done 45000 の間の 40000 になった）
+
+出典。2026-09-17 のセッションの会話。実文は
+[実文 31](./artifacts/kanban-requirements-origin.md#実文-31-確認待ちの-state-を足す要望とその用意の仕方名前group動かす規則rate-limit-を決めたやり取り)。
+
+反映先。`plugins/plane-kanban/skills/plane-kanban-setup/scripts/lib/setup.sh` の `setup_ensure_needs_input_state`・`setup_get_all`、
+`init-project.sh`、`plugins/plane-kanban/skills/plane-kanban-setup/SKILL.md` の 1 段目・5 段目・6 段目と description、
+`plugins/plane-kanban/skills/plane-kanban/SKILL.md` の description・制約・決め事・「確認を出す」・「失敗したとき」、
+README の用語・制約・決め事・「セットアップ」、`tests/run.sh`、`tests/fake-curl/curl`、版 0.2.0（PR #31 の `92002cd`）。
+マージ後の Claude Code と Codex への入れ直しは、まだ行っていない。cc-marketplace の project には、PR の検証で Needs Input を作ってある。
 
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
