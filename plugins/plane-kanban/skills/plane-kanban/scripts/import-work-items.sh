@@ -16,9 +16,9 @@
 
 set -euo pipefail
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/plane.sh
-source "$PLUGIN_ROOT/scripts/lib/plane.sh"
+source "$SCRIPT_DIR/lib/plane.sh"
 
 if [ $# -lt 1 ] || [ ! -f "$1" ]; then
   plane_err "一覧の JSON ファイルを先頭に渡す"
@@ -38,6 +38,7 @@ while [ $# -gt 0 ]; do
 done
 
 plane_require_env
+plane_load_workspace || exit 1
 project="${project:-$(plane_project_id)}" || exit 1
 jq -e '.items | type == "array"' "$manifest" >/dev/null || { plane_err "一覧に items の配列が無い"; exit 2; }
 
@@ -80,7 +81,7 @@ while [ "$i" -lt "$count" ]; do
   [ -n "$parent_id" ] && args+=(--parent "$parent_id")
   state=$(jq -r '.state // empty' <<<"$item")
   [ -n "$state" ] && args+=(--state "$state")
-  if ! result=$("$PLUGIN_ROOT/scripts/create-work-item.sh" "${args[@]}" "${session_args[@]+"${session_args[@]}"}"); then
+  if ! result=$("$SCRIPT_DIR/create-work-item.sh" "${args[@]}" "${session_args[@]+"${session_args[@]}"}"); then
     plane_err "行 ${i}（key=${key}）の作成に失敗。ここまでの id は一覧に書き戻してある"
     jq -n --argjson c "$created" --argjson s "$skipped" '{created: $c, skipped: $s, failed: 1}'
     exit 1

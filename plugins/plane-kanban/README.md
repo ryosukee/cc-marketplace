@@ -2,15 +2,46 @@
 
 対応 CodingAgent: Claude Code + Codex。
 
-Plane Cloud の work item を、repo 単位の project で読み書きする plugin。
-`plane-kanban` skill 1 本と、Plane の REST API を直接呼ぶ bash スクリプトを持つ。
+Plane Cloud の work item を、Claude Code と Codex から読み書きする plugin。
+work item を読み書きする `plane-kanban` skill と、セットアップを進める `plane-kanban-setup` skill、Plane の REST API を直接呼ぶ bash スクリプトを持つ。
 hook と agent は持たない。
 
-- 一覧・作成・state の更新を、いまの repo に対応する project に対して行う
-- work item を作る・更新するとき、いまのセッションを表す label `session:<日付>-<セッション id の先頭 8 桁>` を付ける
-- 複数セッションにまたがる仕事は、親 work item と sub work item で束ねる
-- 取り込み一覧の JSON から work item を 1 件ずつ作り、作った id を一覧へ書き戻す
-- work item・label・project を消す経路は無い
+## Plane と Plane Cloud
+
+Plane は、作業を work item（カード）として project ごとの board に並べて管理する、kanban 型のタスク管理サービス。
+開発元が運営するホスト版が Plane Cloud で、ほかに自分でサーバーを立てる self-host 版（Community Edition など）がある。
+この plugin は Plane Cloud を対象にし、既定では Cloud の API（`https://api.plane.so/api/v1`）を呼ぶ。
+
+この README で使う Plane の用語は次のとおり。
+
+- workspace: 最上位の単位。`https://app.plane.so/{slug}/` の slug で指す
+- project: workspace の中の単位。board・state・label は project ごとに持つ
+- work item: board に載る 1 枚のカード。1 つの project に属する
+- sub work item: 親の work item を持つ work item
+- state: work item の進み具合で、board の列になる。project を作ると Backlog / Todo / In Progress / Done / Cancelled の 5 つが入る
+- label: work item に複数付けられる名前付きの印。board で絞り込みに使える
+
+## Plane の使い方の決め事
+
+この plugin を使う workspace では、Plane を次のように使う。
+
+### Plane 側で守る制約
+
+人が Plane の workspace・project・state をどう作り、どう運用するかについて守るもの。
+
+- kanban 用の workspace を 1 つに決め、すべての repo でその workspace を使う
+- 1 つの repo に 1 つの project を対応させる。repo が使う workspace と project は、repo の git の設定に対で持つ（「repo ごとの設定」の節）
+- state の名前を変えない。skill は project を作ったときに入る 5 つの名前で state を指定し、スクリプトは名前で state を引く
+
+### この plugin が従う決め事
+
+Plane 側の運用には課さないが、この plugin が work item を扱うときに従うもの。
+
+- work item を作る・更新するとき、いまのセッションを表す label `session:<日付>-<セッション id の先頭 8 桁>` を付ける。
+  セッションごとの一覧は、この label で絞り込んで見る
+- 複数のタスクに分けられる仕事（Jira の epic に当たるもの）は、その仕事を親の work item にし、分けたタスクを sub work item にする。段数は制限しない
+- work item・label・project を消さない。スクリプトに削除の経路は無く、消すなら人が Plane の画面で消す
+- project をまたいだ一覧は作らない。見るのは常に 1 つの project の board
 
 ## Requirements
 
@@ -36,21 +67,12 @@ security add-generic-password -s plane-kanban-api-key -a "$USER" -w '<token>'
 無いときは、スクリプトが exit 2 で止まり、登録のコマンドを stderr に出す。plugin は Keychain を自動で書き換えない。
 スクリプトは API key を stdout・stderr・ログに出さない。
 
-## 必須の環境変数
-
-| 変数 | 内容 |
-| --- | --- |
-| `PLANE_WORKSPACE_SLUG` | workspace の slug。`https://app.plane.so/{slug}/` の部分。秘密ではない |
-
-無いか空なら、スクリプトが exit 2 で止まる。
-
 ## 任意の環境変数
 
 | 変数 | 内容 |
 | --- | --- |
 | `PLANE_API_BASE` | API の base URL。既定 `https://api.plane.so/api/v1` |
 | `PLANE_RETRY_MAX` | 429 が返ったときの再試行の上限。既定 `3` |
-| `PLANE_KANBAN_DATA_DIR` | repo と project の対応を保存する場所。既定は `${XDG_DATA_HOME}/plane-kanban`、それも無ければ `~/.local/share/plane-kanban` |
 
 環境変数の置き場は CodingAgent ごとに違う。どちらも設定ファイル 1 か所で、シェルの起動経路に依存しない。
 
@@ -59,44 +81,25 @@ security add-generic-password -s plane-kanban-api-key -a "$USER" -w '<token>'
 | Claude Code | `~/.claude/settings.json` の `env` |
 | Codex | `~/.codex/config.toml` の `[shell_environment_policy]` の `set` |
 
-```toml
-[shell_environment_policy]
-set = { PLANE_WORKSPACE_SLUG = "<slug>" }
-```
-
 ## セットアップ
 
-1. Plane で kanban 用の workspace を作り、slug を控える
-2. Personal Access Token を発行する
-3. API key を Keychain に登録し、slug を使う CodingAgent の設定ファイルに置く
-4. repo の作業ツリーで `scripts/init-project.sh --identifier <接頭辞>` を回し、repo と同じ name の project を作る。
-   既に同じ name の project があれば作らずにその id を保存する
+セットアップは `plane-kanban-setup` skill が、人と一緒に 1 段ずつ進める。
+repo の作業ツリーで CodingAgent に「plane-kanban のセットアップ」と頼む。
+足りないもの（コマンド、Keychain の API key、repo の workspace と project）を確かめ、人が作業する段では案内して待つ。
+repo を clone し直したときや別のマシンでも、同じ skill で設定し直す。
 
-project の name は repo のディレクトリ名と同じにする。スクリプトはこの name で project を引く。
+## repo ごとの設定
 
-## スクリプト
+repo が使う workspace と project は、repo の git の設定に対で持つ（`git config --local`）。
+`init-project.sh` が書く。
 
-すべて `scripts/` にあり、JSON を stdout に出す。exit 0 = 成功、1 = 該当なし、2 = 前提条件エラー。
-
-| スクリプト | 何をするか |
+| 設定のキー | 内容 |
 | --- | --- |
-| `resolve-project.sh` | いまの repo に対応する project の id と identifier を出す |
-| `init-project.sh --identifier X` | project を作る。既にあれば作らない |
-| `list-work-items.sh` | work item の一覧。`--state` / `--label` / `--session` / `--parent` / `--all` で絞る |
-| `create-work-item.sh --name N` | work item を 1 件作る。`--description-file` / `--parent` / `--state` / `--label` |
-| `update-work-item.sh ID` | state・題名・親・本文を変える。セッションの label を足す |
-| `ensure-session-label.sh` | いまのセッションの label を用意して id を出す |
-| `import-work-items.sh 一覧.json` | 一覧から 1 件ずつ作り、id を一覧へ書き戻す |
+| `plane-kanban.workspaceSlug` | workspace の slug |
+| `plane-kanban.projectId` | project の id |
 
-セッション id は環境変数（Claude Code は `CLAUDE_CODE_SESSION_ID`、Codex は `CODEX_THREAD_ID`）から取る。
-`--session <id>` で明示でき、`--no-session` で label を付けない。
-
-レート制限（API key 1 本あたり 60 回 / 分）で 429 が返ったら、`X-RateLimit-Reset` まで待って 3 回まで再試行する。
-
-## State
-
-repo と project の対応を `PLANE_KANBAN_DATA_DIR`（既定は上記）の `projects.json` に保存する。
-消しても次の実行で API から引き直す。
+`.git/config` に入るので commit されず、同じ repo の worktree からも同じ値を読める。
+消すときは `git config --local --remove-section plane-kanban` を実行する。
 
 ## テスト
 
@@ -113,4 +116,4 @@ Claude Code: `claude plugins marketplace update cc-tools` のあと `claude plug
 
 Codex: `codex plugin add plane-kanban@cc-tools` / `codex plugin remove plane-kanban@cc-tools`。
 
-削除しても Plane 側の work item と、`PLANE_KANBAN_DATA_DIR` の対応ファイルは残る。
+削除しても、Plane 側の work item と、各 repo の git の設定（`plane-kanban.workspaceSlug` と `plane-kanban.projectId`）は残る。

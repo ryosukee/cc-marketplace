@@ -38,6 +38,8 @@ path="/${path#*/}"
 query=""
 case "$path" in *\?*) query="${path#*\?}"; path="${path%%\?*}" ;; esac
 printf '%s %s %s\n' "$method" "$path" "$body" >> "$state/requests.log"
+workspace="${url#*/workspaces/}"
+printf '%s\n' "${workspace%%/*}" >> "$state/workspaces.log"
 
 # 種類ごとの連番。引数: $1 = 種類（project / label / item）
 next_seq() {
@@ -111,6 +113,10 @@ case "$method $path" in
     jq -c --arg id "$id" --argjson b "$body" 'map(if .id == $id then . + $b else . end)' "$state/items.json" > "$state/tmp" && mv "$state/tmp" "$state/items.json"
     item=$(jq -c --arg id "$id" '[.[] | select(.id == $id)] | first' "$state/items.json")
     respond 200 "$item" ;;
+  "GET /projects/"*"/")
+    id="${path%/}"; id="${id##*/}"
+    project=$(jq -c --arg id "$id" '[.[] | select(.id == $id)] | first // empty' "$state/projects.json")
+    if [ -z "$project" ]; then respond 404 '{"detail":"not found"}'; else respond 200 "$project"; fi ;;
   *)
     respond 404 "{\"detail\":\"no route for $method $path\"}" ;;
 esac

@@ -10,9 +10,9 @@
 
 set -euo pipefail
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/plane.sh
-source "$PLUGIN_ROOT/scripts/lib/plane.sh"
+source "$SCRIPT_DIR/lib/plane.sh"
 
 session=""
 project=""
@@ -25,6 +25,7 @@ while [ $# -gt 0 ]; do
 done
 
 plane_require_env
+plane_load_workspace || exit 1
 session=$(plane_session_id "$session")
 if [ -z "$session" ]; then
   plane_err "セッション id が無い。--session で渡すか、CLAUDE_CODE_SESSION_ID / CODEX_THREAD_ID を環境に置く"

@@ -7,20 +7,27 @@
 set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-S="$PLUGIN_ROOT/scripts"
+S="$PLUGIN_ROOT/skills/plane-kanban/scripts"
+SETUP="$PLUGIN_ROOT/skills/plane-kanban-setup/scripts"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
 export PATH="$PLUGIN_ROOT/tests/fake-curl:$PATH"
-export PLANE_KANBAN_DATA_DIR="$TMP/data"
 export FAKE_CURL_STATE="$TMP/state"
 export FAKE_KEYCHAIN_DIR="$TMP/keychain"
 export CLAUDE_CODE_SESSION_ID="abcdef12-3456-7890-abcd-ef1234567890"
-export PLANE_WORKSPACE_SLUG="ws"
-unset PLANE_SESSION_ID CLAUDE_SESSION_ID CODEX_THREAD_ID CLAUDE_PLUGIN_ROOT CLAUDE_PLUGIN_DATA PLANE_API_KEY XDG_DATA_HOME
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
+unset PLANE_SESSION_ID CLAUDE_SESSION_ID CODEX_THREAD_ID CLAUDE_PLUGIN_ROOT CLAUDE_PLUGIN_DATA PLANE_API_KEY
 mkdir -p "$FAKE_KEYCHAIN_DIR"
 printf 'test-key' > "$FAKE_KEYCHAIN_DIR/plane-kanban-api-key"
 today=$(date +%Y-%m-%d)
+
+# スクリプトは、テスト用の git repo（名前は cc-marketplace）の作業ツリーの中で実行する。
+# 実行した repo の git の設定を書き換えないため
+REPO="$TMP/cc-marketplace"
+git init -q "$REPO"
+git -C "$REPO" -c user.name=test -c user.email=test@example.com commit -q --allow-empty -m init
+cd "$REPO"
 
 fail=0
 pass=0
@@ -35,44 +42,93 @@ assert_eq() {
 
 # 1. Keychain に API key が無ければ exit 2（環境変数に入れても使わない）
 set +e
-(FAKE_KEYCHAIN_DIR="$TMP/empty-keychain" PLANE_API_KEY=x "$S/resolve-project.sh" cc-marketplace) >/dev/null 2>&1
+(FAKE_KEYCHAIN_DIR="$TMP/empty-keychain" PLANE_API_KEY=x "$SETUP/resolve-project.sh") >/dev/null 2>&1
 assert_eq 2 $? "Keychain に API key が無ければ exit 2"
 
-# 1b. PLANE_WORKSPACE_SLUG が空なら exit 2
-(PLANE_WORKSPACE_SLUG= "$S/resolve-project.sh" cc-marketplace) >/dev/null 2>&1
-assert_eq 2 $? "slug の環境変数が空なら exit 2"
+# 2. repo に workspace と project が設定されていなければ exit 1
+"$SETUP/resolve-project.sh" >/dev/null 2>&1
+assert_eq 1 $? "未設定なら exit 1"
+"$S/list-work-items.sh" >/dev/null 2>&1
+assert_eq 1 $? "plane-kanban の skill のスクリプトも未設定なら exit 1"
 
-# 1c. データの保存先は client 固有の変数を見ず、XDG_DATA_HOME に従う
-(PLANE_KANBAN_DATA_DIR= XDG_DATA_HOME="$TMP/xdg" CLAUDE_PLUGIN_DATA="$TMP/claude" \
-  "$S/resolve-project.sh" nosuch) >/dev/null 2>&1
-assert_eq "true" "$([ -d "$TMP/xdg/plane-kanban" ] && echo true || echo false)" "XDG_DATA_HOME の下に作る"
-assert_eq "false" "$([ -d "$TMP/claude" ] && echo true || echo false)" "CLAUDE_PLUGIN_DATA は見ない"
+# 2a. check-setup は未設定を false と null で返し、exit 1
+out=$("$SETUP/check-setup.sh")
+assert_eq 1 $? "check-setup は未設定なら exit 1"
+assert_eq "true true null null false" "$(jq -r '"\(.api_key) \(.git_worktree) \(.workspace) \(.project) \(.ready)"' <<<"$out")" "check-setup の未設定の出力"
 
-# 2. project が無ければ exit 1
-"$S/resolve-project.sh" nosuch >/dev/null 2>&1
-assert_eq 1 $? "project 無しは exit 1"
+# 2b. git の作業ツリーの外では init は exit 2
+mkdir -p "$TMP/not-a-repo"
+(cd "$TMP/not-a-repo" && "$SETUP/init-project.sh" --workspace ws --identifier CCM) >/dev/null 2>&1
+assert_eq 2 $? "git の作業ツリーの外なら init は exit 2"
+
+# 2c. 未設定の repo で --workspace が無ければ init は exit 2
+"$SETUP/init-project.sh" --identifier CCM >/dev/null 2>&1
+assert_eq 2 $? "未設定で --workspace が無ければ exit 2"
+
+# 2d. 同じ name の project が無く、--identifier も無ければ init は exit 2
+"$SETUP/init-project.sh" --workspace ws >/dev/null 2>&1
+assert_eq 2 $? "作るのに --identifier が無ければ exit 2"
 set -e
 
-# 3. init-project.sh が作り、対応を保存する
-out=$("$S/init-project.sh" --identifier CCM --name cc-marketplace)
+# 3. init-project.sh が repo の名前で project を作り、workspace の slug と id を repo の git の設定に対で書く
+out=$("$SETUP/init-project.sh" --workspace ws --identifier CCM)
 assert_eq "true" "$(jq -r .created <<<"$out")" "init が作る"
+assert_eq "cc-marketplace" "$(jq -r .name <<<"$out")" "name は repo のディレクトリ名"
 assert_eq "p1" "$(jq -r .id <<<"$out")" "作った project の id"
-assert_eq "p1" "$(jq -r '."ws/cc-marketplace".id' "$PLANE_KANBAN_DATA_DIR/projects.json")" "対応を保存"
+assert_eq "ws p1" "$(git config --local --get plane-kanban.workspaceSlug) $(git config --local --get plane-kanban.projectId)" "slug と id を git の設定に書く"
+assert_eq "ws" "$(tail -1 "$FAKE_CURL_STATE/workspaces.log")" "API は --workspace の slug を使う"
 
-# 4. 2 回目の init は作らない
-out=$("$S/init-project.sh" --identifier CCM --name cc-marketplace)
-assert_eq "false" "$(jq -r .created <<<"$out")" "2 回目の init は作らない"
+# 4. 設定済みなら init は作らない。別の workspace を指定すると exit 2
+before=$(grep -c "^POST /projects/ " "$FAKE_CURL_STATE/requests.log" || true)
+out=$("$SETUP/init-project.sh")
+after=$(grep -c "^POST /projects/ " "$FAKE_CURL_STATE/requests.log" || true)
+assert_eq "false" "$(jq -r .created <<<"$out")" "設定済みなら init は作らない"
+assert_eq "$before" "$after" "設定済みなら POST しない"
+set +e
+"$SETUP/init-project.sh" --workspace other >/dev/null 2>&1
+assert_eq 2 $? "設定済みの repo で別の workspace を指定すると exit 2"
+set -e
 
-# 5. resolve は保存した対応から返し、API を呼ばない
-before=$(grep -c "GET /projects/$" "$FAKE_CURL_STATE/requests.log" || true)
-out=$("$S/resolve-project.sh" cc-marketplace)
-after=$(grep -c "GET /projects/$" "$FAKE_CURL_STATE/requests.log" || true)
-assert_eq "p1" "$(jq -r .id <<<"$out")" "resolve の id"
-assert_eq "$before" "$after" "resolve は保存済みなら API を呼ばない"
+# 5. resolve は git の設定の slug と id で project を引く
+out=$("$SETUP/resolve-project.sh")
+assert_eq "ws p1 cc-marketplace CCM" "$(jq -r '"\(.workspace) \(.id) \(.name) \(.identifier)"' <<<"$out")" "resolve の workspace・id・name・identifier"
 
-# 6. create: session の label が付き、本文が HTML になり、既定の state に入る
+# 5-1. check-setup は設定済みの repo で ready を返し、exit 0
+out=$("$SETUP/check-setup.sh")
+assert_eq "ws p1 true" "$(jq -r '"\(.workspace) \(.project) \(.ready)"' <<<"$out")" "check-setup の設定済みの出力"
+set +e
+(FAKE_KEYCHAIN_DIR="$TMP/empty-keychain" "$SETUP/check-setup.sh") >/dev/null 2>&1
+assert_eq 1 $? "check-setup は API key が無ければ exit 1"
+set -e
+
+# 5a. スクリプトは自分の位置から lib を読み、CLAUDE_PLUGIN_ROOT が別の場所を指していても動く
+out=$(CLAUDE_PLUGIN_ROOT="$TMP/elsewhere" "$SETUP/resolve-project.sh")
+assert_eq "p1" "$(jq -r .id <<<"$out")" "setup のスクリプトは CLAUDE_PLUGIN_ROOT を見ない"
+out=$(CLAUDE_PLUGIN_ROOT="$TMP/elsewhere" "$S/list-work-items.sh")
+assert_eq "array" "$(jq -r type <<<"$out")" "plane-kanban の skill のスクリプトは CLAUDE_PLUGIN_ROOT を見ない"
+
+# 5b. worktree の中でも同じ設定を読み、repo の名前は元の repo のもの
+git worktree add -q "$TMP/cc-marketplace-wt" -b wt
+out=$(cd "$TMP/cc-marketplace-wt" && "$SETUP/resolve-project.sh")
+assert_eq "p1" "$(jq -r .id <<<"$out")" "worktree でも同じ id"
+
+# 5c. 設定の無い clone で init すると、同じ name の既存 project を使う
+git clone -q "$REPO" "$TMP/clone/cc-marketplace"
+out=$(cd "$TMP/clone/cc-marketplace" && "$SETUP/init-project.sh" --workspace ws)
+assert_eq "false p1" "$(jq -r '"\(.created) \(.id)"' <<<"$out")" "clone では既存の project を使う"
+assert_eq "p1" "$(git -C "$TMP/clone/cc-marketplace" config --local --get plane-kanban.projectId)" "clone の git の設定に書く"
+
+# 5d. 設定された id の project が Plane に無ければ resolve は exit 1
+git -C "$TMP/clone/cc-marketplace" config --local plane-kanban.projectId nosuch
+set +e
+(cd "$TMP/clone/cc-marketplace" && "$SETUP/resolve-project.sh") >/dev/null 2>&1
+assert_eq 1 $? "設定された project が無ければ exit 1"
+set -e
+
+# 6. create: --project を省くと git の設定の project に作る。session の label が付き、本文が HTML になり、既定の state に入る
 printf 'first <line>\nsecond\n\nthird & more\n' > "$TMP/desc.txt"
-out=$("$S/create-work-item.sh" --name "A" --project p1 --description-file "$TMP/desc.txt")
+out=$("$S/create-work-item.sh" --name "A" --description-file "$TMP/desc.txt")
+assert_eq "1" "$(grep -c "^POST /projects/p1/work-items/ " "$FAKE_CURL_STATE/requests.log")" "git の設定の project に作る"
 assert_eq "w1" "$(jq -r .id <<<"$out")" "create の id"
 assert_eq "Backlog" "$(jq -r .state <<<"$out")" "既定の state"
 assert_eq "session:${today}-abcdef12" "$(jq -r '.labels[0]' <<<"$out")" "session の label"

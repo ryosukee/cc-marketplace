@@ -13,9 +13,9 @@
 
 set -euo pipefail
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/plane.sh
-source "$PLUGIN_ROOT/scripts/lib/plane.sh"
+source "$SCRIPT_DIR/lib/plane.sh"
 
 states_filter='[]'
 label_filter=""
@@ -40,6 +40,7 @@ while [ $# -gt 0 ]; do
 done
 
 plane_require_env
+plane_load_workspace || exit 1
 project="${project:-$(plane_project_id)}" || exit 1
 
 if [ "$use_session" -eq 1 ]; then

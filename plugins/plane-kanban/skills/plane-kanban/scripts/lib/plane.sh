@@ -6,16 +6,13 @@
 #   登録: security add-generic-password -s plane-kanban-api-key -a "$USER" -w '<token>'
 #   読めるのは GUI にログインしていて login keychain が開いているときだけ
 #
-# 必須の環境変数
-#   PLANE_WORKSPACE_SLUG  workspace の slug（https://app.plane.so/{slug}/ の部分）。秘密ではない
-#                         Claude Code は ~/.claude/settings.json の env、
-#                         Codex は ~/.codex/config.toml の [shell_environment_policy] の set に置く
-#
 # 任意の環境変数
 #   PLANE_API_BASE        既定 https://api.plane.so/api/v1
-#   PLANE_KANBAN_DATA_DIR repo と project の対応を保存する場所。
-#                         無ければ ${XDG_DATA_HOME}/plane-kanban、それも無ければ
-#                         ~/.local/share/plane-kanban
+#
+# repo が使う workspace と project は、repo の git の設定（git config --local）に対で持つ
+#   plane-kanban.workspaceSlug  workspace の slug（https://app.plane.so/{slug}/ の部分）
+#   plane-kanban.projectId      project の id
+#   commit されず、同じ repo の worktree からも同じ値を読める。plane-kanban-setup skill の init-project.sh が書く
 #
 # 出力は JSON を stdout、エラーは stderr。exit 0 = 成功、1 = 該当なし、2 = 前提条件エラー
 # API key は stdout・stderr・ログに出さない
@@ -25,6 +22,10 @@ set -euo pipefail
 PLANE_API_BASE="${PLANE_API_BASE:-https://api.plane.so/api/v1}"
 PLANE_RETRY_MAX="${PLANE_RETRY_MAX:-3}"
 PLANE_KEYCHAIN_API_KEY_SERVICE="plane-kanban-api-key"
+PLANE_GIT_CONFIG_WORKSPACE="plane-kanban.workspaceSlug"
+PLANE_GIT_CONFIG_PROJECT="plane-kanban.projectId"
+# repo の workspace の slug。plane_load_workspace が入れる
+plane_workspace=""
 
 plane_err() {
   echo "plane-kanban: $*" >&2
@@ -35,7 +36,7 @@ plane_keychain_read() {
   security find-generic-password -s "$1" -w 2>/dev/null
 }
 
-# 前提（curl・jq・security、Keychain の API key、環境変数 PLANE_WORKSPACE_SLUG）を確かめる。
+# 前提（curl・jq・security、Keychain の API key）を確かめる。
 # API key は PLANE_API_KEY としてこの process の中だけに持つ。足りなければ exit 2
 plane_require_env() {
   for cmd in curl jq security; do
@@ -48,24 +49,6 @@ plane_require_env() {
     plane_err "Keychain に service '${PLANE_KEYCHAIN_API_KEY_SERVICE}' が無いか読めない。Plane の Profile Settings で Personal Access Token を発行し、security add-generic-password -s ${PLANE_KEYCHAIN_API_KEY_SERVICE} -a \"\$USER\" -w '<token>' で登録する。GUI にログインしていて login keychain が開いていることが要る"
     exit 2
   fi
-  if [ -z "${PLANE_WORKSPACE_SLUG:-}" ]; then
-    plane_err "環境変数 PLANE_WORKSPACE_SLUG が空。https://app.plane.so/{slug}/ の slug を入れる。Claude Code は ~/.claude/settings.json の env、Codex は ~/.codex/config.toml の [shell_environment_policy] の set に置く"
-    exit 2
-  fi
-}
-
-# 対応の保存先ディレクトリ。無ければ作る。client 固有の変数は見ない
-plane_data_dir() {
-  local dir
-  if [ -n "${PLANE_KANBAN_DATA_DIR:-}" ]; then
-    dir="${PLANE_KANBAN_DATA_DIR}"
-  elif [ -n "${XDG_DATA_HOME:-}" ]; then
-    dir="${XDG_DATA_HOME}/plane-kanban"
-  else
-    dir="${HOME}/.local/share/plane-kanban"
-  fi
-  mkdir -p "$dir"
-  echo "$dir"
 }
 
 # API を 1 回呼ぶ。429 のときは X-RateLimit-Reset まで待って PLANE_RETRY_MAX 回まで再試行する
@@ -73,7 +56,7 @@ plane_data_dir() {
 # 出力: レスポンス body。2xx 以外は stderr に body を出して return 1
 plane_api() {
   local method="$1" path="$2" body="${3:-}"
-  local url="${PLANE_API_BASE}/workspaces/${PLANE_WORKSPACE_SLUG}${path}"
+  local url="${PLANE_API_BASE}/workspaces/${plane_workspace}${path}"
   local attempt=0 code hdr out
   hdr=$(mktemp)
   out=$(mktemp)
@@ -144,48 +127,36 @@ plane_get_all() {
   echo "$all"
 }
 
-# いまの repo の名前（git の作業ツリーのディレクトリ名。git 外なら cwd のディレクトリ名）
-plane_repo_name() {
-  local top
-  top=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-  basename "$top"
-}
-
-# repo に対応する project id を返す。保存した対応があればそれを、無ければ API の一覧から name で引いて保存する
-# 引数: $1 = repo 名（省略時は plane_repo_name）
-# 見つからなければ stderr に案内を出して return 1
-plane_project_id() {
-  local name="${1:-$(plane_repo_name)}"
-  local file key id
-  file="$(plane_data_dir)/projects.json"
-  key="${PLANE_WORKSPACE_SLUG}/${name}"
-  if [ -f "$file" ]; then
-    id=$(jq -r --arg k "$key" '.[$k].id // empty' "$file")
-    if [ -n "$id" ]; then
-      echo "$id"
-      return 0
-    fi
-  fi
-  local projects entry
-  projects=$(plane_get_all "/projects/") || return 1
-  entry=$(jq -c --arg n "$name" '[.[] | select(.name == $n)] | first // empty' <<<"$projects")
-  if [ -z "$entry" ]; then
-    plane_err "workspace '${PLANE_WORKSPACE_SLUG}' に name が '${name}' の project が無い。init-project.sh で作れる"
+# cwd が git の作業ツリーの中かを確かめる。外なら stderr に案内を出して return 1
+plane_require_git() {
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    plane_err "git の作業ツリーの外で実行された。repo の作業ツリーの中で実行する"
     return 1
   fi
-  plane_save_project "$key" "$entry"
-  jq -r '.id' <<<"$entry"
 }
 
-# 対応を保存する。引数: $1 = キー（slug/name）, $2 = project の JSON
-plane_save_project() {
-  local key="$1" entry="$2" file tmp
-  file="$(plane_data_dir)/projects.json"
-  [ -f "$file" ] || echo '{}' > "$file"
-  tmp=$(mktemp)
-  jq --arg k "$key" --argjson e "$entry" \
-    '.[$k] = {id: $e.id, identifier: $e.identifier, name: $e.name, saved_at: (now | todate)}' \
-    "$file" > "$tmp" && mv "$tmp" "$file"
+# いまの repo の workspace の slug を git の設定から読み、plane_workspace に入れる
+# 設定が無ければ stderr に案内を出して return 1。サブシェルで呼ばない（値が呼び出し側に残らない）
+plane_load_workspace() {
+  plane_require_git || return $?
+  plane_workspace=$(git config --local --get "$PLANE_GIT_CONFIG_WORKSPACE" || true)
+  if [ -z "$plane_workspace" ]; then
+    plane_err "この repo に Plane の workspace と project が設定されていない（git の設定 ${PLANE_GIT_CONFIG_WORKSPACE} が無い）。plane-kanban-setup skill で設定する"
+    return 1
+  fi
+}
+
+# いまの repo に対応する project の id を、repo の git の設定から返す
+# 設定が無ければ stderr に案内を出して return 1
+plane_project_id() {
+  local id
+  plane_require_git || return $?
+  id=$(git config --local --get "$PLANE_GIT_CONFIG_PROJECT" || true)
+  if [ -z "$id" ]; then
+    plane_err "この repo に project が設定されていない（git の設定 ${PLANE_GIT_CONFIG_PROJECT} が無い）。plane-kanban-setup skill で設定する"
+    return 1
+  fi
+  echo "$id"
 }
 
 # project の state 一覧（JSON 配列）

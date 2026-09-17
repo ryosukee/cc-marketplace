@@ -12,9 +12,9 @@
 
 set -euo pipefail
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/plane.sh
-source "$PLUGIN_ROOT/scripts/lib/plane.sh"
+source "$SCRIPT_DIR/lib/plane.sh"
 
 name=""
 desc=""
@@ -49,6 +49,7 @@ if [ -n "$desc_file" ]; then
 fi
 
 plane_require_env
+plane_load_workspace || exit 1
 project="${project:-$(plane_project_id)}" || exit 1
 
 label_ids='[]'

@@ -11,9 +11,9 @@
 
 set -euo pipefail
 
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib/plane.sh
-source "$PLUGIN_ROOT/scripts/lib/plane.sh"
+source "$SCRIPT_DIR/lib/plane.sh"
 
 if [ $# -lt 1 ] || [ "${1#--}" != "$1" ]; then
   plane_err "先頭に work item id が要る"
@@ -46,6 +46,7 @@ while [ $# -gt 0 ]; do
 done
 
 plane_require_env
+plane_load_workspace || exit 1
 project="${project:-$(plane_project_id)}" || exit 1
 
 current=$(plane_api GET "/projects/${project}/work-items/${item_id}/") || exit 1
