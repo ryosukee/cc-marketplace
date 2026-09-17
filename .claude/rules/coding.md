@@ -27,12 +27,12 @@ Script ファイル名:
 
 ## スクリプト設計
 
-スクリプトは役割で配置を分ける (詳細は [Plugin 設計原則](./plugin-design.md) の kernel パターン)。
+スクリプトは役割で配置を分ける。
 
 - `scripts/hooks/`: hook 実装
 - `scripts/`: 複数 skill / hook が共有する plugin 内エントリスクリプト
 - `scripts/lib/`: source 用の共通ヘルパ
-- `skills/{skill-name}/scripts/`: その skill だけが使うスクリプト
+- `skills/{skill-name}/scripts/`: その skill 専用のスクリプト（その skill の手順からだけ実行する）
 
 外部公開 (他 plugin・CLI) 用の "API" 層は設けない。スクリプトはすべて plugin 内部のもの。
 
@@ -42,6 +42,13 @@ invoke されるエントリスクリプトの規約:
 - エラーメッセージは stderr
 - Exit codes: 0=成功, 1=該当なし, 2=前提条件エラー
 - 引数はコマンドライン引数で受ける
-- plugin root は `${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/<相対パス>" && pwd)}` で解決する。
+- `scripts/` の下のスクリプトは、plugin root を `${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/<相対パス>" && pwd)}` で解決する。
   フォールバックの `$0` 相対パスは配置階層に依存する: `scripts/*.sh` なら `..`、`scripts/hooks/*.sh` なら `../..`。
   スクリプトを移動したらこの相対パスも必ず合わせて直す
+- `skills/{skill-name}/scripts/` の下のスクリプトは `CLAUDE_PLUGIN_ROOT` を読まず、
+  自分のディレクトリを `$(cd "$(dirname "$0")" && pwd)` で求めて、同じ skill のファイルをそこから読む。
+  `CLAUDE_PLUGIN_ROOT` は plugin root を指し、skill のディレクトリとは一致しない
+- SKILL.md からスクリプトを指す書き方は
+  [両対応の設計方針](../../docs/cross-client-architecture.md#両方の-codingagent-が読む-skillmd)に従う
+- 環境変数と state の置き場は
+  [両対応の設計方針](../../docs/cross-client-architecture.md#環境変数と-state-の置き場)に従う

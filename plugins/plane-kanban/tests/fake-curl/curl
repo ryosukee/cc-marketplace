@@ -1,0 +1,122 @@
+#!/bin/bash
+# テスト用の偽の curl。lib/plane.sh が呼ぶ形（-sS -X METHOD URL -H ... -D 出力 -o 出力 -w '%{http_code}' [--data BODY]）
+# だけを受け付け、Plane の API の応答を FAKE_CURL_STATE 配下の JSON で真似る。ネットワークは使わない
+#
+# 状態: FAKE_CURL_STATE/projects.json, labels.json, items.json, seq（連番）, requests.log（呼び出しの記録）
+# 429 の再現: FAKE_CURL_STATE/429-once があれば 1 回だけ 429 を返してそのファイルを消す
+
+set -euo pipefail
+
+state="${FAKE_CURL_STATE:?FAKE_CURL_STATE が未設定}"
+mkdir -p "$state"
+[ -f "$state/projects.json" ] || echo '[]' > "$state/projects.json"
+[ -f "$state/labels.json" ] || echo '[]' > "$state/labels.json"
+[ -f "$state/items.json" ] || echo '[]' > "$state/items.json"
+[ -f "$state/seq" ] || echo 0 > "$state/seq"
+
+method="GET"
+url=""
+hdr=""
+out=""
+body=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -sS|-s|-S) shift ;;
+    -X) method="$2"; shift 2 ;;
+    -H) shift 2 ;;
+    -D) hdr="$2"; shift 2 ;;
+    -o) out="$2"; shift 2 ;;
+    -w) shift 2 ;;
+    --data) body="$2"; shift 2 ;;
+    http*) url="$1"; shift ;;
+    *) echo "fake curl: 不明な引数 $1" >&2; exit 3 ;;
+  esac
+done
+
+path="${url#*/workspaces/}"
+path="/${path#*/}"
+query=""
+case "$path" in *\?*) query="${path#*\?}"; path="${path%%\?*}" ;; esac
+printf '%s %s %s\n' "$method" "$path" "$body" >> "$state/requests.log"
+workspace="${url#*/workspaces/}"
+printf '%s\n' "${workspace%%/*}" >> "$state/workspaces.log"
+
+# 種類ごとの連番。引数: $1 = 種類（project / label / item）
+next_seq() {
+  local f="$state/seq-$1" n
+  [ -f "$f" ] || echo 0 > "$f"
+  n=$(( $(cat "$f") + 1 ))
+  echo "$n" > "$f"
+  echo "$n"
+}
+
+respond() {
+  local code="$1" json="$2"
+  printf 'HTTP/1.1 %s\r\nContent-Type: application/json\r\n' "$code" > "$hdr"
+  if [ "$code" = "429" ]; then
+    printf 'X-RateLimit-Remaining: 0\r\nX-RateLimit-Reset: %s\r\n' "$(( $(date +%s) + 1 ))" >> "$hdr"
+  fi
+  printf '\r\n' >> "$hdr"
+  printf '%s' "$json" > "$out"
+  printf '%s' "$code"
+}
+
+paginate() {
+  jq -c '{results: ., next_cursor: null, next_page_results: false, count: length}'
+}
+
+if [ -f "$state/429-once" ]; then
+  rm -f "$state/429-once"
+  respond 429 '{"error":"throttled"}'
+  exit 0
+fi
+
+states='[
+  {"id":"s1","name":"Backlog","group":"backlog"},
+  {"id":"s2","name":"Todo","group":"unstarted"},
+  {"id":"s3","name":"In Progress","group":"started"},
+  {"id":"s4","name":"Done","group":"completed"},
+  {"id":"s5","name":"Cancelled","group":"cancelled"}
+]'
+
+case "$method $path" in
+  "GET /projects/")
+    respond 200 "$(paginate < "$state/projects.json")" ;;
+  "POST /projects/")
+    n=$(next_seq project)
+    new=$(jq -c --arg id "p$n" '. + {id: $id}' <<<"$body")
+    jq -c --argjson e "$new" '. + [$e]' "$state/projects.json" > "$state/tmp" && mv "$state/tmp" "$state/projects.json"
+    respond 201 "$new" ;;
+  "GET /projects/"*"/states/")
+    respond 200 "$(paginate <<<"$states")" ;;
+  "GET /projects/"*"/labels/")
+    respond 200 "$(paginate < "$state/labels.json")" ;;
+  "POST /projects/"*"/labels/")
+    n=$(next_seq label)
+    new=$(jq -c --arg id "l$n" '. + {id: $id}' <<<"$body")
+    jq -c --argjson e "$new" '. + [$e]' "$state/labels.json" > "$state/tmp" && mv "$state/tmp" "$state/labels.json"
+    respond 201 "$new" ;;
+  "GET /projects/"*"/work-items/")
+    respond 200 "$(paginate < "$state/items.json")" ;;
+  "POST /projects/"*"/work-items/")
+    n=$(next_seq item)
+    new=$(jq -c --arg id "w$n" --argjson n "$n" \
+      '{id: $id, sequence_id: $n, name: .name, state: (.state // "s1"), labels: (.labels // []), parent: (.parent // null), description_html: (.description_html // "")}' <<<"$body")
+    jq -c --argjson e "$new" '. + [$e]' "$state/items.json" > "$state/tmp" && mv "$state/tmp" "$state/items.json"
+    respond 201 "$new" ;;
+  "GET /projects/"*"/work-items/"*"/")
+    id="${path%/}"; id="${id##*/}"
+    item=$(jq -c --arg id "$id" '[.[] | select(.id == $id)] | first // empty' "$state/items.json")
+    if [ -z "$item" ]; then respond 404 '{"detail":"not found"}'; else respond 200 "$item"; fi ;;
+  "PATCH /projects/"*"/work-items/"*"/")
+    id="${path%/}"; id="${id##*/}"
+    jq -c --arg id "$id" --argjson b "$body" 'map(if .id == $id then . + $b else . end)' "$state/items.json" > "$state/tmp" && mv "$state/tmp" "$state/items.json"
+    item=$(jq -c --arg id "$id" '[.[] | select(.id == $id)] | first' "$state/items.json")
+    respond 200 "$item" ;;
+  "GET /projects/"*"/")
+    id="${path%/}"; id="${id##*/}"
+    project=$(jq -c --arg id "$id" '[.[] | select(.id == $id)] | first // empty' "$state/projects.json")
+    if [ -z "$project" ]; then respond 404 '{"detail":"not found"}'; else respond 200 "$project"; fi ;;
+  *)
+    respond 404 "{\"detail\":\"no route for $method $path\"}" ;;
+esac

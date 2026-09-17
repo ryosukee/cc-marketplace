@@ -64,6 +64,119 @@ adapter は各 CodingAgent の入力を共通 script の入力契約へ変換し
 各 CodingAgent の応答形式へ戻す。判定は共通 script に置き、固有の環境変数や JSON 形式を
 渡さない。adapter はこの入出力の境界を指し、skill の分割や agent 定義の生成物には使わない。
 
+## 環境変数と state の置き場
+
+plugin が使う値の受け取り方を、CodingAgent が定義する変数と plugin で定義する環境変数に分けて定める。
+この節で使う語は次のとおり。
+
+- plugin root: plugin のファイルが置かれたディレクトリ
+- plugin data: CodingAgent が plugin ごとに用意するデータ用のディレクトリ
+- state: スクリプトが実行をまたいで残すファイル
+
+### CodingAgent が定義する変数の仕様
+
+変数ごとに、文字列が実際の値に置き換わる場所と、環境変数として値が渡るコマンドを示す。
+hook の行は、使い捨ての plugin の SessionStart の hook を発火させて確かめた。
+
+#### Claude Code
+
+| 変数 | 置き換わる場所 | 環境変数として渡るコマンド |
+| --- | --- | --- |
+| `${CLAUDE_PLUGIN_ROOT}` | SKILL.md の本文、MCP の設定 | hook |
+| `${CLAUDE_PLUGIN_DATA}` | SKILL.md の本文、MCP の設定 | hook |
+| `${CLAUDE_SKILL_DIR}` | SKILL.md の本文 | なし |
+| `${CLAUDE_SESSION_ID}` | SKILL.md の本文 | なし |
+| `CLAUDE_CODE_SESSION_ID` | なし | Bash ツール、hook、stdio の MCP server |
+
+2.1.274 で、hook のコマンドの単一引用符の中の `${CLAUDE_PLUGIN_ROOT}` は置き換わらず、値は環境変数として渡った。
+Bash ツールで実行したコマンドに `CLAUDE_PLUGIN_ROOT` と `CLAUDE_PLUGIN_DATA` が無いことも、実行して確かめた。
+
+#### Codex
+
+| 変数 | 置き換わる場所 | 環境変数として渡るコマンド |
+| --- | --- | --- |
+| `${PLUGIN_ROOT}`、`${CLAUDE_PLUGIN_ROOT}` | hook のコマンド | hook |
+| `${PLUGIN_DATA}`、`${CLAUDE_PLUGIN_DATA}` | hook のコマンド | hook |
+| `CODEX_THREAD_ID` | なし | shell tool |
+
+0.154.0 で、hook のコマンドの 4 つの名前は単一引用符の中でも置き換わり、環境変数としても渡った。
+SKILL.md の本文で変数を置き換える処理は、ドキュメントにもソースにも見つかっていない。
+
+### CodingAgent が定義する変数の使い方
+
+#### Claude Code 専用の SKILL.md
+
+Claude Code 専用の plugin と、Claude Code 専用の入口の skill（`claude-skills/`）では、
+plugin のファイルを `${CLAUDE_PLUGIN_ROOT}` か `${CLAUDE_SKILL_DIR}` で指す。
+
+why: Claude Code が実際のパスに置き換えるので、モデルがパスを推論せずに済む。
+
+#### 両方の CodingAgent が読む SKILL.md
+
+`${CLAUDE_PLUGIN_ROOT}` など Claude Code の変数を使わない。
+
+why: Codex は SKILL.md の本文で変数を置き換えない。
+
+skill 専用のスクリプトは `skills/{name}/scripts/` に置き、「この SKILL.md の二階層上」のような plugin root からの位置で指さない。
+skill 専用のスクリプトとは、ある skill の SKILL.md に書いた手順からだけ実行し、ほかの skill や hook からは実行しないスクリプトを指す。
+ほかの skill や hook と共有するスクリプトは、ここでは扱わない。
+
+why: Codex は SKILL.md の相対パスを SKILL.md のディレクトリから解決するので、plugin root からの位置で指すとパスを解決しにくくなる。
+
+SKILL.md では、`{SKILL_DIR}` を「この `SKILL.md` があるディレクトリの絶対パス」と定義する。
+スクリプトは `{SKILL_DIR}/scripts/<スクリプト名>` の形で書く。
+
+why: `{SKILL_DIR}` の定義が無いと、repo の作業ツリーで実行するときにスクリプトのパスを解決しにくくなる。
+
+#### hook のコマンド
+
+plugin root と plugin data は `"${CLAUDE_PLUGIN_ROOT}"` と `"${CLAUDE_PLUGIN_DATA}"` で指し、単一引用符で囲まない。
+
+why: 両方の CodingAgent が hook にこの 2 つを環境変数として渡すが、Claude Code は単一引用符の中を置き換えない。
+
+#### skill から実行するスクリプト
+
+plugin root と plugin data を環境変数から読まない。
+同じ skill の他のファイルの場所はスクリプト自身のパス（`$0`）から求め、state の置き場は「state の置き場」の節に従う。
+
+why: どちらの CodingAgent も、skill から実行したコマンドに plugin root と plugin data を渡さない。
+
+セッション id は、`CLAUDE_CODE_SESSION_ID` と `CODEX_THREAD_ID` の両方を読む。
+
+why: 片方だけを読むと、もう一方の CodingAgent で実行したときにセッション id が空になる。
+
+### plugin で定義する環境変数
+
+#### 名前
+
+plugin で定義する環境変数の名前を、`CLAUDE_` や `CODEX_` のような特定の CodingAgent を示す語で始めない
+（例: plane-kanban の API の base URL は `PLANE_API_BASE`）。
+
+why: 特定の CodingAgent を示す名前だと、もう一方の CodingAgent に設定し忘れる。
+
+#### 設定する場所
+
+README には、その環境変数に値を設定する場所を CodingAgent ごとに記載する。
+
+why: 環境変数を設定する場所が CodingAgent ごとに違う。
+
+| CodingAgent | 環境変数を設定する場所 |
+| --- | --- |
+| Claude Code | `~/.claude/settings.json` の `env` |
+| Codex | `~/.codex/config.toml` の `[shell_environment_policy]` の `set` |
+
+Codex の置き場は、`codex exec -c` で `shell_environment_policy.set` を渡す形でだけ確かめた。`config.toml` に直接書く形は未確認。
+
+### state の置き場
+
+state の置き場は、次の順に決める。
+
+1. plugin の作者が名前を決めた環境変数が空でなければ、その値
+2. `XDG_DATA_HOME` が空でなければ、`${XDG_DATA_HOME}/{plugin}`
+3. どちらも空なら、`~/.local/share/{plugin}`
+
+why: どちらの CodingAgent も skill から実行したスクリプトに plugin data を渡さないので、置き場を plugin が決める。
+
 ## 名前付き agent を使う機能の両対応
 
 名前付き agent を使う機能を両対応にする方式には、次の三案がある。

@@ -53,7 +53,16 @@ rule は plugin の外で管理し、plugin 内の `rules/` がインストー�
 - 関連する skills / hooks は同一 plugin 内で束ねる (internal state を共有できる)
 - domain が異なるなら分ける
 
-## Internal 隔離 (kernel パターン)
+## Internal 隔離 (kernel パターン、deprecated)
+
+新しい plugin でこのパターンを採らない。適用しているのは version-check だけで、
+そのまま残す。state の置き場は
+[両対応の設計方針](../../docs/cross-client-architecture.md#環境変数と-state-の置き場)に従う。
+
+`internal/` は plugin の実体の下にあり、plugin の実体は版ごとのディレクトリに入る。
+更新すると前の版の `internal/` は参照されなくなるため、更新をまたいで残す state を置けない。
+
+以下はそのパターンの記述で、version-check を読むときの参照として残す。
 
 状態を永続化する plugin は `internal/` に state を置き、その state に触れるスクリプトを
 plugin 内に閉じ込める。他 plugin や外部から `internal/` を参照させない。
