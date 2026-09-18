@@ -10,4 +10,4 @@
 | --- | --- | --- |
 | [norm-refit: 実装計画](./norm-refit-plan.md) | norm-refit の進め方を定める文書。段階・順序・依存・待ち条件 | 進行中 |
 | [norm-refit](./norm-refit.md) | 規範の配置と強制の改修プロジェクトの確定事項 | 進行中 |
-| [kanban のタスク管理](./kanban-board.md) | 並行する話題をカードで追う道具の選定と導入の確定事項 | 進行中 |
+| [kanban のタスク管理](./kanban-board.md) | Plane の選定・導入履歴。自前実装の記録は agent-kanban へ移管 | 移管済み |

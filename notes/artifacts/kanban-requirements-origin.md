@@ -1153,6 +1153,128 @@ Claude（2026-09-17T07:29:28.496Z）。
 > - **「1 分待ってから再実行」の書き方:** Claude Code は `sleep` で待つコマンドを止めるので、この文言のままでは実行できません。代わりに、再試行の回数を増やして（`PLANE_RETRY_MAX=6`）スクリプトを実行し直すよう書きます。スクリプトは中で、制限が解ける時刻まで待ちます。
 > - **再実行しても失敗したとき:** 動かせなかったことを確認に添えて、確認を出します。"
 
+## 実文 32 自前 kanban の Running state、session liveness、card の取得関係を決めたやり取り
+
+ユーザー（2026-09-18）。
+
+> "一番はリアルタイム接続感がないこと。 session id を label につけて todo に移動しても。今そのセッションが本当に動いているのかがわからない。
+> running であることがわかるような ui（例えばプログレスサークルのようなもの）がほしい。もちろんロジックとしても辻褄が合うようにしたい。セッションが止まったり閉じたりしたらそれがわかるように ui 側にも反映されてほしい。"
+
+ユーザー（2026-09-18）。
+
+> "In progress でも session が running じゃないものは、カードのステータスとして分けたいかな、in progress だけど running じゃない, in progress でかつ running"
+
+ユーザー（2026-09-18）。
+
+> "組み合わせたステータスは微妙だな、長いし、内部ではドメインモデルとして分けた状態の方が綺麗かもだけど"
+
+ユーザー（2026-09-18）。
+
+> "いや、running はそれだけで独立のカードステータスにしたいってこと、kanban board においてそのカラムが欲しい"
+
+Claude（2026-09-18）。
+
+> "理解しました。Kanban の列自体を分けます。
+>
+> `Todo → In Progress → Running → Needs Input → Done`
+>
+> 意味は次のとおりです。
+>
+> - `In Progress`: 着手済みだが、現在動作中の session はない
+> - `Running`: 関連する session が 1 つ以上 heartbeat を送っている
+> - `Needs Input`: 人の回答・承認を待っている
+>
+> `Running` は session の実態から自動更新します。
+>
+> - session が稼働開始: `In Progress → Running`
+> - heartbeat が期限切れ、または session 終了: `Running → In Progress`
+> - 複数 session がある場合: 1 つでも生きていれば `Running`
+> - session 終了だけでは `Done` にしない
+>
+> つまり、ドメインモデル上も `Running` を正式なカード状態として持ち、裏側の session liveness が状態遷移を駆動する形です。"
+
+ユーザー（2026-09-18）。
+
+> "というかもはや inprogress って必要ないな。停止したら todo に戻せばいい、引き継ぐ必要がある情報はちゃんとチケットに書き残す。次のセッションなどで再開するときにそれを読んで引き継ぎながら running にする"
+
+Claude（2026-09-18）。
+
+> "それなら `In Progress` は不要です。状態遷移はかなり明快になります。
+>
+> ```text
+> Todo ──session が着手──▶ Running
+> Running ──作業完了────▶ Done
+> Running ──質問・承認待ち▶ Needs Input
+> Running ──session 終了──▶ Todo
+> Needs Input ──再開────▶ Running
+> ```
+>
+> 運用ルールはこうなります。
+>
+> - `Running` は生きている session が作業しているカードだけ
+> - 最後の session が閉じたら `Todo` に戻す
+> - 再開に必要な現在地・判断・残作業は、session を閉じる前にカードへ書く
+> - 次の session はカードを読んでから着手し、`Running` にする
+> - Codex／Claude Code の `Stop` hook は単なる turn 終了なので状態を変えない
+> - 明示的な `SessionEnd` または heartbeat の期限切れで `Todo` に戻す
+> - 異常終了で引き継ぎが書けなかった場合は、`Todo` に戻しつつ「session が予期せず切れた」印を残す
+> - 複数 session が作業している場合、最後の 1 つが停止するまで `Running` を維持する
+>
+> 基本カラムは `Backlog / Todo / Running / Needs Input / Done / Cancelled` で十分そうです。これなら Kanban を見ただけで「いま実際に動いている仕事」が分かります。"
+
+ユーザー（2026-09-18）。
+
+> "複数セッションが同じカードは取らない。１つのセッションが複数のカードを取ることはある。分担したいならカードを分割して子タスクなどにして、そのカードを他のセッションにやらせる。
+> それ以外についてはそのまとめで ok"
+
+## 実文 33 自前 kanban では Jira の用語を使うと決めた発言
+
+ユーザー（2026-09-18）。
+
+> "あと plane を一旦採用したけど、今後作るものについては jira の用語を使いたい。 epic とか project とか"
+
+## 実文 34 kanban-agent-orchestrator を再利用しないと決めた発言
+
+Claude（2026-09-18）。
+
+> "`kanban-agent-orchestrator` をこの方針へ組み替えて進めますか？それとも、既存構想を残して別 repo にしますか？"
+
+ユーザー（2026-09-18）。
+
+> "再利用はしないよ"
+
+## 実文 35 自前 kanban の記録を agent-kanban へ移管する指示
+
+ユーザー（2026-09-18）。
+
+> "note とかをそっちに移して、次以降そっちの repo でセッション始められるようにしたい
+> scaffold って何？"
+
+Claude（2026-09-18）。
+
+> "`cc-marketplace` の note は Plane plugin の設計履歴も混ざっているため、ファイル全体は移しません。次の形を提案します。
+>
+> - `agent-kanban/notes/product-requirements.md`
+>     - 自前 kanban に有効な要求・確定事項
+> - `agent-kanban/notes/artifacts/requirements-origin.md`
+>     - 判断元になった会話の実文
+> - `agent-kanban/notes/README.md`
+>     - decision record の入口
+> - `README.md`
+>     - プロジェクト概要と上記 note への案内
+> - `AGENTS.md` / `CLAUDE.md`
+>     - Claude Code と Codex がセッション開始時に note を参照できる最小限の案内
+>
+> `cc-marketplace` 側には Plane plugin の過去記録を残し、自前 kanban の記録先が `agent-kanban` へ移ったことだけ明記します。その後、初回 commit と push まで行う形でよいですか？"
+
+ユーザー（2026-09-18）。
+
+> "ok
+> AGENTS.md は作らない方針だったのでは？"
+
+この回答の `ok` は移管案への承認。`AGENTS.md` は既存方針どおり作らず、
+Codex の `project_doc_fallback_filenames = ["CLAUDE.md"]` で両方が `CLAUDE.md` を読む。
+
 <!-- markdownlint-enable MD007 MD032 -->
 
 ## kanban-matrix.md の 6 要件と、実文との対応

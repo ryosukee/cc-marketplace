@@ -962,6 +962,99 @@ rate limit の B を SKILL.md に書くときに、Claude が決めて伝えた�
 README の用語・制約・決め事・「セットアップ」、`tests/run.sh`、`tests/fake-curl/curl`、版 0.2.0（PR #31 の `92002cd`）。
 マージ後の Claude Code と Codex への入れ直しは、まだ行っていない。cc-marketplace の project には、PR の検証で Needs Input を作ってある。
 
+### 確定 44 自前 kanban では Running を独立した state にし、card と active session を一対一にする
+
+結論。自前 kanban の board は、Backlog、Todo、Running、Needs Input、Done、Cancelled の列を持つ。
+In Progress は置かない。Running は、active session が現在作業している card だけを置く state とする。
+
+- session が Todo の card に着手したら Running へ動かす
+- 作業を完了したら Running から Done へ動かす
+- 質問または承認を待つときは Running から Needs Input へ動かす
+- 最後の active session が正常終了するか heartbeat の期限が切れたら、未完了の card を Todo へ戻す
+- coding agent の Stop hook は turn の終了を表すため、card の state を変えない
+- session は終了前に、再開に必要な現在地、判断、残作業を card へ書く。次の session は card を読んでから Running へ動かす
+- 1 枚の card を同時に取得できる active session は 1 つまでとする
+- 1 つの session は複数の card を取得できる
+- 複数の session へ分担するときは card を分割し、子 card などの別 card を各 session に取得させる
+
+決めなかった範囲。
+
+- heartbeat の送信間隔と期限
+- 異常終了時に Todo へ付ける印の名前と表示
+- card の取得競合を backend で拒否する具体的な方式
+- Claude Code と Codex の hook を共通の event へ変換する adapter の実装
+
+決めた理由。board の列だけで、現在 coding agent が動かしている仕事と、未完了だが停止している仕事を区別する。
+停止した仕事は Todo へ戻し、再開に必要な情報を card 自体へ残すため、In Progress を中間状態として維持しない。
+同じ仕事を複数の session が同時に取得させず、分担の境界を card の親子関係として残す。
+
+出典。2026-09-18 のセッションの会話。実文は
+[実文 32](./artifacts/kanban-requirements-origin.md#実文-32-自前-kanban-の-running-state-session-liveness-card-の取得関係を決めたやり取り)。
+
+反映先。未定。自前 kanban の data model、state transition、Claude Code と Codex の client adapter、
+frontend の board 表示を設計するときに使う。Plane と plane-kanban plugin の既存 state は変更しない。
+
+### 確定 45 自前 kanban の利用者向け用語を Jira に揃える
+
+結論。自前 kanban の利用者向け用語には Jira の Project、Epic、Task、Subtask、Board、Status を使う。
+大きな仕事は Epic、通常の実行単位は Task、Task を session 間で分担するために分割した仕事は Subtask と呼ぶ。
+card は Board 上の表示要素を指す場合だけに使い、domain object の種類を表す名前には使わない。
+
+決めなかった範囲。
+
+- Project と git repo の対応
+- Story と Bug を最初から work type に含めるか
+- 現行 Jira Cloud の総称である Work item を domain object の名前に使うか
+- Epic より上の hierarchy を持つか
+
+決めた理由。Plane を採用した経緯に由来する Workspace、Project、Work item、Sub work item という用語を、
+自前 kanban へ引き継がない。今後の要件整理と UI では、ユーザーが指定した Jira の語彙を使う。
+
+出典。2026-09-18 のセッションの会話。実文は
+[実文 33](./artifacts/kanban-requirements-origin.md#実文-33-自前-kanban-では-jira-の用語を使うと決めた発言)。
+
+反映先。未定。自前 kanban の data model、API、frontend の文言、設計ドキュメントを作るときに使う。
+Plane と plane-kanban plugin の既存用語は変更しない。
+
+### 確定 46 自前 kanban は kanban-agent-orchestrator を再利用せず、新しい repo で作る
+
+結論。今回の自前 kanban は新しい専用 repo で作る。
+既存の `kanban-agent-orchestrator` は再利用せず、現在の構想と実装をそのまま残す。
+
+決めなかった範囲。
+
+- 新しい repo の名前
+- `kanban-agent-orchestrator` から個別の実装または知見を参照するか
+- 新しい repo の初期構成と技術スタック
+
+決めた理由。ユーザーが `kanban-agent-orchestrator` を再利用しないと明示した。
+既存 repo は Claude Code の headless runner を中心とする orchestration system であり、
+Claude Code と Codex の対話 session を扱う今回の kanban とは別の取り組みとして残す。
+
+出典。2026-09-18 のセッションの会話。実文は
+[実文 34](./artifacts/kanban-requirements-origin.md#実文-34-kanban-agent-orchestrator-を再利用しないと決めた発言)。
+
+反映先。新しい専用 repo の作成と初期設計。`kanban-agent-orchestrator` には反映しない。
+
+### 確定 47 自前 kanban の記録の正本を agent-kanban へ移管する
+
+結論。自前 kanban の要求、要件、以後の設計判断は、専用 repo `agent-kanban` の
+`notes/product-requirements.md` を正本として記録する。このファイルの確定 44 から 46 と、
+それ以前の要求のうち自前実装に効くものは移管先へ写した。以後、自前 kanban の確定事項を
+cc-marketplace のこのファイルへ追加しない。
+
+決めなかった範囲。cc-marketplace の `plane-kanban` plugin のソースを削除するか。
+このファイルには Plane の選定、導入、plugin 設計の履歴があるため、ファイル自体は削除しない。
+
+決めた理由。ユーザーが、専用 repo へ note を移して次回以降はその repo で session を始めたいと述べ、
+移管するファイル構成と初回 commit、push まで行う案を承認した。
+
+出典。2026-09-18 の会話。実文は
+[実文 35](./artifacts/kanban-requirements-origin.md#実文-35-自前-kanban-の記録を-agent-kanban-へ移管する指示)。
+
+反映先。`agent-kanban` repo の `README.md`、`CLAUDE.md`、`notes/README.md`、
+`notes/product-requirements.md`、`notes/artifacts/requirements-origin.md`。
+
 ### 未確定 板を既製のサービスに任せ、Claude 側をラップする構成
 
 結論は出ていない。Symphony が Linear の板を読むスケジューラであることを受けて、
