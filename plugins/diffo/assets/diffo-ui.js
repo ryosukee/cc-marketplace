@@ -3,6 +3,9 @@
   const draftStorageKey = 'diffo:composer-drafts:v1'
   const hiddenAttribute = 'data-diffo-hide-resolved'
   const toggleClass = 'diffo-resolved-toggle'
+  const lgtmButtonClass = 'diffo-lgtm-button'
+  const lgtmMessage =
+    'LGTM。レビューは完了です。`diffo end` を実行し、polling も終了してください。このメッセージへの返信は不要です。'
   const restoringInputs = new WeakSet()
 
   const readDrafts = () => {
@@ -66,6 +69,19 @@
     textarea.dispatchEvent(new Event('input', { bubbles: true }))
   }
 
+  const appendLgtmMessage = (note) => {
+    const trimmed = note.trim()
+    if (trimmed.includes(lgtmMessage)) return trimmed
+    return trimmed === '' ? lgtmMessage : `${trimmed}\n\n${lgtmMessage}`
+  }
+
+  const buttonLabel = (button) =>
+    [...button.childNodes]
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent)
+      .join('')
+      .trim()
+
   const rememberDraft = (event) => {
     if (restoringInputs.delete(event.target)) return
     const composer = describeComposer(event.target)
@@ -95,11 +111,7 @@
     const textarea = button.closest('.thread-composer, .thread')?.querySelector('textarea.thread-input')
     if (!(textarea instanceof HTMLTextAreaElement)) return
 
-    const label = [...button.childNodes]
-      .filter((node) => node.nodeType === Node.TEXT_NODE)
-      .map((node) => node.textContent)
-      .join('')
-      .trim()
+    const label = buttonLabel(button)
     if (
       button.getAttribute('aria-label') === 'Close' ||
       (button.closest('.thread-composer') && label === 'Close')
@@ -266,11 +278,53 @@
     }
   }
 
+  const mountLgtmButton = () => {
+    const modal = document.querySelector('.modal[aria-label="Finish review"]')
+    if (!(modal instanceof HTMLElement)) return
+    const footer = modal.querySelector('.modal-foot')
+    const note = modal.querySelector('textarea.fin-note')
+    const finishButton = [...(footer?.querySelectorAll('button') ?? [])].find(
+      (button) => buttonLabel(button) === 'Finish & send',
+    )
+    if (
+      !(footer instanceof HTMLElement) ||
+      !(note instanceof HTMLTextAreaElement) ||
+      !(finishButton instanceof HTMLButtonElement) ||
+      footer.querySelector(`.${lgtmButtonClass}`)
+    ) {
+      return
+    }
+
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.className = `btn ${lgtmButtonClass}`
+    button.textContent = 'LGTM'
+    button.title = 'send the closing comment, end Diffo, and stop polling'
+    button.disabled = finishButton.disabled
+    button.addEventListener('click', () => {
+      button.disabled = true
+      setTextareaValue(note, appendLgtmMessage(note.value))
+      setTimeout(() => {
+        const currentModal = document.querySelector('.modal[aria-label="Finish review"]')
+        const currentFinish = [...(currentModal?.querySelectorAll('.modal-foot button') ?? [])].find(
+          (candidate) => buttonLabel(candidate) === 'Finish & send',
+        )
+        if (currentFinish instanceof HTMLButtonElement && !currentFinish.disabled) {
+          currentFinish.click()
+        } else {
+          button.disabled = false
+        }
+      }, 0)
+    })
+    finishButton.insertAdjacentElement('beforebegin', button)
+  }
+
   const mount = () => {
     clearSubmittedDrafts()
     restoreDrafts()
     markSettledSections()
     markResolvedOnlyRows()
+    mountLgtmButton()
     if (hidden) clearHiddenResolvedHover()
     document.documentElement.setAttribute(hiddenAttribute, String(hidden))
 

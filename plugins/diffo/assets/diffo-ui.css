@@ -10,6 +10,16 @@
   stroke-width: 1.8;
 }
 
+.diffo-lgtm-button {
+  color: var(--add);
+  background: var(--add-tint);
+  border: 1px solid color-mix(in srgb, var(--add) 45%, transparent);
+}
+
+.diffo-lgtm-button:hover:not(:disabled) {
+  background: var(--add-row);
+}
+
 :root[data-diffo-hide-resolved="true"] .thread-resolved,
 :root[data-diffo-hide-resolved="true"] .crow-done,
 :root[data-diffo-hide-resolved="true"] .diffo-settled-section,
