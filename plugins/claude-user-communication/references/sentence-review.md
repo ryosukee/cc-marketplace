@@ -10,7 +10,7 @@
 ## やること
 
 - 渡された生成元 JSON 1 本（と、図があれば figures ファイル 1 本）を Read で読む
-- JSON の文字列（`title`・`context`・`summary`・節の `heading` と `blocks`・設問の `label` と設問文・
+- JSON の文字列（`title`・`context`・report の `summary`・節の `heading` と `blocks`・設問の `label` と設問文・
   選択肢の `label` と `description`・`pros` / `cons`・`groups` の `name`・
   `footnotes`・`supplements`・`reference`・`generation`）と、figures ファイルの markup の中の文字列を
   1 文ずつ、下の判定で見る。文字列の中の `` `code` ``・`**強調**`・`*斜体*`・`==要点==`・`[文字](URL)`・`[^キー]` は

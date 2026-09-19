@@ -206,7 +206,7 @@ function checkFile(path) {
   }
 
   // 8. 脚注番号・補足英字は本文の初出順。起点は最初の説明節 (.secnum) か設問の範囲 (section.rng) で、
-  //    前提・冒頭のまとめブロックは対象外（lib/page-source.mjs の採番と同じ起点）
+  //    前提・report の冒頭のまとめブロックは対象外（lib/page-source.mjs の採番と同じ起点）
   const orderStart = (() => {
     const a = bd.indexOf('<p class="secnum">'); const b = bd.indexOf('<section class="rng"');
     const c = [a, b].filter((x) => x >= 0); return c.length ? Math.min(...c) : 0;

@@ -56,6 +56,36 @@ test("共有 script が report を生成し、同じ版を記録する", (t) => 
   assert.equal(fileURLToPath(new URL(backHref, pathToFileURL(path.join(dir, "test-r001.html")))), path.join(dir, "index.html"));
 });
 
+test("form は summary を要求せず、旧データに残っていても表示しない", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "html-communication-form-test-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const srcDir = path.join(dir, "src");
+  fs.mkdirSync(srcDir);
+  const base = {
+    format: 1,
+    type: "form",
+    title: "フォームの試験",
+    project: "test",
+    context: ["フォームの構造を検証する。"],
+    sections: [{
+      kind: "question",
+      heading: "どちらを選ぶか",
+      blocks: ["判断材料を示す。"],
+      question: { label: "選択", text: "どちらを選ぶか。", options: [{ label: "案 A", recommended: true }, { label: "案 B" }] },
+    }],
+  };
+
+  for (const [file, extra] of [["test-f001", {}], ["test-f002", { summary: ["表示してはいけない旧データ"] }]]) {
+    const jsonPath = path.join(srcDir, `${file}.json`);
+    fs.writeFileSync(jsonPath, JSON.stringify({ ...base, ...extra, file }));
+    const result = assemblePage(jsonPath);
+    assert.equal(result.ok, true, JSON.stringify(result.findings));
+    const html = fs.readFileSync(path.join(dir, `${file}.html`), "utf8");
+    assert.doesNotMatch(html, /推奨案のまとめ/);
+    assert.doesNotMatch(html, /表示してはいけない旧データ/);
+  }
+});
+
 test("環境変数名が CodingAgent に依存しない", () => {
   const source = environmentVariableFiles
     .map((file) => fs.readFileSync(file, "utf8"))

@@ -313,7 +313,7 @@ const sum = kids[idx];
 if (sum && (hasCls(sum, "summary") || hasCls(sum, "concl"))) {
   if (hasCls(sum, "concl")) {
     const eb = els(sum).find((x) => hasCls(x, "eyebrow"));
-    note(`${stem}: <div class="concl">（見出し語「${eb ? inlineOf(eb) : "?"}」）を summary に写した。見出し語は組み立てが「${src.type === "form" ? "推奨案のまとめ" : "まとめ"}」に置き換える`);
+    note(`${stem}: <div class="concl">（見出し語「${eb ? inlineOf(eb) : "?"}」）を summary に写した。form では表示せず、report では組み立てが見出し語を「まとめ」に置き換える`);
   }
   src.summary = els(sum).filter((x) => !hasCls(x, "eyebrow")).map((b, i) => blockOf(b, `summary[${i}]`));
   idx++;

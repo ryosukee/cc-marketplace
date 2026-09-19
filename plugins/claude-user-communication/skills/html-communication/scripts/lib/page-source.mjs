@@ -123,7 +123,7 @@ export function loadSource(jsonPath) {
   if (src.type !== "form" && src.type !== "report") add("type", `type は form か report（${JSON.stringify(src.type)}）`);
   for (const k of ["title", "project"]) if (typeof src[k] !== "string" || !src[k].trim()) add(k, `${k} が無い`);
   if (!Array.isArray(src.context) || !src.context.length || !src.context.every((x) => typeof x === "string")) add("context", "context は文字列の配列（前提の 2〜3 文）");
-  if (!Array.isArray(src.summary) || !src.summary.length) add("summary", "summary はブロックの配列（推奨案のまとめ）");
+  if (src.type === "report" && (!Array.isArray(src.summary) || !src.summary.length)) add("summary", "report の summary はブロックの配列（報告のまとめ）");
   if (!Array.isArray(src.sections) || !src.sections.length) add("sections", "sections が無い");
   if (src.css != null && !(Array.isArray(src.css) && src.css.every((x) => typeof x === "string"))) add("css", "css はパターン名の配列");
   if (src.groups != null && !(Array.isArray(src.groups) && src.groups.every((g) => g && typeof g.id === "string" && typeof g.name === "string"))) add("groups", "groups は { id, name } の配列");
@@ -196,7 +196,7 @@ export function loadSource(jsonPath) {
     strings.push({ where: `groups[${i}].name`, text: g.name });
     if (refKeys(g.name).length) add(`groups[${i}].name`, "グループ名に [^キー] は置けない。記法は解釈されず、そのまま出る");
   });
-  if (Array.isArray(src.summary)) walkBlocks(src.summary, "summary");
+  if (src.type === "report" && Array.isArray(src.summary)) walkBlocks(src.summary, "summary");
   let nq = 0, ne = 0;
   (src.sections || []).forEach((sec, i) => {
     const w = `sections[${i}]`;
@@ -328,7 +328,7 @@ export function renderPage(src, opts = {}) {
     } else { s.n = ++en; s.id = `e${en}`; }
   }
 
-  // 脚注・補足の採番。本文の並び順（節 → 参考資料 → 生成に関する補足 → 前提・まとめ → 脚注と補足の本文）
+  // 脚注・補足の採番。本文の並び順（節 → 参考資料 → 生成に関する補足 → 前提・report のまとめ → 脚注と補足の本文）
   const fnKeys = Object.keys(src.footnotes || {}), suKeys = Object.keys(src.supplements || {});
   const order = [];
   const seen = new Set();
@@ -355,7 +355,8 @@ export function renderPage(src, opts = {}) {
   }
   if (src.reference) { collect(src.reference.lead); collectBlocks(src.reference.blocks); }
   if (typeof src.generation === "string") collect(src.generation); else collectBlocks(src.generation || []);
-  src.context.forEach(collect); collectBlocks(src.summary);
+  src.context.forEach(collect);
+  if (!isForm) collectBlocks(src.summary);
   for (const k of fnKeys) collect(src.footnotes[k]);
   for (const k of suKeys) collect(src.supplements[k]);
   const fnNum = new Map(), suLetter = new Map();
@@ -456,9 +457,12 @@ export function renderPage(src, opts = {}) {
   at("title");
   const titleHtml = inline(src.title, ctx);
   const contextHtml = src.context.map((c, i) => { at(`context[${i}]`); return inline(c, ctx); }).join(" ");
-  at("summary");
-  const summaryHtml = renderBlocks(src.summary);
-  parts.push(`<main>\n\n<div id="bd">\n\n<h1>${titleHtml}</h1>\n\n<div class="vnav">\n${contextHtml}\n</div>\n\n<div class="summary">\n<span class="eyebrow">${isForm ? "推奨案のまとめ" : "まとめ"}</span>\n${summaryHtml}\n</div>`);
+  parts.push(`<main>\n\n<div id="bd">\n\n<h1>${titleHtml}</h1>\n\n<div class="vnav">\n${contextHtml}\n</div>`);
+  if (!isForm) {
+    at("summary");
+    const summaryHtml = renderBlocks(src.summary);
+    parts.push(`<div class="summary">\n<span class="eyebrow">まとめ</span>\n${summaryHtml}\n</div>`);
+  }
   sections.forEach((s, i) => {
     const w = `sections[${i}]`;
     at(w);
