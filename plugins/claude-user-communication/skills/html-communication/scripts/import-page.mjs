@@ -275,7 +275,7 @@ const main = find(doc, (n) => n.tag === "main");
 const bd = find(main, (n) => n.attrs.id === "bd");
 const kids = els(bd);
 
-const src = { format: 1, file: stem, type: "form", title: "", project: "", context: [], summary: [], sections: [] };
+const src = { format: 1, file: stem, type: "form", title: "", project: "", context: [], sections: [] };
 
 // type と project
 const bar = find(doc, (n) => n.attrs.id === "bar");
@@ -311,11 +311,14 @@ if (vnav && hasCls(vnav, "vnav")) {
 // .summary / .concl
 const sum = kids[idx];
 if (sum && (hasCls(sum, "summary") || hasCls(sum, "concl"))) {
+  const eb = els(sum).find((x) => hasCls(x, "eyebrow"));
+  const label = eb ? inlineOf(eb) : "";
+  const blocks = els(sum).filter((x) => !hasCls(x, "eyebrow")).map((b, i) => blockOf(b, `${src.type === "form" && label === "このフォームについて" ? "formIntro" : "summary"}[${i}]`));
   if (hasCls(sum, "concl")) {
-    const eb = els(sum).find((x) => hasCls(x, "eyebrow"));
     note(`${stem}: <div class="concl">（見出し語「${eb ? inlineOf(eb) : "?"}」）を summary に写した。form では表示せず、report では組み立てが見出し語を「まとめ」に置き換える`);
   }
-  src.summary = els(sum).filter((x) => !hasCls(x, "eyebrow")).map((b, i) => blockOf(b, `summary[${i}]`));
+  if (src.type === "form" && label === "このフォームについて") src.formIntro = blocks;
+  else src.summary = blocks;
   idx++;
 }
 
@@ -522,7 +525,7 @@ if (tableRowheadTd) note(`${stem}: 表の 1 列目が <td> の行がある。組
 
 // キーの並びを書式の順に揃える
 const ordered = {};
-for (const k of ["format", "file", "type", "title", "project", "context", "summary", "groups", "sections", "footnotes", "supplements", "reference", "generation", "css"]) {
+for (const k of ["format", "file", "type", "title", "project", "context", "formIntro", "summary", "groups", "sections", "footnotes", "supplements", "reference", "generation", "css"]) {
   if (src[k] !== undefined) ordered[k] = src[k];
 }
 

@@ -56,7 +56,7 @@ test("共有 script が report を生成し、同じ版を記録する", (t) => 
   assert.equal(fileURLToPath(new URL(backHref, pathToFileURL(path.join(dir, "test-r001.html")))), path.join(dir, "index.html"));
 });
 
-test("form は summary を要求せず、旧データに残っていても表示しない", (t) => {
+test("form は今回の説明を前提と分け、旧 summary は表示しない", (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "html-communication-form-test-"));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const srcDir = path.join(dir, "src");
@@ -67,6 +67,7 @@ test("form は summary を要求せず、旧データに残っていても表示
     title: "フォームの試験",
     project: "test",
     context: ["フォームの構造を検証する。"],
+    formIntro: ["このフォームで選択肢を確認する。"],
     sections: [{
       kind: "question",
       heading: "どちらを選ぶか",
@@ -75,14 +76,25 @@ test("form は summary を要求せず、旧データに残っていても表示
     }],
   };
 
-  for (const [file, extra] of [["test-f001", {}], ["test-f002", { summary: ["表示してはいけない旧データ"] }]]) {
+  for (const [file, extra, hasIntro] of [
+    ["test-f001", {}, true],
+    ["test-f002", { summary: ["表示してはいけない旧データ"] }, true],
+    ["test-f003", { formIntro: undefined }, false],
+  ]) {
     const jsonPath = path.join(srcDir, `${file}.json`);
     fs.writeFileSync(jsonPath, JSON.stringify({ ...base, ...extra, file }));
     const result = assemblePage(jsonPath);
     assert.equal(result.ok, true, JSON.stringify(result.findings));
     const html = fs.readFileSync(path.join(dir, `${file}.html`), "utf8");
-    assert.doesNotMatch(html, /推奨案のまとめ/);
-    assert.doesNotMatch(html, /表示してはいけない旧データ/);
+    const main = html.match(/<main>[\s\S]*<\/main>/)?.[0] || "";
+    if (hasIntro) {
+      assert.match(main, /このフォームについて/);
+      assert.match(main, /このフォームで選択肢を確認する。/);
+    } else {
+      assert.doesNotMatch(main, /このフォームについて/);
+    }
+    assert.doesNotMatch(main, /推奨案のまとめ/);
+    assert.doesNotMatch(main, /表示してはいけない旧データ/);
   }
 });
 

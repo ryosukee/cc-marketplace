@@ -29,7 +29,8 @@ HTML の `<meta name="source">` に生成元のハッシュが入り、`check-so
 | `type` | 文字列 | `form`（設問あり）か `report`（読むだけ） |
 | `title` | 文字列 | ページの題名。index.html の `title` と一字一致させる |
 | `project` | 文字列 | index.html の `project` と同じ値。下部バーのバッジに出る |
-| `context` | 文字列の配列 | 前提の 2〜3 文。題名の直後に置く |
+| `context` | 文字列の配列 | 議題の広い前提を 2〜3 文で書く。題名の直後に置く |
+| `formIntro` | ブロックの配列（form だけ・任意） | 今回のフォームが何を確認するものかを書く。前提の直後に「このフォームについて」として表示する |
 | `summary` | ブロックの配列 | report のまとめ。report では必須。form では書かない。旧 form に残る値は表示しない |
 | `sections` | 節の配列 | 説明の節と設問の節の並び |
 | `groups` | 配列（任意） | 設問のグループ。`{ "id": "build", "name": "ページの組み立て" }` |
@@ -58,7 +59,7 @@ HTML の `<meta name="source">` に生成元のハッシュが入り、`check-so
 
 ## ブロック
 
-report の `summary`、節の `blocks`、`reference.blocks` に置く。文字列は段落になる。
+form の `formIntro`、report の `summary`、節の `blocks`、`reference.blocks` に置く。文字列は段落になる。
 
 | 形 | 出力 |
 | --- | --- |
@@ -150,7 +151,7 @@ code span の中身をバッククォートで始めたいときは、囲むバ�
 ```
 
 - キーは名前にする（英数字とハイフン、または日本語）。本文からは `[^measure]` で参照する
-- 番号と英字は、本文の初出順に組み立て時に付く。前提と report のまとめにある参照は順序に数えない
+- 番号と英字は、本文の初出順に組み立て時に付く。前提、form の説明、report のまとめにある参照は順序に数えない
 - 同じキーを複数箇所から参照してよい。戻りリンクが参照の数だけ並ぶ
 - 参照されないキー、両方に同じキー、解決しない参照は `check-source.mjs` が指摘する
 
