@@ -150,7 +150,7 @@ why: 片方だけを読むと、もう一方の CodingAgent で実行したと�
 #### 名前
 
 plugin で定義する環境変数の名前を、`CLAUDE_` や `CODEX_` のような特定の CodingAgent を示す語で始めない
-（例: plane-kanban の API の base URL は `PLANE_API_BASE`）。
+（例: 外部 API の base URL は `{サービス名}_API_BASE`）。
 
 why: 特定の CodingAgent を示す名前だと、もう一方の CodingAgent に設定し忘れる。
 

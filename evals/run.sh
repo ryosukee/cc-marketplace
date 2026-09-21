@@ -4,7 +4,7 @@ set -euo pipefail
 # claude plugin eval を、対象の plugin と規定オプションを固定して実行する。
 #
 # 使い方: evals/run.sh <plugin 名> [claude plugin eval の追加引数]
-#   例: evals/run.sh plane-kanban --case pos-01-list-in-progress --runs 1
+#   例: evals/run.sh github-pr --case rule-01-check-existing-pr --runs 1
 #
 # ケースは plugin の下 (plugins/<plugin>/evals/**/case.yaml) に置く。これは claude plugin eval が
 # ケースを探す既定の場所で、結果も plugins/<plugin>/evals/results/ に出る。
