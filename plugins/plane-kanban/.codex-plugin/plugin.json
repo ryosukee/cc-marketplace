@@ -1,6 +1,6 @@
 {
   "name": "plane-kanban",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Plane（kanban）の work item を repo 単位の project で読み書きする",
   "author": {
     "name": "CC Tools"

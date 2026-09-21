@@ -217,5 +217,15 @@ assert_eq "4" "$(jq 'length' <<<"$out")" "429 のあと再試行して成功"
 out=$("$S/ensure-session-label.sh" --project p1)
 assert_eq "l1" "$(jq -r .id <<<"$out")" "session の label を再利用"
 
+# 14. 既定の一時ディレクトリへ書けなくても、別の書ける場所に一時ファイルを作って動く。
+# sandbox を有効にしたセッションでこの状況になる。偽の mktemp が、git の作業ツリーの下だけを許す
+GIT_DIR_ABS=$(git rev-parse --absolute-git-dir)
+out=$(PATH="$PLUGIN_ROOT/tests/fake-tmp:$PATH" FAKE_TMP_ALLOW="$GIT_DIR_ABS" \
+  "$S/list-work-items.sh" --project p1 --all)
+assert_eq "4" "$(jq 'length' <<<"$out")" "既定の一時ディレクトリへ書けなくても一覧を取れる"
+out=$(PATH="$PLUGIN_ROOT/tests/fake-tmp:$PATH" FAKE_TMP_ALLOW="$GIT_DIR_ABS" \
+  "$SETUP/resolve-project.sh")
+assert_eq "p1" "$(jq -r .id <<<"$out")" "setup 側も既定の一時ディレクトリへ書けなくても動く"
+
 echo "pass=$pass fail=$fail"
 [ "$fail" -eq 0 ]

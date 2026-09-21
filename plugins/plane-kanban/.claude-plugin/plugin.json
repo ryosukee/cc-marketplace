@@ -1,7 +1,7 @@
 {
   "name": "plane-kanban",
   "description": "Plane（kanban）の work item を repo 単位の project で読み書きする plugin。一覧・作成・state の更新・一括取り込みを REST API を直接呼ぶスクリプトで行い、セッションを label で残す",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "CC Tools"
   },

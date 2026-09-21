@@ -74,7 +74,7 @@ while [ "$i" -lt "$count" ]; do
   args=(--name "$(jq -r '.name' <<<"$item")" --project "$project")
   desc=$(jq -r '.description // empty' <<<"$item")
   if [ -n "$desc" ]; then
-    desc_file=$(mktemp)
+    desc_file=$(plane_mktemp) || exit $?
     printf '%s' "$desc" > "$desc_file"
     args+=(--description-file "$desc_file")
   fi
@@ -87,7 +87,7 @@ while [ "$i" -lt "$count" ]; do
     exit 1
   fi
   new_id=$(jq -r '.id' <<<"$result")
-  tmp=$(mktemp)
+  tmp=$(plane_mktemp) || exit $?
   jq --argjson i "$i" --arg id "$new_id" '.items[$i].id = $id' "$manifest" > "$tmp" && mv "$tmp" "$manifest"
   created=$((created + 1))
   i=$((i + 1))

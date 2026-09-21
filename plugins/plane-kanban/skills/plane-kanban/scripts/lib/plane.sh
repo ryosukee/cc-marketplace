@@ -31,6 +31,22 @@ plane_err() {
   echo "plane-kanban: $*" >&2
 }
 
+# 一時ファイルを作る。書ける場所を順に試し、見つからなければ return 2。
+# sandbox を有効にしたセッションでは TMPDIR の先へ書けないことがあり、そのとき mktemp は
+# Operation not permitted で失敗する。API の応答を受ける場所が無いと全部の呼び出しが落ちる
+plane_mktemp() {
+  local d f
+  for d in "${TMPDIR:-/tmp}" /tmp "$(git rev-parse --absolute-git-dir 2>/dev/null || true)" "$PWD"; do
+    [ -n "$d" ] && [ -d "$d" ] || continue
+    if f=$(mktemp "${d%/}/plane-kanban.XXXXXX" 2>/dev/null); then
+      printf '%s\n' "$f"
+      return 0
+    fi
+  done
+  plane_err "一時ファイルを作れる場所が無い（TMPDIR=${TMPDIR:-未設定}）"
+  return 2
+}
+
 # Keychain から 1 項目を読む。引数: $1 = service 名。無ければ return 1
 plane_keychain_read() {
   security find-generic-password -s "$1" -w 2>/dev/null
@@ -58,8 +74,8 @@ plane_api() {
   local method="$1" path="$2" body="${3:-}"
   local url="${PLANE_API_BASE}/workspaces/${plane_workspace}${path}"
   local attempt=0 code hdr out
-  hdr=$(mktemp)
-  out=$(mktemp)
+  hdr=$(plane_mktemp) || return $?
+  out=$(plane_mktemp) || return $?
   while :; do
     attempt=$((attempt + 1))
     if [ -n "$body" ]; then

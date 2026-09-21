@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: rule-09-retry-rate-limit
+description: 429 が続いたら PLANE_RETRY_MAX=6 を付けて1回だけ再実行するか
+tags: [behavior]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: plane-kanban のskillを使って、いまのカード一覧を取得して見せて。
+  max_turns: 16
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+runs: 2
+graders:
+  - name: retried-with-higher-max
+    type: tool_used
+    tool: Bash
+    input_match: 'PLANE_RETRY_MAX=6'
+    min: 1

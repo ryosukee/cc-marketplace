@@ -23,6 +23,22 @@ setup_err() {
   echo "plane-kanban-setup: $*" >&2
 }
 
+# 一時ファイルを作る。書ける場所を順に試し、見つからなければ return 2。
+# sandbox を有効にしたセッションでは TMPDIR の先へ書けないことがあり、そのとき mktemp は
+# Operation not permitted で失敗する。API の応答を受ける場所が無いと全部の呼び出しが落ちる
+setup_mktemp() {
+  local d f
+  for d in "${TMPDIR:-/tmp}" /tmp "$(git rev-parse --absolute-git-dir 2>/dev/null || true)" "$PWD"; do
+    [ -n "$d" ] && [ -d "$d" ] || continue
+    if f=$(mktemp "${d%/}/plane-kanban-setup.XXXXXX" 2>/dev/null); then
+      printf '%s\n' "$f"
+      return 0
+    fi
+  done
+  setup_err "一時ファイルを作れる場所が無い（TMPDIR=${TMPDIR:-未設定}）"
+  return 2
+}
+
 # curl・jq・security と Keychain の API key を確かめ、API key を SETUP_API_KEY に持つ。足りなければ exit 2
 setup_require_env() {
   local cmd
@@ -59,7 +75,7 @@ setup_api() {
   local workspace="$1" method="$2" path="$3" body="${4:-}"
   local url="${SETUP_API_BASE}/workspaces/${workspace}${path}"
   local out code
-  out=$(mktemp)
+  out=$(setup_mktemp) || return $?
   if [ -n "$body" ]; then
     code=$(curl -sS -X "$method" "$url" -H "X-API-Key: ${SETUP_API_KEY}" -H "Content-Type: application/json" \
       -D /dev/null -o "$out" -w '%{http_code}' --data "$body") || { rm -f "$out"; return 1; }

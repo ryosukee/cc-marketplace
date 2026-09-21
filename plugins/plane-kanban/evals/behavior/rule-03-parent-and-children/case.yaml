@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: rule-03-parent-and-children
+description: 複数タスクに分けられる仕事を、新しい親と3件の子として登録するか
+tags: [behavior]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: plane-kanban のskillを使って、認証まわりの改修を進めたい。設計、実装、テストの3つのタスクに分けて登録して。
+  max_turns: 16
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+runs: 2
+graders:
+  - name: children-share-a-new-parent
+    type: regex
+    target: { source: file, path: .fake-plane/requests.log }
+    pattern: '"parent":"(w(?:[4-9]|[1-9][0-9]+))"[\s\S]*"parent":"\1"[\s\S]*"parent":"\1"'
+    match: contains

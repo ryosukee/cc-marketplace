@@ -1,0 +1,19 @@
+#!/bin/bash
+# テスト用の偽の mktemp。sandbox の中と同じ状況（既定の一時ディレクトリへ書けない）を作る。
+# テンプレートが FAKE_TMP_ALLOW 配下を指すときだけ本物へ渡し、それ以外は拒否する。
+#
+# 引数なしの mktemp は macOS では TMPDIR を見ずに /var/folders 配下へ作るので、
+# この偽物は引数なしも拒否する。スクリプトが書ける場所を選んでから作っているかを検査できる
+
+set -euo pipefail
+
+allow="${FAKE_TMP_ALLOW:?FAKE_TMP_ALLOW が未設定}"
+target="${1:-}"
+
+case "$target" in
+  "$allow"/*) exec /usr/bin/mktemp "$@" ;;
+  *)
+    echo "mktemp: mkstemp failed on ${target:-（既定の一時ディレクトリ）}: Operation not permitted" >&2
+    exit 1
+    ;;
+esac

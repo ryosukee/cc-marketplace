@@ -3,6 +3,8 @@
 # だけを受け付け、Plane の API の応答を FAKE_CURL_STATE 配下の JSON で真似る。ネットワークは使わない
 #
 # 状態: FAKE_CURL_STATE/projects.json, states.json, labels.json, items.json, seq（連番）, requests.log（呼び出しの記録）
+# FAKE_CURL_STATE が未設定なら、git の作業ツリーの最上位（無ければ cwd）の .fake-plane を使う。
+# eval の子セッションには環境変数を渡せないため、ケースの scaffold が作業ディレクトリに .fake-plane を作る
 # states.json は project を作ったときに入る既定の 5 つで始まる（project ごとには分けない）
 # 429 の再現: FAKE_CURL_STATE/429-once があれば 1 回だけ 429 を返してそのファイルを消す
 #
@@ -12,7 +14,7 @@
 
 set -euo pipefail
 
-state="${FAKE_CURL_STATE:?FAKE_CURL_STATE が未設定}"
+state="${FAKE_CURL_STATE:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.fake-plane}"
 mkdir -p "$state"
 [ -f "$state/projects.json" ] || echo '[]' > "$state/projects.json"
 [ -f "$state/states.json" ] || cat > "$state/states.json" <<'JSON'
@@ -87,6 +89,12 @@ expand_labels() {
 
 if [ -f "$state/429-once" ]; then
   rm -f "$state/429-once"
+  respond 429 '{"error":"throttled"}'
+  exit 0
+fi
+
+# 429 を返し続ける。rate limit が解けない状況を作る
+if [ -f "$state/429-always" ]; then
   respond 429 '{"error":"throttled"}'
   exit 0
 fi
