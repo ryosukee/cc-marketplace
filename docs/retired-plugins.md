@@ -3,7 +3,7 @@
 廃止した plugin の記録。コードは削除し、git 履歴から取り出す。
 廃止するときは [Plugin 更新手順](../.claude/rules/plugin-release.md) の削除手順に従い、ここへ 1 件足す。
 
-- plane-kanban（2026-09-22、最終版 0.2.1、削除 commit 10b0a3a）
+- plane-kanban（2026-09-22、最終版 0.2.1、削除 commit 8543648）
     - 理由: Plane をタスク管理に使わない方針へ変わり、Claude Code と Codex の両方から
       アンインストールした。plugin の eval が持っていた知見（stub の差し込み方、fixture の
       git 設定の隔離、sandbox 下の `mktemp` の失敗、ケースの書き方）は github-pr の eval で
