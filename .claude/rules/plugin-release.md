@@ -53,7 +53,7 @@ codex plugin list --marketplace cc-tools
 コードは削除し、archive へは移さない（git 履歴から取り出せる）。
 両対応の plugin は、Claude Code と Codex の両方から削除する。
 
-1. plugin ディレクトリ、evals、marketplace.json のエントリ、README.md と CLAUDE.md の行を削除する
+1. plugin ディレクトリ（`evals/` を含む）、marketplace.json のエントリ、README.md と CLAUDE.md の行を削除する
 2. 他 plugin・rule・skill からの参照を grep で消す（既知バグ一覧のエントリが指していれば、そのエントリも直す）
 3. `docs/retired-plugins.md` に 1 件足す: 名前・廃止日・最終版・削除 commit・理由・復元コマンド
 4. `git commit` と `git push` を実行する
@@ -86,8 +86,8 @@ why: 実例が 2 件ある。2026-08-22 に HTML ページのセクション番�
 
 ## Evals の作成・実行トリガー
 
-skill の発動測定 (`evals/`) は次のタイミングで作成・実行する。
-作り方・レビュー工程・実行方法は `evals/README.md` に従う。
+skill の発動測定は次のタイミングで作成・実行する。ケースは `plugins/{plugin}/evals/` に置き、
+`evals/run.sh {plugin}` で回す。作り方・レビュー工程・実行方法は `evals/README.md` に従う。
 
 - 作成する: 新しい skill を追加したとき。発動漏れ・誤発動の事故が起きたとき
   (事故の再現プロンプトをケースに追加する)

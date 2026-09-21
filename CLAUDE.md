@@ -24,7 +24,8 @@ cc-marketplace/
 ├── .markdownlint.jsonc           # repo lint 設定
 ├── .claude/
 │   ├── settings.local.json
-│   └── rules/                    # プロジェクト固有ルール (設計原則、規約)
+│   ├── rules/                    # プロジェクト固有ルール (設計原則、規約)
+│   └── skills/                   # このプロジェクトでだけ使う skill
 ├── .agents/
 │   └── plugins/
 │       └── marketplace.json      # Codex の marketplace カタログ
@@ -51,6 +52,7 @@ cc-marketplace/
         │   └── *.sh              # skill/hook が invoke するエントリスクリプト（あれば）
         ├── internal/             # 永続化された状態。deprecated で version-check だけが使っている
         │   └── {resource}/
+        ├── evals/                # skill の発動測定（あれば）。`evals/run.sh {plugin}` で回す
         ├── skills/               # consumer skills
         │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）
         ├── claude-skills/        # Claude Code 専用の skill（あれば）
