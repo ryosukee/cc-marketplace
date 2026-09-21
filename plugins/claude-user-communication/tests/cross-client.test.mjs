@@ -50,7 +50,8 @@ test("共有 script が report を生成し、同じ版を記録する", (t) => 
   assert.equal(result.ok, true, JSON.stringify(result.findings));
   const html = fs.readFileSync(path.join(dir, "test-r001.html"), "utf8");
   assert.match(html, /共有ページの試験/);
-  assert.match(html, new RegExp(`claude-html-communication ${pluginVersion().replaceAll(".", "\\.")}`));
+  const escapedVersion = pluginVersion().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.match(html, new RegExp(`claude-html-communication ${escapedVersion}`));
   const backHref = html.match(/<a id="back" href="([^"]+)"/)?.[1];
   assert.ok(backHref);
   assert.equal(fileURLToPath(new URL(backHref, pathToFileURL(path.join(dir, "test-r001.html")))), path.join(dir, "index.html"));
@@ -118,4 +119,32 @@ test("build-archive が HTML_COMMUNICATION_DIR を使う", (t) => {
   );
   assert.equal(result.status, 0, result.stderr);
   assert.ok(fs.existsSync(path.join(dir, "archive.html")));
+});
+
+test("図の CSS が fallback 無しで参照する未定義 custom property を拒否する", (t) => {
+  const htmlPath = path.join(pluginRoot, "tests", "fixtures", "undefined-figure-property.html");
+  const result = spawnSync("bash", [path.join(skillRoot, "scripts", "validate-page.sh"), htmlPath], { encoding: "utf8" });
+  assert.equal(result.status, 1, result.stderr);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.total, 1);
+  assert.equal(output.custom[0].findings[0].check, "custom-property-reference");
+  assert.match(output.custom[0].findings[0].message, /--missing/);
+  assert.doesNotMatch(result.stdout, /--optional|--nested/);
+  assert.doesNotMatch(result.stdout, /--example-in-string/);
+});
+
+test("図の CSS は共通定義・図内定義・登録済み property・直接の fallback を許可する", (t) => {
+  const htmlPath = path.join(pluginRoot, "tests", "fixtures", "defined-figure-property.html");
+  const result = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "check-page.mjs"), htmlPath], { encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(JSON.parse(result.stdout).total, 0);
+});
+
+test("Tailwind の escape を含む selector より後ろの未定義参照を検出する", () => {
+  const htmlPath = path.join(pluginRoot, "tests", "fixtures", "tailwind-escaped-selector.html");
+  const result = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "check-page.mjs"), htmlPath], { encoding: "utf8" });
+  assert.equal(result.status, 1, result.stderr);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.total, 1);
+  assert.match(output.results[0].findings[0].message, /--missing-after-selector/);
 });

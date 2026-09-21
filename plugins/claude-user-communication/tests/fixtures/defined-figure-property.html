@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>定義済みの図用 custom property</title>
+  <style>:root { --shared: #fff; }</style>
+  <style data-scope="figures">
+    @property --registered { syntax: "*"; inherits: false; initial-value: red; }
+    .box {
+      --local: blue;
+      --accent色: green;
+      --accent\31: purple;
+      --accent_: orange;
+      color: var(--shared);
+      border-color: var(--local);
+      outline-color: var(--registered);
+      background: var(--optional, #fff);
+      box-shadow: 0 0 var(--accent色);
+      text-shadow: 0 0 var(--accent\31);
+      fill: var(--accent\_);
+    }
+  </style>
+</head>
+<body><main><h1>定義済みの図用 custom property</h1></main></body>
+</html>

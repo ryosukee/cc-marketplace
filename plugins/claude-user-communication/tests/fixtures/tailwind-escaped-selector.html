@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Tailwind の escape を含む selector</title>
+  <style data-scope="figures">
+    .after\:content-\[\'\'\]:after {
+      --tw-content: "";
+      content: var(--tw-content);
+    }
+    .box { border-color: var(--missing-after-selector); }
+  </style>
+</head>
+<body><main><h1>Tailwind の escape を含む selector</h1></main></body>
+</html>

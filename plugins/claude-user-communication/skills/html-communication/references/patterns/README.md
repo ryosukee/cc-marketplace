@@ -95,7 +95,7 @@ group: 進行と状態
 | 要件 | 生成手段 |
 | --- | --- |
 | 既存のカード、比較、進行、差分、境界の表現で足りる | このパターン集を使い、本文へ埋め込む |
-| パターン集に無い独自の図を本文へ埋め込む | Tailwind で markup と CSS を生成する |
+| パターン集に無い独自の図を本文へ埋め込む | Tailwind CLI で markup と CSS を生成する |
 | architecture、workflow、sequence、data flow、lifecycle / state diagram を探索・trace・export できる形で見せる | 利用可能なら Archify で独立 HTML Viewer を生成する |
 | HTML レポートの要点と、操作可能な詳細図の両方が要る | 本文にはパターン集か Tailwind で要点を置き、Archify の独立 Viewer へリンクする |
 
@@ -105,7 +105,7 @@ Archify は独立した HTML Viewer を作る skill であり、ページへ取�
 
 ## 図を Tailwind で組む
 
-図に限り Tailwind を使ってよい。外部 CDN は読み込めないので、生成のたびに CLI を回して
+独自のインライン図は Tailwind CLI で作る。外部 CDN は読み込めないので、生成のたびに CLI を回して
 使ったクラスだけの CSS を出し、ページの `<style data-scope="figures">` へ貼り込む。
 
 作業ディレクトリを 1 つ作り、次の 3 ファイルを置く。

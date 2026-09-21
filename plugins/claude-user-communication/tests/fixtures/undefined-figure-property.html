@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>未定義の図用 custom property</title>
+  <style>:root { --defined: #fff; }</style>
+  <style data-scope="figures">
+    .box {
+      --missing\_: red;
+      color: var(--defined);
+      border-color: var(--missing);
+      background: var(--optional, var(--nested));
+      content: "var(--example-in-string)";
+    }
+  </style>
+</head>
+<body><main><h1>未定義の図用 custom property</h1></main></body>
+</html>

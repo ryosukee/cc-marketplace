@@ -1,30 +1,31 @@
 #!/usr/bin/env node
 // claude-html-communication ページの自作検査。
 // html-validate / linkinator が見ない点を検査する:
-//   1. フォントサイズの段階数 (許可: 16px 基底 + 1.4em / 1.15em / 1em / 0.875em)
-//   2. 40 字超のセル (td のテキスト)
-//   3. aria-labelledby と caption id の対応
-//   4. 脚注の双方向対応 (fn-N と fnref-N-M のペアリング。リンク先の存在は linkinator が見る)
-//   5. main 内の class / id が Readability の削除・減点正規表現に当たらないか
+//   1. 図の CSS が fallback 無しで参照する未定義の CSS custom property
+//   2. フォントサイズの段階数 (許可: 16px 基底 + 1.4em / 1.15em / 1em / 0.875em)
+//   3. 40 字超のセル (td のテキスト)
+//   4. aria-labelledby と caption id の対応
+//   5. 脚注の双方向対応 (fn-N と fnref-N-M のペアリング。リンク先の存在は linkinator が見る)
+//   6. main 内の class / id が Readability の削除・減点正規表現に当たらないか
 //      (当たると Firefox Reader View 等で本文が削られる。main 外の固定バーは対象外)
-//   6. 本文の 1 文が 100 字を超える (code / pre / blockquote 内は除外)
-//   7. 参照マーカーの器が sup 以外
-//   8. 脚注番号・補足英字が本文の初出順になっていない
-//   9. 識別子 (Q1 / PR 3 / foo.md) が本文に出るのに、その段落から補足へ飛べない
+//   7. 本文の 1 文が 100 字を超える (code / pre / blockquote 内は除外)
+//   8. 参照マーカーの器が sup 以外
+//   9. 脚注番号・補足英字が本文の初出順になっていない
+//  10. 識別子 (Q1 / PR 3 / foo.md) が本文に出るのに、その段落から補足へ飛べない
 //      図のキャプションの番号が 1 からの連番でない
-//  10. 見出しの系統 (説明 N / 設問 N/M / 参考資料 / 付録)、設問の分母と QS 配列長、
+//  11. 見出しの系統 (説明 N / 設問 N/M / 参考資料 / 付録)、設問の分母と QS 配列長、
 //      index の questions との突合
-//  11. 一括承認の設問 (複数の判断を 1 設問で承認させる形)
-//  12. 設問を含む節の見出しが問いの形か (末尾が「か」で終わるか)
-//  13. 表の列見出しが何でも入る器の語になっていないか
-//  14. チェックボックスの既定 checked
-//  15. 前景色に opacity を重ねている (コントラストが下がる。値はトークンで決める)
-//  16. 設問カードの summary に回答済みマーカー (.qstat) が無い
+//  12. 一括承認の設問 (複数の判断を 1 設問で承認させる形)
+//  13. 設問を含む節の見出しが問いの形か (末尾が「か」で終わるか)
+//  14. 表の列見出しが何でも入る器の語になっていないか
+//  15. チェックボックスの既定 checked
+//  16. 前景色に opacity を重ねている (コントラストが下がる。値はトークンで決める)
+//  17. 設問カードの summary に回答済みマーカー (.qstat) が無い
 //
-// 6〜15 は op-review の facet が繰り返し指摘していたものを機械へ移したもの
+// 7〜16 は op-review の facet が繰り返し指摘していたものを機械へ移したもの
 // (2026-08-18。ih-f007 の実測で clarity facet の指摘 58 件の大半がこの形だった)。
-// 上の 16 項目に対して check の値は 18 種ある。項目 9 が identifier-gloss と figure-order、
-// 項目 10 が heading-series と question-count に分かれているため。
+// 上の 17 項目に対して check の値は 19 種ある。項目 10 が identifier-gloss と figure-order、
+// 項目 11 が heading-series と question-count に分かれているため。
 // 数を書き換えるときは grep -o 'check: "[a-z-]*"' scripts/check-page.mjs | sort -u で数え直す。
 //
 // 正規表現ベース。対象は自前の雛形から生成したページに限る (一般の HTML には使えない)。
@@ -63,6 +64,89 @@ function lineOf(src, index) {
   return src.slice(0, index).split("\n").length;
 }
 
+function maskCssCommentsAndStrings(css) {
+  const chars = [...css];
+  let quote = null;
+  let comment = false;
+  let escaped = false;
+  for (let i = 0; i < chars.length; i++) {
+    const char = chars[i];
+    const next = chars[i + 1];
+    if (comment) {
+      if (char === "*" && next === "/") {
+        chars[i] = " ";
+        chars[i + 1] = " ";
+        i++;
+        comment = false;
+      } else if (char !== "\n") chars[i] = " ";
+      continue;
+    }
+    if (quote !== null) {
+      if (char !== "\n") chars[i] = " ";
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === quote) quote = null;
+      continue;
+    }
+    if (char === "/" && next === "*") {
+      chars[i] = " ";
+      chars[i + 1] = " ";
+      i++;
+      comment = true;
+    } else if (char === "\\" && next !== undefined) {
+      i++;
+    } else if (char === '"' || char === "'") {
+      chars[i] = " ";
+      quote = char;
+    }
+  }
+  return chars.join("");
+}
+
+function customPropertyDefinitions(src) {
+  const definitions = new Set();
+  for (const style of src.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)) {
+    const css = maskCssCommentsAndStrings(style[1]);
+    for (const declaration of css.matchAll(/(?:^|[;{])\s*(--[A-Za-z0-9_-]+)\s*:/g)) {
+      definitions.add(declaration[1]);
+    }
+    for (const registration of css.matchAll(/@property\s+(--[A-Za-z0-9_-]+)/g)) {
+      definitions.add(registration[1]);
+    }
+  }
+  return definitions;
+}
+
+// var() の直下に comma があれば fallback 付きとみなす。fallback 内の参照や循環は扱わない。
+function customPropertyReferences(css) {
+  const references = [];
+  for (let start = css.indexOf("var("); start >= 0; start = css.indexOf("var(", start)) {
+    let depth = 1;
+    let quote = null;
+    let escaped = false;
+    let comma = false;
+    let end = start + 4;
+    for (; end < css.length && depth > 0; end++) {
+      const char = css[end];
+      if (quote !== null) {
+        if (escaped) escaped = false;
+        else if (char === "\\") escaped = true;
+        else if (char === quote) quote = null;
+        continue;
+      }
+      if (char === '"' || char === "'") quote = char;
+      else if (char === "(") depth++;
+      else if (char === ")") depth--;
+      else if (char === "," && depth === 1) comma = true;
+    }
+    if (depth !== 0) break;
+    const name = /^\s*(--[A-Za-z0-9_-]+)(?=\s*(?:,|$))/.exec(css.slice(start + 4, end - 1))?.[1];
+    if (name) references.push({ name, hasFallback: comma, offset: start });
+    start = end;
+  }
+  return references;
+}
+
 /* 図のための CSS は本文の規定の外に置く。<style data-scope="figures"> の中身を
    同じ長さの空白へ潰して、フォント段の検査だけから外す。改行は残すので行番号はずれない。
    Readability の class 検査は図にも効かせる（図が Reader View で消えるのは実害） */
@@ -75,7 +159,25 @@ function checkFile(path) {
   const src = readFileSync(path, "utf8");
   const findings = [];
 
-  // 1. フォントサイズの段階数（図の CSS は対象外）
+  // 1. 図の CSS が fallback 無しで参照する未定義の CSS custom property
+  const definitions = customPropertyDefinitions(src);
+  const undefinedReferences = new Map();
+  for (const style of src.matchAll(/<style\b[^>]*\bdata-scope=(["'])figures\1[^>]*>([\s\S]*?)<\/style>/g)) {
+    const css = maskCssCommentsAndStrings(style[2]);
+    const bodyStart = style.index + style[0].indexOf(style[2]);
+    for (const reference of customPropertyReferences(css)) {
+      if (reference.hasFallback || definitions.has(reference.name)) continue;
+      const current = undefinedReferences.get(reference.name) ?? { count: 0, line: lineOf(src, bodyStart + reference.offset) };
+      current.count++;
+      undefinedReferences.set(reference.name, current);
+    }
+  }
+  for (const [name, detail] of undefinedReferences) {
+    findings.push({ check: "custom-property-reference", line: detail.line,
+      message: `図の CSS が未定義の ${name} を fallback 無しで参照している (${detail.count} 箇所)` });
+  }
+
+  // 2. フォントサイズの段階数（図の CSS は対象外）
   const sizes = new Map(); // value -> [line...]
   for (const m of maskFigureStyles(src).matchAll(/font-size:\s*([0-9.]+(?:px|em|rem|%))/g)) {
     const v = m[1];
@@ -89,7 +191,7 @@ function checkFile(path) {
     }
   }
 
-  // 2. 40 字超のセル
+  // 3. 40 字超のセル
   let longCells = 0, worst = { len: 0, line: 0, text: "" };
   for (const m of src.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)) {
     const text = stripTags(m[1]);
