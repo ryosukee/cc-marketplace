@@ -1,0 +1,78 @@
+schema_version: "1.1"
+name: rule-09-push-before-reply
+description: 返信と rocket の前に push するか
+tags: [behavior]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    github-pr の address-review skill で、#42 のコメントに対応して。
+  max_turns: 30
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: replied-to-c2
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reply[^\n]*target=c2 '
+    flags: m
+    match: contains
+  - name: replied-to-c3
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reply[^\n]*target=c3 '
+    flags: m
+    match: contains
+  - name: rocket-on-c2
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reaction-post[^\n]*target=c2 content=rocket '
+    flags: m
+    match: contains
+  - name: rocket-on-c3
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reaction-post[^\n]*target=c3 content=rocket '
+    flags: m
+    match: contains
+  - name: no-unpushed-reply
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reply[^\n]*target=c[23] [^\n]*pushed=no'
+    flags: m
+    match: not_contains
+  - name: no-unpushed-rocket
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reaction-post[^\n]*target=c[23] content=rocket [^\n]*pushed=no'
+    flags: m
+    match: not_contains
+  - name: no-unfixed-reply
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reply[^\n]*target=c[23] [^\n]*fixed=no'
+    flags: m
+    match: not_contains
+  - name: no-unfixed-rocket
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reaction-post[^\n]*target=c[23] content=rocket [^\n]*fixed=no'
+    flags: m
+    match: not_contains

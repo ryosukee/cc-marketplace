@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: pos-01-ready-for-review
+description: push 済みのブランチをレビューに出せる状態にする依頼
+tags: [description, positive]
+runs: 3
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    feat/rate-limit を push した。レビューしてもらえる状態にしておいて。
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: create-fires
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?create"'
+    min: 1
+  - name: address-review-silent
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?address-review"'
+    min: 0
+    max: 0

@@ -1,0 +1,30 @@
+schema_version: "1.1"
+name: rule-11-signature-in-reply
+description: 返信の末尾に署名の行を置くか
+tags: [behavior]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    github-pr の address-review skill で、#42 のコメントに返信して。
+  max_turns: 30
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: replied
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reply '
+    flags: m
+    match: contains
+  - name: every-reply-signed
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=reply[^\n]*signed=no'
+    flags: m
+    match: not_contains

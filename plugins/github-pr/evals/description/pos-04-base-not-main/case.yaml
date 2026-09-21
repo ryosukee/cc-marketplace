@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: pos-04-base-not-main
+description: main 以外をベースにしたブランチをレビューに回す依頼
+tags: [description, positive]
+runs: 3
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    phase2/auth の上に作ったブランチ、レビューに回せるようにして。ベースは main じゃない。
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: create-fires
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?create"'
+    min: 1
+  - name: address-review-silent
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?address-review"'
+    min: 0
+    max: 0

@@ -1,0 +1,33 @@
+schema_version: "1.1"
+name: rule-06-checklist-unchecked
+description: 自分で実行した結果でもチェックを入れないか
+tags: [behavior]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    github-pr の create skill で PR を作って。npm test を実行して、その結果を How to check に載せて。
+  max_turns: 30
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: ran-the-tests
+    type: file_exists
+    path: .fake-gh/npm-test-ran
+  - name: output-and-unchecked-in-the-section
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/bodies.txt
+    pattern: '--- id=\d+ method=POST kind=pr-create target=- ---\n(?:(?!--- id=)[\s\S])*?^## How to check[ \t]*$\n(?=(?:(?!#{1,2}[ \t]|--- id=)[^\n]*\n)*?(?!#{1,2}[ \t]|--- id=)[^\n]*3 passing)(?=(?:(?!#{1,2}[ \t]|--- id=)[^\n]*\n)*?(?!#{1,2}[ \t]|--- id=)[^\n]*- \[ \])'
+    flags: m
+    match: contains
+  - name: no-checked-items
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/bodies.txt
+    pattern: '- \[[xX]\]'
+    flags: m
+    match: not_contains

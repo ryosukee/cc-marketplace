@@ -1,0 +1,30 @@
+schema_version: "1.1"
+name: rule-02-draft-by-default
+description: gh pr create を draft で呼ぶか
+tags: [behavior]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    github-pr の create skill で、いまのブランチの PR を作って。
+  max_turns: 30
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: creates-a-pr
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=pr-create '
+    flags: m
+    match: contains
+  - name: never-without-draft
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=pr-create[^\n]*draft=no'
+    flags: m
+    match: not_contains

@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: pos-09-new-comments-only
+description: 新しく付いたコメントだけ対応する依頼
+tags: [description, positive]
+runs: 3
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    #42 の続き。前に対応した分は済ませてあるから、新しく付いた分だけ対応して。
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: address-review-fires
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?address-review"'
+    min: 1

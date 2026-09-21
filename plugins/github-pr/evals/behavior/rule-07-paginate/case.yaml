@@ -1,0 +1,46 @@
+schema_version: "1.1"
+name: rule-07-paginate
+description: コメントの取得 3 本すべてに --paginate を付けるか
+tags: [behavior]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    github-pr の address-review skill で、#42 のコメントに対応して。
+  max_turns: 30
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: reviews-paginated
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=fetch-reviews pr=42 [^\n]*paginate=yes first=yes'
+    flags: m
+    match: contains
+  - name: pull-comments-paginated
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=fetch-pull-comments pr=42 [^\n]*paginate=yes first=yes'
+    flags: m
+    match: contains
+  - name: issue-comments-paginated
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=fetch-issue-comments pr=42 [^\n]*paginate=yes first=yes'
+    flags: m
+    match: contains
+  - name: no-unpaginated-first-fetch
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=fetch-[a-z-]+ pr=42 [^\n]*paginate=no first=yes'
+    flags: m
+    match: not_contains

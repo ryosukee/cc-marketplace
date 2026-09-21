@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: pos-03-update-stale-body
+description: 既存 PR の説明が差分と合っていない依頼
+tags: [description, positive]
+runs: 3
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    #42 の説明、いまの差分と合ってないから直して。
+  max_turns: 8
+  timeout_seconds: 300
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: create-fires
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?create"'
+    min: 1
+  - name: address-review-silent
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?address-review"'
+    min: 0
+    max: 0

@@ -1,0 +1,29 @@
+schema_version: "1.1"
+name: rule-01-check-existing-pr
+description: PR を作る前に既存 PR を探すか
+tags: [behavior]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    github-pr の create skill で、いまのブランチの PR を作って。
+  max_turns: 30
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: creates-a-pr
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=pr-create '
+    flags: m
+    match: contains
+  - name: no-create-before-list
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: '^(?:(?!kind=pr-list[^\n]*head_ref=feat/rate-limit )[\s\S])*kind=pr-create '
+    match: not_contains

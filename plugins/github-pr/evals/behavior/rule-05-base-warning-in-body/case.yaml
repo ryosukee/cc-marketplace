@@ -1,0 +1,30 @@
+schema_version: "1.1"
+name: rule-05-base-warning-in-body
+description: ベースが main 以外のとき本文の 1 行目を警告にするか
+tags: [behavior]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    github-pr の create skill で、phase2/auth をベースに PR を作って。ベースの PR は #40。
+  max_turns: 30
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: warning-first
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/bodies.txt
+    pattern: '--- id=\d+ method=POST kind=pr-create target=- ---\n> \[!WARNING\][ \t]*$'
+    flags: m
+    match: contains
+  - name: names-the-base-pr
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/bodies.txt
+    pattern: '--- id=\d+ method=POST kind=pr-create target=- ---\n> \[!WARNING\][ \t]*$\n(?:(?!--- id=)[\s\S])*?#40(?![0-9])'
+    flags: m
+    match: contains

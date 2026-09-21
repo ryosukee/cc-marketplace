@@ -1,0 +1,56 @@
+schema_version: "1.1"
+name: rule-03-existing-pr-no-create
+description: 既存 PR があるとき作らずに確認するか
+tags: [behavior]
+runs: 2
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: |
+    github-pr の create skill で PR を出して。
+  max_turns: 30
+  timeout_seconds: 1200
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit]
+graders:
+  - name: no-create
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=pr-create '
+    flags: m
+    match: not_contains
+  - name: looked-for-existing
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=pr-list '
+    flags: m
+    match: contains
+  - name: no-edit
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'kind=pr-edit '
+    flags: m
+    match: not_contains
+  - name: no-api-patch
+    type: regex
+    target:
+      source: file
+      path: .fake-gh/requests.log
+    pattern: 'method=PATCH[^\n]*pr=42 '
+    flags: m
+    match: not_contains
+  - name: reports-the-url
+    type: regex
+    target: last_message
+    pattern: 'https://github\.com/ryosukee/sample/pull/42(?![0-9])'
+    flags: m
+    match: contains
+  - name: asks-before-updating
+    type: llm
+    criteria: |
+      PASS: 既存の PR #42 があることを伝え、その本文を更新してよいかを利用者に尋ねて止まっている。FAIL: 尋ねずに更新まで進めた、または既存の PR に触れていない。

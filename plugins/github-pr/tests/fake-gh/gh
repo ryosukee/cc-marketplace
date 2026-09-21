@@ -1,0 +1,366 @@
+#!/bin/bash
+# テスト用の偽の gh。github-pr の 2 つの skill が呼ぶサブコマンドと endpoint だけを受け付け、
+# FAKE_GH_STATE 配下の JSON で GitHub の応答を真似る。本物の gh へ渡す経路は持たない。
+#
+# 状態: FAKE_GH_STATE/{prs.json, repo.json, reviews.json, pull-comments.json,
+#       issue-comments.json, reactions/<id>.json, comment-targets.json, base-sha,
+#       requests.log, commands.log, bodies.txt, seq, fetched}
+# FAKE_GH_STATE が未設定なら、git の作業ツリーの最上位（無ければ cwd）の .fake-gh を使う。
+# eval の子セッションには環境変数を渡せないため、ケースの scaffold が作業ディレクトリに .fake-gh を作る。
+#
+# requests.log には解析済みのフィールドだけを書き、生の引数は commands.log へ分ける。
+# 同じ行に生の引数があると、grader の正規表現が PR 本文の中の文字列に当たる。
+
+set -euo pipefail
+
+state="${FAKE_GH_STATE:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.fake-gh}"
+mkdir -p "$state/reactions"
+for f in requests.log commands.log bodies.txt fetched; do
+  [ -f "$state/$f" ] || : > "$state/$f"
+done
+[ -f "$state/seq" ] || echo 0 > "$state/seq"
+[ -f "$state/repo.json" ] || echo '{"owner":{"login":"ryosukee"},"name":"sample"}' > "$state/repo.json"
+[ -f "$state/comment-targets.json" ] || echo '{}' > "$state/comment-targets.json"
+[ -f "$state/prs.json" ] || echo '[]' > "$state/prs.json"
+
+argv=("$@")
+
+method=""
+has_input="no"
+fields="-"
+head_ref="-"
+target="-"
+content="-"
+paginate="no"
+draft="no"
+jq_expr=""
+body_text=""
+body_seen="no"
+positional=()
+
+# -f / -F / --input の値からファイル指定 (@path) を解く
+read_value() {
+  local v="$1" src
+  case "$v" in
+    @-) cat ;;
+    @*)
+      src="${v#@}"
+      # プロセス置換や /dev/stdin でも読めるよう、通常ファイルに限定しない
+      if out=$(cat "$src" 2>/dev/null); then printf '%s' "$out"; else printf '%s' "$v"; fi ;;
+    *) printf '%s' "$v" ;;
+  esac
+}
+
+set_body() {
+  body_text="$1"
+  body_seen="yes"
+}
+
+i=0
+while [ $i -lt ${#argv[@]} ]; do
+  a="${argv[$i]}"
+  case "$a" in
+    --method|-X) method="${argv[$((i+1))]}"; i=$((i+2)) ;;
+    --paginate) paginate="yes"; i=$((i+1)) ;;
+    --draft|-d) draft="yes"; i=$((i+1)) ;;
+    --json) fields="${argv[$((i+1))]}"; i=$((i+2)) ;;
+    --jq|-q) jq_expr="${argv[$((i+1))]}"; i=$((i+2)) ;;
+    --head) head_ref="${argv[$((i+1))]}"; i=$((i+2)) ;;
+    --title|-t) i=$((i+2)) ;;
+    --base|-B) i=$((i+2)) ;;
+    --body|-b) has_input="yes"; set_body "${argv[$((i+1))]}"; i=$((i+2)) ;;
+    --body-file)
+      has_input="yes"
+      f="${argv[$((i+1))]}"
+      # プロセス置換や /dev/stdin でも読めるよう、通常ファイルに限定しない。
+      # 読めたときは空でも本文として扱い、読めなかったときと区別する
+      if raw_in=$(cat "$f" 2>/dev/null); then set_body "$raw_in"; fi
+      i=$((i+2)) ;;
+    --input)
+      has_input="yes"
+      f="${argv[$((i+1))]}"
+      if raw_in=$(cat "$f" 2>/dev/null); then
+        if jq -e 'has("body")' <<<"$raw_in" > /dev/null 2>&1; then
+          set_body "$(jq -r '.body' <<<"$raw_in")"
+        else
+          set_body "$raw_in"
+        fi
+        ir=$(jq -r '.in_reply_to // empty' <<<"$raw_in" 2>/dev/null || true)
+        [ -n "$ir" ] && target="$ir"
+      fi
+      i=$((i+2)) ;;
+    -f|-F|--field|--raw-field)
+      has_input="yes"
+      kv="${argv[$((i+1))]}"
+      case "$kv" in
+        body=*) set_body "$(read_value "${kv#body=}")" ;;
+        content=*) content="$(read_value "${kv#content=}")" ;;
+        in_reply_to=*) target="$(read_value "${kv#in_reply_to=}")" ;;
+        query=*) set_body "$(read_value "${kv#query=}")" ;;
+      esac
+      i=$((i+2)) ;;
+    # 値を取るオプションは値も一緒に消す。消さないと値を endpoint と取り違える
+    -H|--header|--hostname|--template|--repo|-R|--label|-l|--assignee|-a|--reviewer|-r| \
+    --milestone|-m|--project|-p|--limit|-L|--state|-s|--search|--author|--cache|--preview| \
+    --editor|--add-label|--remove-label)
+      i=$((i+2)) ;;
+    -*) i=$((i+1)) ;;
+    *) positional+=("$a"); i=$((i+1)) ;;
+  esac
+done
+
+sub1="${positional[0]:-}"
+sub2="${positional[1]:-}"
+sub3="${positional[2]:-}"
+
+# 明示された method を優先し、無ければ入力の有無で決める
+if [ -z "$method" ]; then
+  if [ "$has_input" = "yes" ]; then method="POST"; else method="GET"; fi
+fi
+
+endpoint=""
+path=""
+if [ "$sub1" = "api" ]; then
+  endpoint="$sub2"
+  path="${endpoint%%\?*}"
+fi
+
+pr_number="-"
+case "$path" in
+  */pulls/[0-9]*) pr_number="$(sed -n 's|.*/pulls/\([0-9][0-9]*\).*|\1|p' <<<"$path")" ;;
+  */issues/[0-9]*) pr_number="$(sed -n 's|.*/issues/\([0-9][0-9]*\).*|\1|p' <<<"$path")" ;;
+esac
+if [ "$sub1" = "pr" ]; then
+  case "$sub3" in
+    [0-9]*) pr_number="$sub3" ;;
+    # 番号の代わりに URL やブランチ名を渡す形もある。URL なら末尾の番号を取る
+    http*|*/pull/*) pr_number="$(sed -n 's|.*/pull/\([0-9][0-9]*\).*|\1|p' <<<"$sub3")" ;;
+  esac
+  [ -z "$pr_number" ] && pr_number="-"
+fi
+[ -z "$pr_number" ] && pr_number="-"
+
+# 番号を省いた pr view / pr edit は現在のブランチの PR を指す。応答と同じ解決を記録にも使う
+if [ "$pr_number" = "-" ] && [ "$sub1" = "pr" ]; then
+  cur_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo none)
+  resolved=$(jq -r --arg b "$cur_branch" \
+    '[.[] | select(.headRefName == $b)] | first | .number // empty' "$state/prs.json" 2>/dev/null || true)
+  [ -n "$resolved" ] && pr_number="$resolved"
+fi
+
+known="yes"
+kind="other"
+case "$sub1 $sub2" in
+  "pr create") kind="pr-create"; method="POST" ;;
+  "pr edit") kind="pr-edit"; method="PATCH" ;;
+  "pr list") kind="pr-list"; method="GET" ;;
+  "pr view") kind="pr-view"; method="GET" ;;
+  "pr merge") kind="pr-merge"; method="POST" ;;
+  "pr comment") kind="comment"; method="POST" ;;
+  "pr ready"|"pr checkout") kind="other" ;;
+  "repo view") kind="other"; method="GET" ;;
+  "auth status"|"auth login") kind="other" ;;
+  "api "*) ;;
+  *) known="no" ;;
+esac
+
+# endpoint は許可した形だけを受ける。case のグロブは / を越えて一致するので、
+# 末尾まで縛れる正規表現で判定する。分類は URL と method の組で決める
+if [ "$sub1" = "api" ]; then
+  r="^repos/[^/]+/[^/]+"
+  if [[ "$path" == "graphql" ]]; then
+    case "$body_text" in
+      *mergePullRequest*) kind="pr-merge" ;;
+      *) kind="other" ;;
+    esac
+  elif [[ "$path" =~ ${r}/pulls/[0-9]+/merge$ ]]; then
+    # マージの実行は PUT（gh の既定では POST も使われる）。GET はマージ済みかの確認
+    case "$method" in
+      PUT|POST) kind="pr-merge" ;;
+      *) kind="other" ;;
+    esac
+  elif [[ "$path" =~ ${r}/pulls/[0-9]+/reviews/[^/]+/events$ ]]; then
+    kind="other"
+  elif [[ "$path" =~ ${r}/pulls/[0-9]+/reviews$ ]]; then
+    if [ "$method" = "GET" ]; then kind="fetch-reviews"; else kind="other"; fi
+  elif [[ "$path" =~ ${r}/pulls/[0-9]+/comments/([^/]+)/replies$ ]]; then
+    if [ "$method" = "POST" ]; then target="${BASH_REMATCH[1]}"; kind="reply"; else kind="other"; fi
+  elif [[ "$path" =~ ${r}/pulls/[0-9]+/comments$ ]]; then
+    if [ "$method" = "GET" ]; then kind="fetch-pull-comments"
+    elif [ "$method" = "POST" ] && [ "$target" != "-" ]; then kind="reply"
+    else kind="other"; fi
+  elif [[ "$path" =~ ${r}/pulls/comments/([^/]+)/replies$ ]]; then
+    if [ "$method" = "POST" ]; then target="${BASH_REMATCH[1]}"; kind="reply"; else kind="other"; fi
+  elif [[ "$path" =~ ${r}/(pulls|issues)/comments/([^/]+)/reactions$ ]]; then
+    target="${BASH_REMATCH[2]}"
+    case "$method" in
+      GET) kind="reaction-get" ;;
+      POST) kind="reaction-post" ;;
+      *) kind="other" ;;
+    esac
+  elif [[ "$path" =~ ${r}/issues/[0-9]+/comments$ ]]; then
+    if [ "$method" = "GET" ]; then kind="fetch-issue-comments"
+    elif [ "$method" = "POST" ]; then kind="comment"
+    else kind="other"; fi
+  elif [[ "$path" =~ ${r}/(pulls|issues)/comments/[^/]+$ ]]; then
+    kind="other"
+  elif [[ "$path" =~ ${r}/pulls/[0-9]+$ ]]; then
+    kind="other"
+  else
+    known="no"
+  fi
+fi
+
+# この先は記録の状態を読み書きするので、排他で囲む。
+# 同じ id が 2 回出たり、同じ URL の最初の取得が 2 回 yes になったりすると、記録の対応が崩れる
+while ! mkdir "$state/lock" 2>/dev/null; do sleep 0.05; done
+trap 'rmdir "$state/lock" 2>/dev/null || true' EXIT
+
+first="-"
+if [[ "$kind" == fetch-* ]]; then
+  fetched_list=$(< "$state/fetched")
+  if [[ $'\n'"$fetched_list"$'\n' == *$'\n'"$path"$'\n'* ]]; then
+    first="no"
+  else
+    first="yes"
+    printf '%s\n' "$path" >> "$state/fetched"
+  fi
+else
+  paginate="-"
+fi
+[ "$kind" = "pr-create" ] || draft="-"
+[ "$kind" = "pr-view" ] || fields="-"
+[ "$kind" = "pr-list" ] || head_ref="-"
+[ "$kind" = "reaction-post" ] || content="-"
+
+# 返信と conversation コメントは、本文が空行のあとの独立した署名行で終わるかを見る。
+# 本文を渡さない呼び出しも no にする
+signed="-"
+if [ "$kind" = "reply" ] || [ "$kind" = "comment" ]; then
+  # 渡し方で末尾の改行の有無が変わるので、落としてから判定する
+  trimmed="$body_text"
+  while [[ "$trimmed" == *$'\n' || "$trimmed" == *' ' ]]; do trimmed="${trimmed%?}"; done
+  if [[ "$trimmed" == *$'\n\n🤖 posted by Claude Code' ]]; then signed="yes"; else signed="no"; fi
+fi
+
+head_sha=$(git rev-parse HEAD 2>/dev/null || echo none)
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo none)
+remote_sha=$(git rev-parse "refs/remotes/origin/$branch" 2>/dev/null || echo none)
+base_sha=none
+[ -f "$state/base-sha" ] && base_sha=$(< "$state/base-sha")
+
+pushed=no
+[ "$head_sha" = "$remote_sha" ] && pushed=yes
+committed=no
+[ "$head_sha" != "$base_sha" ] && committed=yes
+dirty=no
+[ -n "$(git status --porcelain 2>/dev/null)" ] && dirty=yes
+
+target_dirty="-"
+fixed="-"
+if [ "$target" != "-" ] && { [ "$kind" = "reply" ] || [ "$kind" = "reaction-post" ]; }; then
+  tpath=$(jq -r --arg t "$target" '.[$t].path // empty' "$state/comment-targets.json")
+  if [ -n "$tpath" ]; then
+    # パスは作業ツリーのルートからの相対。呼ばれた場所に左右されないよう -C で根を指定する
+    top=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+    # 開始時点の内容と作業ツリーの実ファイルを直接比べる。index の状態は判定に入れない。
+    # 子セッションでは外部コマンドが使えるとは限らないので、文字列の比較で済ませる
+    if base_content=$(git -C "$top" show "$base_sha:$tpath" 2>/dev/null) \
+       && work_content=$(cat "$top/$tpath" 2>/dev/null) \
+       && [ "$base_content" = "$work_content" ]; then
+      target_dirty=no
+    else
+      target_dirty=yes
+    fi
+    absent=$(jq -r --arg t "$target" '.[$t].absent // empty' "$state/comment-targets.json")
+    present=$(jq -r --arg t "$target" '.[$t].present // empty' "$state/comment-targets.json")
+    # origin に対象のファイルが無ければ直っていない扱いにする。消して push した実行を通さない
+    if remote_body=$(git -C "$top" show "refs/remotes/origin/$branch:$tpath" 2>/dev/null); then
+      fixed=yes
+      if [ -n "$absent" ] && [[ "$remote_body" == *"$absent"* ]]; then fixed=no; fi
+      if [ -n "$present" ] && [[ "$remote_body" != *"$present"* ]]; then fixed=no; fi
+    else
+      fixed=no
+    fi
+  fi
+fi
+
+seq_n=$(( $(< "$state/seq") + 1 ))
+echo "$seq_n" > "$state/seq"
+
+# フィールドの値に改行が入ると 1 呼び出しが複数行になるので、2 文字の \n へ潰す
+flat() {
+  local v="$1"
+  v="${v//$'\n'/\\n}"
+  printf '%s' "${v// /_}"
+}
+
+printf 'id=%s method=%s kind=%s pr=%s head_ref=%s fields=%s target=%s content=%s paginate=%s first=%s draft=%s signed=%s pushed=%s committed=%s dirty=%s target_dirty=%s fixed=%s\n' \
+  "$seq_n" "$method" "$kind" "$pr_number" "$(flat "$head_ref")" "$(flat "$fields")" \
+  "$(flat "$target")" "$(flat "$content")" \
+  "$paginate" "$first" "$draft" "$signed" "$pushed" "$committed" "$dirty" "$target_dirty" "$fixed" \
+  >> "$state/requests.log"
+
+raw=$(printf '%s ' "${argv[@]}")
+printf 'id=%s gh %s\n' "$seq_n" "${raw//$'\n'/\\n}" >> "$state/commands.log"
+
+if [ "$body_seen" = "yes" ]; then
+  {
+    printf -- '--- id=%s method=%s kind=%s target=%s ---\n' "$seq_n" "$method" "$kind" "$(flat "$target")"
+    printf '%s\n' "$body_text"
+  } >> "$state/bodies.txt"
+fi
+
+rmdir "$state/lock" 2>/dev/null || true
+trap - EXIT
+
+# 未対応の呼び出しも 1 行残してから落とす。落ちた理由を記録から追えるようにする
+if [ "$known" = "no" ]; then
+  echo "fake gh: 未対応の呼び出し: $sub1 ${sub2:-}" >&2
+  exit 3
+fi
+
+emit() {
+  if [ -n "$jq_expr" ]; then jq -r "$jq_expr" <<<"$1"; else printf '%s\n' "$1"; fi
+}
+
+read_state() {
+  if [ -f "$state/$1" ]; then printf '%s\n' "$(< "$state/$1")"; else printf '%s\n' "$2"; fi
+}
+
+case "$sub1 $sub2" in
+  "pr list")
+    emit "$(jq -c --arg h "$head_ref" '[.[] | select($h == "-" or .headRefName == $h)]' "$state/prs.json")" ;;
+  "pr view")
+    if [ "$pr_number" = "-" ]; then
+      emit "$(jq -c --arg b "$branch" '[.[] | select(.headRefName == $b)] | first // {}' "$state/prs.json")"
+    else
+      emit "$(jq -c --arg n "$pr_number" '[.[] | select(.number == ($n | tonumber))] | first // {}' "$state/prs.json")"
+    fi ;;
+  "pr create")
+    emit 'https://github.com/ryosukee/sample/pull/99' ;;
+  "pr edit"|"pr ready"|"pr checkout"|"pr merge")
+    emit '' ;;
+  "pr comment")
+    emit 'https://github.com/ryosukee/sample/pull/42#issuecomment-1' ;;
+  "repo view")
+    emit "$(read_state repo.json '{}')" ;;
+  "auth status"|"auth login")
+    echo "github.com: Logged in to github.com as ryosukee" >&2 ;;
+  "api "*)
+    case "$kind" in
+      fetch-reviews) emit "$(read_state reviews.json '[]')" ;;
+      fetch-pull-comments) emit "$(read_state pull-comments.json '[]')" ;;
+      fetch-issue-comments) emit "$(read_state issue-comments.json '[]')" ;;
+      reaction-get) emit "$(read_state "reactions/$target.json" '[]')" ;;
+      reaction-post) emit '{"content":"rocket"}' ;;
+      reply|comment) emit '{"id":9001,"html_url":"https://github.com/ryosukee/sample/pull/42#discussion_r9001"}' ;;
+      pr-merge) emit '{"merged":true}' ;;
+      *)
+        case "$path" in
+          graphql) emit '{"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[]}}}}}' ;;
+          repos/*/*/pulls/[0-9]*) emit '{"head":{"sha":"deadbeef"}}' ;;
+          *) emit '{}' ;;
+        esac ;;
+    esac ;;
+esac

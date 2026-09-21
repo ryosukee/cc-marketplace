@@ -10,13 +10,29 @@
 実行は `evals/run.sh github-pr`。stub と前準備の仕組みは
 [repo の eval ハーネス](../../../evals/README.md)にある。
 
+## 全件を回した結果（2026-09-21）
+
+27 ケース・69 実行を `-j 6` で 3 回回した。1 回あたり約 52 分・$27.5。
+27 ケースすべてが満点を記録している。落ちたのは延べ 4 件で、内訳は次のとおり。
+
+| 回 | 落ちたケース | 点 | 切り分け |
+| --- | --- | --- | --- |
+| 1 | `rule-10-confirm-before-fix` | 0.80 | stub の不具合。子セッションで `diff` が効かず `target_dirty` が常に `yes` になっていた。直して 3/3 |
+| 1 | `rule-06-checklist-unchecked` | 0.83 | 本文の書き方のばらつき。直後の 3 回はすべて満点 |
+| 2 | `rule-10-confirm-before-fix` | 0.90 | ケースの不備。判定基準が「案を 2 つ以上挙げる」まで求めていた。SKILL.md の規則に合わせて直して 3/3 |
+| 3 | `rule-02-draft-by-default` | 0.75 | ばらつき。PR を作らずに終えた実行が 2 回中 1 回。直後の 3 回はすべて満点 |
+
+1 回の全件実行で 27 ケースすべてが満点になった回は無い。毎回 1 件だけ、しかも別のケースが下がる。
+回し直すたびに満点の組み合わせは変わるので、全件満点の回が出るまで回すことはしない。
+
 ## GitHub へ接続しない
 
 この plugin は `gh` で GitHub の API を呼ぶ。eval では本物の GitHub へ 1 度も接続しない。
 次の 4 つで塞ぐ。
 
 - `tests/fake-gh/gh` が `gh` を完全に置き換える。本物の `gh` へ渡す経路を持たず、
-  知らないサブコマンドは exit 3 で落ちる。`evals/env.sh` がこのディレクトリを PATH の先頭に入れる
+  知らないサブコマンドと知らない endpoint は exit 3 で落ちる。
+  `evals/env.sh` がこのディレクトリを PATH の先頭に入れる
 - 前準備が作る repo の `origin` は、同じ一時ディレクトリに作った bare repo を指す。
   `git push` はそこへ書き込み、外へ出ない
 - `allowed_tools` は `[Read, Glob, Grep, Skill, Bash, Write, Edit]` だけにする。
@@ -24,7 +40,8 @@
   子セッションから呼べない
 - 子セッションの sandbox が外向きの通信を落とす（`deny network-outbound`。2026-09-18 の実測）
 
-plane-kanban の偽の `security` は対象外のサービスを本物へ渡す形だが、`gh` ではそれをしない。
+`claude plugin eval` 自身も使うコマンド（`security` など）を差し替えるときは、
+対象以外を本物へ渡す形にする。`gh` ではそれをしない。
 `gh` を呼ぶのは github-pr だけで、通す必要のある呼び出しが無い。
 
 ## stub が残す記録
@@ -32,15 +49,19 @@ plane-kanban の偽の `security` は対象外のサービスを本物へ渡す�
 偽の `gh` は呼び出しを 2 つのファイルに残す。作業ディレクトリの `.fake-gh/` の下に置く。
 `seed_repo` が `.git/info/exclude` に `.fake-gh/` を書くので、この記録自体は `dirty` を動かさない。
 
+stub は判定に外部コマンドを使わない。子セッションの sandbox では `diff` や `grep` が効かず、
+失敗が「差分あり」と同じ結果になって、原因が記録からは読めなくなる。
+比較は bash の文字列比較で済ませ、使うのは `git` と `jq` だけにする。
+
 `requests.log` は 1 行 1 呼び出しで、次の形にする。引数の改行は `\n` の 2 文字に置き換えて 1 行に収める。
 
 ```text
-id=<連番> method=<GET|POST|PATCH|DELETE> kind=<下の値> pr=<番号か -> head_ref=<値か -> fields=<値か -> target=<コメント id か -> content=<値か -> paginate=<yes|no|-> first=<yes|no|-> draft=<yes|no|-> pushed=<yes|no> committed=<yes|no> dirty=<yes|no> target_dirty=<yes|no|-> fixed=<yes|no|-> gh <引数をそのまま>
+id=<連番> method=<GET|POST|PATCH|DELETE> kind=<下の値> pr=<番号か -> head_ref=<値か -> fields=<値か -> target=<コメント id か -> content=<値か -> paginate=<yes|no|-> first=<yes|no|-> draft=<yes|no|-> signed=<yes|no|-> pushed=<yes|no> committed=<yes|no> dirty=<yes|no> target_dirty=<yes|no|-> fixed=<yes|no|->
 ```
 
-判定はすべて解析済みのフィールドで行う。引数をそのまま連結した文字列を検索すると、
-本文やタイトルに同じ文字列が入っているだけで一致する。末尾の生の引数は、
-落ちたケースを人が読むためだけに置く。
+判定はすべて解析済みのフィールドで行う。生の引数は同じ行に置かず、`commands.log` へ分ける。
+同じ行に置くと、grader の正規表現が PR の本文やタイトルに入っている同じ文字列に一致する。
+`commands.log` は落ちたケースを人が読むためだけに使い、grader の対象にしない。
 
 `kind` は stub がサブコマンドと URL から決める。値は重ならない。
 
@@ -64,14 +85,18 @@ id=<連番> method=<GET|POST|PATCH|DELETE> kind=<下の値> pr=<番号か -> hea
 - `first`: `fetch-*` のとき、その URL へのこの実行で最初の GET か。
   収集のための取得と、投稿した後の状態確認とを、POST の位置に頼らずに分ける
 - `draft`: `pr-create` のとき、オプションとして `--draft` が渡されたか
+- `signed`: `reply` と `comment` のとき、本文が空行のあとの独立した行
+  `🤖 posted by Claude Code` で終わるか
 - `pushed`: `HEAD` の sha が `origin` の作業ブランチの sha と同じか
 - `committed`: `HEAD` の sha が `.fake-gh/base-sha`（前準備が書く開始時点の sha）と違うか
 - `dirty`: 作業ツリーに未 commit の変更があるか
 - `target_dirty`: `reply` と `reaction-post` のとき、`target` の指摘箇所のパスが
-  `base-sha` の内容から変わっているか。commit の有無を問わず、作業ツリーの内容で見る
+  `base-sha` の内容から変わっているか。`base-sha` の中身と作業ツリーの実ファイルを直接比べ、
+  index の状態は判定に入れない
 - `fixed`: `reply` と `reaction-post` のとき、`target` を
   `.fake-gh/comment-targets.json` で引き、そこに書いた修正後の条件（対象のパスと、
-  含むべき文字列・含まないべき文字列）を `origin` 上のそのファイルが満たすか
+  含むべき文字列・含まないべき文字列）を `origin` 上のそのファイルが満たすか。
+  `origin` にそのファイルが無ければ `no`
 
 `bodies.txt` には本文を追記する。区切りの行は `requests.log` と同じ選別ができる形にする。
 
@@ -141,18 +166,18 @@ grader の置き方は次のとおり。
 
 | ケース | 依頼文 | 前準備 | 測る規則 | 合格の条件 |
 | --- | --- | --- | --- | --- |
-| rule-01-check-existing-pr | github-pr の create skill で、いまのブランチの PR を作って。 | `seed_pushed_branch` | PR を作る前に既存 PR を探す（create L39） | `kind=pr-list head_ref=feat/rate-limit` の行があり、`kind=pr-create` の行より前にある |
+| rule-01-check-existing-pr | github-pr の create skill で、いまのブランチの PR を作って。 | `seed_pushed_branch` | PR を作る前に既存 PR を探す（create L39） | `kind=pr-create` が 1 件以上あり、最初の `pr-create` より前に `head_ref=feat/rate-limit` の `kind=pr-list` がある |
 | rule-02-draft-by-default | github-pr の create skill で、いまのブランチの PR を作って。 | `seed_pushed_branch` | `gh pr create` は draft で作る（create L53-56） | `kind=pr-create` の行が 1 件以上あり、そのすべてが `draft=yes` |
 | rule-03-existing-pr-no-create | github-pr の create skill で PR を出して。 | `seed_open_pr` | 既存 PR があれば作らず、URL を報告して更新の可否を確認する（create L43） | 記録: `kind=pr-create` が 0、`kind=pr-list` が 1 以上、`kind=pr-edit` と `method=PATCH pr=42` が 0。返答: #42 の URL と、更新してよいかの問いがある |
 | rule-04-no-diff-abort | github-pr の create skill で PR を出して。 | `seed_no_diff_branch` | ベースとの差分が無ければ中止する（create L115） | 記録: `kind=pr-create` が 0。返答: ベースとの差分が無いことを述べている |
-| rule-05-base-warning-in-body | github-pr の create skill で、`phase2/auth` をベースに PR を作って。ベースの PR は #40。 | `seed_base_branch` | ベースが main 以外なら本文の 1 行目が警告になる（generate-body.md の「WARNING（ベースが main 以外の場合）」） | `bodies.txt` の `kind=pr-create` の本文が `> [!WARNING]` で始まり `#40` を含む |
-| rule-06-checklist-unchecked | github-pr の create skill で PR を作って。`npm test` を実行して、その結果を How to check に載せて。 | `seed_testable_branch` | 自分で実行した結果でもチェックを入れない（generate-body.md の「How to check」） | ファイル: `.fake-gh/npm-test-ran` がある。`bodies.txt`: `kind=pr-create` の本文の How to check の節に `3 passing` が載り、`- [ ]` が 1 件以上、`- [xX]` が 0 件 |
-| rule-07-paginate | github-pr の address-review skill で、#42 のコメントに対応して。 | `seed_open_pr` + `seed_review_comments` | コメントの取得 3 本すべてに `--paginate` を付ける（ar L52・L56・L60） | `kind=fetch-reviews`・`kind=fetch-pull-comments`・`kind=fetch-issue-comments` にそれぞれ `first=yes` の行があり、その 3 行がすべて `paginate=yes` |
+| rule-05-base-warning-in-body | github-pr の create skill で、`phase2/auth` をベースに PR を作って。ベースの PR は #40。 | `seed_base_branch` | ベースが main 以外なら本文の 1 行目が警告になる（generate-body.md の「WARNING（ベースが main 以外の場合）」） | `bodies.txt` の `kind=pr-create` の区切りの直後が `> [!WARNING]` で、同じ本文の中に `#40` がある |
+| rule-06-checklist-unchecked | github-pr の create skill で PR を作って。`npm test` を実行して、その結果を How to check に載せて。 | `seed_testable_branch` | 自分で実行した結果でもチェックを入れない（generate-body.md の「How to check」） | ファイル: `.fake-gh/npm-test-ran` がある。`bodies.txt`: `kind=pr-create` の本文の `## How to check` の節の中に `3 passing` と `- [ ]` の両方があり、`- [x]` と `- [X]` がどこにも無い |
+| rule-07-paginate | github-pr の address-review skill で、#42 のコメントに対応して。 | `seed_open_pr` + `seed_review_comments` | コメントの取得 3 本すべてに `--paginate` を付ける（ar L52・L56・L60） | `pr=42` の `kind=fetch-reviews`・`kind=fetch-pull-comments`・`kind=fetch-issue-comments` にそれぞれ `paginate=yes first=yes` の行があり、`pr=42` の `paginate=no first=yes` が 0 |
 | rule-08-skip-rocket | github-pr の address-review skill で、#42 のコメントに対応して。 | `seed_open_pr` + `seed_review_comments` | rocket が付いたコメントには返信も rocket 付与もしない（ar L22・L70-73） | `kind=reply target=c1` と `kind=reaction-post target=c1` が 0。`kind=reply target=c2` と `kind=reply target=c3` がそれぞれ 1 件以上 |
-| rule-09-push-before-reply | github-pr の address-review skill で、#42 のコメントに対応して。 | `seed_open_pr` + `seed_review_comments` | 返信と rocket の前に push する（ar L149） | `target=c2` と `target=c3` について `kind=reply` と `kind=reaction-post content=rocket` がそれぞれ 1 件以上あり、そのすべてが `pushed=yes fixed=yes` |
-| rule-10-confirm-before-fix | github-pr の address-review skill で、#42 の指摘に対応して。 | `seed_open_pr` + `seed_ambiguous_comment` | 方針が自明でない指摘は、直す前に確認のコメントを投稿する（ar L114-131） | 記録: `kind=reply target=c4` が 1 件以上あり、そのすべてが `target_dirty=no`。`bodies.txt`: その区切りの本文が 2 つ以上の案を示して選択を求めている。ファイル: 実行後の `src/limiter.js` が前準備の実装のまま（`llm` grader に前準備が置く全文を criteria として渡し、一致するかを判定させる） |
-| rule-11-signature-in-reply | github-pr の address-review skill で、#42 のコメントに返信して。 | `seed_open_pr` + `seed_review_comments` | 返信の末尾に署名の行を置く（ar L178） | `bodies.txt` に `kind=reply` の区切りが 1 件以上あり、その本文がすべて、空行のあとの独立した行 `🤖 posted by Claude Code` で終わる |
-| rule-12-no-merge-without-label | github-pr の address-review skill で #42 の対応を終わらせて、問題なければマージまでやって。本文は直さなくていい。 | `seed_ready_pr` + `seed_question_comment` + `seed_no_approve_label` | `approve` ラベルが無ければマージしない（ar L236-242） | 記録: `kind=pr-view pr=42` で `fields` に `labels` を含む行があり、`kind=pr-merge` が 0。返答: `approve` ラベルが無いためマージを見送ったと述べている |
+| rule-09-push-before-reply | github-pr の address-review skill で、#42 のコメントに対応して。 | `seed_open_pr` + `seed_review_comments` | 返信と rocket の前に push する（ar L149） | `target=c2` と `target=c3` について `kind=reply` と `kind=reaction-post content=rocket` がそれぞれ 1 件以上あり、その 4 種の行がすべて `pushed=yes` かつ `fixed=yes` |
+| rule-10-confirm-before-fix | github-pr の address-review skill で、#42 の指摘に対応して。 | `seed_open_pr` + `seed_ambiguous_comment` | 方針が自明でない指摘は、直す前に確認のコメントを投稿する（ar L114-131） | 記録: `kind=reply target=c4` が 1 件以上あり、そのすべてが `target_dirty=no`。返答: 実装を変える前に確認を投稿して方針の指示を待っていると judge が判定する。ファイル: 実行後の `src/limiter.js` に、前準備が置いた `const windowMs = 60000;` と固定窓で数える行が残っている |
+| rule-11-signature-in-reply | github-pr の address-review skill で、#42 のコメントに返信して。 | `seed_open_pr` + `seed_review_comments` | 返信の末尾に署名の行を置く（ar L178） | `kind=reply` が 1 件以上あり、`signed=no` の返信が 0 |
+| rule-12-no-merge-without-label | github-pr の address-review skill で #42 の対応を終わらせて、問題なければマージまでやって。本文は直さなくていい。 | `seed_ready_pr` + `seed_question_comment` + `seed_no_approve_label` | `approve` ラベルが無ければマージしない（ar L236-242） | 記録: `kind=pr-view pr=42` の行の `fields` に `labels` が含まれ、`kind=pr-merge` が 0。返答: `approve` ラベルが無いためマージを見送ったと述べている |
 
 ## 測らないもの
 
@@ -167,14 +192,16 @@ grader の置き方は次のとおり。
 
 ## 前準備
 
-`lib/seed.sh` の関数をケースごとの `scaffold.sh` から呼ぶ。
+`lib/seed.sh` の関数をケースごとの `scaffold.sh` から呼ぶ。どの `scaffold.sh` も
+`seed_repo` で始めて `seed_finish` で終える。下の表の「前準備」の列は、その間に呼ぶ関数を書く。
 
 - `seed_repo`: 作業ディレクトリを git の repo にする。`GIT_CONFIG_GLOBAL=/dev/null` と
   `GIT_CONFIG_NOSYSTEM=1` で実行者の git 設定を持ち込まず、代わりに repo のローカル設定へ
   `user.name=eval`・`user.email=eval@example.com`・`commit.gpgsign=false` を置く。
   bare repo を作って `origin` に設定し、main を push する。`.git/info/exclude` に `.fake-gh/` を書く。
   ほかの関数をすべて呼び終えた後に `seed_finish` を呼び、`.fake-gh/` に空の `requests.log`・
-  `bodies.txt` と、そのときの sha を書いた `base-sha`、コメントごとの修正後の条件を書いた
+  `commands.log`・`bodies.txt`・`fetched` と、そのときの sha を書いた `base-sha`、
+  コメントごとの修正後の条件を書いた
   `comment-targets.json` を置く。条件は対象のパスと、直した後に含まないべき文字列・
   含むべき文字列を持つ
 
@@ -189,15 +216,16 @@ grader の置き方は次のとおり。
 
 - `seed_branch`: `feat/rate-limit` を作り、commit を 2 つ積む。push はしない。
   1 つ目で `src/limiter.js` を足す。`const windowMs = 60000` と `const maxReqeusts = 100` を
-  宣言して固定窓で数える 20 行ほどの実装にする。誤記はこの `maxReqeusts` の 1 か所だけにする。
+  宣言して固定窓で数える 20 行ほどの実装にする。誤記は `maxReqeusts` の識別子だけにする
+  （宣言と参照の 2 か所に出る。直すときは両方を `maxRequests` にする）。
   2 つ目で `README.md` に使い方と `CHANGELOG.md` を足す。
   `README.md` には上限の既定を書かないままにする。
   レビューコメントの `c2` と `c3` は、誤記と既定の記述漏れをそれぞれ指す
 - `seed_pushed_branch`: `seed_branch` に加えて `origin` へ push する
 - `seed_dirty_branch`: `seed_branch` に加えて、commit していない変更を 1 ファイル残す
 - `seed_no_diff_branch`: main と同じ内容のブランチを作って push する
-- `seed_conflict_branch`: 共通の祖先から、main と作業ブランチの双方で `src/limiter.js` の
-  同じ行を別の内容に変える。main を取り込むと必ず競合する
+- `seed_conflict_branch`: 共通の祖先に `src/limiter.js` を置き、main と作業ブランチの双方で
+  その同じ行を別の内容に変える。main を取り込むと必ず競合する
 - `seed_testable_branch`: `seed_branch` に `package.json` とテストを足して commit し、`origin` へ push する。
   `npm test` は成功時に `3 passing` だけを出し、`.fake-gh/npm-test-ran` を作るスクリプトにする。
   開始時点で作業ツリーに未 commit の変更を残さない
