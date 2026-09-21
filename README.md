@@ -58,12 +58,6 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 | ja-writing-ambiguity | Claude Code only | 日本語の文章で読み手が意味を決められなくなる書き方を防ぐための plugin。書く前に読む参照知識として、止める型を定める |
 | [claude-user-communication](./plugins/claude-user-communication/README.md) | Claude Code + Codex | 入り組んだ報告・比較・確認を、ターミナルではなく HTML ページでユーザーに示すための plugin。ページの作り方・提示前のレビュー・回答の記録の運用を、Claude Code と Codex で共有して定める |
 
-### kanban
-
-| plugin | 対応 CodingAgent | 概要 |
-| --- | --- | --- |
-| [plane-kanban](./plugins/plane-kanban/README.md) | Claude Code + Codex | Plane（kanban）を利用して、repo 単位で todo とタスクを kanban 管理するための plugin。Plane をどう使うかのプロトコルと運用規約も同時に定める |
-
 ### meta
 
 | plugin | 対応 CodingAgent | 概要 |
@@ -137,7 +131,6 @@ claude plugins install usage-line@cc-tools                 # 要セットアッ�
 claude plugins install github-pr@cc-tools
 claude plugins install ja-writing-ambiguity@cc-tools
 claude plugins install diffo@cc-tools
-claude plugins install plane-kanban@cc-tools          # 要セットアップ (plugin README 参照)
 
 # rules の symlink
 ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-marketplace
@@ -146,14 +139,13 @@ ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-mar
 ### Codex
 
 このリポジトリのルートで marketplace を登録し、必要な plugin をインストールする。
-現在 Codex に対応する plugin は `diffo`、`session`、`claude-user-communication`、`plane-kanban`。
+現在 Codex に対応する plugin は `diffo`、`session`、`claude-user-communication`。
 
 ```bash
 codex plugin marketplace add .
 codex plugin add diffo@cc-tools
 codex plugin add session@cc-tools
 codex plugin add claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
-codex plugin add plane-kanban@cc-tools               # 要セットアップ (plugin README 参照)
 ```
 
 ## アップデート

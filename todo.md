@@ -513,17 +513,6 @@ frontmatter のフィールド名や hook のイベント名が現行仕様に�
 - 置き場。dotclaude plugin の doctor skill に足すか、新しい plugin にするか、
   markdownlint のように Write / Edit の後に走る hook にするか
 
-# plane-kanban: Keychain の API key を helper だけが読める形にする
-
-依頼元: cc-marketplace のセッション（2026-09-15、PR #28 のレビュー中）。
-
-いまは `scripts/lib/plane.sh` が `security find-generic-password` で読む。`/usr/bin/security` を呼ぶスクリプトは
-どれも同じ app として扱われるので、Claude が直接読むのを止めているのは permission の deny
-（`Bash(security find-generic-password*)` ほか）だけ。
-
-やりたいこと: コンパイル済みの小さな helper（Swift か Go）を Keychain 項目の ACL の唯一の app にし、
-helper は鍵を出力せず HTTP リクエストだけを代行する。`plane.sh` の `plane_api` を helper 経由にする。
-
 # diffo plugin: コメントで inline SVG・画像・Tailwind を使えるようにする
 
 依頼元: cc-marketplace のセッション（2026-09-15）。

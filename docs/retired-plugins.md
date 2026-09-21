@@ -3,6 +3,13 @@
 廃止した plugin の記録。コードは削除し、git 履歴から取り出す。
 廃止するときは [Plugin 更新手順](../.claude/rules/plugin-release.md) の削除手順に従い、ここへ 1 件足す。
 
+- plane-kanban（2026-09-22、最終版 0.2.1、削除 commit 10b0a3a）
+    - 理由: Plane をタスク管理に使わない方針へ変わり、Claude Code と Codex の両方から
+      アンインストールした。plugin の eval が持っていた知見（stub の差し込み方、fixture の
+      git 設定の隔離、sandbox 下の `mktemp` の失敗、ケースの書き方）は github-pr の eval で
+      再検証し、`evals/README.md` と `.claude/skills/eval-authoring/SKILL.md` へ移した
+    - 復元: `git show b552af0:plugins/plane-kanban/README.md`（b552af0 は削除直前の main の commit）。
+      eval のケース 22 件は `git show b552af0:plugins/plane-kanban/evals/README.md` から辿る
 - claude-user-communication の ask-with-choices skill（2026-08-26、最終版 0.32.6、削除 commit 207932c = PR #12）
     - 理由: この skill の中身は、AskUserQuestion（選択肢 UI）を使う運用と、そのレンダリングバグを避ける
       時限措置が大半だった。AskUserQuestion を使わない構成に移り、確認・質問の規範は媒体に依らないものを
