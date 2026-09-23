@@ -1620,6 +1620,8 @@ f045 Q3 の判断材料として記録する。
 - 出典: PR #6 行コメント 3847388872 / 3847725840 / 3847792907（2026-08-24）、返信 3847705086 / 3847764226
 - 反映先: `.claude/rules/norm-refit-ops.md` PR の出し方 / `notes/artifacts/sentence-level-review-cases.md` 冒頭と各事例 /
   `notes/norm-refit-plan.md` PR 7 骨子。plugin・rules への反映なし
+- 上書き: 「恒久の置き場は作らず、norm-refit の完了で蓄積を終える」は 2026-09-24 のエントリ
+  「事例集の蓄積を norm-refit から切り離す」で上書きした
 
 ### 2026-08-25 user global rule の相対 paths は起動 repo のルートから解決され、他 repo でも効く（実測）
 
@@ -3648,6 +3650,21 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
   `scripts/lib/page-source.mjs`（ツリーの markup）、
   `scripts/lib/assemble.mjs`（report のときの script の切り取り）、
   `skills/html-communication/SKILL.md`（report の作りの規定）
+
+### 2026-09-24 事例集の蓄積を norm-refit から切り離す
+
+- 結論: 文レベル・構造レベルの事例集 2 本は、norm-refit（と norm-refit-v2）の完了で蓄積を終えず、
+  規範づくりとレビューの参照として集め続ける。2026-08-25「文レベル指摘の蓄積は norm-refit 完了までのスコープで、
+  出所を区別して集める」の「恒久の置き場は作らず、norm-refit の完了で蓄積を終える」を上書きする。
+  収集の仕組みの設計は議題を分け、[レビュー指摘の事例を集め続ける仕組み](./review-cases-service.md) に積む
+- 決めなかった範囲: 事例集の置き場と移す時期、A5 の「eval の fixture へ移す」を併せて行うか。
+  どちらも上の decision-record で扱う
+- 決め手: norm-refit の一時停止後も efso-document・dotfiles の作業から事例が足され続けていて、
+  ユーザーは規範づくりとレビューの参照に使いたいと考えている
+- 出典: 確認フォーム ccm-f098 の設問「位置づけ」への回答（2026-09-24）。実文は
+  [レビュー指摘の事例を集め続ける仕組み](./review-cases-service.md) の同じ日付のエントリに写した
+- 反映先: 未反映。`notes/norm-refit-plan.md` の A5 と手引きの骨子（「蓄積は norm-refit 完了まで」）、
+  事例集 2 本の表題と冒頭は、事例集を移すときに直す
 
 ## 未解決課題
 
