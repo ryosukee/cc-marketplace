@@ -8,6 +8,14 @@
 
 この decision-record を置く repo は、仕組みの repo ができるまでの仮の置き場。
 
+## この decision-record が参照する artifacts
+
+artifacts は `notes/artifacts/` に置く。生存期間はこの decision-record と同じ。
+
+| artifacts | 目的 |
+| --- | --- |
+| [事例集 2 本の中身の分析](./artifacts/review-cases-analysis.md) | 事例の項目の埋まり方、いまの型の実態、分類の軸とデータの形の案、移し替えの見込み、機密の分布。分類とデータの形を決める入力 |
+
 ## 確定事項
 
 ### 2026-09-24 事例集を norm-refit から切り離し、規範づくりとレビューの参照として集め続ける
