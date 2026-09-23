@@ -462,11 +462,12 @@ export function renderPage(src, opts = {}) {
     const inputType = q.multiple === true ? "checkbox" : "radio";
     const label = s.group ? `${esc(s.gname)} ${s.gn} / ${s.gN} ${inline(q.label, ctx)}` : `設問 ${s.n} / ${NQ} ${inline(q.label, ctx)}`;
     const a = ansItems.get(s.id);
-    const opts = q.options.map((o) => {
+    const opts = q.options.map((o, i) => {
       const value = optionValue(o);
       const checked = a && (q.multiple === true ? a.multiple?.includes(value) : a.value != null && a.value === value) ? " checked" : "";
       const desc = o.description == null ? [] : Array.isArray(o.description) ? o.description : [o.description];
-      let h = `  <label class="opt"><input type="${inputType}" name="${s.id}" value="${esc(value)}"${checked}${dis}>\n    ${inline(o.label, ctx)}${o.recommended ? '<span class="rec">推奨</span>' : ""}`;
+      const identity = q.multiple === true ? `name="${s.id}-${i}" data-question="${s.id}"` : `name="${s.id}"`;
+      let h = `  <label class="opt"><input type="${inputType}" ${identity} value="${esc(value)}"${checked}${dis}>\n    ${inline(o.label, ctx)}${o.recommended ? '<span class="rec">推奨</span>' : ""}`;
       if (desc.length) h += `\n    <span class="d">${desc.map((d) => inline(d, ctx)).join("<br>\n      ")}</span>`;
       if (o.pros != null) h += `\n    <span class="proscons">\n      <span><span class="pro">メリット</span>${inline(o.pros, ctx)}</span>\n      <span><span class="con">デメリット</span>${inline(o.cons, ctx)}</span>\n    </span>`;
       return h + `</label>`;
@@ -474,7 +475,8 @@ export function renderPage(src, opts = {}) {
     const otherChecked = a && a.other != null ? " checked" : "";
     const otherVal = a && a.other != null ? ` value="${esc(a.other)}"` : "";
     const note = a && a.note ? esc(a.note) : "";
-    return `<details class="qd" data-for="${s.id}"${s.group ? ` data-grp="${esc(s.group)}"` : ""} open>\n<summary>${label}<span class="qstat">未回答</span></summary>\n<p class="qtext">${inline(q.text, ctx)}</p>\n<div class="q" id="${s.id}"${q.multiple === true ? ' data-multiple="true"' : ""}>\n${opts}\n  <label class="opt"><input type="${inputType}" name="${s.id}" value="__other__"${otherChecked}${dis}>その他\n    <input type="text" class="other" data-for="${s.id}"${otherVal}${dis}></label>\n  <textarea class="note" data-note="${s.id}" aria-label="設問 ${s.n} への補足" placeholder="補足（任意）"${dis}>${note}</textarea>\n</div>\n</details>`;
+    const otherIdentity = q.multiple === true ? `name="${s.id}-${q.options.length}" data-question="${s.id}"` : `name="${s.id}"`;
+    return `<details class="qd" data-for="${s.id}"${s.group ? ` data-grp="${esc(s.group)}"` : ""} open>\n<summary>${label}<span class="qstat">未回答</span></summary>\n<p class="qtext">${inline(q.text, ctx)}</p>\n<div class="q" id="${s.id}"${q.multiple === true ? ' data-multiple="true"' : ""}>\n${opts}\n  <label class="opt"><input type="${inputType}" ${otherIdentity} value="__other__"${otherChecked}${dis}>その他\n    <input type="text" class="other" data-for="${s.id}"${otherVal}${dis}></label>\n  <textarea class="note" data-note="${s.id}" aria-label="設問 ${s.n} への補足" placeholder="補足（任意）"${dis}>${note}</textarea>\n</div>\n</details>`;
   };
 
   const parts = [];

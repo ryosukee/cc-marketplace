@@ -595,8 +595,9 @@
     var d = { radios: {}, checkboxes: {}, texts: {} };
     document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
     document.querySelectorAll('input[type="checkbox"]:checked').forEach(function (c) {
-      if (!d.checkboxes[c.name]) d.checkboxes[c.name] = [];
-      d.checkboxes[c.name].push(c.value);
+      var question = c.dataset.question;
+      if (!d.checkboxes[question]) d.checkboxes[question] = [];
+      d.checkboxes[question].push(c.value);
     });
     document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
     document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
@@ -612,7 +613,7 @@
     Object.keys(d.checkboxes || {}).forEach(function (name) {
       if (!Array.isArray(d.checkboxes[name])) return;
       document.querySelectorAll('input[type="checkbox"]').forEach(function (el) {
-        if (el.name === name && d.checkboxes[name].includes(el.value)) el.checked = true;
+        if (el.dataset.question === name && d.checkboxes[name].includes(el.value)) el.checked = true;
       });
     });
     Object.keys(d.texts || {}).forEach(function (k) {

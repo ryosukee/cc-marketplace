@@ -496,7 +496,7 @@ function checkFile(path) {
   const answeredForm = /<script data-scope="form">[\s\S]*?\bvar ANSWERED = true;/.test(src);
   for (const m of src.matchAll(/<input\b[^>]*>/g)) {
     if (!/\btype="checkbox"/.test(m[0]) || !/\schecked(?:\s|>)/.test(m[0])) continue;
-    if (answeredForm && /^<input type="checkbox" name="q\d+" value="[^"]*" checked disabled>$/.test(m[0])) continue;
+    if (answeredForm && /^<input type="checkbox" name="(q\d+)-\d+" data-question="\1" value="[^"]*" checked disabled>$/.test(m[0])) continue;
     findings.push({ check: "default-checked", line: lineOf(src, m.index),
       message: "チェックボックスが既定でチェック済み。読み飛ばしが承認として記録される" });
   }

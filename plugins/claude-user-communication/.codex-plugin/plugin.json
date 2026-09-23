@@ -1,6 +1,6 @@
 {
   "name": "claude-user-communication",
-  "version": "0.51.0+codex.20260923161840",
+  "version": "0.51.0+codex.20260923163256",
   "description": "\u8abf\u67fb\u5831\u544a\u3084\u8a2d\u8a08\u5224\u65ad\u3092 HTML \u30da\u30fc\u30b8\u3067\u63d0\u793a\u3057\u3001\u56de\u7b54\u3092\u8a18\u9332\u3059\u308b",
   "author": {
     "name": "CC Tools"

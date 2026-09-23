@@ -9,6 +9,12 @@ import { assemblePage } from "../skills/html-communication/scripts/lib/assemble.
 import { loadSource, parseAnswerText } from "../skills/html-communication/scripts/lib/page-source.mjs";
 
 const skillRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "skills", "html-communication");
+function htmlValidate(htmlPath) {
+  const result = spawnSync("npx", ["--prefer-offline", "--yes", "html-validate@11", "--config", path.join(skillRoot, "scripts", "htmlvalidate.json"), "--formatter", "json", htmlPath], { encoding: "utf8" });
+  assert.ok(result.status === 0 || result.status === 1, result.stderr);
+  const messages = JSON.parse(result.stdout).flatMap((entry) => entry.messages || []);
+  assert.ok(!messages.some((message) => message.ruleId === "form-dup-name"), JSON.stringify(messages));
+}
 const source = {
   format: 1, file: "test-f001", type: "form", title: "複数選択の試験", project: "test",
   context: ["回答を検証する。"], sections: [
@@ -39,11 +45,13 @@ test("checkbox と radio を組み立て、回答を記録して選択済みで�
   assert.equal(assemblePage(jsonPath).ok, true);
   let html = fs.readFileSync(path.join(dir, "test-f001.html"), "utf8");
   assert.match(html, /<div class="q" id="q1" data-multiple="true">/);
-  assert.match(html, /type="checkbox" name="q1" value="進捗"/);
-  assert.match(html, /type="checkbox" name="q1" value="__other__"/);
+  assert.match(html, /type="checkbox" name="q1-0" data-question="q1" value="進捗"/);
+  assert.match(html, /type="checkbox" name="q1-1" data-question="q1" value="決定事項"/);
+  assert.match(html, /type="checkbox" name="q1-2" data-question="q1" value="__other__"/);
   assert.match(html, /type="radio" name="q2" value="案 A"/);
+  htmlValidate(path.join(dir, "test-f001.html"));
   const uncheckedPath = path.join(dir, "unchecked.html");
-  fs.writeFileSync(uncheckedPath, html.replace('type="checkbox" name="q1" value="進捗"', 'type="checkbox" name="q1" value="進捗" checked'));
+  fs.writeFileSync(uncheckedPath, html.replace('type="checkbox" name="q1-0" data-question="q1" value="進捗"', 'type="checkbox" name="q1-0" data-question="q1" value="進捗" checked'));
   const unchecked = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "check-page.mjs"), uncheckedPath], { encoding: "utf8" });
   assert.equal(unchecked.status, 1);
   assert.ok(JSON.parse(unchecked.stdout).results[0].findings.some((f) => f.check === "default-checked"));
@@ -64,17 +72,18 @@ test("checkbox と radio を組み立て、回答を記録して選択済みで�
   const checkedSource = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "check-source.mjs"), jsonPath], { encoding: "utf8" });
   assert.equal(checkedSource.status, 0, checkedSource.stdout + checkedSource.stderr);
   html = fs.readFileSync(path.join(dir, "test-f001.html"), "utf8");
-  assert.match(html, /type="checkbox" name="q1" value="進捗" checked disabled/);
-  assert.match(html, /type="checkbox" name="q1" value="決定事項" checked disabled/);
-  assert.match(html, /type="checkbox" name="q1" value="__other__" checked disabled/);
+  assert.match(html, /type="checkbox" name="q1-0" data-question="q1" value="進捗" checked disabled/);
+  assert.match(html, /type="checkbox" name="q1-1" data-question="q1" value="決定事項" checked disabled/);
+  assert.match(html, /type="checkbox" name="q1-2" data-question="q1" value="__other__" checked disabled/);
   assert.match(html, /type="radio" name="q2" value="案 B" checked disabled/);
+  htmlValidate(path.join(dir, "test-f001.html"));
   assert.match(fs.readFileSync(path.join(dir, "index.html"), "utf8"), /status: "answered"/);
   const custom = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "check-page.mjs"), path.join(dir, "test-f001.html")], { encoding: "utf8" });
   assert.equal(custom.status, 0, custom.stdout + custom.stderr);
   assert.equal(JSON.parse(custom.stdout).total, 0);
 
   const tampered = path.join(dir, "tampered.html");
-  fs.writeFileSync(tampered, html.replace('type="checkbox" name="q1" value="進捗" checked disabled', 'type="checkbox" name="q1" value="進捗" checked'));
+  fs.writeFileSync(tampered, html.replace('type="checkbox" name="q1-0" data-question="q1" value="進捗" checked disabled', 'type="checkbox" name="q1-0" data-question="q1" value="進捗" checked'));
   const rejected = spawnSync(process.execPath, [path.join(skillRoot, "scripts", "check-page.mjs"), tampered], { encoding: "utf8" });
   assert.equal(rejected.status, 1);
   assert.ok(JSON.parse(rejected.stdout).results[0].findings.some((f) => f.check === "default-checked"));
