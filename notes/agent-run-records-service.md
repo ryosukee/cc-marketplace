@@ -33,7 +33,8 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > 回答: Q1（位置づけ）: norm-refit から切り離し、規範づくりとレビューの参照として集め続ける
 
-- 反映先: 未反映。`notes/norm-refit.md`（上書きの経緯）、`notes/norm-refit-plan.md` の A5 と手引きの骨子の「蓄積は norm-refit 完了まで」、事例集 2 本の表題と冒頭は、移し替えのときに直す
+- 反映先: `notes/norm-refit.md` に上書きの経緯を積んだ（2026-09-24 の新しいエントリと、2026-08-25 のエントリの「上書き」の行）。
+  `notes/norm-refit-plan.md` の A5 と手引きの骨子の「蓄積は norm-refit 完了まで」、事例集 2 本の表題と冒頭は未反映で、移し替えのときに直す
 
 ### 2026-09-24 置き場は、専用のサービスとしてデプロイし DB に持つ案を第一候補として検討する
 
