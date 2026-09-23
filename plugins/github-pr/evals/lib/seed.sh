@@ -10,6 +10,10 @@ export GIT_CONFIG_NOSYSTEM=1
 
 STATE=".fake-gh"
 
+# 作業ディレクトリを git の repo にする。実行者の git 設定を持ち込まないよう
+# このファイルの先頭で GIT_CONFIG_GLOBAL と GIT_CONFIG_NOSYSTEM を潰し、repo のローカル設定を置く。
+# bare repo を ../origin.git に作って origin に設定し、main を push する。
+# .git/info/exclude に .fake-gh/ を書くので、stub の記録は dirty を動かさない
 seed_repo() {
   git init -q -b main .
   git config user.name eval
@@ -89,16 +93,19 @@ MD
   git commit -q -m "docs: describe the limiter"
 }
 
+# seed_branch に加えて origin へ push する。pushed=true の起点
 seed_pushed_branch() {
   seed_branch
   git push -q -u origin feat/rate-limit
 }
 
+# seed_branch に加えて、commit していない変更を 1 ファイル残す
 seed_dirty_branch() {
   seed_branch
   printf 'const burst = 10;\n' >> src/limiter.js
 }
 
+# main と同じ内容のブランチ。ベースとの差分が無い状態
 seed_no_diff_branch() {
   git switch -q -c feat/rate-limit
   git push -q -u origin feat/rate-limit
@@ -171,11 +178,17 @@ seed_extra_commit() {
   git commit -q -m "feat: add retry"
 }
 
+# seed_pushed_branch を呼んでから、偽の gh が返す PR #42 を置く。
+# draft、head は feat/rate-limit、base は main、labels は bug の 1 件。
+# 本文は「src/limiter.js を足した」の 1 行だけ。
+# PR の author・repo の owner・レビュアーをすべて実行者本人に揃える
 seed_open_pr() {
   seed_pushed_branch
   add_pr '{"number":42,"title":"feat: add fixed window rate limiter","body":"src/limiter.js を足した","isDraft":true,"state":"OPEN","headRefName":"feat/rate-limit","baseRefName":"main","url":"https://github.com/ryosukee/sample/pull/42","author":{"login":"ryosukee"},"labels":[{"name":"bug"}]}'
 }
 
+# seed_open_pr と同じだが、PR を draft ではなく ready で置く。
+# ラベル以外のマージの前提を満たした状態
 seed_ready_pr() {
   seed_open_pr
   jq -c 'map(if .number == 42 then .isDraft = false else . end)' "$STATE/prs.json" > "$STATE/prs.tmp"
@@ -264,6 +277,7 @@ JSON
 JSON
 }
 
+# PR #42 の labels を空にする
 seed_no_approve_label() {
   jq -c 'map(if .number == 42 then .labels = [] else . end)' "$STATE/prs.json" > "$STATE/prs.tmp"
   mv "$STATE/prs.tmp" "$STATE/prs.json"
@@ -271,7 +285,7 @@ seed_no_approve_label() {
 
 # ほかの関数をすべて呼び終えた後に呼ぶ。記録の器と比較の基準を置く
 seed_finish() {
-  : > "$STATE/requests.log"
+  : > "$STATE/requests.jsonl"
   : > "$STATE/commands.log"
   : > "$STATE/bodies.txt"
   : > "$STATE/fetched"

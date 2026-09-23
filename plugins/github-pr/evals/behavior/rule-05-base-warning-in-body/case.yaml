@@ -17,7 +17,7 @@ graders:
     target:
       source: file
       path: .fake-gh/bodies.txt
-    pattern: '--- id=\d+ method=POST kind=pr-create target=- ---\n> \[!WARNING\][ \t]*$'
+    pattern: '\{"id":\d+,"method":"POST","kind":"pr-create","target":null\}\n> \[!WARNING\][ \t]*$'
     flags: m
     match: contains
   - name: names-the-base-pr
@@ -25,6 +25,6 @@ graders:
     target:
       source: file
       path: .fake-gh/bodies.txt
-    pattern: '--- id=\d+ method=POST kind=pr-create target=- ---\n> \[!WARNING\][ \t]*$\n(?:(?!--- id=)[\s\S])*?#40(?![0-9])'
+    pattern: '\{"id":\d+,"method":"POST","kind":"pr-create","target":null\}\n> \[!WARNING\][ \t]*$\n(?:(?!\{"id":)[\s\S])*?#40(?![0-9])'
     flags: m
     match: contains

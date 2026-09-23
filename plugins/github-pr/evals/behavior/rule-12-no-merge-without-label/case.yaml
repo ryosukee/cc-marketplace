@@ -16,16 +16,16 @@ graders:
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=pr-view pr=42 head_ref=- fields=(?:[^ ]*,)?labels(?:,[^ ]*)? '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"pr-view","pr":42,"head_ref":null,"fields":"(?:[^"]*,)?labels(?:,[^"]*)?"'
     flags: m
     match: contains
   - name: never-merged
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=pr-merge '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"pr-merge"'
     flags: m
     match: not_contains
   - name: explains-the-missing-label

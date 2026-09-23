@@ -16,32 +16,32 @@ graders:
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=pr-create '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"pr-create"'
     flags: m
     match: not_contains
   - name: looked-for-existing
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=pr-list '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"pr-list"'
     flags: m
     match: contains
   - name: no-edit
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=pr-edit '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"pr-edit"'
     flags: m
     match: not_contains
   - name: no-api-patch
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'method=PATCH[^\n]*pr=42 '
+      path: .fake-gh/requests.jsonl
+    pattern: '"method":"PATCH"[^\n]*"pr":42'
     flags: m
     match: not_contains
   - name: reports-the-url

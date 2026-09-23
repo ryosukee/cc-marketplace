@@ -4,18 +4,82 @@
 #
 # 状態: FAKE_GH_STATE/{prs.json, repo.json, reviews.json, pull-comments.json,
 #       issue-comments.json, reactions/<id>.json, comment-targets.json, base-sha,
-#       requests.log, commands.log, bodies.txt, seq, fetched}
+#       requests.jsonl, commands.log, bodies.txt, seq, fetched}
 # FAKE_GH_STATE が未設定なら、git の作業ツリーの最上位（無ければ cwd）の .fake-gh を使う。
 # eval の子セッションには環境変数を渡せないため、ケースの scaffold が作業ディレクトリに .fake-gh を作る。
 #
-# requests.log には解析済みのフィールドだけを書き、生の引数は commands.log へ分ける。
-# 同じ行に生の引数があると、grader の正規表現が PR 本文の中の文字列に当たる。
+# requests.jsonl には解析済みのフィールドだけを書き、生の引数は commands.log へ分ける。
+# 同じレコードに生の引数があると、grader の正規表現が PR 本文の中の文字列に当たる。
+#
+# 記録するフィールドの名前・並び・型は下の record_fields が、kind の取りうる値は
+# record_kinds が持つ。grader の pattern が読む文字列はそこが正で、ほかに写しを置かない。
 
 set -euo pipefail
 
+# requests.jsonl の 1 レコードに出るフィールド。名前・並び・型をここだけで決める。
+# 値は同じ名前のシェル変数から取るので、変数名を変えるならここも変える。
+# 型は s=文字列 n=数値 b=真偽。どの型でも、値が - の呼び出しでは null を書く。
+record_fields=(
+  id:n            # 呼び出しの連番
+  method:s        # HTTP メソッド。gh の pr サブコマンドには相当するものを当てる
+  kind:s          # 呼び出しの種類。record_kinds のどれか
+  pr:n            # 対象の PR 番号
+  head_ref:s      # pr list --head に渡された値
+  fields:s        # pr view のとき --json に渡された値
+  target:s        # reply・reaction-get・reaction-post の対象コメント id
+  content:s       # reaction-post のとき -f content= に渡された値
+  paginate:b      # fetch-* のとき --paginate が渡されたか
+  first:b         # fetch-* のとき、その URL へのこの実行で最初の GET か。
+                  # 収集のための取得と投稿後の状態確認とを、POST の位置に頼らずに分ける
+  draft:b         # pr create のとき --draft が渡されたか
+  signed:b        # reply と comment のとき、本文が空行のあとの独立した行
+                  # 「🤖 posted by Claude Code」で終わるか
+  pushed:b        # HEAD の sha が origin の作業ブランチの sha と同じか
+  committed:b     # HEAD の sha が base-sha（前準備が書く開始時点の sha）と違うか
+  dirty:b         # 作業ツリーに未 commit の変更があるか
+  target_dirty:b  # target の指摘箇所のパスが base-sha の内容から変わっているか。
+                  # base-sha の中身と作業ツリーの実ファイルを直接比べ、index は見ない
+  fixed:b         # target を comment-targets.json で引き、そこに書いた修正後の条件を
+                  # origin 上のそのファイルが満たすか。origin に無ければ false
+)
+
+# kind が取りうる値。下の分岐が付ける値はこの集合に収まる。外れたら実行を止める
+record_kinds=(
+  pr-create pr-edit pr-list pr-view
+  pr-merge              # gh api の /merge と GraphQL の mergePullRequest を含む
+  fetch-reviews fetch-pull-comments fetch-issue-comments
+                        # 対象のコメントを集める 3 種の URL への GET。実行のどの時点でもこの値
+  reply                 # --input の in_reply_to、-F in_reply_to、/comments/<id>/replies の POST
+  reaction-get          # /reactions への GET
+  reaction-post         # /reactions への POST
+  comment               # 返信ではない conversation comment の POST
+  other                 # 上のどれでもない呼び出し
+)
+
+# name:type の並びから JSON の 1 行を組み立てる。値は同名のシェル変数から取る
+emit_record() {
+  local spec name type value
+  local -a a=()
+  for spec in "$@"; do
+    name="${spec%%:*}"
+    type="${spec##*:}"
+    value="${!name}"
+    if [ "$value" = "-" ]; then
+      a+=(--argjson "$name" null)
+    elif [ "$type" = "n" ]; then
+      a+=(--argjson "$name" "$value")
+    elif [ "$type" = "b" ]; then
+      if [ "$value" = "yes" ]; then a+=(--argjson "$name" true); else a+=(--argjson "$name" false); fi
+    else
+      a+=(--arg "$name" "$value")
+    fi
+  done
+  jq -cn "${a[@]}" '$ARGS.named'
+}
+
 state="${FAKE_GH_STATE:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.fake-gh}"
 mkdir -p "$state/reactions"
-for f in requests.log commands.log bodies.txt fetched; do
+for f in requests.jsonl commands.log bodies.txt fetched; do
   [ -f "$state/$f" ] || : > "$state/$f"
 done
 [ -f "$state/seq" ] || echo 0 > "$state/seq"
@@ -288,25 +352,29 @@ fi
 seq_n=$(( $(< "$state/seq") + 1 ))
 echo "$seq_n" > "$state/seq"
 
-# フィールドの値に改行が入ると 1 呼び出しが複数行になるので、2 文字の \n へ潰す
-flat() {
-  local v="$1"
-  v="${v//$'\n'/\\n}"
-  printf '%s' "${v// /_}"
-}
+# record_fields は値を同名の変数から取る。名前が合っていない 2 つをここで揃える
+id="$seq_n"
+pr="$pr_number"
 
-printf 'id=%s method=%s kind=%s pr=%s head_ref=%s fields=%s target=%s content=%s paginate=%s first=%s draft=%s signed=%s pushed=%s committed=%s dirty=%s target_dirty=%s fixed=%s\n' \
-  "$seq_n" "$method" "$kind" "$pr_number" "$(flat "$head_ref")" "$(flat "$fields")" \
-  "$(flat "$target")" "$(flat "$content")" \
-  "$paginate" "$first" "$draft" "$signed" "$pushed" "$committed" "$dirty" "$target_dirty" "$fixed" \
-  >> "$state/requests.log"
+# 分岐の付け忘れと綴り違いを、記録に出る前に止める
+kind_known="no"
+for k in "${record_kinds[@]}"; do
+  if [ "$k" = "$kind" ]; then kind_known="yes"; break; fi
+done
+if [ "$kind_known" = "no" ]; then
+  echo "fake gh: record_kinds に無い kind: $kind" >&2
+  exit 4
+fi
+
+emit_record "${record_fields[@]}" >> "$state/requests.jsonl"
 
 raw=$(printf '%s ' "${argv[@]}")
 printf 'id=%s gh %s\n' "$seq_n" "${raw//$'\n'/\\n}" >> "$state/commands.log"
 
+# 本文は生のまま残す。複数行の判定ができるように、JSON へ押し込まず区切りの行で挟む
 if [ "$body_seen" = "yes" ]; then
   {
-    printf -- '--- id=%s method=%s kind=%s target=%s ---\n' "$seq_n" "$method" "$kind" "$(flat "$target")"
+    emit_record id:n method:s kind:s target:s
     printf '%s\n' "$body_text"
   } >> "$state/bodies.txt"
 fi

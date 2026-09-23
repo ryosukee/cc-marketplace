@@ -16,16 +16,16 @@ graders:
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=reply[^\n]*target=c4 '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"reply"[^\n]*"target":"c4"'
     flags: m
     match: contains
   - name: nothing-touched-when-asking
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=reply[^\n]*target=c4 [^\n]*target_dirty=yes'
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"reply"[^\n]*"target":"c4"[^\n]*"target_dirty":true'
     flags: m
     match: not_contains
   - name: window-kept

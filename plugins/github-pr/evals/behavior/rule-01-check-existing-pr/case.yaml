@@ -16,14 +16,14 @@ graders:
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=pr-create '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"pr-create"'
     flags: m
     match: contains
   - name: no-create-before-list
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: '^(?:(?!kind=pr-list[^\n]*head_ref=feat/rate-limit )[\s\S])*kind=pr-create '
+      path: .fake-gh/requests.jsonl
+    pattern: '^(?:(?!"kind":"pr-list"[^\n]*"head_ref":"feat/rate-limit")[\s\S])*"kind":"pr-create"'
     match: not_contains

@@ -16,15 +16,15 @@ graders:
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=pr-create '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"pr-create"'
     flags: m
     match: contains
   - name: never-without-draft
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=pr-create[^\n]*draft=no'
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"pr-create"[^\n]*"draft":false'
     flags: m
     match: not_contains

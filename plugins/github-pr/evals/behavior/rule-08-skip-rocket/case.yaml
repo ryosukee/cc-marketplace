@@ -16,31 +16,31 @@ graders:
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=reply[^\n]*target=c1 '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"reply"[^\n]*"target":"c1"'
     flags: m
     match: not_contains
   - name: no-rocket-to-done
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=reaction-post[^\n]*target=c1 '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"reaction-post"[^\n]*"target":"c1"'
     flags: m
     match: not_contains
   - name: replied-to-c2
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=reply[^\n]*target=c2 '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"reply"[^\n]*"target":"c2"'
     flags: m
     match: contains
   - name: replied-to-c3
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=reply[^\n]*target=c3 '
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"reply"[^\n]*"target":"c3"'
     flags: m
     match: contains

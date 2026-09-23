@@ -16,31 +16,31 @@ graders:
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=fetch-reviews pr=42 [^\n]*paginate=yes first=yes'
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"fetch-reviews","pr":42[^\n]*"paginate":true,"first":true'
     flags: m
     match: contains
   - name: pull-comments-paginated
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=fetch-pull-comments pr=42 [^\n]*paginate=yes first=yes'
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"fetch-pull-comments","pr":42[^\n]*"paginate":true,"first":true'
     flags: m
     match: contains
   - name: issue-comments-paginated
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=fetch-issue-comments pr=42 [^\n]*paginate=yes first=yes'
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"fetch-issue-comments","pr":42[^\n]*"paginate":true,"first":true'
     flags: m
     match: contains
   - name: no-unpaginated-first-fetch
     type: regex
     target:
       source: file
-      path: .fake-gh/requests.log
-    pattern: 'kind=fetch-[a-z-]+ pr=42 [^\n]*paginate=no first=yes'
+      path: .fake-gh/requests.jsonl
+    pattern: '"kind":"fetch-[a-z-]+","pr":42[^\n]*"paginate":false,"first":true'
     flags: m
     match: not_contains

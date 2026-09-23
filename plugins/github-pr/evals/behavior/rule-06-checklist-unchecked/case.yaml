@@ -20,7 +20,7 @@ graders:
     target:
       source: file
       path: .fake-gh/bodies.txt
-    pattern: '--- id=\d+ method=POST kind=pr-create target=- ---\n(?:(?!--- id=)[\s\S])*?^## How to check[ \t]*$\n(?=(?:(?!#{1,2}[ \t]|--- id=)[^\n]*\n)*?(?!#{1,2}[ \t]|--- id=)[^\n]*3 passing)(?=(?:(?!#{1,2}[ \t]|--- id=)[^\n]*\n)*?(?!#{1,2}[ \t]|--- id=)[^\n]*- \[ \])'
+    pattern: '\{"id":\d+,"method":"POST","kind":"pr-create","target":null\}\n(?:(?!\{"id":)[\s\S])*?^## How to check[ \t]*$\n(?=(?:(?!#{1,2}[ \t]|\{"id":)[^\n]*\n)*?(?!#{1,2}[ \t]|\{"id":)[^\n]*3 passing)(?=(?:(?!#{1,2}[ \t]|\{"id":)[^\n]*\n)*?(?!#{1,2}[ \t]|\{"id":)[^\n]*- \[ \])'
     flags: m
     match: contains
   - name: no-checked-items

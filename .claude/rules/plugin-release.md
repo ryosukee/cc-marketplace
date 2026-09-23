@@ -87,7 +87,9 @@ why: 実例が 2 件ある。2026-08-22 に HTML ページのセクション番�
 ## Evals の作成・実行トリガー
 
 skill の発動測定は次のタイミングで作成・実行する。ケースは `plugins/{plugin}/evals/` に置き、
-`evals/run.sh {plugin}` で回す。作り方・レビュー工程・実行方法は `evals/README.md` に従う。
+`evals/run.sh {plugin}` で回す。ケースの書式と実行方法は
+[Plugin eval ハーネス](../../evals/README.md)に、作る順序とレビュー工程は
+[plugin の eval を作る](../skills/eval-authoring/SKILL.md)に従う。
 
 - 作成する: 新しい skill を追加したとき。発動漏れ・誤発動の事故が起きたとき
   (事故の再現プロンプトをケースに追加する)
