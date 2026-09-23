@@ -86,7 +86,7 @@ ccm-f084（notes 配下 80 ファイルの処遇）は回答済みで、計画�
    停止の時点では着手していない
     - `notes/norm-refit-plan.md` を `notes/artifacts/norm-refit-plan.md` へ移す（ccm-f084 Q4 の回答と、
       その後の対話で決めた案）。`rules/notes-authoring.md` の artifacts の定義を広げる PR と、
-      `notes/README.md`・`notes/norm-refit.md`・`notes/kanban-board.md`・`.claude/rules/norm-refit-ops.md` のリンクの張り替えが要る
+      `notes/README.md`・`notes/norm-refit.md`・`.claude/rules/norm-refit-ops.md` のリンクの張り替えが要る
     - `notes/` を `decision-record/` へ改名する PR（2026-09-07 の確定。影響範囲は同じエントリの反映先にある）
 3. 未回答 1 件: `rules/decision-record.md` 冒頭の「参照する予定のタスク」を「利用・消費する」に揃えるか。
    PR #21 のまとめのコメントで問うたまま

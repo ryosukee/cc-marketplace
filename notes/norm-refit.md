@@ -2704,7 +2704,10 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
       一覧の見出し）、`evals/README.md`
     - notes: `notes/norm-refit.md`・`notes/norm-refit-plan.md`・`notes/kanban-board.md` の地の文と冒頭の表、
       `notes/artifacts/research-ledger.md`（H1 と自己参照の見出し）。
-      確定項目の中のレビュアーの逐語引用と汎用語の列挙は残す
+      確定項目の中のレビュアーの逐語引用と汎用語の列挙は残す。
+      `notes/kanban-board.md` は 2026-09-23 に削除した。生存期間（道具の導入と運用手順の移管まで）が終わり、
+      自前実装の記録は agent-kanban へ移管済み（`9fefcd7`）、Plane は採用しなかった。
+      この反映先のうち `kanban-board.md` の分は対象が無いので行わない。中身は git 履歴から読める
 
 ### 2026-09-07 `notes/` を `decision-record/` へ改名する方針で進め、先に決定の記録でないファイルを外へ出す
 
@@ -2767,7 +2770,10 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
   `.claude/rules/norm-refit-ops.md`、`.claude/rules/user-global-rules.md`、`README.md`、
   `notes/` の中の可変な箇所（`norm-refit-plan.md`、`norm-refit.md` の冒頭・未解決課題・作業メモ、`kanban-board.md`）、
   他 repo では efso-document の `to-be/idp/.claude/rules/notes-authoring.md` と life-ops-kit/infra の `notes/`。
-  移行期は `notes-authoring.md` の `paths` に `notes/**` と `decision-record/**` の両方を書く
+  移行期は `notes-authoring.md` の `paths` に `notes/**` と `decision-record/**` の両方を書く。
+  `notes/kanban-board.md` は 2026-09-23 に削除した。生存期間（道具の導入と運用手順の移管まで）が終わり、
+  自前実装の記録は agent-kanban へ移管済み（`9fefcd7`）、Plane は採用しなかった。
+  この反映先のうち `kanban-board.md` の分は対象が無いので行わない。中身は git 履歴から読める
 
 ### 2026-09-08 日本語の曖昧さを止める規範を参照知識 skill だけに置き、入口 rule には置かない
 
@@ -3432,7 +3438,10 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
 
 - 反映先: rules（`rules/notes-authoring.md` の冒頭の節と「ファイルの構成」、`rules/decision-record.md` の notes 形式、
   `.claude/rules/norm-refit-ops.md`、README の rule の表）は PR #21 の `427b0b9`。
-  notes（`notes/norm-refit.md`・`notes/norm-refit-plan.md`・`notes/kanban-board.md` の節名と地の文）は notes 群
+  notes（`notes/norm-refit.md`・`notes/norm-refit-plan.md`・`notes/kanban-board.md` の節名と地の文）は notes 群。
+  `notes/kanban-board.md` は 2026-09-23 に削除した。生存期間（道具の導入と運用手順の移管まで）が終わり、
+  自前実装の記録は agent-kanban へ移管済み（`9fefcd7`）、Plane は採用しなかった。
+  この反映先のうち `kanban-board.md` の分は対象が無いので行わない。中身は git 履歴から読める
 
 ### 2026-09-09 レビューの構造レベル指摘を集める事例集を新設し、文レベルの事例集と分ける
 
@@ -3604,7 +3613,10 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
 
 - 反映先: `rules/notes-authoring.md`（冒頭の節の artifacts の定義。別 PR）、
   notes 群（`notes/norm-refit-plan.md` の移動と、`notes/README.md`・`notes/norm-refit.md`・`notes/kanban-board.md` のリンク）、
-  `.claude/rules/norm-refit-ops.md`（「置き場と着手手順」のパス。別 PR）
+  `.claude/rules/norm-refit-ops.md`（「置き場と着手手順」のパス。別 PR）。
+  `notes/kanban-board.md` は 2026-09-23 に削除した。生存期間（道具の導入と運用手順の移管まで）が終わり、
+  自前実装の記録は agent-kanban へ移管済み（`9fefcd7`）、Plane は採用しなかった。
+  この反映先のうち `kanban-board.md` の分は対象が無いので行わない。中身は git 履歴から読める
 
 ### 2026-09-16 report の左に空く列へ節の見出しツリーを置き、`#footer-nav` の左端を本文の列に合わせる
 
