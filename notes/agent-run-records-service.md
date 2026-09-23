@@ -249,9 +249,23 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 
 - 反映先: 反映なし
 
+### 2026-09-24 サービスの repo は ryosukee/agent-run-records にする
+
+- 結論: サービスの repo を GitHub の `ryosukee/agent-run-records`（private）に作り、`/Users/ryosuke/ghq_root/github.com/ryosukee/agent-run-records` に置く
+- 決めなかった範囲: この decision-record を新しい repo へ移す時期（生存期間の「決めたことを仕組みの repo の設計文書か README へ移すまで」に従う）
+- 決め手: ユーザーの選択（推奨どおり）。開発の道具（dotfiles・cc-marketplace）と同じ個人の repo に置く。`life-ops-kit/` は生活まわりのプロダクトの置き場で性格が違う。
+  会社の作業から来たデータが入りうるので private にした
+- 出典: このセッションのターミナルでの提案への回答（2026-09-24）
+- 出典の実文:
+
+    > Claude の提案: 推奨: `ryosukee/agent-run-records`。開発の道具（dotfiles、cc-marketplace）と同じ個人の repo に置きます。名前は decision-record と揃えました。別案: `life-ops-kit/` に置く。
+    >
+    > ユーザー: 推奨で
+
+- 反映先: GitHub に `ryosukee/agent-run-records` を private で作成し、ghq で clone した（2026-09-24。中身はまだ空）
+
 ## 未解決課題
 
-- サービスの名前と repo の置き場所
 - 定期実行の間隔と DB の種類
 - 写す範囲。transcript と subagent のほかに、Claude Code が一緒に消す tool-results・file-history・plans・tasks なども写すか
 - 2026-09-24 に `~/.local/share/agent-run-records/` へ写したつなぎの写しを、回収の仕組みができたときにどう片付けるか。
