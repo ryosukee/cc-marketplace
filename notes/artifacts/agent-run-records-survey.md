@@ -22,9 +22,10 @@ kanban-agent-orchestrator の `docs/meta-dev/log/resume-prompt/0022.md` の 44 �
 - 分析 agent（opus、書き込み先は proposals だけ）:
     - `.claude/agents/meta-process-review.md`: 試行錯誤、責務の逸脱、インフラの欠け
     - `.claude/agents/token-efficiency-review.md`: 出力の出しすぎ、ツールの選び違い、重複した呼び出し、model の選び方。削れるトークン数も見積もる
-    - `.claude/agents/meta-review.md`: rule・agent・spec とコードの食い違い
+    - `.claude/agents/meta-review.md`: rule・agent・spec とコードの食い違い。実行記録は読まず、コードベースを見る
 - 運用: `.claude/scripts/append-proposal.sh` が `.claude/proposals/{agent}.md` へ追記し、`.claude/skills/review-cycle/SKILL.md` の 39〜76 行が
-  直近の jsonl を 3 agent に並列で渡して、H→M→L の順に 1 件ずつユーザーに承認・却下・後回しを問う
+  3 agent を並列で回す。直近の jsonl を渡すのは meta-process-review と token-efficiency-review の 2 つだけ（48〜54 行）。
+  結果を H→M→L の順に 1 件ずつユーザーに承認・却下・後回しを問う
 - 記録の対象は team-implement の実行だけで、対話セッションは記録しない。実装が Codex へ移った後は、Codex 版が手書きの `run.md` を残すだけ
 - 同じ仕組みが coin-game にもある（`CLAUDE.md` の 51・67 行）
 
@@ -35,7 +36,7 @@ kanban-agent-orchestrator の `docs/meta-dev/log/resume-prompt/0022.md` の 44 �
 | 置き場 | `~/.claude/projects/<encoded-cwd>/<session>.jsonl`。subagent は `<session>/subagents/agent-*.jsonl` と `.meta.json` | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` |
 | 量（2026-09-24） | 58 project、本体 182、subagent 1,192、1.7G | 415 本（本体 168、subagent 247）、817M |
 | 最古 | 2026-08-24（更新日時） | 2025-09-01 |
-| 保持期間 | `cleanupPeriodDays` 未設定。既定 30 日で、起動時に期限を過ぎた transcript・subagents・tool-results・file-history・plans・debug・paste-cache・tasks などを消す | 保持期間の公式の記述は見つからない（未確認）。実測では 1 年以上前の記録が残る |
+| 保持期間 | `cleanupPeriodDays` 未設定。既定 30 日で、期限を過ぎた transcript・subagents・tool-results・file-history・plans・debug・paste-cache・tasks などを消す（消す時点と起点は公式に記述が無く未確認） | 保持期間の公式の記述は見つからない（未確認）。実測では 1 年以上前の記録が残る |
 | トークン | 各 `assistant` 行の `message.usage`（input・output・cache_creation・cache_read） | `event_msg` の `payload.type == "token_count"` の `info.total_token_usage`・`last_token_usage`・`model_context_window` |
 | subagent | 別ファイル。assistant 行に `isSidechain: true` と `agentId`。`.meta.json` に agentType・description・toolUseId・spawnDepth・model | 別の rollout。`session_meta.payload.source.subagent.thread_spawn.parent_thread_id` と `depth` で親をたどれる |
 | システムプロンプト | `attachment.type == "prompt_snapshot"` の `systemPrompt`（2.1.261 から）。rule・CLAUDE.md は `instructions`、環境は `environment`・`session_context` | `session_meta.payload.base_instructions` |
