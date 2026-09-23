@@ -1,18 +1,18 @@
 {
   "name": "claude-user-communication",
-  "version": "0.50.0",
-  "description": "調査報告や設計判断を HTML ページで提示し、回答を記録する",
+  "version": "0.51.0+codex.20260923161840",
+  "description": "\u8abf\u67fb\u5831\u544a\u3084\u8a2d\u8a08\u5224\u65ad\u3092 HTML \u30da\u30fc\u30b8\u3067\u63d0\u793a\u3057\u3001\u56de\u7b54\u3092\u8a18\u9332\u3059\u308b",
   "author": {
     "name": "CC Tools"
   },
   "skills": "./skills/",
   "interface": {
     "displayName": "HTML Communication",
-    "shortDescription": "報告と確認を HTML ページで行う",
-    "longDescription": "調査報告、比較、確認フォームを HTML ページにまとめ、提示前の検査と回答記録まで行う。",
+    "shortDescription": "\u5831\u544a\u3068\u78ba\u8a8d\u3092 HTML \u30da\u30fc\u30b8\u3067\u884c\u3046",
+    "longDescription": "\u8abf\u67fb\u5831\u544a\u3001\u6bd4\u8f03\u3001\u78ba\u8a8d\u30d5\u30a9\u30fc\u30e0\u3092 HTML \u30da\u30fc\u30b8\u306b\u307e\u3068\u3081\u3001\u63d0\u793a\u524d\u306e\u691c\u67fb\u3068\u56de\u7b54\u8a18\u9332\u307e\u3067\u884c\u3046\u3002",
     "developerName": "CC Tools",
     "category": "Productivity",
     "capabilities": [],
-    "defaultPrompt": "この内容を HTML ページにまとめて提示して"
+    "defaultPrompt": "\u3053\u306e\u5185\u5bb9\u3092 HTML \u30da\u30fc\u30b8\u306b\u307e\u3068\u3081\u3066\u63d0\u793a\u3057\u3066"
   }
 }

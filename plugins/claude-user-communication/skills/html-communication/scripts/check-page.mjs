@@ -18,7 +18,7 @@
 //  12. 一括承認の設問 (複数の判断を 1 設問で承認させる形)
 //  13. 設問を含む節の見出しが問いの形か (末尾が「か」で終わるか)
 //  14. 表の列見出しが何でも入る器の語になっていないか
-//  15. チェックボックスの既定 checked
+//  15. 未回答ページのチェックボックスの既定 checked（回答済みの checked disabled は除く）
 //  16. 前景色に opacity を重ねている (コントラストが下がる。値はトークンで決める)
 //  17. 設問カードの summary に回答済みマーカー (.qstat) が無い
 //
@@ -491,8 +491,12 @@ function checkFile(path) {
     }
   } catch { /* index が無いページは対象外 */ }
 
-  // 11. チェックボックスの既定 checked
-  for (const m of src.matchAll(/<input\b[^>]*type="checkbox"[^>]*\bchecked\b/g)) {
+  // 11. チェックボックスの既定 checked。回答済みのフォームでは、組み立てが
+  // 選択済みの設問に出した checked disabled だけを許可する。
+  const answeredForm = /<script data-scope="form">[\s\S]*?\bvar ANSWERED = true;/.test(src);
+  for (const m of src.matchAll(/<input\b[^>]*>/g)) {
+    if (!/\btype="checkbox"/.test(m[0]) || !/\schecked(?:\s|>)/.test(m[0])) continue;
+    if (answeredForm && /^<input type="checkbox" name="q\d+" value="[^"]*" checked disabled>$/.test(m[0])) continue;
     findings.push({ check: "default-checked", line: lineOf(src, m.index),
       message: "チェックボックスが既定でチェック済み。読み飛ばしが承認として記録される" });
   }

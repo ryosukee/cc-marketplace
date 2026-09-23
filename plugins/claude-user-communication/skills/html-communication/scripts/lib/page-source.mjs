@@ -214,26 +214,29 @@ export function loadSource(jsonPath) {
       if (!q || typeof q !== "object") { add(w, "設問の節は question が要る"); return; }
       if (typeof q.label !== "string" || !q.label.trim()) add(`${w}.question`, "label が無い"); else strings.push({ where: `${w}.question.label`, text: q.label });
       if (typeof q.text !== "string" || !q.text.trim()) add(`${w}.question`, "text（設問文）が無い"); else strings.push({ where: `${w}.question.text`, text: q.text });
+      if (Object.hasOwn(q, "multiple") && typeof q.multiple !== "boolean") add(`${w}.question`, "multiple は真偽値。複数選択にするときは true");
       if (!Array.isArray(q.options) || !q.options.length) add(`${w}.question`, "options が無い");
       else {
         let rec = 0;
-        const valueAt = new Map(); // radio の値 → 最初に使った選択肢の位置
+        const valueAt = new Map(); // 選択肢の値 → 最初に使った位置
         q.options.forEach((o, j) => {
           const ow = `${w}.question.options[${j}]`;
           if (!o || typeof o.label !== "string" || !o.label.trim()) { add(ow, "選択肢は label が要る"); return; }
           strings.push({ where: ow, text: o.label });
-          if (o.recommended) rec++;
+          if (Object.hasOwn(o, "recommended") && typeof o.recommended !== "boolean") add(ow, "recommended は真偽値");
+          if (o.recommended === true) rec++;
           if (o.value != null && (typeof o.value !== "string" || !o.value.trim())) {
             add(ow, "value は空でない文字列。変換したページが元の radio の値を保つキーで、新しく書くページには書かない");
           }
           const ov = optionValue(o);
-          if (valueAt.has(ov)) add(ow, `radio の値 "${ov}" が options[${valueAt.get(ov)}] と同じ。同じ設問の中では 1 つずつにする`);
+          if (ov === "__other__") add(ow, "__other__ は「その他」用の予約値なので選択肢には使えない");
+          if (valueAt.has(ov)) add(ow, `選択肢の値 "${ov}" が options[${valueAt.get(ov)}] と同じ。同じ設問の中では 1 つずつにする`);
           else valueAt.set(ov, j);
           if (o.description != null) (Array.isArray(o.description) ? o.description : [o.description]).forEach((d, k) => strings.push({ where: `${ow}.description[${k}]`, text: String(d) }));
           for (const k of ["pros", "cons"]) if (o[k] != null) strings.push({ where: `${ow}.${k}`, text: String(o[k]) });
           if ((o.pros == null) !== (o.cons == null)) add(ow, "pros と cons は両方書くか両方省く");
         });
-        if (rec > 1) add(`${w}.question`, `推奨が ${rec} 個ある。1 個にする`);
+        if (!q.multiple && rec > 1) add(`${w}.question`, `推奨が ${rec} 個ある。1 個にする`);
       }
       if (sec.group != null) { if (!groupIds.has(sec.group)) add(w, `group "${sec.group}" が groups に無い`); usedGroups.add(sec.group); }
     } else if (sec.kind === "explain") {
@@ -270,21 +273,38 @@ export function loadSource(jsonPath) {
     if (typeof a.received !== "string") add("answers", "received（受領日）が無い");
     if (src.type === "form" && (typeof a.raw !== "string" || !Array.isArray(a.items))) add("answers", "form の answers は { received, raw, items, free }");
     if (src.type === "report" && typeof a.confirmed !== "string") add("answers", "report の answers は { received, confirmed }");
-    // items の value は選択肢の radio の値（既定は plain(label)、変換したページは選択肢の value）か null。
-    // どちらでもない値は radio の checked に一致せず、回答が入っているのに未選択で表示される
+    // 単一選択は従来の value、複数選択は multiple に選択肢の値を保存する。
     if (src.type === "form" && Array.isArray(a.items)) {
       const qs = (src.sections || []).filter((s) => s && s.kind === "question");
       const byId = new Map(qs.map((s, i) => [`q${i + 1}`, s]));
+      const seenIds = new Set();
       a.items.forEach((it, i) => {
         const w = `answers.items[${i}]`;
         if (!it || typeof it !== "object") { add(w, "回答の項目はオブジェクト"); return; }
         const s = byId.get(it.id);
         if (!s) { add(w, `id "${it.id}" に対応する設問の節が無い`); return; }
+        if (seenIds.has(it.id)) add(w, `id "${it.id}" の回答が重複している`);
+        seenIds.add(it.id);
         const values = Array.isArray(s.question?.options) ? s.question.options.map((o) => (o && typeof o.label === "string" ? optionValue(o) : null)) : [];
-        if (it.value != null && !values.includes(it.value)) {
-          add(w, `value "${it.value}" がどの選択肢とも一致しない。選択肢は ${values.map((x) => JSON.stringify(x)).join(" / ")}`);
+        if (s.question.multiple === true) {
+          if (it.value !== null) add(w, "複数選択の value は null にする");
+          if (!Array.isArray(it.multiple) || !it.multiple.every((v) => typeof v === "string")) add(w, "複数選択の multiple は文字列の配列");
+          else {
+            const seen = new Set();
+            for (const v of it.multiple) {
+              if (!values.includes(v)) add(w, `multiple の値 "${v}" がどの選択肢とも一致しない`);
+              if (seen.has(v)) add(w, `multiple の値 "${v}" が重複している`);
+              seen.add(v);
+            }
+          }
+        } else {
+          if (Object.hasOwn(it, "multiple")) add(w, "単一選択に multiple は置かない");
+          if (it.value != null && (typeof it.value !== "string" || !values.includes(it.value))) {
+            add(w, `value "${it.value}" がどの選択肢とも一致しない。選択肢は ${values.map((x) => JSON.stringify(x)).join(" / ")}`);
+          }
+          if (it.other != null && it.value != null) add(w, "other を持つ項目の value は null にする（「その他」を選んだ回答）");
         }
-        if (it.other != null && it.value != null) add(w, "other を持つ項目の value は null にする（「その他」を選んだ回答）");
+        if (it.other != null && typeof it.other !== "string") add(w, "other は文字列");
       });
     }
   }
@@ -439,13 +459,14 @@ export function renderPage(src, opts = {}) {
   const renderCard = (s, where) => {
     at(`${where}.question.label`);
     const q = s.question;
+    const inputType = q.multiple === true ? "checkbox" : "radio";
     const label = s.group ? `${esc(s.gname)} ${s.gn} / ${s.gN} ${inline(q.label, ctx)}` : `設問 ${s.n} / ${NQ} ${inline(q.label, ctx)}`;
     const a = ansItems.get(s.id);
     const opts = q.options.map((o) => {
       const value = optionValue(o);
-      const checked = a && a.value != null && a.value === value ? " checked" : "";
+      const checked = a && (q.multiple === true ? a.multiple?.includes(value) : a.value != null && a.value === value) ? " checked" : "";
       const desc = o.description == null ? [] : Array.isArray(o.description) ? o.description : [o.description];
-      let h = `  <label class="opt"><input type="radio" name="${s.id}" value="${esc(value)}"${checked}${dis}>\n    ${inline(o.label, ctx)}${o.recommended ? '<span class="rec">推奨</span>' : ""}`;
+      let h = `  <label class="opt"><input type="${inputType}" name="${s.id}" value="${esc(value)}"${checked}${dis}>\n    ${inline(o.label, ctx)}${o.recommended ? '<span class="rec">推奨</span>' : ""}`;
       if (desc.length) h += `\n    <span class="d">${desc.map((d) => inline(d, ctx)).join("<br>\n      ")}</span>`;
       if (o.pros != null) h += `\n    <span class="proscons">\n      <span><span class="pro">メリット</span>${inline(o.pros, ctx)}</span>\n      <span><span class="con">デメリット</span>${inline(o.cons, ctx)}</span>\n    </span>`;
       return h + `</label>`;
@@ -453,7 +474,7 @@ export function renderPage(src, opts = {}) {
     const otherChecked = a && a.other != null ? " checked" : "";
     const otherVal = a && a.other != null ? ` value="${esc(a.other)}"` : "";
     const note = a && a.note ? esc(a.note) : "";
-    return `<details class="qd" data-for="${s.id}"${s.group ? ` data-grp="${esc(s.group)}"` : ""} open>\n<summary>${label}<span class="qstat">未回答</span></summary>\n<p class="qtext">${inline(q.text, ctx)}</p>\n<div class="q" id="${s.id}">\n${opts}\n  <label class="opt"><input type="radio" name="${s.id}" value="__other__"${otherChecked}${dis}>その他\n    <input type="text" class="other" data-for="${s.id}"${otherVal}${dis}></label>\n  <textarea class="note" data-note="${s.id}" aria-label="設問 ${s.n} への補足" placeholder="補足（任意）"${dis}>${note}</textarea>\n</div>\n</details>`;
+    return `<details class="qd" data-for="${s.id}"${s.group ? ` data-grp="${esc(s.group)}"` : ""} open>\n<summary>${label}<span class="qstat">未回答</span></summary>\n<p class="qtext">${inline(q.text, ctx)}</p>\n<div class="q" id="${s.id}"${q.multiple === true ? ' data-multiple="true"' : ""}>\n${opts}\n  <label class="opt"><input type="${inputType}" name="${s.id}" value="__other__"${otherChecked}${dis}>その他\n    <input type="text" class="other" data-for="${s.id}"${otherVal}${dis}></label>\n  <textarea class="note" data-note="${s.id}" aria-label="設問 ${s.n} への補足" placeholder="補足（任意）"${dis}>${note}</textarea>\n</div>\n</details>`;
   };
 
   const parts = [];
@@ -555,19 +576,60 @@ const ANSWER_LINE_HEAD = /^-\s*Q\d+/;
 
 export function parseAnswerText(text, src, received) {
   const questions = src.sections.filter((s) => s.kind === "question");
-  const items = questions.map((s, i) => ({ id: `q${i + 1}`, label: plain(s.question.label), value: null }));
+  const items = questions.map((s, i) => ({ id: `q${i + 1}`, label: plain(s.question.label), value: null, ...(s.question.multiple === true ? { multiple: [] } : {}) }));
   const unparsed = [];
+  const seen = new Set();
   let free = null;
   const lines = text.replace(/\r\n?/g, "\n").split("\n");
   let cur = null; // 直前の項目（続きの行を足す）
-  const setValue = (item, body) => {
-    let [v, note] = body.split(/\s+※\s+/, 2);
-    v = v.trim();
-    if (v === "未回答" || v === "") item.value = null;
+  const setValue = (item, question, body) => {
+    let v, note;
+    if (question.multiple === true && body.trimStart().startsWith("複数選択:")) {
+      const start = body.indexOf("{");
+      if (start < 0) return false;
+      let end = -1, depth = 0, quoted = false, escaped = false;
+      for (let i = start; i < body.length; i++) {
+        const c = body[i];
+        if (escaped) { escaped = false; continue; }
+        if (quoted && c === "\\") { escaped = true; continue; }
+        if (c === '"') { quoted = !quoted; continue; }
+        if (!quoted && c === "{") depth++;
+        if (!quoted && c === "}" && --depth === 0) { end = i + 1; break; }
+      }
+      if (end < 0) return false;
+      const tail = body.slice(end);
+      if (tail.trim() && !/^\s+※\s+/.test(tail)) return false;
+      v = body.slice(0, end).trim();
+      note = tail.replace(/^\s+※\s+/, "");
+    } else {
+      [v, note] = body.split(/\s+※\s+/, 2);
+      v = v.trim();
+    }
+    if (question.multiple === true) {
+      if (v !== "未回答" && v !== "") {
+        const match = /^複数選択:\s*(\{.*\})$/.exec(v);
+        if (!match) return false;
+        let data;
+        try { data = JSON.parse(match[1]); } catch { return false; }
+        if (!data || typeof data !== "object" || Array.isArray(data) || !Array.isArray(data.values)
+          || !data.values.every((x) => typeof x === "string")
+          || Object.keys(data).some((k) => k !== "values" && k !== "other")
+          || ("other" in data && typeof data.other !== "string")) return false;
+        const allowed = question.options.map(optionValue);
+        if (data.values.some((x) => !allowed.includes(x)) || new Set(data.values).size !== data.values.length) return false;
+        if (!data.values.length && !("other" in data)) return false;
+        item.multiple = data.values;
+        if ("other" in data) item.other = data.other;
+      }
+    } else if (v === "未回答" || v === "") item.value = null;
     else if (/^その他[:：]\s*/.test(v)) { item.value = null; item.other = v.replace(/^その他[:：]\s*/, ""); }
     else if (v === "その他（記述なし）") { item.value = null; item.other = ""; }
-    else item.value = v;
+    else {
+      if (!question.options.map(optionValue).includes(v)) return false;
+      item.value = v;
+    }
     if (note != null && note.trim()) item.note = note.trim();
+    return true;
   };
   for (const raw of lines) {
     const line = raw.replace(/\s+$/, "");
@@ -576,7 +638,10 @@ export function parseAnswerText(text, src, received) {
     if ((m = ANSWER_LINE.exec(line))) {
       const item = items[Number(m[1]) - 1];
       if (!item) { unparsed.push(`${line}（設問 Q${m[1]} がページに無い）`); cur = null; continue; }
-      setValue(item, m[3]); cur = item; continue;
+      if (seen.has(item.id)) { unparsed.push(`${line}（同じ設問の回答が重複）`); cur = null; continue; }
+      seen.add(item.id);
+      if (!setValue(item, questions[Number(m[1]) - 1].question, m[3])) { unparsed.push(`${line}（回答の形式または値が不正）`); cur = null; continue; }
+      cur = item; continue;
     }
     if (ANSWER_LINE_HEAD.test(line)) { unparsed.push(line); cur = null; continue; }
     if ((m = /^-\s*補足[:：]\s*(.*)$/.exec(line))) { free = m[1].trim() === "なし" ? null : m[1].trim(); cur = "free"; continue; }

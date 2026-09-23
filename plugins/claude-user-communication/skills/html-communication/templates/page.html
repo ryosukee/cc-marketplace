@@ -208,11 +208,15 @@
               padding: 8px 0 8px 2px; border-bottom: 1px solid var(--rule); cursor: pointer;
               font-size: 0.875em; }
   label.opt:has(input:checked) { font-weight: 700; }
-  label.opt input[type="radio"] { appearance: none; -webkit-appearance: none;
+  label.opt input[type="radio"], label.opt input[type="checkbox"] { appearance: none; -webkit-appearance: none;
       width: 15px; height: 15px; margin: 0; flex: none; border-radius: 50%;
       border: 1.5px solid var(--control-border); background: var(--bg); transform: translateY(2px); }
   label.opt input[type="radio"]:checked { border: 5px solid var(--link-fill); }
-  label.opt input[type="radio"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  label.opt input[type="checkbox"] { border-radius: 3px; }
+  label.opt input[type="checkbox"]:checked { background: var(--link-fill); border-color: var(--link-fill); }
+  label.opt input[type="checkbox"]:checked::after { content: "✓"; display: block; color: var(--on-fill);
+      font-size: 0.875em; font-weight: 700; line-height: 12px; text-align: center; }
+  label.opt input[type="radio"]:focus-visible, label.opt input[type="checkbox"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   label.opt .d { font-weight: 400; width: 100%; }
   /* 選択肢の帰結を長所と短所の 2 行に分ける。色だけに載せず、ラベル語を必ず併記する */
   .proscons { display: block; margin-top: 5px; }
@@ -555,6 +559,17 @@
   relayout();
 
   function ans(qid) {
+    var group = document.getElementById(qid);
+    if (group && group.dataset.multiple === 'true') {
+      var checked = [].slice.call(group.querySelectorAll('input[type="checkbox"]:checked'));
+      if (!checked.length) return null;
+      var data = { values: checked.filter(function (c) { return c.value !== '__other__'; }).map(function (c) { return c.value; }) };
+      if (checked.some(function (c) { return c.value === '__other__'; })) {
+        var other = group.querySelector('.other');
+        data.other = other ? other.value.trim() : '';
+      }
+      return '複数選択: ' + JSON.stringify(data);
+    }
     var c = document.querySelector('input[name="' + qid + '"]:checked');
     if (!c) return null;
     if (c.value === '__other__') {
@@ -577,8 +592,12 @@
     return { text: lines.join('\n'), n: n, total: QS.length };
   }
   function saveDraft() {
-    var d = { radios: {}, texts: {} };
+    var d = { radios: {}, checkboxes: {}, texts: {} };
     document.querySelectorAll('input[type="radio"]:checked').forEach(function (r) { d.radios[r.name] = r.value; });
+    document.querySelectorAll('input[type="checkbox"]:checked').forEach(function (c) {
+      if (!d.checkboxes[c.name]) d.checkboxes[c.name] = [];
+      d.checkboxes[c.name].push(c.value);
+    });
     document.querySelectorAll('.other').forEach(function (o) { if (o.value) d.texts['o:' + o.dataset.for] = o.value; });
     document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
     var free = document.getElementById('free').value;
@@ -589,6 +608,12 @@
     Object.keys(d.radios || {}).forEach(function (name) {
       var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
       if (el) el.checked = true;
+    });
+    Object.keys(d.checkboxes || {}).forEach(function (name) {
+      if (!Array.isArray(d.checkboxes[name])) return;
+      document.querySelectorAll('input[type="checkbox"]').forEach(function (el) {
+        if (el.name === name && d.checkboxes[name].includes(el.value)) el.checked = true;
+      });
     });
     Object.keys(d.texts || {}).forEach(function (k) {
       if (k === 'free') { document.getElementById('free').value = d.texts[k]; return; }
@@ -638,7 +663,7 @@
   document.getElementById('reset').addEventListener('click', function () {
     if (ANSWERED) return;
     try { localStorage.removeItem(KEY); } catch (e) {}
-    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(function (r) { r.checked = false; });
     document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
     document.getElementById('free').value = '';
     refresh();
