@@ -133,13 +133,15 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: 1. 設定は変えずに、必要な情報を別の場所に保管する。簡単には全部コピー、節約するなら情報は取捨選択してコピー
 
-- 反映先: 2026-09-24 に、仕組みを作るまでのつなぎとして、`~/.claude/projects/`・`~/.claude/history.jsonl`・`~/.codex/sessions/`・`~/.codex/history.jsonl` を
-  `~/.local/share/agent-run-records/` の下へ rsync（削除なし）で全部写した。30 日を過ぎた Claude Code の記録は起動のたびに消えるので、
-  仕組みができるまでは 30 日以内に同じ rsync を回し直す
+- 反映先: 反映なし（回収の仕組みの設計で扱う）
+- 補足: この回答は方針で、いま写す指示ではなかった。Claude が取り違え、2026-09-24 に `~/.claude/projects/`・`~/.claude/history.jsonl`・
+  `~/.codex/sessions/`・`~/.codex/history.jsonl` を `~/.local/share/agent-run-records/` の下へ rsync（削除なし）で全部写した。
+  ユーザーは「あってもいい。最終的に綺麗にすればよい」と答えたので、この写しは残し、回収の仕組みができたときに片付ける
 
 ## 未解決課題
 
-- 実行記録を写し続ける方式（定期実行か、SessionEnd などの hook か）と間隔。仕組みができるまで、手で rsync を回し直す期限を誰が持つか
+- 実行記録を写し続ける方式（定期実行か、SessionEnd などの hook か）と間隔
+- 2026-09-24 に `~/.local/share/agent-run-records/` へ写したつなぎの写しを、回収の仕組みができたときにどう片付けるか
 - 写す範囲。transcript と subagent のほかに、Claude Code が一緒に消す tool-results・file-history・plans・tasks なども写すか
 - Codex の記録の保持期間（公式の記述が見つからない）
 - feedmarks の分析 agent 3 本（プロセス・トークン効率・規範とコードの食い違い）を、全セッションの記録に回せる形へどう移すか
