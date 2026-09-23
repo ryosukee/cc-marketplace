@@ -12,6 +12,15 @@ user-invocable: false
 レビュー開始時は、Diffo CLI の起動後、poller の起動前に
 [表示調整の手順](../../references/display-customization.md)を読み、`diffo-patch` を適用する。
 
+## 起動に失敗したという表示だけで起動し直さない
+
+`diffo --no-open` が「the diffo server did not start」と出しても、
+`npx -y @diffohq/diffo status` でサーバーが動いているかを確かめてから次に進む。
+status が URL を返せば、起動は成功している。起動し直すのは、status にサーバーが出ないときだけにする。
+
+why: サーバーの起動を待つ時間を過ぎても、サーバーは遅れて動き出していることがある。
+表示だけで失敗と判断すると、動いているレビューを見失い、起動し直しや別の手段を探す遠回りをする。
+
 ## poll を監視する
 
 親 agent の `CODEX_THREAD_ID` を確認する。レビュー対象 repo で、
