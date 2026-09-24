@@ -418,6 +418,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 
 - 補足の扱い: 自宅サーバーへ移すときの置き場は、SSD の増設や NAS も含めて、そのときに決め直す
 - 反映先: agent-run-records の `868ada3`（`.gitignore` で `data/` を対象外にした）。2026-09-24 の写しは `data/raw/` へ mv した
+- 上書き: 置き場は、2026-09-25「生の jsonl と SQLite と state.json の置き場を XDG の data の置き場に移す」で上書きされた
 
 ### 2026-09-24 元の置き場から消えた jsonl だけを zstd で圧縮する
 
@@ -619,6 +620,27 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     > ユーザー: 環境変数と既定値 (Recommended)
 
 - 反映先: 未反映。agent-run-records の plugin の実装
+- 上書き: repo の場所を環境変数 `AGENT_RUN_RECORDS_DIR` と既定値で伝える部分は、2026-09-25「生の jsonl と SQLite と state.json の置き場を XDG の data の置き場に移す」で上書きされた。hook は repo ではなくデータの置き場を見る
+
+### 2026-09-25 生の jsonl と SQLite と state.json の置き場を XDG の data の置き場に移す
+
+- 結論: agent-run-records の repo の `data/` にあった生の jsonl・`records.sqlite`・`state.json`・ログを、repo の外の data の置き場へ移す。置き場は次の順に決める。回収・取り込み・hook の 3 つで同じ順を使う
+    1. 環境変数 `AGENT_RUN_RECORDS_DATA_DIR` が空でなければ、その値
+    2. `XDG_DATA_HOME` が空でなければ、`${XDG_DATA_HOME}/agent-run-records`
+    3. どちらも空なら、`~/.local/share/agent-run-records`（XDG Base Directory の既定。この機材では `XDG_DATA_HOME` は未設定）
+- 上書きした決定: 2026-09-24「生の jsonl と SQLite は agent-run-records の repo の中（git の対象外）に置く」の置き場と、2026-09-24「回収が止まったときの警告は…repo の場所は環境変数と既定値で伝える」の repo の場所の伝え方（`AGENT_RUN_RECORDS_DIR` をやめ、`AGENT_RUN_RECORDS_DATA_DIR` にする）
+- 決めなかった範囲: 事例の SQLite ファイルの名前（同じ置き場に置く想定）
+- 決め手: ユーザーの判断。agent-run-records の repo が plugin を配る形になり、hook はインストール先のキャッシュから動くので、データを repo の外に置いたほうがよいとユーザーが考えた。cc-marketplace の state の置き場の規定（plugin の作者が決めた環境変数 → `${XDG_DATA_HOME}/{plugin}` → `~/.local/share/{plugin}`）とも揃う
+- 出典: ターミナルでのユーザーの発言（2026-09-24〜25）
+- 出典の実文:
+
+    > ユーザー: この形式なら repo じゃなくてローカルのどこかにファイル置いた方がいいかも
+    >
+    > Claude: 確認させてください。「ファイル」は、`data/` の中身（写した生の jsonl、`records.sqlite`、`state.json`）のことでしょうか。（中略）この repo の state の置き場の規定（環境変数 → `${XDG_DATA_HOME}/{plugin}` → `~/.local/share/{plugin}`）に合わせるなら、置き場は `~/.local/share/agent-run-records/` です。
+    >
+    > ユーザー: dataのこと。XDG_DATA_HOME ってデフォルトだとどこ？それに合わせるのがいい気がした
+
+- 反映先: 未反映。agent-run-records の回収・取り込み・plist と、plugin の hook
 
 ## 未解決課題
 
