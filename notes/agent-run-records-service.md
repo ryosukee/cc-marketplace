@@ -640,7 +640,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: dataのこと。XDG_DATA_HOME ってデフォルトだとどこ？それに合わせるのがいい気がした
 
-- 反映先: 未反映。agent-run-records の回収・取り込み・plist と、plugin の hook
+- 反映先: 回収・取り込み・plist は agent-run-records の `afab542`（2026-09-25 に `data/` の中身 3,792 ファイルを `~/.local/share/agent-run-records/` へ mv し、plist を登録し直した）。plugin の hook は未反映
 - 上書き: 置き場を決める順の 1 番目（環境変数 `AGENT_RUN_RECORDS_DATA_DIR`）は、2026-09-25「データの置き場は XDG_DATA_HOME だけで決める」で外された
 
 ### 2026-09-25 データの置き場は XDG_DATA_HOME だけで決める
@@ -653,7 +653,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 
     > ユーザー: その環境変数不要になるのでは？XDG DATA HOME に乗っ取ろう
 
-- 反映先: 未反映。agent-run-records の回収・取り込み・plist と、plugin の hook
+- 反映先: 回収・取り込み・plist は agent-run-records の `afab542`（2026-09-25 に `data/` の中身 3,792 ファイルを `~/.local/share/agent-run-records/` へ mv し、plist を登録し直した）。plugin の hook は未反映
 
 ## 未解決課題
 
