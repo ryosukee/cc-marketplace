@@ -15,6 +15,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 | artifacts | 目的 |
 | --- | --- |
 | [事例集 2 本の中身の分析](./artifacts/review-cases-analysis.md) | 事例の項目の埋まり方、いまの型の実態、分類の軸とデータの形の案、移し替えの見込み、機密の分布。分類とデータの形を決める入力 |
+| [事例の型の最上位の切り方 3 案の草案](./artifacts/review-case-taxonomy-drafts.md) | 190 件を「読み手に起きる不具合」「指摘の単位」「書き手がしたこと」の 3 通りで試しに振り分けた 2 段の草案。型の分類を作り直す入力 |
 | [実行記録の下調べ](./artifacts/agent-run-records-survey.md) | feedmarks の仕組み、Claude Code と Codex のセッション記録の置き場・形式・保持期間、既存の取り組み。回収と分析の設計の入力 |
 
 ## 確定事項
