@@ -15,6 +15,8 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 | artifacts | 目的 |
 | --- | --- |
 | [事例集 2 本の中身の分析](./artifacts/review-cases-analysis.md) | 事例の項目の埋まり方、いまの型の実態、分類の軸とデータの形の案、移し替えの見込み、機密の分布。分類とデータの形を決める入力 |
+| [文の単位の 2 段目の型の案](./artifacts/review-case-sentence-types-draft.md) | 文の 78 件を 10 の型に分けた案。文の単位の 2 段目を決める入力 |
+| [ブロック・節の中・節どうし・文書間の 2 段目の型の案](./artifacts/review-case-wide-unit-types-draft.md) | 広い 4 つの単位の 70 件を型に分けた案。それぞれの単位の 2 段目を決める入力 |
 | [語の単位の 2 段目の型の案](./artifacts/review-case-word-types-draft.md) | 語の 59 件を 8 つの型に分けた案。語の単位の 2 段目を決める入力 |
 | [事例の誤りの種類と単位の組み合わせ](./artifacts/review-case-error-unit-matrix.md) | 190 件を 6 つの単位と規則で単位ごとの誤りに分解した暫定の整理（207 件）。単位ごとの誤りの種類を決める入力 |
 | [事例の型の最上位の切り方 3 案の草案](./artifacts/review-case-taxonomy-drafts.md) | 190 件を「読み手に起きる不具合」「指摘の単位」「書き手がしたこと」の 3 通りで試しに振り分けた 2 段の草案。型の分類を作り直す入力 |
