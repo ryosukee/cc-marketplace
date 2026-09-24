@@ -12,10 +12,14 @@ user-invocable: false
 レビュー開始時は、Diffo CLI の起動後、poll の監視を始める前に
 [表示調整の手順](../../references/display-customization.md)を読み、`diffo-patch` を適用する。
 
+Diffo CLI を実行するときは、Diffo 公式 skill にある `npx -y @diffohq/diffo` を
+`npx -y --prefer-online @diffohq/diffo@latest` に置き換える。
+`@latest` で取得対象を最新版にし、`--prefer-online` で実行ごとに registry の版を確認する。
+
 ## 起動に失敗したという表示だけで起動し直さない
 
 `diffo --no-open` が「the diffo server did not start」と出しても、
-`npx -y @diffohq/diffo status` でサーバーが動いているかを確かめてから次に進む。
+`npx -y --prefer-online @diffohq/diffo@latest status` でサーバーが動いているかを確かめてから次に進む。
 status が URL を返せば、起動は成功している。起動し直すのは、status にサーバーが出ないときだけにする。
 
 why: サーバーの起動を待つ時間を過ぎても、サーバーは遅れて動き出していることがある。
@@ -28,7 +32,7 @@ why: サーバーの起動を待つ時間を過ぎても、サーバーは遅れ
 
 ```bash
 while :; do
-  out=$(npx -y @diffohq/diffo poll 2>&1) || {
+  out=$(npx -y --prefer-online @diffohq/diffo@latest poll 2>&1) || {
     printf '%s\n' "$out"
     printf '%s\n' '[poll が非ゼロで終了。loop を抜けた]'
     break
@@ -51,4 +55,3 @@ done
 
 payload の全 `threadIds` への返信後に、新しい追跡可能なバックグラウンドタスクを起動する。
 スレッドの解決はレビュアーが行う。
-

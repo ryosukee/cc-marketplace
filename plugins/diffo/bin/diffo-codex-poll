@@ -42,7 +42,7 @@ trap 'rmdir "$lock_dir" 2>/dev/null || true' EXIT
 echo "diffo-codex-poll: $repo_root のレビューを Codex thread $TARGET_CODEX_THREAD_ID へ配送する"
 
 while :; do
-	if ! out="$(npx -y @diffohq/diffo poll 2>&1)"; then
+	if ! out="$(npx -y --prefer-online @diffohq/diffo@latest poll 2>&1)"; then
 		printf '%s\n' "$out" >&2
 		echo "diffo-codex-poll: diffo poll が失敗した。監視を終了する" >&2
 		exit 1

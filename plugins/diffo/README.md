@@ -13,7 +13,8 @@ Diffo 公式 skill と CLI を使う場合は、以下が必要。
 
 - Node.js 24 以上
 - `npx`
-    - Diffo CLI を `npx -y @diffohq/diffo` で実行する
+    - Diffo CLI を `npx -y --prefer-online @diffohq/diffo@latest` で実行する
+    - 各実行で npm registry の最新版を確認する
 - `git`
 
 Codex でレビュー通知を自動受信する場合は、上記に加えて以下が必要。
@@ -38,7 +39,7 @@ npx skills add DiffoHQ/diffo --skill diffo -g
 ```
 
 plugin を導入するだけでは監視は始まらない。レビュー対象のリポジトリで
-`npx -y @diffohq/diffo --no-open` を実行する。
+`npx -y --prefer-online @diffohq/diffo@latest --no-open` を実行する。
 監視は[Claude Code で Diffo レビューを受ける](./claude-skills/ref-diffo/SKILL.md)または[Codex で Diffo レビューを受ける](./codex-skills/ref-diffo/SKILL.md)の手順で始める。
 
 ## 未導入・異常終了時

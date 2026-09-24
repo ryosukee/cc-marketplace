@@ -51,3 +51,13 @@ test('both supplemental skills point to the official Diffo entry point', () => {
     assert.match(read(`${directory}/ref-diffo/SKILL.md`), /Diffo 公式の `diffo` skill と CLI の `help agent`/);
   }
 });
+
+test('all plugin-owned Diffo executions check the registry for latest', () => {
+  const command = 'npx -y --prefer-online @diffohq/diffo@latest';
+  assert.match(read('README.md'), new RegExp(command));
+  assert.match(read('references/display-customization.md'), new RegExp(command));
+  assert.match(read('bin/diffo-codex-poll'), new RegExp(`${command} poll`));
+  assert.match(read('claude-skills/ref-diffo/SKILL.md'), new RegExp(`${command} status`));
+  assert.match(read('claude-skills/ref-diffo/SKILL.md'), new RegExp(`${command} poll`));
+  assert.match(read('codex-skills/ref-diffo/SKILL.md'), new RegExp(`${command} status`));
+});

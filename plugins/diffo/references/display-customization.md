@@ -10,7 +10,8 @@
 - Finish review に LGTM ボタンを追加する。締めコメント欄の内容とともに、レビュー完了、
   `diffo end` と polling の終了、返信不要を伝える固定文を送信する。
 
-Diffo 公式 skill の手順で `npx -y @diffohq/diffo --no-open` を起動した後に、
+Diffo 公式 skill の command を
+`npx -y --prefer-online @diffohq/diffo@latest --no-open` に置き換えて起動した後に、
 この plugin の `bin/diffo-patch` を実行する。
 plugin root は、読み込んだ SKILL.md のパスから 2 階層上にある。
 
