@@ -583,6 +583,43 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 
 - 反映先: 未反映。agent-run-records の plugin の実装
 
+### 2026-09-24 回収が止まったときの警告は、7 日成功していなければユーザーに直接出し、repo の場所は環境変数と既定値で伝える
+
+- 結論: SessionStart の hook は、agent-run-records の `data/state.json` を読み、次のどれかに当たったときだけ警告する。`state.json` が無い、回収か取り込みが 7 日以上成功していない、最後の回収にエラーか `missing_sources` がある、最後の取り込みが失敗している。
+  警告はユーザーに直接出す（Claude Code は `systemMessage`。Codex は直接出せるかを実装のときに確かめ、出せなければ agent への文脈で渡して伝えさせる）。
+  repo の場所は、環境変数 `AGENT_RUN_RECORDS_DIR` が空でなければその値、空なら `~/ghq_root/github.com/ryosukee/agent-run-records` を使う
+- 上書きした決定: 2026-09-24「回収は 1 日 1 回にする」の決めなかった範囲の「セッション開始の hook が警告する閾値（提案では「最後の回収から 2 日超」）」を 7 日に決める
+- 決めなかった範囲: plugin の名前、marketplace の登録のしかた
+- 決め手: ユーザーの選択。閾値は推奨した 48 時間ではなく 7 日を選んだ。見せ方と repo の場所の伝え方は推奨どおり
+- 出典: AskUserQuestion への回答（2026-09-24）
+- 出典の実文:
+
+    > Claude の質問: 回収か取り込みが何時間成功していなければ警告しますか？
+    > 選択肢:
+    > - 48 時間 (Recommended): 1 日 1 回の回収が 1 回抜けただけ（前日が休みで機材が止まっていたなど）では警告せず、2 回続けて抜けたら警告する。Claude Code の記録は 30 日で消えるので、気づくまでに十分な余裕がある
+    > - 26 時間: 1 回抜けただけで警告する。実行時刻のずれに 2 時間の余裕を持たせる。機材を止めた日の翌朝にも警告が出る
+    > - 7 日: 警告はほとんど出ない。止まってから気づくまでに最大 1 週間かかるが、30 日の期限にはまだ間に合う
+    >
+    > ユーザー: 7 日
+    >
+    > Claude の質問: 回収が止まっているときの警告を、誰に見せますか？
+    > 選択肢:
+    > - ユーザーに直接 (Recommended): Claude Code は systemMessage で画面に出す。Codex は実装のときに直接出せるかを確かめ、出せなければ agent への文脈で渡して伝えさせる。agent を介さないので、伝え漏れが起きない
+    > - agent への文脈として渡す: 両方とも additionalContext で渡し、agent にユーザーへ伝えさせる。Claude Code と Codex で形が揃うが、agent が伝え損ねることがある
+    > - 両方: ユーザーに直接出し、agent にも文脈として渡す。agent が回収の修復を手伝えるが、警告が出たセッションでは文脈を少し使う
+    >
+    > ユーザー: ユーザーに直接 (Recommended)
+    >
+    > Claude の質問: hook に agent-run-records の repo の場所をどう伝えますか？
+    > 選択肢:
+    > - 環境変数と既定値 (Recommended): AGENT_RUN_RECORDS_DIR が空でなければその値を使い、空なら ~/ghq_root/github.com/ryosukee/agent-run-records を使う。いまの置き場なら何も設定しなくてよく、repo を動かしたときだけ Claude Code と Codex の両方に環境変数を設定する
+    > - 既定値だけ: ~/ghq_root/github.com/ryosukee/agent-run-records に固定する。最も単純だが、repo を動かしたら plugin を直して版を上げる必要がある
+    > - install スクリプトが書く設定ファイル: install-launchd.sh が ~/.config/agent-run-records/ に repo の場所を書き、hook はそれを読む。環境変数を 2 か所に設定しなくて済むが、設定ファイルが 1 つ増える
+    >
+    > ユーザー: 環境変数と既定値 (Recommended)
+
+- 反映先: 未反映。agent-run-records の plugin の実装
+
 ## 未解決課題
 
 - 事例のバックアップの仕組み。事例は DB にしか無く、生の jsonl から作り直せない（事例をセッションから送る経路は 2026-09-24 に「DB のファイルへ直接書く」と決めた）
