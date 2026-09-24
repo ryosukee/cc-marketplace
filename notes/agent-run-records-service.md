@@ -326,7 +326,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     > - Q1（構成）: 開発機のスクリプト  ※ 開発機に置くならスクリプトでよい。自宅鯖に載せる判断をした時にサービスも構築する
     > - 補足: なし
 
-- 反映先: 未反映。回収スクリプトの実装
+- 反映先: 回収スクリプトは agent-run-records の `868ada3` に反映した。セッションが事例を書くスクリプトは未反映
 
 ### 2026-09-24 回収スクリプトとセッションが事例を書くスクリプトは Python で書く
 
@@ -344,7 +344,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: Python (Recommended)
 
-- 反映先: 未反映。回収スクリプトの実装
+- 反映先: 回収スクリプトは agent-run-records の `868ada3` に反映した（mise の Python 3.14 と uv）。セッションが事例を書くスクリプトは未反映
 
 ### 2026-09-24 回収は 1 日 1 回にする
 
@@ -361,7 +361,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: 1 日 1 回 (Recommended)
 
-- 反映先: 未反映。launchd の plist
+- 反映先: agent-run-records の `868ada3` の `launchd/agent-run-records.collect.plist`（毎日 04:00）。2026-09-24 に `launchctl bootstrap` で登録した
 
 ### 2026-09-24 写す範囲は Claude Code の projects、Codex の sessions、両方の history.jsonl にする
 
@@ -381,7 +381,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: 基本の 4 つだけ (Recommended)
 
-- 反映先: 未反映。回収スクリプトの実装
+- 反映先: agent-run-records の `868ada3` の `agent_run_records/collect.py`
 
 ### 2026-09-24 生の jsonl と SQLite は agent-run-records の repo の中（git の対象外）に置く
 
@@ -415,7 +415,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     > ユーザー（回答の直後の補足）: その上で、自宅サーバかした時などは追加の ssd 接続などを考える nas とかも
 
 - 補足の扱い: 自宅サーバーへ移すときの置き場は、SSD の増設や NAS も含めて、そのときに決め直す
-- 反映先: 未反映。回収スクリプトの実装と、agent-run-records の `.gitignore`
+- 反映先: agent-run-records の `868ada3`（`.gitignore` で `data/` を対象外にした）。2026-09-24 の写しは `data/raw/` へ mv した
 
 ### 2026-09-24 元の置き場から消えた jsonl だけを zstd で圧縮する
 
@@ -432,14 +432,12 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: 元が消えたものだけ zstd で圧縮 (Recommended)
 
-- 反映先: 未反映。回収スクリプトの実装
+- 反映先: agent-run-records の `868ada3` の `agent_run_records/collect.py`。2026-09-24 の最初の実行で 112 本を圧縮した
 
 ## 未解決課題
 
 - 事例のバックアップの仕組み。事例は DB にしか無く、生の jsonl から作り直せない（事例をセッションから送る経路は 2026-09-24 に「DB のファイルへ直接書く」と決めた）
 - 自宅サーバーへ載せる判断の時期と条件。載せるなら、marujirou の稼働の監視、省電力を有効にする前の起こすゲートウェイ、会社の作業の記録を自宅サーバーに置いてよいか、を先に決める。生の jsonl と DB の置き場は、SSD の増設や NAS も含めてそのときに決め直す（2026-09-24 のユーザーの補足）
-- 2026-09-24 に `~/.local/share/agent-run-records/` へ写したつなぎの写しを、回収の仕組みができたときにどう片付けるか。
-  回収の仕組みができる前に、2026-09-24 より後の Claude Code の記録が 30 日の期限に入り始める
 - Codex の記録の保持期間（公式の記述が見つからない）
 - 型の分類の作り直し（階層の形、事例集を調べた報告の「分類の軸」の案をどこまで取り入れるか）、事例のフィールド定義、事例間の関係（同じ発言から分けた事例、再指摘）の持ち方、収集済みの事例へのラベルの振り直し
 - セッションの中で指摘を収集サービスへ送る skill の形と、既存の工程（github-pr の address-review、html-communication の回答受領）から呼ぶか
