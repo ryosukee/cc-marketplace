@@ -451,7 +451,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > 回答: Q1（本文の範囲）: 本文は入れない  ※ path だけにした時点で何かを入れるメリットがほとんどない。結局全部読まないと意味のある分析はできないし。一部を入れるだけ db の容量の無駄。作業ディレクトリとか repo の情報とか日時とかのメタデータのみあればよい
 
-- 反映先: 未反映。取り込みの実装
+- 反映先: agent-run-records の `6bf3b5d` の `agent_run_records/ingest.py`
 
 ### 2026-09-24 実行記録の DB は 1 件ごとの数値も持つ
 
@@ -468,7 +468,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: 1 件ごとの数値も持つ (Recommended)
 
-- 反映先: 未反映。取り込みの実装
+- 反映先: agent-run-records の `6bf3b5d`（API 応答とツールの呼び出しの表。発言ごとの行は持たない）
 
 ### 2026-09-24 事例は実行記録とは別の SQLite ファイルに置く
 
@@ -503,7 +503,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > 回答: Q3（取り込みの方式）: 毎日すべて作り直す
 
-- 反映先: 未反映。取り込みの実装
+- 反映先: agent-run-records の `6bf3b5d`（`agent_run_records/daily.py` を launchd から起動）
 
 ### 2026-09-24 Claude Code と Codex の記録は別々の表に入れる
 
@@ -520,7 +520,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > 回答: Q4（表の分け方）: 別々の表に入れる
 
-- 反映先: 未反映。取り込みの実装
+- 反映先: agent-run-records の `6bf3b5d`（`claude_*` と `codex_*` の表）
 
 ### 2026-09-24 会社の作業は作業ディレクトリだけで見分ける
 
@@ -539,7 +539,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > 回答: Q5（会社の作業の見分け方）: 作業ディレクトリだけで見分ける
 
-- 反映先: 未反映。取り込みの実装
+- 反映先: agent-run-records の `6bf3b5d`（`config.toml` の `cwd_prefixes` と `is_company` の列）
 
 ### 2026-09-24 会社の作業とする作業ディレクトリは omnisinc の repo と orca の efso-document の worktree
 
@@ -561,7 +561,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: ok
 
-- 反映先: 未反映。取り込みの実装
+- 反映先: agent-run-records の `6bf3b5d` の `config.toml`
 
 ## 未解決課題
 
