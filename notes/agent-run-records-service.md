@@ -265,9 +265,42 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 
 - 反映先: GitHub に `ryosukee/agent-run-records` を private で作成し、ghq で clone した（2026-09-24。中身はまだ空）
 
+### 2026-09-24 DB は SQLite にする
+
+- 結論: 実行記録から取り出した情報と、セッションから送る事例を入れる DB を SQLite にする。2026-09-24「実行記録は開発機の定期実行で差分を写し、生の jsonl と DB の両方に持つ」で決めなかった「DB の種類」を、ここで決める
+- 決めなかった範囲: テーブルの形（何を 1 行として持つか）、全文検索を DB で持つか、事例をセッションから送る経路（DB のファイルを直接開くか、書き込みを受け付けるプロセスを置くか）、事例のバックアップの仕組み
+- 決め手: ユーザーの選択（推奨どおり）。推奨の根拠は次のとおり
+    - 書き手は launchd の回収（1 日 1 回、1 プロセス）と、セッションから送る事例（既存の事例集で多い日 82 件）だけで、SQLite の WAL の「書き込みは 1 本ずつ・読みは並行」で足りる（出典: [Write-Ahead Logging](https://www.sqlite.org/wal.html) の「Reading and writing can proceed concurrently.」「there can only be one writer at a time」）
+    - DuckDB は標準構成では、分析する agent が DB を開いている間、回収も事例の送信も書き込めない（出典: [Concurrency](https://duckdb.org/docs/current/connect/concurrency.html) の「one process can both read and write to the database」「multiple processes can read from the database, but no processes can write (access_mode = 'READ_ONLY')」）
+    - PostgreSQL の強みは別マシンからの同時書き込みで、mac-mini だけで動かす間は常駐の手間だけが増える
+    - 量は問題にならない見込み。2026-09-24 の写しの直近 29 日で、発言・完了した応答・ツールの呼び出し・トークン使用量を持つ行を 1 件 1 行にすると、約 7,800 行/日、約 280 万行/年（推定）
+    - 手元の Python 3.14 の標準 sqlite3（SQLite 3.50.4）で、FTS5 の trigram が 3 文字以上の日本語で当たることと、JSON の取り出し（`->>`）が動くことを確かめた。2 文字の語は `MATCH` で当たらない
+- 覆る条件: 書き込みを受け付けるプロセスを置かないまま、サービスを自宅サーバーへ移し、mac-mini 以外のマシンのセッションからも事例を送ると決めたら、PostgreSQL が妥当になる（確認フォームの推奨の説明に書いた条件）
+- 出典: 確認フォーム ccm-f100 の設問「DB の種類」への回答（2026-09-24）。直前に、DB の種類を問うた AskUserQuestion への回答で、調べてから推奨と理由を報告するよう求められた
+- 出典の実文:
+
+    > Claude の質問（AskUserQuestion）: 実行記録から取り出した情報を入れる DB を何にしますか？
+    > 選択肢: SQLite (Recommended) / DuckDB / PostgreSQL
+    >
+    > ユーザー: どんな性質のどんな量が毎回 insert されるのか、それらをどのように分析・抽出するのか調べてから推奨案と理由を合わせて報告して
+    >
+    > 設問: 実行記録から取り出した情報と、セッションから送る事例を入れる DB を何にするか。
+    > 選択肢:
+    > - SQLite（推奨）: 定期回収と事例の送信を 1 本ずつ順に書け、書き込み中も読めて、常駐も導入も要らない。書き込みを受け付けるプロセスを置かないまま、サービスを自宅サーバーへ移し、mac-mini 以外のマシンのセッションからも事例を送ると決めたら、PostgreSQL が妥当になる。
+    > - DuckDB: 集計は最も速い見込みで（推定）、生の jsonl を直接読める。標準構成では、分析する agent が DB を開いている間、回収と事例の送信が書き込めない。
+    > - PostgreSQL: 複数のマシンから同時に書ける。mac-mini にサーバーを常駐させ、更新を運用する。
+    >
+    > 回答:
+    > \## HTML フォーム回答（実行記録サービスの DB の種類）
+    > - Q1（DB の種類）: SQLite
+    > - 補足: なし
+
+- 反映先: 未反映。サービスの実装
+
 ## 未解決課題
 
-- 定期実行の間隔と DB の種類
+- 定期実行の間隔（DB の種類は 2026-09-24 に SQLite と決めた）
+- 事例をセッションから送る経路（DB のファイルを直接開くか、書き込みを受け付けるプロセスを置くか）と、事例のバックアップの仕組み。事例は DB にしか無く、生の jsonl から作り直せない
 - 写す範囲。transcript と subagent のほかに、Claude Code が一緒に消す tool-results・file-history・plans・tasks なども写すか
 - 2026-09-24 に `~/.local/share/agent-run-records/` へ写したつなぎの写しを、回収の仕組みができたときにどう片付けるか。
   回収の仕組みができる前に、2026-09-24 より後の Claude Code の記録が 30 日の期限に入り始める
