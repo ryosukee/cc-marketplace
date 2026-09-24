@@ -641,6 +641,19 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     > ユーザー: dataのこと。XDG_DATA_HOME ってデフォルトだとどこ？それに合わせるのがいい気がした
 
 - 反映先: 未反映。agent-run-records の回収・取り込み・plist と、plugin の hook
+- 上書き: 置き場を決める順の 1 番目（環境変数 `AGENT_RUN_RECORDS_DATA_DIR`）は、2026-09-25「データの置き場は XDG_DATA_HOME だけで決める」で外された
+
+### 2026-09-25 データの置き場は XDG_DATA_HOME だけで決める
+
+- 結論: データの置き場は、`XDG_DATA_HOME` が空でなければ `${XDG_DATA_HOME}/agent-run-records`、空なら `~/.local/share/agent-run-records` にする。plugin の専用の環境変数は持たない
+- 上書きした決定: 2026-09-25「生の jsonl と SQLite と state.json の置き場を XDG の data の置き場に移す」の、置き場を決める順の 1 番目（`AGENT_RUN_RECORDS_DATA_DIR`）
+- 決め手: ユーザーの判断。`XDG_DATA_HOME` が置き場を変える手段になるので、専用の環境変数は要らない
+- 出典: ターミナルでのユーザーの発言（2026-09-25）
+- 出典の実文:
+
+    > ユーザー: その環境変数不要になるのでは？XDG DATA HOME に乗っ取ろう
+
+- 反映先: 未反映。agent-run-records の回収・取り込み・plist と、plugin の hook
 
 ## 未解決課題
 
