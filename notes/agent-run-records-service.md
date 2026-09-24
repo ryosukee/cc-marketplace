@@ -582,7 +582,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: agent-run-records が plugin を配布する
 
-- 反映先: 未反映。agent-run-records の plugin の実装
+- 反映先: agent-run-records の `178ad0c`（marketplace `agent-run-records`、plugin `run-records` 0.1.0）。2026-09-25 に Claude Code（GitHub から）と Codex（手元のディレクトリから）へ登録した
 
 ### 2026-09-24 回収が止まったときの警告は、7 日成功していなければユーザーに直接出し、repo の場所は環境変数と既定値で伝える
 
@@ -619,7 +619,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: 環境変数と既定値 (Recommended)
 
-- 反映先: 未反映。agent-run-records の plugin の実装
+- 反映先: agent-run-records の `178ad0c`（marketplace `agent-run-records`、plugin `run-records` 0.1.0）。2026-09-25 に Claude Code（GitHub から）と Codex（手元のディレクトリから）へ登録した
 - 上書き: repo の場所を環境変数 `AGENT_RUN_RECORDS_DIR` と既定値で伝える部分は、2026-09-25「生の jsonl と SQLite と state.json の置き場を XDG の data の置き場に移す」で上書きされた。hook は repo ではなくデータの置き場を見る
 
 ### 2026-09-25 生の jsonl と SQLite と state.json の置き場を XDG の data の置き場に移す
@@ -640,7 +640,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     >
     > ユーザー: dataのこと。XDG_DATA_HOME ってデフォルトだとどこ？それに合わせるのがいい気がした
 
-- 反映先: 回収・取り込み・plist は agent-run-records の `afab542`（2026-09-25 に `data/` の中身 3,792 ファイルを `~/.local/share/agent-run-records/` へ mv し、plist を登録し直した）。plugin の hook は未反映
+- 反映先: 回収・取り込み・plist は agent-run-records の `afab542`（2026-09-25 に `data/` の中身 3,792 ファイルを `~/.local/share/agent-run-records/` へ mv し、plist を登録し直した）。plugin の hook は agent-run-records の `178ad0c`
 - 上書き: 置き場を決める順の 1 番目（環境変数 `AGENT_RUN_RECORDS_DATA_DIR`）は、2026-09-25「データの置き場は XDG_DATA_HOME だけで決める」で外された
 
 ### 2026-09-25 データの置き場は XDG_DATA_HOME だけで決める
@@ -653,7 +653,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 
     > ユーザー: その環境変数不要になるのでは？XDG DATA HOME に乗っ取ろう
 
-- 反映先: 回収・取り込み・plist は agent-run-records の `afab542`（2026-09-25 に `data/` の中身 3,792 ファイルを `~/.local/share/agent-run-records/` へ mv し、plist を登録し直した）。plugin の hook は未反映
+- 反映先: 回収・取り込み・plist は agent-run-records の `afab542`（2026-09-25 に `data/` の中身 3,792 ファイルを `~/.local/share/agent-run-records/` へ mv し、plist を登録し直した）。plugin の hook は agent-run-records の `178ad0c`
 
 ## 未解決課題
 
