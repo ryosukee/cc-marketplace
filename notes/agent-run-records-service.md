@@ -70,6 +70,7 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     > 回答: Q3（手順の置き場）: cc-marketplace に新しい plugin を作り、作業手順 skill として配る  ※ これもサービスとしてたてるならそのサービス専用の plugin  skill にする
 
 - 反映先: 未反映。plugin の実装
+- 上書き: 「cc-marketplace に新しい plugin を作り」の部分は、2026-09-24「agent-run-records の repo が自分で plugin を配る」で上書きされた。plugin の作業手順 skill として配ることは変わらない
 
 ### 2026-09-24 事例の分類と持ち方は、いまの事例の中身を確かめながら決める
 
@@ -562,6 +563,25 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
     > ユーザー: ok
 
 - 反映先: agent-run-records の `6bf3b5d` の `config.toml`
+
+### 2026-09-24 agent-run-records の repo が自分で plugin を配る
+
+- 結論: 回収が止まったときに警告する SessionStart の hook と、手順 3 の事例を書く skill を、agent-run-records の repo 自体が marketplace として配る plugin に置く。Claude Code と Codex の両方に配る
+- 上書きした決定: 2026-09-24「追記の手順は新しい plugin の作業手順 skill に置く」の「cc-marketplace に新しい plugin を作り」を上書きする
+- 決めなかった範囲: plugin の名前、marketplace の登録のしかた（ローカルのディレクトリか GitHub か）、hook が警告する閾値・見せ方・agent-run-records の場所の伝え方
+- 決め手: ユーザーの回答。選択肢に無い形（「その他」）で答えた
+- 出典: AskUserQuestion への回答（2026-09-24）
+- 出典の実文:
+
+    > Claude の質問: 回収が止まったときに警告する SessionStart の hook をどこに置きますか？
+    > 選択肢:
+    > - cc-marketplace の新しい plugin (Recommended): agent-run-records 専用の plugin を作り、Claude Code と Codex の両方に配る。手順 3 の事例を書く skill も同じ plugin に入れる（decision-record の「サービス専用の plugin の skill」と揃う）。README・版数・検証など plugin の運用の規定に従う手間がある
+    > - dotfiles の設定に直接書く: ~/.claude/settings.json と ~/.codex/hooks.json に hook を足す。この機材だけで動けばよいなら最も軽いが、手順 3 の skill と置き場が分かれる
+    > - agent-run-records の repo に置き、設定から呼ぶ: 判定のスクリプトは agent-run-records に置き、dotfiles の hook の設定からそのパスを呼ぶ。判定と state.json の形が同じ repo に収まる
+    >
+    > ユーザー: agent-run-records が plugin を配布する
+
+- 反映先: 未反映。agent-run-records の plugin の実装
 
 ## 未解決課題
 
