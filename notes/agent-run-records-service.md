@@ -328,13 +328,65 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 
 - 反映先: 未反映。回収スクリプトの実装
 
+### 2026-09-24 回収スクリプトとセッションが事例を書くスクリプトは Python で書く
+
+- 結論: 回収スクリプトと、セッションが事例を SQLite へ書くスクリプトを Python で書く
+- 決めなかった範囲: 依存の管理の形（uv のプロジェクトにするか）、launchd から起動するインタプリタのパス、セッション側のスクリプトを plugin に置くか agent-run-records の repo に置くか
+- 決め手: ユーザーの選択（推奨どおり）。標準ライブラリの sqlite3 と json で jsonl の解析から DB への書き込みまで書け、feedmarks の `split-jsonl.py` を流用でき、後で自宅サーバーにサービスを作るときも解析の部分を使える。Bash + jq は行ごとに形の違う jsonl を複数の表へ分けて入れる処理が書きにくく、Go は版ごとに変わる jsonl の形への追従が最も重い
+- 出典: AskUserQuestion への回答（2026-09-24）
+- 出典の実文:
+
+    > Claude の質問: 回収スクリプトと、セッションが事例を書くスクリプトを、どの言語で書きますか？
+    > 選択肢:
+    > - Python (Recommended): 標準ライブラリの sqlite3 と json だけで jsonl の解析から DB への書き込みまで書け、feedmarks の split-jsonl.py も流用できる。launchd からは uv の絶対パスで起動する。後で自宅サーバーでサービスを作るときに、解析の部分はそのまま使える
+    > - Bash + jq + sqlite3: この repo の plugin のスクリプトと同じ道具で、セッション側の書き込みは短く済む。行ごとに形の違う jsonl を分解して複数の表へ入れる処理は、jq では書きにくく直しにくい
+    > - Go: 単一バイナリで、後で自宅サーバーに feedmarks と同じ形のサービスを作るときにそのまま育てられる。変更のたびにビルドが要り、版ごとに変わる jsonl の形への追従が最も重い
+    >
+    > ユーザー: Python (Recommended)
+
+- 反映先: 未反映。回収スクリプトの実装
+
+### 2026-09-24 回収は 1 日 1 回にする
+
+- 結論: launchd から回収スクリプトを 1 日 1 回起動する
+- 決めなかった範囲: 起動する時刻、セッション開始の hook が警告する閾値（提案では「最後の回収から 2 日超」）
+- 決め手: ユーザーの選択（推奨どおり）。分析は過去の記録を後から読む使い方で、最大 1 日の遅れは困らない。事例はセッションが直接 DB に書くので回収の間隔と関係しない。launchd の StartCalendarInterval は、定時にスリープしていても起きたときに実行する（`man launchd.plist`: 「Unlike cron which skips job invocations when the computer is asleep, launchd will start the job the next time the computer wakes up.」）
+- 出典: AskUserQuestion への回答（2026-09-24）
+- 出典の実文:
+
+    > Claude の質問: 回収スクリプトを launchd からどの間隔で起動しますか？
+    > 選択肢:
+    > - 1 日 1 回 (Recommended): 分析は過去の記録を後から読む使い方で、最大 1 日の遅れは困らない。セッション開始の hook は「最後の回収から 2 日超」で警告する形になる。その日のセッションをその日のうちに分析したいなら「1 時間ごと」
+    > - 1 時間ごと: DB がほぼ最新になり、その日のセッションもすぐ分析できる。起動のたびに約 1,800 本の jsonl の大きさを見て差分を探す（所要時間は未測定）
+    >
+    > ユーザー: 1 日 1 回 (Recommended)
+
+- 反映先: 未反映。launchd の plist
+
+### 2026-09-24 写す範囲は Claude Code の projects、Codex の sessions、両方の history.jsonl にする
+
+- 結論: 回収スクリプトが写すのは `~/.claude/projects/`（subagent の jsonl と tool-results を含む）、`~/.codex/sessions/`、`~/.claude/history.jsonl`、`~/.codex/history.jsonl` の 4 つ。file-history・tasks と Codex の sqlite は写さない
+- 決めなかった範囲: 写す先のディレクトリの構成、Codex の `thread_history_1.sqlite`・`logs_2.sqlite` の中身（未確認のまま）
+- 決め手: ユーザーの選択（推奨どおり）。分析に使う発言・ツールの呼び出しと出力・トークン使用量はこの 4 つにすべてある。後で要ると分かったものは、その時点から写せばよい
+- 確認した事実: tool-results は `~/.claude/projects/<project>/<session>/tool-results/` の下にある（2026-09-24 に find で確認、計 135 MB）ので、projects を丸ごと写せば入る。`~/.claude/plans` は存在しなかった
+- 未解決課題「写す範囲に file-history・plans・tasks などを含めるか」は、これで決まった
+- 出典: AskUserQuestion への回答（2026-09-24）
+- 出典の実文:
+
+    > Claude の質問: 回収スクリプトが写す範囲をどこまでにしますか？
+    > 選択肢:
+    > - 基本の 4 つだけ (Recommended): ~/.claude/projects/（subagent と tool-results を含む）、~/.codex/sessions/、両方の history.jsonl。分析に使う発言・ツールの呼び出しと出力・トークン使用量はすべてここにある。後で要ると分かったものは、その時点から写せばよい
+    > - 基本 + file-history と tasks: Claude Code が 30 日で消すもののうち、編集前のファイルの写し（61 MB）とタスクの一覧（2.4 MB）も写す。あとから「どのファイルをどう書き換えたか」を復元できる
+    > - 基本 + Codex の sqlite: thread_history_1.sqlite（224 MB）と logs_2.sqlite（176 MB）も写す。中身は未確認で、rollout の jsonl と重なるか分かっていない
+    >
+    > ユーザー: 基本の 4 つだけ (Recommended)
+
+- 反映先: 未反映。回収スクリプトの実装
+
 ## 未解決課題
 
-- 定期実行の間隔（DB の種類は 2026-09-24 に SQLite と決めた）
-- 実装の言語（2026-09-24 に問うたが、構成の比べ直しに移って未回答）
 - 事例のバックアップの仕組み。事例は DB にしか無く、生の jsonl から作り直せない（事例をセッションから送る経路は 2026-09-24 に「DB のファイルへ直接書く」と決めた）
 - 自宅サーバーへ載せる判断の時期と条件。載せるなら、marujirou の稼働の監視、省電力を有効にする前の起こすゲートウェイ、会社の作業の記録を自宅サーバーに置いてよいか、を先に決める
-- 写す範囲。transcript と subagent のほかに、Claude Code が一緒に消す tool-results・file-history・plans・tasks なども写すか
 - 2026-09-24 に `~/.local/share/agent-run-records/` へ写したつなぎの写しを、回収の仕組みができたときにどう片付けるか。
   回収の仕組みができる前に、2026-09-24 より後の Claude Code の記録が 30 日の期限に入り始める
 - Codex の記録の保持期間（公式の記述が見つからない）
