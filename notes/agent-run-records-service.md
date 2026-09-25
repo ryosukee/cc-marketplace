@@ -24,6 +24,8 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 | [悪文の実務上の分類: コミュニティのプラクティス調査](./artifacts/taxonomy-survey-human-community.md) | 公用文作成の考え方・textlint・Google と Microsoft のスタイルガイド・Vale など 17 件の分類と運用。同上 |
 | [AI の出力に特有の文章の悪さを分類した学術研究の調査](./artifacts/taxonomy-survey-ai-academic.md) | LAMP・slop の分類・Scarecrow など 22 件（査読あり 17 件）の分類と方法論の評価。同上 |
 | [AI が書く文章の悪さを、コミュニティが実務でどう集めて分けているか](./artifacts/taxonomy-survey-ai-community.md) | Wikipedia の Signs of AI writing・humanizer 系・textlint の AI 向け preset など 19 件の分類と評価。同上 |
+| [日本語の文章の誤りの分類: 日本語を対象にした学術文献の調査](./artifacts/taxonomy-survey-ja-academic.md) | 日本語学・日本語教育・言語処理・技術文書・LLM の 22 件（査読あり 8 件）の分類と、階層を作るうえで参考になる点。日本語を主軸にした補いの調査 |
+| [日本語の悪文を実務はどう分類しているか](./artifacts/taxonomy-survey-ja-community.md) | 悪文の指南書・校閲の実務・TC 協会・校正ツール・やさしい日本語の指針など 23 件の分類と運用。同上 |
 | [実行記録の下調べ](./artifacts/agent-run-records-survey.md) | feedmarks の仕組み、Claude Code と Codex のセッション記録の置き場・形式・保持期間、既存の取り組み。回収と分析の設計の入力 |
 
 ## 確定事項
