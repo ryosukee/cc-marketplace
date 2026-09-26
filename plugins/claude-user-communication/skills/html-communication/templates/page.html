@@ -204,6 +204,17 @@
   .qtext { font-size: 0.875em; margin: 8px 0 0; }
 
   .q { margin: 8px 0 0; }
+  .radio-item { margin: 0; padding: 10px 0; border: 0; border-bottom: 1px solid var(--rule); }
+  .radio-item > legend { padding: 0; font-size: 0.875em; font-weight: 700; }
+  .radio-item > .d { margin: 4px 0 0; font-size: 0.875em; }
+  .radio-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 7px; }
+  label.item-radio { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 7px 8px;
+                     border: 1px solid var(--control-border); border-radius: 6px; cursor: pointer; font-size: 0.875em; }
+  label.item-radio:has(input:checked) { font-weight: 700; border-color: var(--link); }
+  label.item-radio input[type="radio"] { appearance: none; -webkit-appearance: none; width: 15px; height: 15px;
+      margin: 0; flex: none; border-radius: 50%; border: 1.5px solid var(--control-border); background: var(--bg); }
+  label.item-radio input[type="radio"]:checked { border: 5px solid var(--link-fill); }
+  label.item-radio input[type="radio"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   label.opt { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
               padding: 8px 0 8px 2px; border-bottom: 1px solid var(--rule); cursor: pointer;
               font-size: 0.875em; }
@@ -560,6 +571,15 @@
 
   function ans(qid) {
     var group = document.getElementById(qid);
+    if (group && group.dataset.itemRadios === 'true') {
+      var data = {}, any = false;
+      group.querySelectorAll('.radio-item').forEach(function (item) {
+        var checked = item.querySelector('input[type="radio"]:checked');
+        data[item.dataset.item] = checked ? checked.value : null;
+        if (checked) any = true;
+      });
+      return any ? '項目別選択: ' + JSON.stringify(data) : null;
+    }
     if (group && group.dataset.multiple === 'true') {
       var checked = [].slice.call(group.querySelectorAll('input[type="checkbox"]:checked'));
       if (!checked.length) return null;
@@ -578,11 +598,19 @@
     }
     return c.value;
   }
+  function complete(qid) {
+    var group = document.getElementById(qid);
+    if (group && group.dataset.itemRadios === 'true') {
+      var items = [].slice.call(group.querySelectorAll('.radio-item'));
+      return items.length > 0 && items.every(function (item) { return !!item.querySelector('input[type="radio"]:checked'); });
+    }
+    return !!ans(qid);
+  }
   function build() {
     var lines = ['## HTML フォーム回答（' + THEME + '）'], n = 0;
     QS.forEach(function (q, i) {
       var a = ans(q.id);
-      if (a) n++;
+      if (complete(q.id)) n++;
       var note = document.querySelector('.note[data-note="' + q.id + '"]');
       var nt = note && note.value.trim();
       lines.push('- Q' + (i + 1) + '（' + q.label + '）: ' + (a || '未回答') + (nt ? '  ※ ' + nt : ''));
@@ -631,7 +659,7 @@
     /* 折り畳んだままでも回答済みが分かるように、カードの状態を更新する。
        判定は下部バーの進捗と同じで、選択肢を選んだら回答済み（補足欄だけの記入は未回答） */
     qds.forEach(function (d) {
-      var done = !!ans(d.dataset.for);
+      var done = complete(d.dataset.for);
       d.classList.toggle('done', done);
       var st = d.querySelector('.qstat');
       if (st) st.textContent = done ? '回答済み' : '未回答';
@@ -639,7 +667,7 @@
     /* グループ見出しの回答進捗。グループ化しないページでは .qgrp が無く何もしない */
     [].slice.call(document.querySelectorAll('#q-pane .qgrp')).forEach(function (box) {
       var members = qds.filter(function (d) { return d.dataset.grp === box.dataset.grp; });
-      var done = members.filter(function (d) { return !!ans(d.dataset.for); }).length;
+      var done = members.filter(function (d) { return complete(d.dataset.for); }).length;
       var h = box.querySelector('.qgrp-h');
       if (h) h.textContent = h.getAttribute('data-grp-name') + ' ' + done + '/' + members.length;
     });

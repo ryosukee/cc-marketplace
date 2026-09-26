@@ -390,6 +390,9 @@ function questionSection(sec) {
   else warn(`設問カードの見出しから番号を外せない: ${label}`);
   const qtext = els(det).find((x) => x.tag === "p" && hasCls(x, "qtext"));
   const qdiv = els(det).find((x) => x.tag === "div" && hasCls(x, "q"));
+  if (qdiv?.attrs?.["data-item-radios"] === "true") {
+    throw new Error("項目別 radio を含むページは HTML から変換できない。元の生成元 JSON を使う");
+  }
   const options = [];
   for (const lab of els(qdiv)) {
     if (lab.tag !== "label") continue;

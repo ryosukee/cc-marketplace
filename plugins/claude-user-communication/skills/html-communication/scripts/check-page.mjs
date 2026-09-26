@@ -491,14 +491,17 @@ function checkFile(path) {
     }
   } catch { /* index が無いページは対象外 */ }
 
-  // 11. チェックボックスの既定 checked。回答済みのフォームでは、組み立てが
-  // 選択済みの設問に出した checked disabled だけを許可する。
+  // 11. チェックボックスと項目別 radio の既定 checked。回答済みのフォームでは、
+  // 組み立てが選択済みの設問に出した checked disabled だけを許可する。
   const answeredForm = /<script data-scope="form">[\s\S]*?\bvar ANSWERED = true;/.test(src);
   for (const m of src.matchAll(/<input\b[^>]*>/g)) {
-    if (!/\btype="checkbox"/.test(m[0]) || !/\schecked(?:\s|>)/.test(m[0])) continue;
+    const checkbox = /\btype="checkbox"/.test(m[0]);
+    const itemRadio = /^<input type="radio" name="q\d+-[a-z][a-z0-9-]*" value="[^"]*"/.test(m[0]);
+    if ((!checkbox && !itemRadio) || !/\schecked(?:\s|>)/.test(m[0])) continue;
     if (answeredForm && /^<input type="checkbox" name="(q\d+)-\d+" data-question="\1" value="[^"]*" checked disabled>$/.test(m[0])) continue;
+    if (answeredForm && /^<input type="radio" name="q\d+-[a-z][a-z0-9-]*" value="[^"]*" checked disabled>$/.test(m[0])) continue;
     findings.push({ check: "default-checked", line: lineOf(src, m.index),
-      message: "チェックボックスが既定でチェック済み。読み飛ばしが承認として記録される" });
+      message: "チェックボックスまたは項目別 radio が既定で選択済み。読み飛ばしが回答として記録される" });
   }
 
   // 12. 前景色に opacity を重ねている
