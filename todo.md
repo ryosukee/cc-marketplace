@@ -1,6 +1,20 @@
 外のセッションからの依頼など
 内容はちゃんと確認してないので、解釈・咀嚼した上でユーザーと議論して判断すること
 
+# Plugin 更新時の検証を CI にする
+
+plugin の更新を含む PR で、release 前の機械検査を自動実行する CI を検討する。
+最初の対象候補は次のとおり。
+
+- 変更された `plugin.json` を parse し、`version` の形式と、両対応 plugin の manifest 間の整合を検査する。
+  同じ release version を共有する plugin では `+codex.{timestamp}` の混入も拒否する
+- plugin ごとのテストに標準の起動方法を設け、変更された plugin のテストを実行する
+- skill の `description` または発動条件が変わった plugin を検出し、`evals/run.sh {plugin}` を実行する
+
+着手前に、GitHub Actions で eval に必要なモデル・認証情報を扱えるか、変更された plugin の特定方法、
+eval の費用と timeout、必須チェックにする範囲を決める。eval を常時実行できない場合も、
+version と manifest の検査は外部サービスに依存しない CI として先に導入できる。
+
 # cc-marketplace と dotfiles の統合
 
 cc-marketplace を dotfiles に統合し、dotfiles 内に marketplace を作る方針。

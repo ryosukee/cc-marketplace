@@ -4,6 +4,20 @@ plugin に対する一連の変更を完了したら、PR を merge する前に
 レビュー中の修正コミットごとには版数を上げない。
 `Claude Code + Codex` の plugin は、Claude Code と Codex の両方の手順を実行する。
 
+## 共有する公開版数に Codex の cachebuster を混ぜない
+
+Claude Code と Codex の manifest で同じ release version を共有する plugin は、
+両方の `version` を同じ `X.Y.Z` にする。Codex のローカル再導入でキャッシュを更新するための
+`+codex.{timestamp}` は release version ではないため、repo で追跡する manifest へ書かない。
+
+`update_plugin_cachebuster.py` のように manifest 自体へ cachebuster を書く手順は、
+同じ release version を共有する plugin の repo 内の実体には実行しない。
+ローカル再導入の都合で付けた値を、Claude Code 側の manifest へ揃えて release しない。
+
+why: claude-user-communication では、Codex のローカル再導入用 suffix を両 manifest へ入れ、
+取り除いた次の release で同じ混入を繰り返した。両 manifest の一致だけを見る検査では、
+同じ誤った値を入れた場合を検出できない。
+
 ## 対応 CodingAgent にかかわらず行う変更
 
 1. 構成を変更した場合は、README.md の plugin 一覧を更新する
