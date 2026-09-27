@@ -157,6 +157,30 @@
      図を語る文は本文に置かない（表と同じ） */
   .fig { margin: 14px 0 20px; }
   .fig > .cap { font-size: 0.875em; color: var(--sub); letter-spacing: 0.02em; margin: 10px 0 0; }
+  .fig img[data-image-viewer] { cursor: zoom-in; }
+  .fig img[data-image-viewer]:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+  /* 図の画像を原寸で確認する共通 viewer。dialog 自体は画面内へ収め、画像がそれより大きい場合は
+     #image-viewer-scroll の中だけをスクロールさせる。本文や下部バーを動かさない */
+  body.image-viewer-open { overflow: hidden; }
+  #image-viewer { width: max-content; max-width: calc(100vw - 24px); max-height: calc(100vh - 24px);
+                  padding: 0; border: 1px solid var(--rule-strong); border-radius: 8px;
+                  background: var(--bg); color: var(--fg); overflow: hidden; }
+  #image-viewer::backdrop { background: rgba(0, 0, 0, 0.72); }
+  .image-viewer-shell { display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+                        max-height: calc(100vh - 26px); }
+  .image-viewer-head { display: flex; align-items: center; gap: 12px; padding: 8px 10px;
+                       border-bottom: 1px solid var(--rule); background: var(--bg); }
+  #image-viewer-title { margin: 0; font-size: 0.875em; font-weight: 700; }
+  #image-viewer-close { margin-left: auto; background: none; border: 1px solid var(--control-border);
+                        color: var(--fg); border-radius: 6px; padding: 7px 10px; cursor: pointer; }
+  #image-viewer-close:hover { border-color: var(--link); color: var(--link); }
+  #image-viewer-close:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  #image-viewer-scroll { overflow: auto; overscroll-behavior: contain; padding: 12px;
+                         background: var(--surface-code); }
+  #image-viewer-image { display: block; max-width: none; width: auto; height: auto; }
+  #image-viewer-caption { margin: 0; padding: 8px 10px; border-top: 1px solid var(--rule);
+                          color: var(--sub); font-size: 0.875em; }
 
   /* 本文の範囲。1 つの設問の判断材料がどこからどこまでかを示す。
      前提部分は範囲を持たせない（その位置では設問をどれも開かない）。
@@ -433,7 +457,7 @@
   }
 
   @media print {
-    #bar, #footer-nav { display: none; }
+    #bar, #footer-nav, #image-viewer { display: none; }
     main, main > * { max-width: none; display: block; }
     #q-pane, #toc-pane, #fn-pane { position: static; max-height: none; overflow: visible; }
     h1, h2, h3 { break-after: avoid; }
@@ -444,6 +468,73 @@
 {{図の CSS}}</head>
 <body>
 {{アイコン}}{{本文}}
+<dialog id="image-viewer" aria-labelledby="image-viewer-title">
+  <div class="image-viewer-shell">
+    <div class="image-viewer-head">
+      <p id="image-viewer-title">画像の拡大表示</p>
+      <button type="button" id="image-viewer-close">閉じる</button>
+    </div>
+    <div id="image-viewer-scroll" tabindex="0">
+      <img id="image-viewer-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="">
+    </div>
+    <p id="image-viewer-caption"></p>
+  </div>
+</dialog>
+<script>
+/* .fig 内の bitmap 画像は共通 viewer で原寸確認できるようにする。
+   ページ固有の figures ファイルには操作用 JS を持たせない。 */
+(function () {
+  var dialog = document.getElementById('image-viewer');
+  var viewer = document.getElementById('image-viewer-image');
+  var caption = document.getElementById('image-viewer-caption');
+  var scroll = document.getElementById('image-viewer-scroll');
+  var close = document.getElementById('image-viewer-close');
+  if (!dialog || !viewer || !caption || !scroll || !close || typeof dialog.showModal !== 'function') return;
+
+  var opener = null;
+  var emptyImage = viewer.src;
+  function openImage(img) {
+    opener = img;
+    viewer.src = img.currentSrc || img.src;
+    viewer.alt = img.alt || '';
+    var cap = img.closest('.fig');
+    cap = cap && cap.querySelector('.cap');
+    caption.textContent = cap ? cap.textContent : (img.alt || '');
+    scroll.scrollTop = 0;
+    scroll.scrollLeft = 0;
+    if (!dialog.open) dialog.showModal();
+    document.body.classList.add('image-viewer-open');
+    close.focus();
+  }
+  function closeImage() {
+    if (dialog.open) dialog.close();
+  }
+
+  [].slice.call(document.querySelectorAll('.fig img')).forEach(function (img) {
+    if (img.closest('a, button')) return;
+    img.dataset.imageViewer = 'true';
+    img.tabIndex = 0;
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-haspopup', 'dialog');
+    img.setAttribute('aria-label', (img.alt || '画像') + 'を拡大表示');
+    img.addEventListener('click', function () { openImage(img); });
+    img.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      openImage(img);
+    });
+  });
+
+  close.addEventListener('click', closeImage);
+  dialog.addEventListener('click', function (event) { if (event.target === dialog) closeImage(); });
+  dialog.addEventListener('close', function () {
+    document.body.classList.remove('image-viewer-open');
+    viewer.src = emptyImage;
+    if (opener && opener.isConnected) opener.focus();
+    opener = null;
+  });
+})();
+</script>
 <script data-scope="report">
 /* report の見出しツリーの現在地。report の節は要素で包まれていないので、h2 の位置で決める。
    読み位置の線は form 用の追従と同じ画面の上から 35% にして、2 つの判定をずらさない。 */

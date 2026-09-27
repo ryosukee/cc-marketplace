@@ -5,6 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
+import vm from "node:vm";
 import { assemblePage, pluginVersion, SKILL_ROOT } from "../skills/html-communication/scripts/lib/assemble.mjs";
 
 const pluginRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -57,6 +58,116 @@ test("共有 script が report を生成し、同じ版を記録する", (t) => 
   assert.equal(fileURLToPath(new URL(backHref, pathToFileURL(path.join(dir, "test-r001.html")))), path.join(dir, "index.html"));
 });
 
+test("共通雛形が fig 内の画像に拡大 viewer を提供する", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "html-communication-image-viewer-test-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const srcDir = path.join(dir, "src");
+  fs.mkdirSync(srcDir);
+  const jsonPath = path.join(srcDir, "test-r002.json");
+  fs.writeFileSync(jsonPath, JSON.stringify({
+    format: 1,
+    file: "test-r002",
+    type: "report",
+    title: "画像 viewer の試験",
+    project: "test",
+    context: ["画像の拡大操作を検証する。"],
+    summary: ["共通雛形が操作を提供する。"],
+    sections: [{
+      kind: "explain",
+      heading: "画像を拡大できる",
+      blocks: [{ fig: { id: "sample", caption: "拡大対象の画像" } }],
+    }],
+  }));
+  fs.writeFileSync(path.join(srcDir, "test-r002.figures.html"), [
+    '<template data-fig="sample">',
+    '  <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="試験画像">',
+    '</template>',
+  ].join("\n"));
+
+  const result = assemblePage(jsonPath);
+  assert.equal(result.ok, true, JSON.stringify(result.findings));
+  const html = fs.readFileSync(path.join(dir, "test-r002.html"), "utf8");
+  assert.equal((html.match(/<dialog id="image-viewer"/g) || []).length, 1);
+  assert.match(html, /document\.querySelectorAll\('\.fig img'\)/);
+  assert.match(html, /event\.key !== 'Enter' && event\.key !== ' '/);
+  assert.match(html, /viewer\.src = img\.currentSrc \|\| img\.src/);
+  assert.match(html, /dialog\.addEventListener\('close'/);
+  assert.match(html, /<img src="data:image\/gif;base64,[^"]+" alt="試験画像">/);
+
+  const element = (props = {}) => ({
+    ...props,
+    dataset: {},
+    attributes: {},
+    listeners: {},
+    addEventListener(type, fn) { this.listeners[type] = fn; },
+    setAttribute(name, value) { this.attributes[name] = value; },
+    focus() { document.activeElement = this; },
+  });
+  const viewer = element({ src: "empty-image", alt: "" });
+  const caption = element({ textContent: "" });
+  const scroll = element({ scrollTop: 10, scrollLeft: 20 });
+  const close = element();
+  const dialog = element({
+    open: false,
+    showModal() { this.open = true; },
+    close() { this.open = false; this.listeners.close?.(); },
+  });
+  const cap = { textContent: "図 1 試験画像" };
+  const figure = { querySelector(selector) { return selector === ".cap" ? cap : null; } };
+  const image = element({
+    currentSrc: "full-image",
+    src: "fallback-image",
+    alt: "試験画像",
+    isConnected: true,
+    closest(selector) { return selector === ".fig" ? figure : null; },
+  });
+  const linkedImage = element({
+    currentSrc: "linked-image",
+    src: "linked-image",
+    alt: "リンク画像",
+    isConnected: true,
+    closest(selector) { return selector === "a, button" ? {} : selector === ".fig" ? figure : null; },
+  });
+  const classes = new Set();
+  const document = {
+    activeElement: null,
+    body: { classList: { add(v) { classes.add(v); }, remove(v) { classes.delete(v); } } },
+    getElementById(id) {
+      return { "image-viewer": dialog, "image-viewer-image": viewer, "image-viewer-caption": caption,
+        "image-viewer-scroll": scroll, "image-viewer-close": close }[id] || null;
+    },
+    querySelectorAll(selector) { return selector === ".fig img" ? [image, linkedImage] : []; },
+  };
+  const commonScript = html.match(/<script>\s*([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(commonScript);
+  vm.runInNewContext(commonScript, { document });
+
+  assert.equal(image.dataset.imageViewer, "true");
+  assert.equal(image.tabIndex, 0);
+  assert.equal(image.attributes.role, "button");
+  assert.equal(linkedImage.dataset.imageViewer, undefined);
+  image.listeners.click();
+  assert.equal(dialog.open, true);
+  assert.equal(viewer.src, "full-image");
+  assert.equal(viewer.alt, "試験画像");
+  assert.equal(caption.textContent, "図 1 試験画像");
+  assert.equal(scroll.scrollTop, 0);
+  assert.equal(scroll.scrollLeft, 0);
+  assert.equal(classes.has("image-viewer-open"), true);
+  assert.equal(document.activeElement, close);
+  close.listeners.click();
+  assert.equal(dialog.open, false);
+  assert.equal(classes.has("image-viewer-open"), false);
+  assert.equal(viewer.src, "empty-image");
+  assert.equal(document.activeElement, image);
+
+  let prevented = false;
+  image.listeners.keydown({ key: " ", preventDefault() { prevented = true; } });
+  assert.equal(prevented, true);
+  assert.equal(dialog.open, true);
+  dialog.close();
+});
+
 test("form は今回の説明を前提と分け、旧 summary は表示しない", (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "html-communication-form-test-"));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -96,6 +207,7 @@ test("form は今回の説明を前提と分け、旧 summary は表示しない
     }
     assert.doesNotMatch(main, /推奨案のまとめ/);
     assert.doesNotMatch(main, /表示してはいけない旧データ/);
+    assert.equal((html.match(/<dialog id="image-viewer"/g) || []).length, 1);
   }
 });
 

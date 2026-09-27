@@ -185,6 +185,9 @@ checkbox の「その他」は通常の選択肢と同時に選べる。選択�
 - `<style data-scope="figures">` は雛形の `<style>` の後ろに置かれる。色役割とフォント段の制限の対象外
 - `template` と `style` 以外に書いたもの（アイコンの `symbol` など）は `<body>` の先頭に置かれる
 - 画像は `<img alt="…">` にする。`alt` の無い画像は html-validate が指摘する
+- `fig` ブロック内の画像は、共通雛形がクリックと Enter / Space で開く拡大 viewer の対象にする。
+  原寸より大きく引き伸ばさず、画面に収まらない部分は viewer 内でスクロールできる。
+  figures ファイルへ拡大用の JavaScript や dialog を書かない
 - レビュー agent には JSON と一緒にこのファイルも渡す
 
 ## 脚注と補足

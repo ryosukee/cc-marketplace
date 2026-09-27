@@ -261,7 +261,10 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       `caption`（`aria-labelledby` の参照先）と `scope` は組み立てが付ける
     - 図は JSON の `fig` ブロックで書き、markup は `src/{語幹}.figures.html` の `<template data-fig>` に置く。
       組み立てが雛形の `.fig` で包み、番号付きのキャプション（`.cap`）を図の下に出す。
-      字の大きさと色は表の `caption` と揃う。JSON の `caption` には何の図かだけを書く
+      字の大きさと色は表の `caption` と揃う。JSON の `caption` には何の図かだけを書く。
+      `.fig` 内の `<img>` は雛形がクリックと Enter / Space で開く拡大 viewer の対象にする。
+      viewer は原寸画像を保ち、画面より大きい画像は内部スクロールで確認できる。
+      ページ固有の figures ファイルへ拡大用の JavaScript を追加しない
     - **図の CSS は本文の CSS と分ける。** figures ファイルの `<style data-scope="figures">` に
       図のための CSS だけを入れる。組み立てが雛形の `<style>` の後ろに置く。
       色役割とフォント段の制限は、この `style` の中には適用しない。
