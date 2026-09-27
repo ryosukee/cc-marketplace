@@ -83,6 +83,7 @@ group: 進行と状態
 2. あれば生成元 JSON の `css` にパターン名を書く（組み立てが `style.css` を雛形の CSS の末尾に足す）。
    `example.html` を参考にした markup は `src/{語幹}.figures.html` の `<template data-fig="…">` に置き、
    JSON からは `custom`（キャプション無し）か `fig`（図として番号とキャプションを付ける）で参照する
+   - 設問の生成方法を示す item radio は例外で、`question.items` を使う。`example.html` は、組み立て後の表示を示す
 3. 無ければその場で作る。次に使えるものだけ、作った後にここへ足す
 
 生成ページは self-contained が必須なので、CSS は組み立てが必ずページの中へ貼り込む。

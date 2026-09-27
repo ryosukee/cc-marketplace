@@ -1,0 +1,52 @@
+<div class="item-radio-examples">
+<section class="item-radio-example">
+<h4>文言を各項目に表示する</h4>
+<p class="d">選択肢が短く、項目数も少ない場合。</p>
+<details class="qd" open>
+<summary>処理ごとの担当 <span class="qstat">未回答</span></summary>
+<p class="qtext">各処理を担当する側を選ぶ。</p>
+<div class="q" data-item-radios="true">
+<fieldset class="radio-item" data-item="path"><legend>path の解釈</legend>
+<div class="radio-pair">
+<label class="item-radio"><input type="radio" name="item-radio-short-path" value="React">React</label>
+<label class="item-radio"><input type="radio" name="item-radio-short-path" value="Go server">Go server</label>
+</div></fieldset>
+<fieldset class="radio-item" data-item="filter"><legend>作業項目の絞り込み</legend>
+<div class="radio-pair">
+<label class="item-radio"><input type="radio" name="item-radio-short-filter" value="React">React</label>
+<label class="item-radio"><input type="radio" name="item-radio-short-filter" value="Go server">Go server</label>
+</div></fieldset>
+</div>
+</details>
+</section>
+
+<section class="item-radio-example">
+<h4>記号を定義して各項目に表示する</h4>
+<p class="d">選択肢が長い場合、または項目数が多く反復が読みづらい場合。</p>
+<details class="qd" open>
+<summary>Board の処理主体 <span class="qstat">未回答</span></summary>
+<p class="qtext">各項目を処理する側を選ぶ。</p>
+<dl class="item-radio-key" aria-label="選択肢の記号">
+<div><dt>A</dt><dd>React がブラウザで処理する</dd></div>
+<div><dt>B</dt><dd>Go server が API response を作るときに処理する</dd></div>
+</dl>
+<div class="q" data-item-radios="true">
+<fieldset class="radio-item" data-item="hierarchy"><legend>Project、Epic、Task の階層に応じた表示</legend>
+<div class="radio-pair">
+<label class="item-radio"><input type="radio" name="item-radio-symbol-hierarchy" value="A"><span aria-label="React がブラウザで処理する">A</span></label>
+<label class="item-radio"><input type="radio" name="item-radio-symbol-hierarchy" value="B"><span aria-label="Go server が API response を作るときに処理する">B</span></label>
+</div></fieldset>
+<fieldset class="radio-item" data-item="epics"><legend>複数の Epic を選んだ Task の絞り込み</legend>
+<div class="radio-pair">
+<label class="item-radio"><input type="radio" name="item-radio-symbol-epics" value="A"><span aria-label="React がブラウザで処理する">A</span></label>
+<label class="item-radio"><input type="radio" name="item-radio-symbol-epics" value="B"><span aria-label="Go server が API response を作るときに処理する">B</span></label>
+</div></fieldset>
+<fieldset class="radio-item" data-item="backlog"><legend>Backlog 列の表示と非表示</legend>
+<div class="radio-pair">
+<label class="item-radio"><input type="radio" name="item-radio-symbol-backlog" value="A"><span aria-label="React がブラウザで処理する">A</span></label>
+<label class="item-radio"><input type="radio" name="item-radio-symbol-backlog" value="B"><span aria-label="Go server が API response を作るときに処理する">B</span></label>
+</div></fieldset>
+</div>
+</details>
+</section>
+</div>

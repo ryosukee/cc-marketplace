@@ -1,0 +1,13 @@
+.item-radio-examples { display: grid; gap: 20px; }
+.item-radio-example { min-width: 0; }
+.item-radio-example > h4 { margin: 0 0 4px; font-size: 1em; }
+.item-radio-example > .d { margin: 0 0 8px; }
+.item-radio-example .qd { margin-bottom: 0; }
+.item-radio-key { display: grid; gap: 6px; margin: 10px 0 2px; }
+.item-radio-key > div { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.item-radio-key dt { display: grid; place-items: center; min-height: 1.75rem; margin: 0;
+                     border: 1px solid var(--control-border); border-radius: 6px; font-weight: 700; }
+.item-radio-key dd { margin: 0; font-size: 0.875em; }
+@media screen and (max-width: 420px) {
+  .item-radio-example .radio-pair { grid-template-columns: 1fr; }
+}
