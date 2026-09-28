@@ -7,7 +7,7 @@ plugin の更新を含む PR で、release 前の機械検査を自動実行す�
 最初の対象候補は次のとおり。
 
 - 変更された `plugin.json` を parse し、`version` の形式と、両対応 plugin の manifest 間の整合を検査する。
-  同じ release version を共有する plugin では `+codex.{timestamp}` の混入も拒否する
+  repo で追跡するすべての plugin manifest で `+codex.{timestamp}` の混入も拒否する
 - plugin ごとのテストに標準の起動方法を設け、変更された plugin のテストを実行する
 - skill の `description` または発動条件が変わった plugin を検出し、`evals/run.sh {plugin}` を実行する
 
