@@ -8,6 +8,18 @@ decision-record は、合意や決定の一時的な記録。実装・計画・�
 次のセッションの自分が読む保管庫なので、読みやすさではなく、誤読されないことに最適化する。
 要約にまとめない。必要な情報が落ちることがある。分量を削る理由は無い。
 
+## agent-kanban の Project に登録した repo では decision-record を持たない
+
+agent-kanban の Project に登録した repository では、decision-record を作らず、既存の decision-record にも書き足さない。
+セッションを跨ぐ合意や決定は、agent-kanban の Epic・Task・Subtask の決定記録と作業情報に残す。
+この rule の以降の節は、agent-kanban の Project に登録していない repository にだけ適用する。
+
+判定基準: 作業中の repository が、agent-kanban の Project に登録されているか。
+agent-kanban plugin の agent-kanban-activity skill で、現在の repository に対応する Project を確かめる。
+
+why: agent-kanban は、決定を対象の作業項目と一緒に保存し、次の session が着手時に読める。
+同じ決定を decision-record にも書くと二つの保存先ができ、片方だけが更新される。
+
 ## decision-record を持つ対象
 
 合意や決定を利用・消費するタスクが、決めたときから離れているときに持つ。決めたその場で使い切るなら要らない。
