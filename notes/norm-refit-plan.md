@@ -46,8 +46,6 @@ artifacts は `notes/artifacts/` に置く。各 artifacts は冒頭でこの文
 | [norm-refit PR 4 AskUserQuestion の除去](./artifacts/norm-refit-pr4-detail.md) | PR 4 AskUserQuestion の除去の作業手順書 |
 | [norm-refit PR 9 skill / agent の書き方の器: 作業明細](./artifacts/norm-refit-pr9-detail.md) | PR 9 skill / agent の書き方の器の作業手順書 |
 | [norm-refit PR 9 skill / agent の書き方の器: boilerplate からの抜き出し候補の調査](./artifacts/norm-refit-pr9-survey.md) | PR 9 の boilerplate からの抜き出し候補の調査 |
-| [レビューの構造レベル指摘 事例集](./artifacts/structure-level-review-cases.md) | レビューの構造の指摘（何をどこに置くか、何を書いて何を落とすか、表と地の文の役割分担、参照の張り方）を逐語で積む。文レベルとは分け、両方に当たる指摘は互いの事例番号で参照する |
-| [norm-refit の PR レビューの文レベル指摘 事例集](./artifacts/sentence-level-review-cases.md) | PR レビューの文レベル指摘の事例集。段階 4 群 3 の入力 |
 | [レビュー工程のコストとターン数の調査](./artifacts/review-cost-survey.md) | レビュー工程のコストとターン数の実測。段階 R の入力 |
 | [規範を引かない問題の調査](./artifacts/norm-adherence-survey.md) | 規範を引かない問題の調査の入口。artifacts 6 本を索引する |
 | [日本語の機械検知の試作](./artifacts/prototypes/) | 日本語の機械検知の試作 2 本。どちらも未完成 |
@@ -681,7 +679,7 @@ norm と facet に付ける資材の扱いをここで設計する。最初の�
   sentence-reviewer は、一次情報も議題の説明も渡さないこと（文脈を持たないこと）が検出の条件なので、
   `norm-review` へ統合するなら、その facet には一次情報を渡さない形が要る。
   取り込み方（facet として持つか、別 agent のまま呼ぶか）と、効果の測り方
-  （文の指摘は事例集 `sentence-level-review-cases.md`、構成の指摘は `structure-level-review-cases.md` の出所別の件数。基準値と期間は未定）をここで決める。
+  （日本語の書き方の指摘の件数。事例は agent-run-records の plugin `ja-writing-case-collector` が `cases.sqlite` に集める。基準値と期間は未定）をここで決める。
   試行の実文は `notes/artifacts/sentence-reviewer-trials.md`
 - 依存: R1・R2
 
@@ -721,30 +719,17 @@ decision-record を運用するときの rule として定義する（ccm-f056 Q
 指すものが文の中で決まらない語（汎用語を物の名前に使う、その場で作った呼び名）は、
 書き手の判断に頼る事前の指示では止まらない。書き手は自分の圧縮を検出できない
 （[定義せずに作った呼び名を止める仕組み（外の実践）](./artifacts/coined-shorthand-controls.md) の結論）。
-指摘されるたびに語を 1 件ずつ集め、集めた語を機械レビューが読む資材にする（ユーザー判断 2026-09-08）。
+指摘されるたびに集めた語を、機械レビューが読む資材にする（ユーザー判断 2026-09-08）。
 
-- 収集の仕組み。指摘の発生源は 4 つ: ユーザーの指摘（チャット・PR コメント・フォームの差し戻し）、
-  reviewer agent 3 本（sentence-reviewer / page-reviewer / handover-reviewer）の指摘、
-  機械検査（`check-page.mjs` と `check-handover.mjs` の `unglossed-alias`）、retrospective。
-  指摘を処理する工程（github-pr の address-review、html-communication の回答受領、session の retrospective、
-  事例集への追記）に「語を 1 件足す」手順を入れる。手順を持たない発生源からは拾えないので、発生源ごとに入口を決める
-- 1 件の形: 語 / 指摘された文（逐語） / 実際に指していた物（固有名） / 出所（人間 / agent / 機械 / スイープ） / 日付。
-  事例集 `sentence-level-review-cases.md` は文単位、こちらは語単位。初期投入は事例集の I-1 型の事例と、
-  R2 の一覧（`軸` `面` `層` `枠` `系` `帯` `明細` `台帳` `正典` `観点` `粒度` `論点`）
-- 保持場所（着手前に決める）。候補は 3 つ。(a) plugin 同梱の config（`ja-writing-ambiguity` に置き、
-  I-1 の条項と同居させる。plugin update で全環境へ配れるが、収集のたびに版が上がる）。
-  (b) plugin data（`~/.claude/plugins/data/` 配下。claude-known-issues と同じ形。追記に版が要らないが、
-  repo の外なので git 履歴に残らず、他のマシンと共有しにくい）。(c) repo の `notes/artifacts/`
-  （plugin が repo の notes を読む依存になり、plugin 自己完結に反する）。
-  推すのは (a) と (b) の二層。同梱 config を初期値、data 側を追記先にし、たまったら config へ取り込む
+- 収集は、agent-run-records の plugin `ja-writing-case-collector` の skill `collect-case` が兼ねる。
+  汎用語とその場で作った呼び名の指摘は、分類 `noun-phrase.referent-unclear`（当たれば AI slop の特徴
+  `ai-slop.generic-word` も）の事例として `cases.sqlite` に入る。R9 のための語の一覧は別に作らない（ユーザー判断 2026-09-29）
 - 機械レビューへの接続（着手前に決める）。読む側は `check-page.mjs`（claude-user-communication）、
   `check-handover.mjs`（session）、`norm-review` の facet 資材（R2）、sentence-reviewer の入力。
-  他 plugin の `internal/` を読まない原則と両立させる方法を決める。候補は、`ja-writing-ambiguity` の
-  `scripts/` に語の一覧を JSON で出す入口を 1 つ置き、他 plugin はそのパスを `settings.json` の `env` で受け取る形
+  norm-refit を再開するときに、`cases.sqlite` の事例から語を取り出す形で考える
 - 判定の扱い: 語が含まれることは誤りの証拠ではない（R2。同じ語が普通名詞として正しく使われる場面がある）。
   機械レビューは候補として挙げ、固有名へ置き換えられるかを問う形にする。指摘 0 件を終了条件にしない
-- 依存: R2（資材の位置づけと置き場）。収集の手順は R1・R2 を待たずに入れられる。
-  着手前に決めるのは 4 件（保持場所 / 1 件の形 / 読む側の接続方法 / 初期投入の範囲）
+- 依存: R2（資材の位置づけ）
 
 ### 到達点
 
@@ -1088,7 +1073,7 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
   同じ形で他の条項も skill へ出すかを併せて決める。
   この重複は到達点 4（記法規範が 4 媒体に届く）の解き方の再判定にあたるが、
   段階 2 が閉じているのでここで受ける
-- A5 文レベル・構造レベル指摘の事例集 2 本の後処理（段階 4 群 3 の入力として使った後、残すか eval の fixture へ移すか。段階 5 の notes の処遇と一緒に決める）
+- A5 文レベル・構造レベル指摘の事例集 2 本の後処理: 済み。事例は分類を付けて agent-run-records の `cases.sqlite` へ移し、事例集 2 本は消した（2026-09-29）。以後の指摘は plugin `ja-writing-case-collector` が集める
 
 ### 群 B 日本語の機械検知
 
@@ -1111,7 +1096,7 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
   指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、
   主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、
   修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。
-  これをとっかかりにして、`notes/artifacts/sentence-level-review-cases.md` の型 1 から型 11 と、
+  これをとっかかりにして、agent-run-records の plugin `ja-writing-case-collector` の分類（`skills/collect-case/references/taxonomy.md`）と、
   B5 の外部カタログの型を突き合わせ、正式な型名を定義する。
   この作業は「段階 4 群 3」の名前で A5・B4・事例集の冒頭・decision-record の
   2026-08-19 の確定から参照されているが、計画は「終了条件に含まないもの」の後続 10 件に
