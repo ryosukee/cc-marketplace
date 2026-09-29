@@ -3196,6 +3196,21 @@ artifacts は `notes/artifacts/` に置く。生存期間はこの decision-reco
 - 反映先: 新しい plugin（表の定義、事例を書くスクリプト、README の requirements、skill の手順）
 - 覆した側: 2026-09-24 の項目「回収スクリプトとセッションが事例を書くスクリプトは Python で書く」に 1 行足した
 
+### 2026-09-29 事例の DB のファイルは、実行記録と同じ `$DATA` の `cases.sqlite` に置く
+
+- 結論:
+    - 事例の DB のファイルは `${XDG_DATA_HOME}/agent-run-records/cases.sqlite`（`XDG_DATA_HOME` が空なら `~/.local/share/agent-run-records/cases.sqlite`）に置く。agent-run-records の README の `$DATA` と同じディレクトリで、専用の環境変数は持たない
+    - 2026-09-24 の項目「事例は実行記録とは別の SQLite ファイルに置く」の決めなかった範囲のうち、事例のファイルの名前と置き場は、これで決まる
+- 決めなかった範囲: バックアップの仕組み
+- 決め手: ユーザーの判断。Claude は、cc-marketplace の state の置き場の方針（`docs/cross-client-architecture.md` の「state の置き場」の `${XDG_DATA_HOME}/{plugin}`）に揃え、新しい plugin が repo の名前や run-records の置き場に頼らずに済む `${XDG_DATA_HOME}/{新しい plugin の名前}/cases.sqlite` を推奨したが、ユーザーは repo のデータを 1 つのディレクトリにまとめる案を選んだ
+- 出典: ターミナルでのやり取り（2026-09-29）
+- 出典の実文: Claude は、議題「事例の DB のファイルを置く場所」で、cc-marketplace の state の置き場の方針と、2026-09-25 の決定（`${XDG_DATA_HOME}/agent-run-records/`、専用の環境変数を持たない）を示し、「1.（推奨）`${XDG_DATA_HOME}/{新しい plugin の名前}/cases.sqlite`（空なら `~/.local/share/{新しい plugin の名前}/cases.sqlite`）。専用の環境変数は持たない」「2. `${XDG_DATA_HOME}/agent-run-records/cases.sqlite`。実行記録と同じ `$DATA` に置く」を問うた。2 を選ぶ条件は「repo のデータを 1 つのディレクトリにまとめ、バックアップの対象を 1 か所にしたい場合」。ユーザーの返答は次のとおり
+
+    > 2
+    > これを agent-run-records に実装して、決定した仕様や要件などを適切に必要最小限にドキュメントや .claude 系統に反映した上で、こっちの cc-marketplace に残っているここまでの過程のファイルや decision-record 系を全て消すまでをこのセッションのスコープにしよう
+
+- 反映先: 新しい plugin の事例を書くスクリプトと README。agent-run-records の README の `$DATA` の表
+
 ## 未解決課題
 
 - 作業の進め方への指摘（日本語の執筆規範の外）を、どう集めるか。リアルタイムで集めるか、集めたセッションの記録からたどるか（2026-09-25 にユーザーが別途考えるとした）
