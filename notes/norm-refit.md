@@ -3666,7 +3666,25 @@ norm カタログも同様に欲しい。それこそ日本語テキストの出
   `notes/agent-run-records-service.md` の同じ日付のエントリに写した。消した後は `git show 981aa79^:notes/agent-run-records-service.md` で読める
 - 反映先: 未反映。`notes/norm-refit-plan.md` の A5 と手引きの骨子（「蓄積は norm-refit 完了まで」）、
   事例集 2 本の表題と冒頭は、事例集を移すときに直す
-- 反映の記録: 事例集 2 本は、2026-09-29 に agent-run-records の repo の plugin へ事例を移して消した。計画の A5 は済みにした
+- 後の項目での決定: 事例集 2 本を無くし、agent-run-records の repo の plugin で集める形に移したことは、2026-09-29 の項目「事例集 2 本は無くなり、日本語の書き方への指摘は agent-run-records の repo の plugin で集める」に書いた
+
+### 2026-09-29 事例集 2 本は無くなり、日本語の書き方への指摘は agent-run-records の repo の plugin で集める
+
+- 結論:
+    - 文レベル・構造レベルの事例集 2 本（`notes/artifacts/sentence-level-review-cases.md`・`notes/artifacts/structure-level-review-cases.md`）は無くなった。2026-09-29 に、事例を分類付きで agent-run-records の repo の plugin の事例の DB へ移し、cc-marketplace からは消した（`981aa79`）
+    - 以後、日本語の書き方への指摘は、agent-run-records の repo の plugin が集める。実装は完了していて、Claude Code と Codex の両方で動いている
+    - norm-refit で事例集を使う予定だった作業（計画の A5・R4・R9・B6）は、事例集の代わりにこの plugin が集めた事例を使う
+    - `.claude/rules/norm-refit-ops.md` の、事例集へ追記させる条項は消した（`3223067`）。plugin が集めるので、集めさせるための指示は要らない
+- 決めなかった範囲: 手引きの骨子（「蓄積は norm-refit 完了まで」）を直すか。norm-refit を再開するときに扱う
+- 決め手: ユーザーの判断。2026-09-24 の項目「事例集の蓄積を norm-refit から切り離す」で、収集の仕組みの設計を別の議題に分けた。その議題を agent-run-records の repo に実装し終えた
+- 出典: ターミナルでのやり取り（2026-09-29）
+- 出典の実文:
+
+    > ユーザー: いや、もうその記述が不要やな。plugin になって勝手に収集されるようになったから収集させるための指示がそもそも不要
+    >
+    > ユーザー: norm-refit の decision-record として事例集はなくなり agent-run-record repo で収集するようになって、そっちの実装はもう完了していて動いているって感じの記録を書いておいて
+
+- 反映先: `.claude/rules/norm-refit-ops.md`（`3223067`）、`notes/norm-refit-plan.md` の A5・R4・R9・B6 の該当の文（`981aa79`・`d212058`）
 
 ## 未解決課題
 
