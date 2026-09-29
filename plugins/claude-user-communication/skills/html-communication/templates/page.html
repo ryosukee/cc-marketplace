@@ -275,8 +275,9 @@
   .pane-h { font-size: 0.875em; font-weight: 700; color: var(--sub); margin: 0 0 8px;
             letter-spacing: 0.04em; }
   .fn, .su { font-size: 0.875em; margin: 0 0 10px; scroll-margin-top: 16px; }
-  .fn:target, .su:target { background: var(--surface-now); border-radius: 4px;
-                           box-shadow: 0 0 0 4px var(--surface-now); }
+  /* .is-target は 2 pane 以上で JS が pane の中だけを動かしたときの着地点。:target と同じ見た目にする */
+  .fn:target, .su:target, .fn.is-target, .su.is-target {
+    background: var(--surface-now); border-radius: 4px; box-shadow: 0 0 0 4px var(--surface-now); }
   .fnnum, .sunum { text-decoration: none; font-weight: 700; }
   .fnback, .suback { text-decoration: none; margin-left: 3px; }
   .fnback:hover, .suback:hover { text-decoration: underline; }
@@ -532,6 +533,37 @@
     viewer.src = emptyImage;
     if (opener && opener.isConnected) opener.focus();
     opener = null;
+  });
+})();
+
+/* 脚注と補足への参照。脚注 pane が本文の横に出ている幅（2 pane 以上）では、pane の中だけを動かす。
+   アンカーのままだと、ブラウザが飛び先を出すためにページ全体もスクロールし、読んでいた位置を失う。
+   1 列では脚注が本文の末尾にあるので、アンカーの既定の動きに任せる。
+   ハッシュが変わらず :target が効かないので、着地点の強調は .is-target で付ける。 */
+(function () {
+  var pane = document.getElementById('fn-pane');
+  if (!pane) return;
+  var side = window.matchMedia('screen and (min-width: 1024px)');
+  var lit = null;
+  document.addEventListener('click', function (event) {
+    if (!side.matches || event.defaultPrevented || event.button !== 0 ||
+        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    var a = event.target.closest && event.target.closest('.fnref a, .suref a');
+    if (!a) return;
+    var t = document.getElementById((a.getAttribute('href') || '').slice(1));
+    if (!t || !pane.contains(t)) return;
+    var margin = parseFloat(window.getComputedStyle(t).scrollMarginTop) || 0;
+    pane.scrollTop += t.getBoundingClientRect().top - pane.getBoundingClientRect().top - margin;
+    /* pane が画面から外れていると（sticky の効く範囲を過ぎたとき）pane だけ動かしても見えない。
+       そのときはアンカーの既定の動きに任せる */
+    var tr = t.getBoundingClientRect();
+    if (tr.top < 0 || tr.top >= window.innerHeight) return;
+    event.preventDefault();
+    if (lit) lit.classList.remove('is-target');
+    lit = t;
+    t.classList.add('is-target');
+    if (!t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
+    t.focus({ preventScroll: true });
   });
 })();
 </script>
