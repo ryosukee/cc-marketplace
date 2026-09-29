@@ -679,7 +679,7 @@ norm と facet に付ける資材の扱いをここで設計する。最初の�
   sentence-reviewer は、一次情報も議題の説明も渡さないこと（文脈を持たないこと）が検出の条件なので、
   `norm-review` へ統合するなら、その facet には一次情報を渡さない形が要る。
   取り込み方（facet として持つか、別 agent のまま呼ぶか）と、効果の測り方
-  （日本語の書き方の指摘の件数。事例は agent-run-records の plugin `ja-writing-case-collector` が `cases.sqlite` に集める。基準値と期間は未定）をここで決める。
+  （日本語の書き方の指摘の件数。指摘の収集は agent-run-records の repo の plugin で行う（実装済み）。基準値と期間は未定）をここで決める。
   試行の実文は `notes/artifacts/sentence-reviewer-trials.md`
 - 依存: R1・R2
 
@@ -721,12 +721,10 @@ decision-record を運用するときの rule として定義する（ccm-f056 Q
 （[定義せずに作った呼び名を止める仕組み（外の実践）](./artifacts/coined-shorthand-controls.md) の結論）。
 指摘されるたびに集めた語を、機械レビューが読む資材にする（ユーザー判断 2026-09-08）。
 
-- 収集は、agent-run-records の plugin `ja-writing-case-collector` の skill `collect-case` が兼ねる。
-  汎用語とその場で作った呼び名の指摘は、分類 `noun-phrase.referent-unclear`（当たれば AI slop の特徴
-  `ai-slop.generic-word` も）の事例として `cases.sqlite` に入る。R9 のための語の一覧は別に作らない（ユーザー判断 2026-09-29）
+- 収集は、agent-run-records の repo の plugin で行う（実装済み）。R9 のための語の一覧は別に作らない（ユーザー判断 2026-09-29）
 - 機械レビューへの接続（着手前に決める）。読む側は `check-page.mjs`（claude-user-communication）、
   `check-handover.mjs`（session）、`norm-review` の facet 資材（R2）、sentence-reviewer の入力。
-  norm-refit を再開するときに、`cases.sqlite` の事例から語を取り出す形で考える
+  norm-refit を再開するときに、その plugin が集めた事例から語を取り出す形で考える
 - 判定の扱い: 語が含まれることは誤りの証拠ではない（R2。同じ語が普通名詞として正しく使われる場面がある）。
   機械レビューは候補として挙げ、固有名へ置き換えられるかを問う形にする。指摘 0 件を終了条件にしない
 - 依存: R2（資材の位置づけ）
@@ -1073,7 +1071,7 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
   同じ形で他の条項も skill へ出すかを併せて決める。
   この重複は到達点 4（記法規範が 4 媒体に届く）の解き方の再判定にあたるが、
   段階 2 が閉じているのでここで受ける
-- A5 文レベル・構造レベル指摘の事例集 2 本の後処理: 済み。事例は分類を付けて agent-run-records の `cases.sqlite` へ移し、事例集 2 本は消した（2026-09-29）。以後の指摘は plugin `ja-writing-case-collector` が集める
+- A5 文レベル・構造レベル指摘の事例集 2 本の後処理: 済み。事例は agent-run-records の repo の plugin へ移し、事例集 2 本は消した（2026-09-29）。以後の指摘の収集もその plugin で行う（実装済み）
 
 ### 群 B 日本語の機械検知
 
@@ -1096,7 +1094,7 @@ v2 は、norm-refit が「終了条件に含まないもの」として外に置
   指すものが文の中で決まらない（造語と汎用語 / 指示語だけの接続 / 主題の欠如 / 曖昧な動詞）、
   主語と述語が実物と対応しない（非生物主語 / 比喩 / 名詞構文）、
   修飾が積み上がって係り受けが決まらない（連体修飾の積み上げ）。
-  これをとっかかりにして、agent-run-records の plugin `ja-writing-case-collector` の分類（`skills/collect-case/references/taxonomy.md`）と、
+  これをとっかかりにして、agent-run-records の repo の plugin が持つ分類（実装済み）と、
   B5 の外部カタログの型を突き合わせ、正式な型名を定義する。
   この作業は「段階 4 群 3」の名前で A5・B4・事例集の冒頭・decision-record の
   2026-08-19 の確定から参照されているが、計画は「終了条件に含まないもの」の後続 10 件に
