@@ -168,6 +168,94 @@ test("共通雛形が fig 内の画像に拡大 viewer を提供する", (t) => 
   dialog.close();
 });
 
+test("脚注 pane が横にある幅では、脚注の参照が pane の中だけを動かす", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "html-communication-footnote-test-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const srcDir = path.join(dir, "src");
+  fs.mkdirSync(srcDir);
+  const jsonPath = path.join(srcDir, "test-r003.json");
+  fs.writeFileSync(jsonPath, JSON.stringify({
+    format: 1,
+    file: "test-r003",
+    type: "report",
+    title: "脚注 pane の試験",
+    project: "test",
+    context: ["脚注への移動を検証する。"],
+    summary: ["pane の中だけを動かす。"],
+    sections: [{ kind: "explain", heading: "脚注へ移動する", blocks: ["実測した[^measure]。"] }],
+    footnotes: { measure: "実測の記録。" },
+  }));
+  const result = assemblePage(jsonPath);
+  assert.equal(result.ok, true, JSON.stringify(result.findings));
+  const html = fs.readFileSync(path.join(dir, "test-r003.html"), "utf8");
+  assert.match(html, /<sup class="fnref" id="fnref-1-1"><a href="#fn-1">1<\/a><\/sup>/);
+  assert.match(html, /<p class="fn" id="fn-1">/);
+  assert.match(html, /\.fn\.is-target/);
+  const commonScript = html.match(/<script>\s*([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(commonScript);
+
+  /* 脚注は pane の内容の先頭から 500px の位置にある。scroll-margin-top は 16px */
+  const setup = ({ wide, paneTop }) => {
+    const classes = new Set();
+    const attributes = {};
+    const pane = {
+      scrollTop: 0,
+      getBoundingClientRect() { return { top: paneTop }; },
+      contains(node) { return node === note; },
+    };
+    const note = {
+      focused: null,
+      classList: { add(v) { classes.add(v); }, remove(v) { classes.delete(v); } },
+      getBoundingClientRect() { return { top: paneTop + 500 - pane.scrollTop }; },
+      hasAttribute(name) { return name in attributes; },
+      setAttribute(name, value) { attributes[name] = value; },
+      focus(options) { this.focused = options; },
+    };
+    let onClick = null;
+    const document = {
+      getElementById(id) { return { "fn-pane": pane, "fn-1": note }[id] || null; },
+      addEventListener(type, fn) { if (type === "click") onClick = fn; },
+    };
+    const window = {
+      innerHeight: 800,
+      matchMedia() { return { matches: wide }; },
+      getComputedStyle() { return { scrollMarginTop: "16px" }; },
+    };
+    vm.runInNewContext(commonScript, { document, window });
+    const link = { getAttribute(name) { return name === "href" ? "#fn-1" : null; } };
+    const click = (extra = {}) => {
+      let prevented = false;
+      onClick({
+        button: 0, defaultPrevented: false, ...extra,
+        target: { closest(selector) { return selector === ".fnref a, .suref a" ? link : null; } },
+        preventDefault() { prevented = true; },
+      });
+      return prevented;
+    };
+    return { pane, note, classes, attributes, click };
+  };
+
+  const wide = setup({ wide: true, paneTop: 100 });
+  assert.equal(wide.click(), true);
+  assert.equal(wide.pane.scrollTop, 484);
+  assert.equal(wide.classes.has("is-target"), true);
+  assert.equal(wide.attributes.tabindex, "-1");
+  assert.equal(wide.note.focused?.preventScroll, true);
+
+  const narrow = setup({ wide: false, paneTop: 100 });
+  assert.equal(narrow.click(), false);
+  assert.equal(narrow.pane.scrollTop, 0);
+  assert.equal(narrow.classes.has("is-target"), false);
+
+  const modified = setup({ wide: true, paneTop: 100 });
+  assert.equal(modified.click({ metaKey: true }), false);
+
+  /* sticky の効く範囲を過ぎて pane が画面の上に外れたときは、アンカーの既定の動きに任せる */
+  const offscreen = setup({ wide: true, paneTop: -900 });
+  assert.equal(offscreen.click(), false);
+  assert.equal(offscreen.classes.has("is-target"), false);
+});
+
 test("form は今回の説明を前提と分け、旧 summary は表示しない", (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "html-communication-form-test-"));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
