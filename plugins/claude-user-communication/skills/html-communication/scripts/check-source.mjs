@@ -8,14 +8,16 @@
 //   3. 文字列への HTML タグの混入（6 種の記法だけを使う。引用の段落は対象外）
 //   4. 番号の直書き（見出しの「説明 n」「設問 n」、caption の「表 n」「図 n」は組み立て時に付く）
 //   5. 図（fig / custom の id が figures ファイルにあるか、figures ファイルの図が全部使われているか）
-//   6. パターン集の CSS（css に書いた名前の style.css があるか）
-//   7. 閲覧用 HTML との食い違い（HTML の <meta name="source"> のハッシュが JSON の内容と一致するか。
+//   6. D2 の図（原文 .d2 と SVG があるか、SVG に残した原文のハッシュが原文と一致するか、
+//      SVG の幅が上限 560px 以下か）
+//   7. パターン集の CSS（css に書いた名前の style.css があるか）
+//   8. 閲覧用 HTML との食い違い（HTML の <meta name="source"> のハッシュが JSON の内容と一致するか。
 //      一致しなければ HTML が古いか、JSON を直したあと組み立てていない）
 //
 // usage: node check-source.mjs <src/{file}.json>...
 // 出力: JSON (stdout)。exit 0 = 指摘なし, 1 = 指摘あり, 2 = 前提条件エラー
 import fs from "node:fs";
-import { loadSource, loadFigures, renderPage, sha256 } from "./lib/page-source.mjs";
+import { loadSource, loadFigures, loadD2Figures, checkD2Figures, renderPage, sha256 } from "./lib/page-source.mjs";
 import { pagePaths, PATTERNS_DIR } from "./lib/assemble.mjs";
 
 const files = process.argv.slice(2);
@@ -31,10 +33,13 @@ function checkFile(jsonPath) {
   if (!loaded.source) return findings;
   if (p.srcDir.split("/").pop() !== "src") findings.push({ check: "source", where: p.jsonPath, message: "生成元は配信ディレクトリの src/ に置く" });
   const figures = loadFigures(p.figuresPath);
-  if (!figures.exists && loaded.figIds.length) findings.push({ check: "source", where: p.figuresPath, message: `図のブロックが ${loaded.figIds.length} 個あるのに figures ファイルが無い` });
+  const markupFigs = loaded.figIds.filter((f) => !f.d2);
+  if (!figures.exists && markupFigs.length) findings.push({ check: "source", where: p.figuresPath, message: `図のブロックが ${markupFigs.length} 個あるのに figures ファイルが無い` });
   if (findings.length === 0) {
-    const r = renderPage(loaded.source, { version: "0", figures, patternsDir: PATTERNS_DIR });
+    const d2 = loadD2Figures(p.srcDir, p.stem, loaded.figIds);
+    const r = renderPage(loaded.source, { version: "0", figures, patternsDir: PATTERNS_DIR, d2 });
     findings.push(...r.findings);
+    findings.push(...checkD2Figures(p.srcDir, p.stem, loaded.figIds));
   }
   // 閲覧用 HTML との食い違い
   if (fs.existsSync(p.htmlPath) && fs.statSync(p.htmlPath).size > 0) {
