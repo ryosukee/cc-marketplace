@@ -1,13 +1,14 @@
 // 生成元 JSON から閲覧用 HTML を組み立てる本体。assemble-page.mjs と record-answer.mjs が使う。
 //
-// 入力は src/{file}.json と、あれば src/{file}.figures.html。出力は <src の親>/{file}.html。
+// 入力は src/{file}.json と、あれば src/{file}.figures.html と D2 の図の SVG（src/{file}.{id}.svg）。
+// 出力は <src の親>/{file}.html。
 // 出力先に中身のあるファイルがあるときは、force を付けたときだけ上書きする
 // （claim-page-number.sh が作った 0 バイトの予約は通す）。
 // 出力した HTML は読み取り専用（0444）にする。閲覧用 HTML は script でしか書かない。
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadSource, loadFigures, renderPage, sha256, esc } from "./page-source.mjs";
+import { loadSource, loadFigures, loadD2Figures, renderPage, sha256, esc } from "./page-source.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const SKILL_ROOT = path.resolve(here, "..", "..");
@@ -58,7 +59,8 @@ export function assemblePage(jsonPath, { force = false, out = null } = {}) {
   const version = pluginVersion();
   const figures = loadFigures(p.figuresPath);
   const src = loaded.source;
-  const r = renderPage(src, { version, figures, patternsDir: PATTERNS_DIR });
+  const d2 = loadD2Figures(p.srcDir, p.stem, loaded.figIds);
+  const r = renderPage(src, { version, figures, patternsDir: PATTERNS_DIR, d2 });
   if (r.findings.length) return { ok: false, out: outPath, findings: r.findings };
 
   let html = fs.readFileSync(TEMPLATE_PATH, "utf8");

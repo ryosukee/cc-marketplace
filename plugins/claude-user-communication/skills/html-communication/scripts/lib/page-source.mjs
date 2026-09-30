@@ -4,6 +4,8 @@
 // 提供する関数
 //   loadSource(jsonPath)                 JSON を読んで構造を検査し、findings と一緒に返す
 //   loadFigures(figuresPath)             図の markup ファイルを読んで template / style / 先頭断片に分ける
+//   loadD2Figures(srcDir, stem, figIds)  D2 の図の SVG（src/{file}.{id}.svg）を読む
+//   checkD2Figures(srcDir, stem, figIds) D2 の原文と SVG の対応・図の幅を検査する
 //   renderPage(source, opts)             本文（<main> から下部バーまで）と head に足すものを返す
 //   parseAnswerText(text, src, received) 「## HTML フォーム回答」の貼り付けを answers の形にする
 //                                        （戻り値は answers + unparsed。unparsed は JSON に書かない）
@@ -174,8 +176,13 @@ export function loadSource(jsonPath) {
         if (kind === "fig") {
           if (typeof v.caption !== "string") add(w, "fig は caption が要る");
           else { if (/^図\s*\d/.test(v.caption)) add(w, "caption に番号を書かない。図 n は組み立て時に付く"); strings.push({ where: `${w}.caption`, text: v.caption }); }
+          if (v.d2 !== undefined && v.d2 !== true) add(w, "fig の d2 は true だけを書く");
+          if (v.d2 === true) {
+            if (typeof v.alt !== "string" || !v.alt.trim()) add(w, "D2 の図（d2: true）は alt が要る。図が何を示すかを文で書く");
+            else strings.push({ where: `${w}.alt`, text: v.alt });
+          } else if (v.alt !== undefined) add(w, "alt は D2 の図（d2: true）にだけ書く");
         }
-        figIds.push({ id: v.id, where: w });
+        figIds.push({ id: v.id, where: w, d2: kind === "fig" && v.d2 === true });
       }
     });
   };
@@ -364,11 +371,55 @@ export function loadFigures(figuresPath) {
   return { templates, style, lead: s.trim(), exists: true };
 }
 
+// D2 の図。原文は src/{file}.{id}.d2、render-d2.mjs が描画した SVG は src/{file}.{id}.svg。
+// SVG の先頭には、描画に使った原文の sha256 を注釈で残す（D2_SOURCE_MARK）
+export const D2_MAX_WIDTH = 560;
+export const D2_SOURCE_MARK = /^<!-- d2-source sha256:([0-9a-f]{64})\b/;
+
+export function d2Paths(srcDir, stem, id) {
+  return { d2: path.join(srcDir, `${stem}.${id}.d2`), svg: path.join(srcDir, `${stem}.${id}.svg`) };
+}
+
+// 外側の <svg> の viewBox から幅と高さを取る
+export function svgSize(svg) {
+  const m = svg.match(/<svg\b[^>]*\bviewBox="\s*[-\d.]+\s+[-\d.]+\s+([\d.]+)\s+([\d.]+)\s*"/);
+  return m ? { width: Math.round(Number(m[1])), height: Math.round(Number(m[2])) } : null;
+}
+
+// figIds のうち d2 の図の SVG を読む。id → SVG の文字列（無ければ null）
+export function loadD2Figures(srcDir, stem, figIds) {
+  const map = new Map();
+  for (const f of figIds) {
+    if (!f.d2) continue;
+    const { svg } = d2Paths(srcDir, stem, f.id);
+    map.set(f.id, fs.existsSync(svg) ? fs.readFileSync(svg, "utf8") : null);
+  }
+  return map;
+}
+
+// 原文と SVG の対応を見る。原文が無い / SVG が原文より古い / 幅が上限を超える
+export function checkD2Figures(srcDir, stem, figIds) {
+  const findings = [];
+  for (const f of figIds) {
+    if (!f.d2) continue;
+    const p = d2Paths(srcDir, stem, f.id);
+    if (!fs.existsSync(p.d2)) { findings.push({ check: "d2", where: p.d2, message: `D2 の図 "${f.id}" の原文が無い` }); continue; }
+    if (!fs.existsSync(p.svg)) continue; // SVG が無いことは組み立てが指摘する
+    const svg = fs.readFileSync(p.svg, "utf8");
+    const m = svg.match(D2_SOURCE_MARK);
+    if (!m || m[1] !== sha256(fs.readFileSync(p.d2, "utf8"))) findings.push({ check: "d2", where: p.svg, message: `D2 の図 "${f.id}" の SVG が原文と食い違う。render-d2.mjs で描画し直してから組み立てる` });
+    const size = svgSize(svg);
+    if (!size) findings.push({ check: "d2", where: p.svg, message: `D2 の図 "${f.id}" の SVG に viewBox が無い` });
+    else if (size.width > D2_MAX_WIDTH) findings.push({ check: "d2", where: p.svg, message: `D2 の図 "${f.id}" の幅 ${size.width}px が上限 ${D2_MAX_WIDTH}px を超える。縦向きにする・横に並ぶノードを減らす・ラベルを短くする・図を分けるのいずれかで狭める` });
+  }
+  return findings;
+}
+
 // ---------------------------------------------------------------------------
 // 組み立て
 // ---------------------------------------------------------------------------
 export function renderPage(src, opts = {}) {
-  const { version = "", figures = loadFigures(null), patternsDir = null } = opts;
+  const { version = "", figures = loadFigures(null), patternsDir = null, d2 = new Map() } = opts;
   const findings = [];
   const isForm = src.type === "form";
   const answers = src.answers || null;
@@ -480,6 +531,17 @@ export function renderPage(src, opts = {}) {
         return `<div class="table-wrap" role="region" tabindex="0" aria-labelledby="cap-${n}">\n<table>\n<caption id="cap-${n}">表 ${n} ${inline(v.caption, ctx)}</caption>\n<thead>\n<tr>${head}</tr>\n</thead>\n<tbody>\n${body}\n</tbody>\n</table>\n</div>`;
       }
       case "fig": case "custom": {
+        if (kind === "fig" && v.d2 === true) {
+          usedFigs.add(v.id);
+          if (figures.templates.has(v.id)) findings.push({ check: "source", where: `fig:${v.id}`, message: `D2 の図 "${v.id}" と同じ id の template が figures ファイルにもある` });
+          const svg = d2.get(v.id);
+          if (svg == null) { findings.push({ check: "source", where: `fig:${v.id}`, message: `D2 の図 "${v.id}" の SVG（src/{file}.${v.id}.svg）が無い。render-d2.mjs で描画する` }); return `<!-- fig ${esc(v.id)} が無い -->`; }
+          const size = svgSize(svg);
+          if (!size) { findings.push({ check: "source", where: `fig:${v.id}`, message: `D2 の図 "${v.id}" の SVG に viewBox が無い` }); return `<!-- fig ${esc(v.id)} が無い -->`; }
+          const n = ++figN;
+          const uri = "data:image/svg+xml;base64," + Buffer.from(svg).toString("base64");
+          return `<div class="fig">\n<img class="d2" width="${size.width}" height="${size.height}" alt="${esc(v.alt)}" src="${uri}">\n<p class="cap">図 ${n} ${inline(v.caption, ctx)}</p>\n</div>`;
+        }
         const markup = figures.templates.get(v.id);
         usedFigs.add(v.id);
         if (markup == null) { findings.push({ check: "source", where: `${kind}:${v.id}`, message: `図 "${v.id}" の markup が figures ファイルに無い` }); return `<!-- ${kind} ${esc(v.id)} が無い -->`; }

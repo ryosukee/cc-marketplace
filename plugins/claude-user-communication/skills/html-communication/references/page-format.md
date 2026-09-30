@@ -14,7 +14,9 @@ claude-html-communication/
 ├── index.html                  # 一覧。ページを作る CodingAgent が編集し、record-answer.mjs が status を書く
 └── src/
     ├── ccm-f085.json           # 本文の原本。ページを作る CodingAgent が書く
-    └── ccm-f085.figures.html   # 図の markup と CSS（図があるページだけ）
+    ├── ccm-f085.figures.html   # 図の markup と CSS（図があるページだけ）
+    ├── ccm-f085.flow.d2        # D2 の図の原文（D2 の図があるページだけ。図の id ごとに 1 つ）
+    └── ccm-f085.flow.svg       # render-d2.mjs が原文から描画した SVG
 ```
 
 閲覧用 HTML は手で編集しない。直すときは JSON を直して `assemble-page.mjs --force` を回す。
@@ -71,6 +73,7 @@ form の `formIntro`、report の `summary`、節の `blocks`、`reference.block
 | `{ "quote": { "src": "出典の題名", "url": "https://…", "paragraphs": ["…"] } }` | 引用。`url` は任意。段落は逐語で、記法を解釈しない |
 | `{ "pre": "…" }` | コード。記法を解釈せずそのまま出す |
 | `{ "fig": { "id": "board", "caption": "何の図か" } }` | 図。markup は figures ファイルから取り、「図 n」が付く |
+| `{ "fig": { "id": "flow", "caption": "何の図か", "d2": true, "alt": "図が示す内容" } }` | D2 の図。下記「D2 の図」 |
 | `{ "custom": { "id": "cards" } }` | パターン集などの markup をそのまま置く。キャプションと番号は付かない |
 
 表の `columns` は文字列か `{ "text": "…", "num": true }`（数値の列）。
@@ -189,6 +192,19 @@ checkbox の「その他」は通常の選択肢と同時に選べる。選択�
   原寸より大きく引き伸ばさず、画面に収まらない部分は viewer 内でスクロールできる。
   figures ファイルへ拡大用の JavaScript や dialog を書かない
 - レビュー agent には JSON と一緒にこのファイルも渡す
+
+## D2 の図
+
+`fig` に `"d2": true` を書いた図は、figures ファイルではなく `src/{file}.{id}.d2` の D2 の原文から作る。
+
+- `alt` は必須。図が何を示すかを文で書く。`d2` の無い `fig` には書かない
+- `scripts/render-d2.mjs` に生成元 JSON を渡すと、原文を描画して `src/{file}.{id}.svg` に書く。
+  原文を直したら描画し直してから組み立てる
+- 組み立ては SVG を data URI の `<img class="d2">` にし、SVG の viewBox の幅と高さを `width` と `height` に入れる
+- SVG の先頭の注釈に、描画に使った原文の sha256 が入る。`check-source.mjs` が原文と突き合わせ、
+  食い違いと、幅が 560px を超える図を指摘する
+- 同じ id の template を figures ファイルに置かない
+- レビュー agent には `.d2` のファイルも渡す
 
 ## 脚注と補足
 

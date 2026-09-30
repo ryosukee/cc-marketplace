@@ -11,13 +11,17 @@ Claude Code では同梱の名前付き agent、Codex では子 agent が判定�
   （読み取り専用。書式は `references/page-format.md`）。回答は `record-answer.mjs` が JSON に記録し、
   ページ・index・archive を揃える。index 管理・閲覧先の提示・下書きプロトコル・PWA アセットの再生成
   （`templates/` に雛形を同梱）・HTML フォームの設問の作りと回答の受け取り
-- 文のレビュー: form と report の両方で、意味の取れない文と未定義の呼び名を挙げる。生成元 JSON（と図の markup）だけを読む
+- 文のレビュー: form と report の両方で、意味の取れない文と未定義の呼び名を挙げる。生成元 JSON（と図の markup・D2 の原文）だけを読む
 - 内容のレビュー: form で一次情報、推奨・選択肢、設問の構成を確認する
 
 ## Requirements
 
 - Node.js と `npx`: ページの生成・検査・回答記録に使う
 - `jq`: 検査結果の集約に使う
+- `npm` と npm registry への接続: D2 の図を描画するときだけ使う。`render-d2.mjs` が実行のたびに
+  `@terrastruct/d2@0.1.33` を一時ディレクトリへ入れ、終わったら消す。setup は要らない。
+  取得できないときは描画だけが止まり、組み立て・検査・回答記録は D2 に依存しない。
+  Codex の sandbox（workspace-write）はネットワークに出られないので、`render-d2.mjs` は sandbox の外で実行する承認を求めて回す
 - 提示前レビューを実行できる子 agent: Codex で使う場合に必要。利用できないときは、skill が未実施を伝えて続行の可否を確認する
 
 ## 必要な環境変数

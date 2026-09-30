@@ -157,6 +157,9 @@
      図を語る文は本文に置かない（表と同じ） */
   .fig { margin: 14px 0 20px; }
   .fig > .cap { font-size: 0.875em; color: var(--sub); letter-spacing: 0.02em; margin: 10px 0 0; }
+  /* 図の画像は列の幅まで縮め、原寸より引き伸ばさない。原寸は下の viewer で見る */
+  .fig img { max-width: 100%; height: auto; }
+  .fig img.d2 { display: block; }
   .fig img[data-image-viewer] { cursor: zoom-in; }
   .fig img[data-image-viewer]:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
