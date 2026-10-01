@@ -15,7 +15,7 @@ agent-kanban の Project に登録した repository では、decision-record を
 この rule の以降の節は、agent-kanban の Project に登録していない repository にだけ適用する。
 
 判定基準: 作業中の repository が、agent-kanban の Project に登録されているか。
-agent-kanban plugin の agent-kanban-activity skill で、現在の repository に対応する Project を確かめる。
+agent-kanban plugin の `agent-kanban:show-recent-work` skill で、現在の repository に対応する Project を確かめる。
 
 why: agent-kanban は、決定を対象の作業項目と一緒に保存し、次の session が着手時に読める。
 同じ決定を decision-record にも書くと二つの保存先ができ、片方だけが更新される。
