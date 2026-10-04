@@ -307,7 +307,8 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
     - form を `awaiting` で登録したら、TaskCreate で回答待ちタスクを作る。subject は
       「{閲覧先} ← {ページ title}に回答」の形で、配信 URL があれば URL、なければ
       ページの絶対パスを先頭に置く（一覧 UI は末尾から省略されるため）。report の `unconfirmed` も
-      同様に確認待ちタスクを作る。回答・確認を受領したターンで completed にする。
+      同様に確認待ちタスクを作り、description に「内容に触れる返答を受けたら、確認済みにしてよいかを問う」と書く
+      （下記「report の確認」）。回答・確認を受領したターンで completed にする。
       task ツールが提供されない環境（subagent 等）では作らない
     - ページ作成時のエントリは必ず未完了で登録する。状態は form → `awaiting`（回答待ち）、
       report → `unconfirmed`（確認待ち）。提示しただけのページを完了扱いにしない
@@ -315,8 +316,8 @@ why: 読み手が開けない出典は出典として機能せず、読み手は
       確認を求めず、確認待ちタスクも作らない。改稿のたびに `updated` を進める。
       完了状態を持たない。役目を終えたら `confirmed` にする
     - 状態遷移は必ず「未完了 → 完了」を踏む: form は「## HTML フォーム回答」を受領したターンで
-      `answered`（回答済み）へ、report はユーザーから内容への確認応答（会話での言及・了解）を受けたターンで
-      `confirmed`（確認済み）へ更新する
+      `answered`（回答済み）へ、report はユーザーから確認済みにすることへの承認を受けたターンで
+      `confirmed`（確認済み）へ更新する。report の承認の取り方は下記「回答の受け取り」にある
     - 「## HTML フォーム回答」を受け取ったら、そのターンの最初の操作として `scripts/record-answer.mjs` を回す
       （下記「回答の受け取り」）。JSON への記録・ページの組み直し・index.html の status・archive.html の
       再生成を 1 度で行う。回答内容の反映作業より前に回す
@@ -780,8 +781,27 @@ opus は 30 文、sonnet は 1〜2 文を挙げた。model を opus にするの
   JSON の `answers` に全文と設問ごとの解釈を書く → 閲覧用 HTML を回答済みの状態で組み直す →
   index.html の当該エントリを `answered` にする → `build-archive.mjs` を回す。
   途中で失敗したら stdout でどこまで済んだかを確かめ、もう 1 度回す。済んだ手順は skip になる
-- report は、ユーザーから内容への確認応答を受けたターンで
-  `node "{SKILL_DIR}/scripts/record-answer.mjs" <src/{語幹}.json> --confirm "<発言の逐語>"` を回す。status は `confirmed` になる
 - JSON を持たない旧ページは、先に `import-page.mjs` で変換してから回す。変換できないときは
   index.html の status を手で更新して `build-archive.mjs` を回す
 - 回答の実文は JSON の `answers.raw` に残る。decision-record へ写すときはそこから引く
+
+### report の確認
+
+report には回答フォームが無く、ユーザーは「確認しました」と明示せずに次の話へ進むことが多い。
+そのため、確認済みにするかを Claude の側から問う。
+
+- ユーザーの返答が `unconfirmed` の report を読んだうえで次へ進んでいると取れたら、そのターンの返答で、
+  その report を確認済みにしてよいかを問う。取れる返答は、report の結論を前提にした指示、
+  report の内容への言及や質問、report が示した次の作業への着手の指示
+- 対象は、このセッションで提示して `unconfirmed` のままの report。`living` の report は問わない
+- 承認を受けたターンで
+  `node "{SKILL_DIR}/scripts/record-answer.mjs" <src/{語幹}.json> --confirm "<発言の逐語>"` を回す。
+  発言には、report を読んだと取れた返答と、承認の返答の両方を逐語で入れる。status は `confirmed` になる
+- 断られたら `unconfirmed` のまま据え置く。同じ report について再び問うのは、
+  ユーザーが新たにその report の内容に触れたときだけにする
+- 推測で確認済みにしない。返答が読んだうえかどうかは Claude の推測でしかない
+
+why: form の回答は決まった形のテキストで届き、受け取ったことが受領の操作のきっかけになる。
+report の確認は決まった形で届かないので、問わないと状態の更新のきっかけが生まれず、
+読み終えた report が確認待ちのまま一覧に残る。確認待ちが読み終えたものと未読のものの混在になると、
+一覧から未読の report を見つけられない。
