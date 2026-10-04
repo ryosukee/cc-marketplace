@@ -97,25 +97,30 @@ if (!fs.existsSync(indexPath)) stop(3, "index", `index.html が無い: ${indexPa
 const target = src.type === "form" ? "answered" : "confirmed";
 let idx = fs.readFileSync(indexPath, "utf8");
 const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const entryRe = new RegExp(`\\{[^{}]*?file:\\s*"${reEsc(p.stem)}\\.html"[^{}]*\\}`);
+// エントリのキーは JS の識別子（file:）と引用符つき（"file":）のどちらでも書かれうる
+const keyRe = (k) => `"?${k}"?:\\s*`;
+const entryRe = new RegExp(`\\{[^{}]*?${keyRe("file")}"${reEsc(p.stem)}\\.html"[^{}]*\\}`);
 const found = idx.match(entryRe);
 if (!found) stop(3, "index", `index.html にエントリが無い: ${p.stem}.html`);
-const STATUS_RE = /status:\s*"[^"]*"/;
-const cur = found[0].match(/status:\s*"([^"]*)"/)?.[1];
+const STATUS_RE = new RegExp(`${keyRe("status")}"[^"]*"`);
+const CHANGED_RE = new RegExp(`${keyRe("statusChanged")}"[^"]*"`);
+// 書き足すキーは、そのエントリの file キーと同じ書き方に揃える
+const key = (k) => (/"file"\s*:/.test(found[0]) ? `"${k}"` : k);
+const cur = found[0].match(new RegExp(`${keyRe("status")}"([^"]*)"`))?.[1];
 if (cur == null) stop(3, "index", `index.html のエントリに status が無い: ${p.stem}.html`);
 if (cur === target) {
   step(3, "index", `skip（既に ${target}）`);
 } else {
-  let entry = found[0].replace(STATUS_RE, `status: "${target}"`);
-  if (/statusChanged:\s*"[^"]*"/.test(entry)) {
-    entry = entry.replace(/statusChanged:\s*"[^"]*"/, `statusChanged: "${date}"`);
+  let entry = found[0].replace(STATUS_RE, `${key("status")}: "${target}"`);
+  if (CHANGED_RE.test(entry)) {
+    entry = entry.replace(CHANGED_RE, `${key("statusChanged")}: "${date}"`);
   } else {
     // status の直後へ挿す。status の後ろにカンマが無いエントリでも効かせるため、位置で切って繋ぐ
     const sm = STATUS_RE.exec(entry);
     const at = sm.index + sm[0].length;
-    entry = entry.slice(0, at) + `,\n    statusChanged: "${date}"` + entry.slice(at);
+    entry = entry.slice(0, at) + `,\n    ${key("statusChanged")}: "${date}"` + entry.slice(at);
   }
-  if (!/statusChanged:\s*"[^"]*"/.test(entry)) stop(3, "index", "statusChanged を入れられなかった");
+  if (!CHANGED_RE.test(entry)) stop(3, "index", "statusChanged を入れられなかった");
   // 文字列パターンの replace は entry の $& や $' を置換パターンとして解釈するので、位置で切って繋ぐ
   idx = idx.slice(0, found.index) + entry + idx.slice(found.index + found[0].length);
   fs.writeFileSync(indexPath, idx);

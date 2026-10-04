@@ -58,5 +58,6 @@ s = s.replace(
 
 const outPath = path.join(dir, "archive.html");
 fs.writeFileSync(outPath, s);
-const n = (s.match(/^    file: "/gm) || []).length;
+// エントリのキーは JS の識別子（file:）と引用符つき（"file":）のどちらでも書かれうる
+const n = (s.match(/^\s*(?:\{\s*)?"?file"?: "/gm) || []).length;
 console.log(`generated ${outPath} (entries ${n})`);

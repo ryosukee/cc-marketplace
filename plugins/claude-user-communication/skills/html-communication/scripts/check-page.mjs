@@ -481,9 +481,10 @@ function checkFile(path) {
     const dir = path.replace(/[^/]+$/, "");
     const base = path.replace(/^.*\//, "");
     const idx = readFileSync(dir + "index.html", "utf8");
-    const entry = idx.match(new RegExp(`file:\\s*"${base}"[\\s\\S]*?\\},`));
+    // エントリのキーは JS の識別子（file:）と引用符つき（"file":）のどちらでも書かれうる
+    const entry = idx.match(new RegExp(`"?file"?:\\s*"${base}"[\\s\\S]*?\\},`));
     if (entry) {
-      const q = entry[0].match(/questions:\s*(\d+)/);
+      const q = entry[0].match(/"?questions"?:\s*(\d+)/);
       if (q && Number(q[1]) !== qCards) {
         findings.push({ check: "question-count", line: null,
           message: `index の questions ${q[1]} が設問カード数 ${qCards} と違う` });
