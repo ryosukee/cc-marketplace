@@ -49,7 +49,7 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 | markdownlint | Claude Code only | Claude が書く Markdown を lint の規約に保つための plugin。編集のたびに lint を実行し、結果を Claude に返す |
 | mkdocs-setup | Claude Code only | MkDocs Material のドキュメントサイトを共通の設定で立ち上げるための plugin。設定とテンプレートを提供する |
 | security-guards | Claude Code only | Claude が credentials を読み書きしないようにするための plugin。`.netrc` などへのアクセスを hook で止める |
-| [diffo](./plugins/diffo/README.md) | Claude Code + Codex | Diffo でのレビューを、会話を止めずに受けるための plugin。Diffo 公式 skill を補い、通知の受け取り方と返信の規範、画面の表示の調整を定める |
+| [diffo](./plugins/diffo/README.md) | Claude Code + Codex | Diffo でのレビューを、会話を止めずに受けるための plugin。公式の手順に必要な補足の読み込みを確認し、通知の受け取り方と返信の規範、画面の表示の調整を定める |
 
 ### Communication
 

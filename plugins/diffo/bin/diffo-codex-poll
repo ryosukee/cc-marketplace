@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # diffo のレビュー payload を、起動元の Codex thread へ 1 回だけ自動で queue する。
 
-set -u
+set -euo pipefail
 
-if [ "$#" -ne 1 ] || ! [[ "$1" =~ ^[0-9a-fA-F-]{36}$ ]]; then
-	echo "usage: diffo-codex-poll CODEX_THREAD_ID" >&2
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ] || ! [[ "$1" =~ ^[0-9a-fA-F-]{36}$ ]]; then
+	echo "usage: diffo-codex-poll CODEX_THREAD_ID [REVIEW_TITLE]" >&2
 	exit 2
 fi
 
 TARGET_CODEX_THREAD_ID="$1"
+review_title="${2:-}"
 
 for command_name in codex npx node shasum awk git; do
 	if ! command -v "$command_name" >/dev/null 2>&1; then
@@ -42,11 +43,16 @@ trap 'rmdir "$lock_dir" 2>/dev/null || true' EXIT
 echo "diffo-codex-poll: $repo_root のレビューを Codex thread $TARGET_CODEX_THREAD_ID へ配送する"
 
 while :; do
-	if ! out="$(npx -y --prefer-online @diffohq/diffo@latest poll 2>&1)"; then
+	poll_command=(npx -y --prefer-online @diffohq/diffo@latest poll)
+	if [ -n "$review_title" ]; then
+		poll_command+=(--title "$review_title")
+	fi
+	if ! out="$("${poll_command[@]}" 2>&1)"; then
 		printf '%s\n' "$out" >&2
 		echo "diffo-codex-poll: diffo poll が失敗した。監視を終了する" >&2
 		exit 1
 	fi
+	review_title=""
 	case "$out" in
 		*'"status":"timeout"'*) continue ;;
 	esac
