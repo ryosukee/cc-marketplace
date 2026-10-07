@@ -2,7 +2,7 @@
 // claude-html-communication ページの自作検査。
 // html-validate / linkinator が見ない点を検査する:
 //   1. 図の CSS が fallback 無しで参照する未定義の CSS custom property
-//   2. フォントサイズの段階数 (許可: 16px 基底 + 1.4em / 1.15em / 1em / 0.875em)
+//   2. フォントサイズの段階数 (16px 基底 + 1.4em / 1.15em / 1em / 0.875em、#ver のみ10px)
 //   3. 40 字超のセル (td のテキスト)
 //   4. aria-labelledby と caption id の対応
 //   5. 脚注の双方向対応 (fn-N と fnref-N-M のペアリング。リンク先の存在は linkinator が見る)
@@ -179,7 +179,32 @@ function checkFile(path) {
 
   // 2. フォントサイズの段階数（図の CSS は対象外）
   const sizes = new Map(); // value -> [line...]
-  for (const m of maskFigureStyles(src).matchAll(/font-size:\s*([0-9.]+(?:px|em|rem|%))/g)) {
+  const fontSource = maskFigureStyles(src);
+  // 共通生成元の1行だけは10pxを許す。CSSの葉の宣言ブロックで、単独の #ver に限る。
+  // selectorのカンマ併記や本文のinline styleまで小さい文字を許可しない。
+  const versionFonts = new Set();
+  for (const style of fontSource.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)) {
+    const css = maskCssCommentsAndStrings(style[1]);
+    const offset = style.index + style[0].indexOf(style[1]);
+    const stack = [];
+    let boundary = 0;
+    for (let i = 0; i < css.length; i++) {
+      if (css[i] === '{') {
+        if (stack.length) stack.at(-1).nested = true;
+        stack.push({ selector: css.slice(boundary, i).trim(), start: i + 1, nested: false });
+        boundary = i + 1;
+      }
+      else if (css[i] === '}') {
+        const rule = stack.pop();
+        if (rule && !rule.nested && rule.selector === '#ver') {
+          for (const font of css.slice(rule.start, i).matchAll(/font-size:\s*10px\b/g)) versionFonts.add(offset + rule.start + font.index);
+        }
+        boundary = i + 1;
+      }
+    }
+  }
+  for (const m of fontSource.matchAll(/font-size:\s*([0-9.]+(?:px|em|rem|%))/g)) {
+    if (m[1] === '10px' && versionFonts.has(m.index)) continue;
     const v = m[1];
     if (!sizes.has(v)) sizes.set(v, []);
     sizes.get(v).push(lineOf(src, m.index));

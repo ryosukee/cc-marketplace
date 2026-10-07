@@ -11,6 +11,7 @@ Claude Code では同梱の名前付き agent、Codex では子 agent が判定�
   （読み取り専用。書式は `references/page-format.md`）。回答は `record-answer.mjs` が JSON に記録し、
   ページ・index・archive を揃える。index 管理・閲覧先の提示・下書きプロトコル・PWA アセットの再生成
   （`templates/` に雛形を同梱）・HTML フォームの設問の作りと回答の受け取り
+  上部に残回答量を表示し、回答コピーを常時表示する。全体補足とリセットは操作メニューから使う
 - 文のレビュー: form と report の両方で、意味の取れない文と未定義の呼び名を挙げる。生成元 JSON（と図の markup・D2 の原文）だけを読む
 - 内容のレビュー: form で一次情報、推奨・選択肢、設問の構成を確認する
 
@@ -55,3 +56,12 @@ HTML_COMMUNICATION_BASE_URL = "https://<host>.<tailnet>.ts.net"
 値のセットアップと配信側の構築は環境側の文書の管轄で、この plugin には含まれない。
 配信は任意。ローカルファイルをそのままブラウザで開くか、Tailscale Serve 等で配信する。
 Node.js または `npx` が使えなければ生成・検査は実行できない。
+
+## 開発時の検証
+
+`tests/*.test.mjs` を Node.js の `--test` で実行する。
+ブラウザ試験は Playwright と Chromium が導入済みの場合に実行する。
+別の場所に導入した Playwright を使うときは、`HTML_COMMUNICATION_PLAYWRIGHT_MODULE` に
+その `index.mjs` の絶対パスを渡す。未導入ならブラウザ試験だけをスキップする。
+`HTML_COMMUNICATION_SCREENSHOTS` に保存先の絶対パスを渡すと、操作欄の開閉画像も保存する。
+これらは検証時の指定であり、ページを生成・閲覧するための依存は増えない。

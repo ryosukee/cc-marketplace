@@ -11,7 +11,7 @@
   アイコン・本文・テーマ・下書きキー・設問一覧・回答済み の 11 個。
   雛形は form 用と report 用の script を data-scope で分けて持ち、assemble-page.mjs が使わないほうを落とす。
   form / report の本文の違いは page-source.mjs が持つ。
-    form   : 下部バー #bar（情報・入力・操作の 3 ゾーン）と設問 pane #q-pane。
+    form   : 上部の残回答バー、下部の操作欄 #bar（補足・リセットはメニュー内）と設問 pane #q-pane。
              .summary の見出し語は「このフォームについて」
     report : #bar の代わりに #footer-nav。#q-pane と .rng[data-q] は無く、左の列には見出しツリー #toc-pane。
              冒頭ブロックの見出し語は「まとめ」
@@ -33,7 +33,7 @@
   本文テキスト --fg と構造の線 --rule-strong は必ず別トークンにする。
   兼用すると両者のコントラストが 1.00 になり、ダークで区別が消える（実測で確認済み）。
 
-  フォントサイズは 4 段階だけを使う: 1.4em / 1.15em / 1em / 0.875em。新しい段を足さない。
+  本文のフォントサイズは 4 段階: 1.4em / 1.15em / 1em / 0.875em。生成元 #ver だけ10px。
 
   強調は <mark>、引用は <blockquote> を使う（SR が境界を読み上げる。span 装飾より優先）。
   脚注を <footer>、補足を <aside> に入れない。Firefox Reader View が両者を無条件削除する。
@@ -338,7 +338,7 @@
     #fn-pane { max-height: calc(100vh - 240px); }
     /* report の追従ナビは全幅に敷くので、その分だけ両方の pane の丈を削る。ナビの高さは約 60px で、
        ホームインジケータのある端末ではセーフエリアがそれに足される。
-       脚注 pane の 240px は form の 3 段のバーに合わせた値なので、report では緩める */
+       form の残回答バーと操作欄の高さは、後段の form 専用ルールで調整する */
     #toc-pane, main:has(#toc-pane) #fn-pane { max-height: calc(100vh - 100px - env(safe-area-inset-bottom)); }
   }
 
@@ -368,15 +368,36 @@
   /* 本文中に置かれた設問カードは、範囲の判断材料の直後に来るので折り畳まない */
   .rng > .qd { margin-top: 18px; }
 
-  /* form 用の下部バー。情報・入力・操作の 3 ゾーンに分ける */
+  /* form の残回答量。値は設問カードと同じ完了判定から更新する */
+  #answer-progress { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+                     background: var(--bg); padding-top: env(safe-area-inset-top); border-bottom: 1px solid var(--rule); }
+  #remaining { display: block; padding: 3px 16px; text-align: right; font-size: 0.875em; color: var(--sub); }
+  #remaining-track { appearance: none; display: block; width: 100%; height: 4px; border: 0; background: var(--surface-code); }
+  #remaining-track::-webkit-progress-bar { background: var(--surface-code); }
+  #remaining-track::-webkit-progress-value { background: var(--link); transition: width 180ms ease; }
+  #remaining-track::-moz-progress-bar { background: var(--link); }
+  body:has(#bar) main { padding-top: calc(60px + env(safe-area-inset-top)); padding-bottom: calc(var(--answer-bar-height, 100px) + 24px); }
+  html:has(#bar) { scroll-padding-top: calc(44px + env(safe-area-inset-top)); scroll-padding-bottom: calc(var(--answer-bar-height, 100px) + 24px); }
+  @media (prefers-reduced-motion: reduce) { #remaining-track::-webkit-progress-value { transition: none; } }
+
+  /* form 用の操作欄。補足入力とリセットは開閉するメニューへまとめる */
   #bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg);
          border-top: 1px solid var(--rule); padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
          z-index: 100; }
-  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+  #bar-in { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 4px; position: relative; }
   .bar-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .bar-info #res { margin-left: auto; text-align: right; }
-  .bar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .action-cluster { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .bar-info #ver { margin-left: auto; align-self: center; }
+  .bar-info #res { flex-basis: 100%; text-align: right; }
+  .bar-info #res:empty { display: none; }
+  .bar-actions { display: flex; align-items: center; gap: 6px; }
+  .bar-actions #copy { flex: 1; white-space: nowrap; }
+  #answer-menu { position: absolute; bottom: calc(100% + 12px); right: 0; width: min(420px, calc(100vw - 32px));
+                 max-height: calc(100dvh - 140px); overflow-y: auto; background: var(--bg); color: var(--fg);
+                 border: 1px solid var(--control-border); border-radius: 10px; padding: 16px;
+                 box-shadow: 0 8px 32px var(--tw-shadow); }
+  .answer-menu-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  #answer-menu label { display: block; font-size: 0.875em; font-weight: 600; margin-bottom: 6px; }
+  #answer-menu #reset { margin-top: 12px; }
   /* report 用の追従ナビ。操作が無いので 1 段だけ */
   #footer-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg);
                 border-top: 1px solid var(--rule); padding: 8px 20px calc(8px + env(safe-area-inset-bottom));
@@ -392,42 +413,48 @@
   #proj { align-self: center; font-size: 0.875em; font-weight: 700;
           border: 1px solid var(--rule); color: var(--sub); border-radius: 6px;
           padding: 3px 9px; white-space: nowrap; }
-  /* 生成に使った skill の版。古い版のページを参考にしないための目印。
-     常時見える位置に置くが、操作する要素ではないので行の右端へ寄せて弱く出す。
-     右へ寄せるのは直前の #res の margin-left: auto に任せる。ここで auto を重ねると
-     状態メッセージと版が離れて 2 か所に散る */
+  /* 生成元は読むだけの小さな1行。本文の文字段階とは分ける */
   /* opacity を重ねない。--sub は地に対して 6.19 / 6.52 あるが、0.72 を掛けると
      3.32 / 4.06 まで落ちて本文コントラスト 4.5:1 を割る（実測 2026-08-18）。
      弱く見せたいときは色トークンで決める */
-  #ver { align-self: center; font-size: 0.875em; color: var(--sub); white-space: nowrap; }
-  #free { width: 100%; min-height: 32px; max-height: 130px; padding: 6px 9px;
+  #ver { align-self: end; font-size: 10px; color: var(--sub); white-space: nowrap; }
+  #footer-nav #ver { margin-left: auto; }
+  #free { width: 100%; min-height: 144px; max-height: 50dvh; padding: 8px 10px;
           border: 1px solid var(--control-border); border-radius: 5px; background: var(--bg);
           color: var(--fg); font-size: 0.875em; resize: vertical; }
-  #free:focus { min-height: 88px; }
   #copy { background: var(--link-fill); color: var(--on-fill); border: none; border-radius: 4px;
           padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 1em; }
   .subbtn { background: none; border: 1px solid var(--rule); color: var(--sub); border-radius: 6px;
             padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
   .subbtn:hover { border-color: var(--link); color: var(--link); }
-  #cnt, #res { font-size: 0.875em; color: var(--sub); white-space: nowrap; }
+  #res { font-size: 0.875em; color: var(--sub); }
+  @media screen and (max-width: 359px) {
+    .bar-actions #copy { font-size: 0.875em; padding: 9px 10px; }
+    .bar-actions #back { padding: 8px; }
+  }
 
   /* 3 pane のときは回答の追従領域を脚注 pane の真下だけに寄せる。
      全幅に敷くと本文と設問の下にも帯ができ、縦のスペースを削ってしまう。
      設問 pane の下ではなく脚注 pane の下に置くのは、設問カードの縦の場所を最大に取るため。
      この上書きは #bar の定義より後ろに置く。前に置くと後続の left: 0 に負ける。
      右列の左端 = 画面中央 - (1328 / 2) + 左 padding 20 + 300 + 24 + 640 + 24 = 50% + 344px。
-     右端は画面端まで伸ばす。列幅 300px 丁度だと 3 つのボタンが 1 行に収まらない */
+     右端は画面端まで伸ばす。補足入力のメニューは、この領域から画面内へ広げる */
   @media screen and (min-width: 1340px) {
     #bar { left: calc(50% + 344px); right: 0; width: auto; padding-left: 10px; padding-right: 10px; }
     #bar-in { max-width: none; }
-    /* 版は幅を 273px 使う。プロジェクト名と同じ行に置くと必ずはみ出すので独立した行へ落とす */
-    #ver { flex: 1 0 100%; text-align: right; }
     /* 状態メッセージは失敗時に長くなる。狭い bar では折り返しを許す */
     #res { white-space: normal; }
-    /* 3 つのボタンを 1 行に保つ。最も狭い 3 pane (1340px) で内幅 306px、
-       ボタンの合計 298px（実測）。折り返させない */
-    .bar-actions, .action-cluster { flex-wrap: nowrap; gap: 6px; }
+    /* 一覧復帰・回答コピー・その他を1行に保つ */
+    .bar-actions { gap: 6px; }
     #back, .subbtn { padding: 8px; }
+    body:has(#bar) main { padding-bottom: 40px; }
+    html:has(#bar) { scroll-padding-bottom: 40px; }
+    body:has(#bar) #q-pane, body:has(#bar) #fn-pane { top: calc(60px + env(safe-area-inset-top)); }
+    body:has(#bar) #q-pane { max-height: calc(100dvh - 100px - env(safe-area-inset-top)); }
+    body:has(#bar) #fn-pane { max-height: calc(100dvh - 200px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+  }
+  @media screen and (min-width: 1024px) and (max-width: 1339px) {
+    body:has(#bar) #fn-pane { top: calc(60px + env(safe-area-inset-top)); }
   }
   /* ワイド段の bar。上の 1340px の上書きより後ろに置く（同じ詳細度なので後勝ち）。
      右列の左端 = 画面中央 - (1688 / 2) + 左 padding 20 + 320 + 24 + 960 + 24 = 50% + 504px */
@@ -461,7 +488,8 @@
   }
 
   @media print {
-    #bar, #footer-nav, #image-viewer { display: none; }
+    #bar, #answer-progress, #footer-nav, #image-viewer { display: none; }
+    body:has(#bar) main { padding: 0; }
     main, main > * { max-width: none; display: block; }
     #q-pane, #toc-pane, #fn-pane { position: static; max-height: none; overflow: visible; }
     h1, h2, h3 { break-after: avoid; }
@@ -604,6 +632,36 @@
   var QS = {{設問一覧}};
   /* 回答を受領したページは静的に回答済みで組まれる。下書きの保存・復元とリセットは止め、コピーだけ残す */
   var ANSWERED = {{回答済み}};
+
+  // 受領/コピー失敗の長いメッセージで操作欄の高さが変わっても、本文末尾を隠さない。
+  var answerBar = document.getElementById('bar');
+  function measureBar() {
+    document.documentElement.style.setProperty('--answer-bar-height', answerBar.getBoundingClientRect().height + 'px');
+  }
+  if (typeof ResizeObserver === 'function') new ResizeObserver(measureBar).observe(answerBar);
+  else window.addEventListener('resize', measureBar);
+  measureBar();
+
+  var menu = document.getElementById('answer-menu');
+  var menuToggle = document.getElementById('answer-menu-toggle');
+  function closeMenu(restoreFocus) {
+    menu.hidden = true;
+    menuToggle.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) menuToggle.focus();
+  }
+  menuToggle.addEventListener('click', function () {
+    if (!menu.hidden) { closeMenu(false); return; }
+    menu.hidden = false;
+    menuToggle.setAttribute('aria-expanded', 'true');
+    document.getElementById(ANSWERED ? 'answer-menu-close' : 'free').focus({ preventScroll: true });
+  });
+  document.getElementById('answer-menu-close').addEventListener('click', function () { closeMenu(true); });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !menu.hidden) { event.preventDefault(); closeMenu(true); }
+  });
+  document.addEventListener('click', function (event) {
+    if (!menu.hidden && !menu.contains(event.target) && !menuToggle.contains(event.target)) closeMenu(false);
+  });
 
   var ranges = [].slice.call(document.querySelectorAll('.rng[data-q]'));
   var qds = [].slice.call(document.querySelectorAll('.qd[data-for]'));
@@ -781,9 +839,13 @@
   function refresh() {
     var r = build();
     document.getElementById('preview').value = r.text;
-    document.getElementById('cnt').textContent = '回答 ' + r.n + '/' + r.total;
+    var remaining = r.total - r.n;
+    document.getElementById('remaining').textContent = '残り ' + remaining + ' / ' + r.total + ' 問';
+    var track = document.getElementById('remaining-track');
+    track.value = remaining;
+    track.setAttribute('aria-valuetext', '残り ' + remaining + ' / ' + r.total + ' 問');
     /* 折り畳んだままでも回答済みが分かるように、カードの状態を更新する。
-       判定は下部バーの進捗と同じで、選択肢を選んだら回答済み（補足欄だけの記入は未回答） */
+       判定は上部の残回答バーと同じで、選択肢を選んだら回答済み（補足欄だけの記入は未回答） */
     qds.forEach(function (d) {
       var done = complete(d.dataset.for);
       d.classList.toggle('done', done);
@@ -800,13 +862,19 @@
   }
   // クリップボードはクリック直後に同期で呼ぶ。await を挟むと Safari / Firefox が
   // user activation を失って NotAllowedError で reject する。
+  var receivedMessage = document.getElementById('res').textContent;
+  var copyMessageTimer = null;
   function copyText(text) {
     var res = document.getElementById('res');
-    function ok() { res.textContent = 'コピーしました'; setTimeout(function () { res.textContent = ''; }, 3000); }
+    clearTimeout(copyMessageTimer);
+    function ok() {
+      res.textContent = 'コピーしました';
+      copyMessageTimer = setTimeout(function () { res.textContent = receivedMessage; }, 3000);
+    }
     function ng() {
       var p = document.getElementById('preview');
       p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
-      res.textContent = 'コピー不可: preview を手動コピー';
+      res.textContent = 'コピーできません。回答のテキスト欄から手動でコピーしてください';
     }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, ng);
     else ng();
@@ -822,6 +890,7 @@
     document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
     document.getElementById('free').value = '';
     refresh();
+    closeMenu(true);
   });
 
   if (!ANSWERED) { try { var raw = localStorage.getItem(KEY); if (raw) applyDraft(JSON.parse(raw)); } catch (e) {} }
