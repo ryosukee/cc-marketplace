@@ -1,11 +1,12 @@
 {
   "name": "diffo",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "description": "Diffo 公式 skill を補い、レビュー通知を Codex の作業セッションへ届ける",
   "author": {
     "name": "CC Tools"
   },
   "skills": "./codex-skills/",
+  "hooks": "./hooks/codex.json",
   "interface": {
     "displayName": "Diffo",
     "shortDescription": "レビュー通知を作業セッションへ届ける",

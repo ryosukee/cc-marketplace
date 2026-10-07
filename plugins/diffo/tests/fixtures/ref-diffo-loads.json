@@ -1,0 +1,28 @@
+{
+  "capturedWith": {
+    "date": "2026-10-08",
+    "claude": "2.1.293",
+    "codex": "0.161.0"
+  },
+  "events": {
+    "claude": {
+      "hook_event_name": "PostToolUse",
+      "tool_name": "Skill",
+      "tool_input": {
+        "skill": "diffo:ref-diffo"
+      },
+      "tool_response": {
+        "success": true,
+        "commandName": "diffo:ref-diffo"
+      }
+    },
+    "codex": {
+      "hook_event_name": "PostToolUse",
+      "tool_name": "Bash",
+      "tool_input": {
+        "command": "cat '{{SKILL_PATH}}'"
+      },
+      "tool_response": "{{SKILL_BODY}}"
+    }
+  }
+}
