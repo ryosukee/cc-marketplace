@@ -1,0 +1,198 @@
+{
+  "format": 1,
+  "file": "ccm-f114",
+  "type": "form",
+  "title": "脚注欄を開閉するボタンを選ぶ",
+  "project": "cc-marketplace",
+  "context": [
+    "html-communication では、概要を読みながら詳細や出典を開ける操作を共通機能へ取り込みます。脚注欄は普段は閉じ、本文の参照番号からはその場で全文を読めるようにします。",
+    "[詳細表示とギャラリーの操作を選ぶ](./ccm-f113.html)で受けた回答をもとに、脚注欄をまとめて開く操作を具体化します。"
+  ],
+  "formIntro": [
+    "脚注欄の開閉ボタンを本文上部、画面右端、画面下部に置く試作を提示し、配置を選びます。固定した操作を共通テンプレートへ組み込める範囲と、タッチ端末での補足表示も説明します。"
+  ],
+  "sections": [
+    {
+      "kind": "explain",
+      "heading": "固定した操作は共通テンプレートへ組み込める",
+      "blocks": [
+        "本文に重ねて開く詳細パネル、親子に並べた項目の段ごとの展開、図のそばの補足、脚注の全文表示は、共通テンプレート[^template]と生成器[^assembler]へ組み込めます。これらの固定操作をギャラリーの表現例として追加する必要はありません。[^common]",
+        {
+          "ul": [
+            {
+              "text": "脚注の全文表示と脚注欄の開閉",
+              "items": [
+                "生成器は、本文の参照番号と脚注の全文を対応付けています。その対応を使って、参照元のそばで全文を表示できます。脚注欄を閉じる際には、空いた列を本文に渡すレイアウト調整も加えます。[^notes]"
+              ]
+            },
+            {
+              "text": "詳細の重ね表示と階層の展開",
+              "items": [
+                "本文のリンクから開く詳細の内容と、親子に並べた項目を生成元 JSON に指定できる書式を追加します。詳細パネルと子項目の開閉、キーボード操作を共通化します。ページごとに操作スクリプトを書く方式にはしません。[^blocks]"
+              ]
+            },
+            {
+              "text": "図のそばの補足",
+              "items": [
+                "補足を開くボタンと補足本文を対応付ければ、表示位置の調整、ホバーやフォーカスでの表示、クリックでの固定を共通化できます。補足のない図にはボタンを付けません。[^figures]"
+              ]
+            }
+          ]
+        },
+        {
+          "h3": "画像内部と独立 Viewer では対象の指定が必要になる"
+        },
+        "HTML やインライン SVG で作る図には、補足を開くボタンを対象のそばに配置できます。画像として埋め込む図では、画像内部のノードをページの要素として選べません。特定の地点へ補足を付ける場合は、図を作る際に画像上の位置を指定する必要があります。図全体への補足なら、図の脇にボタンを置けば足ります。[^image]",
+        "Archify が作る独立した Viewer の内部へ同じ操作を組み込むには、Viewer 側の対応が必要です。今回の共通テンプレートが受け持つのは html-communication のページ内です。画像内部の位置を自動で推定する処理や、リンク先の Viewer を改変する処理は、この取り込みには含めません。[^archify]",
+        {
+          "h3": "ギャラリーには選べる代表的な表現例を集める"
+        },
+        "ギャラリーは、資料に合う表現を選ぶための見本集とします。「完成資料」と「表現・操作」という分類は取り下げます。図の補足や脚注プレビューの固定操作は共通テンプレートと生成器へ組み込み、既存の表現例は保持します。[^gallery]"
+      ]
+    },
+    {
+      "kind": "explain",
+      "heading": "タッチではタップして補足を開く",
+      "blocks": [
+        "タッチ操作には、通常のマウスのようにポインターを重ねたままにする操作がありません。長押しをホバー相当として扱う端末もありますが、それに依存して補足を読ませる設計にはしません。画面の幅ではなく入力の種類を見て、マウス操作とタッチ操作を扱い分けます。[^hover]",
+        {
+          "ul": [
+            "マウスでは、補足ボタンへポインターを重ねると表示します。表示中はボタンの文言を「クリックで固定」に変え、クリックすると離れても閉じません。",
+            "キーボードでは、Tab キーで補足ボタンへフォーカスを移すと表示します。Enter または Space キーで固定でき、固定の操作が分かる文言を出します。",
+            "タッチでは、「補足を開く」ボタンを 1 回タップすると表示して固定します。閉じるボタンか補足の外側をタップして閉じます。長押しは要求しません。"
+          ]
+        },
+        "ホバーで開いた補足の上へポインターを移しても、読んだりリンクを押したりできるように表示を保ちます。Escape キーでも閉じられるようにします。[^focus]"
+      ]
+    },
+    {
+      "kind": "explain",
+      "heading": "残問数は中央に置き、コピー成功はボタンに表示する",
+      "blocks": [
+        "このページでは、画面上部の「残り x / n 問」を左右中央へ配置しました。回答コピーが成功すると、ボタンの文言が「コピーしました」に変わり、3 秒後に「回答をコピー」へ戻ります。連続してコピーしたときは、最後の成功から 3 秒間表示します。",
+        "この調整は開発中の共通テンプレートへ反映しました。公開済みの plugin にはまだ反映していません。[^copychange]"
+      ]
+    },
+    {
+      "kind": "question",
+      "heading": "脚注欄の開閉ボタンをどこに置くか",
+      "blocks": [
+        "本文中の参照番号からは、その場で脚注の全文を開きます。ここで選ぶボタンは、脚注と補足の一覧をまとめて開閉するためのものです。脚注欄は初期状態で閉じ、広い画面では開いたときに本文の横へ、狭い画面では本文の後へ表示します。[^choice]",
+        {
+          "h3": "本文上部のボタン"
+        },
+        "本文のヘッダーに「脚注・補足を表示」を置きます。脚注欄を開くと「脚注・補足を隠す」に変わります。下部の回答操作欄を増やさずに済みますが、本文を下へスクロールした後は上部へ戻って操作します。",
+        {
+          "fig": {
+            "id": "toggle-top",
+            "caption": "本文上部で脚注欄を開閉する試作"
+          }
+        },
+        {
+          "h3": "画面右端のタブ"
+        },
+        "画面の右端に「脚注・補足」の小さなタブを常に置きます。本文をスクロールしても同じ場所から開閉できます。狭い画面では横向きのタブにします。本文と回答操作欄のほかに、常時表示する操作が増えます。",
+        {
+          "fig": {
+            "id": "toggle-edge",
+            "caption": "右端のタブで脚注欄を開閉する試作"
+          }
+        },
+        {
+          "h3": "画面下部のボタン"
+        },
+        "下部の固定操作欄に、独立した「脚注」ボタンを置きます。「その他」のメニューを開かずに使えます。常に操作できますが、回答コピーに使える横幅が減ります。",
+        {
+          "fig": {
+            "id": "toggle-bottom",
+            "caption": "下部のボタンで脚注欄を開閉する試作"
+          }
+        },
+        {
+          "table": {
+            "caption": "脚注欄トグルの配置の違い",
+            "columns": [
+              "観点",
+              "本文上部",
+              "右端のタブ",
+              "画面下部"
+            ],
+            "rows": [
+              [
+                "操作位置",
+                "本文ヘッダー",
+                "画面右端",
+                "下部操作欄"
+              ],
+              [
+                "スクロール中",
+                "上部へ戻る",
+                "常に操作可",
+                "常に操作可"
+              ],
+              {
+                "cells": [
+                  "回答コピーの横幅",
+                  "維持",
+                  "維持",
+                  "縮小"
+                ],
+                "key": true
+              },
+              [
+                "常時表示する操作",
+                "追加なし",
+                "タブ追加",
+                "ボタン追加"
+              ]
+            ]
+          }
+        },
+        "メニュー内へ隠す案と、脚注欄自身にだけボタンを置く案は候補から外しました。初期状態で閉じた脚注欄を開く操作が見つけにくくなるためです。",
+        "実装では、広い画面と狭い画面で開閉と脚注の全文表示を確認します。スクリプトが動かない場合と印刷時にも脚注の全文を残します。脚注欄の開閉や全文表示に不具合を見つけた場合は、脚注欄を常時表示する現行方式へ戻します。戻した版で脚注の全文を読めることと、回答を保持できることを検証します。"
+      ],
+      "question": {
+        "label": "脚注欄の開閉ボタン",
+        "text": "脚注と補足の一覧を開閉するボタンの配置を選んでください。",
+        "options": [
+          {
+            "label": "本文上部に置く",
+            "recommended": true,
+            "description": [
+              "固定の回答操作欄を低く保つ方針に合わせ、常時表示する操作を増やさない案を勧めます。",
+              "本文を読んでいる途中でも一覧の開閉を頻繁に使いたいなら、右端のタブを選べます。"
+            ]
+          },
+          {
+            "label": "右端のタブとして常に置く",
+            "description": "スクロール中も開閉できます。回答コピーの横幅を維持し、画面右端へ操作を追加します。"
+          },
+          {
+            "label": "下部の操作欄に置く",
+            "description": "回答操作と同じ場所から開閉できます。ボタンが増え、回答コピーの横幅が減ります。"
+          }
+        ]
+      }
+    }
+  ],
+  "footnotes": {
+    "common": "現行共通テンプレートと生成器には画像拡大 dialog があり、開閉とフォーカス復帰を共通実装している。[共通テンプレート](https://github.com/ryosukee/cc-marketplace/blob/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/templates/page.html)。固定操作の取り込み可否は、このテンプレートと生成器を読んだ結果から判断した。",
+    "notes": "生成器は参照番号を脚注 ID へ結び、脚注の全文と戻りリンクを出す。[参照の生成](https://github.com/ryosukee/cc-marketplace/blob/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/scripts/lib/page-source.mjs)、[脚注全文と欄の生成](https://github.com/ryosukee/cc-marketplace/blob/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/scripts/lib/page-source.mjs)。",
+    "blocks": "現行の本文ブロック一覧には詳細や開閉する階層の専用ブロックはない。書式と検査の拡張が必要。[生成器のブロック定義](https://github.com/ryosukee/cc-marketplace/blob/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/scripts/lib/page-source.mjs)。",
+    "figures": "生成器は figures の markup を本文へ取り込むため、補足ボタンの起動点を指定できる。[図の生成](https://github.com/ryosukee/cc-marketplace/blob/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/scripts/lib/page-source.mjs)。",
+    "image": "D2 の SVG は img の data URI として埋め込まれる。画像拡大の起動点は画像要素全体に付く。[D2 の埋め込み](https://github.com/ryosukee/cc-marketplace/blob/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/scripts/lib/page-source.mjs)、[画像拡大の起動点](https://github.com/ryosukee/cc-marketplace/blob/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/templates/page.html)。",
+    "archify": "Archify の成果物は独立 HTML Viewer であり、レポートからリンクするものと規定している。[図の生成手段](https://github.com/ryosukee/cc-marketplace/blob/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/references/patterns/README.md#図の生成手段を選ぶ)。",
+    "gallery": "利用者は[詳細表示の回答フォーム](./ccm-f113.html)で、ギャラリーを任意に選べる代表的な表現例を集める場所とした。既存例は[パターン集](https://github.com/ryosukee/cc-marketplace/tree/455c9310f49c1733ed42cd65e6cbfb24b02a8f8e/plugins/claude-user-communication/skills/html-communication/references/patterns)にある。",
+    "hover": "W3C の Media Queries Level 4 は、hover の能力を主な入力装置に基づいて定義する。タッチ画面や長押しが必要な装置は hover: none の例。hover: none でも :hover が一致する場合があるため、ホバーに依存しない操作が必要。[Hover Capability](https://www.w3.org/TR/mediaqueries-4/#hover)。",
+    "focus": "W3C の WCAG 1.4.13 解説は、ホバーやフォーカスで出る追加内容を閉じられること、追加内容の上へポインターを移せること、読み続けられることを示す。[Content on Hover or Focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html)。",
+    "choice": "利用者は[詳細表示の回答フォーム](./ccm-f113.html)で、脚注欄を初期状態で閉じる方式を選び、トグル UI の複数案を求めた。回答操作欄は[回答操作欄のデザインの回答フォーム](./ccm-f112.html)で、補足とリセットをメニューへまとめる方式を選び、低い操作欄を検討している。",
+    "copychange": "このページは、開発中の[共通テンプレートの調整](https://github.com/ryosukee/cc-marketplace/blob/954f03a/plugins/claude-user-communication/skills/html-communication/templates/page.html)から生成した。上部の残問数とコピー成功表示を変更した。"
+  },
+  "generation": [
+    "トグルの図は、配置と開閉を比較する試作です。図のボタンは図中の脚注欄を操作し、このページ全体の脚注欄は開閉しません。"
+  ],
+  "supplements": {
+    "template": "**共通テンプレート** = html-communication の各ページに共通の CSS と操作スクリプトを持たせる HTML 雛形。実体は templates/page.html。",
+    "assembler": "**生成器** = html-communication の生成元 JSON と図の原文から HTML ページを組み立てるプログラム。入口は scripts/assemble-page.mjs。"
+  }
+}
