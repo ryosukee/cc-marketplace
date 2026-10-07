@@ -348,3 +348,22 @@ test("Tailwind の escape を含む selector より後ろの未定義参照を�
   assert.equal(output.total, 1);
   assert.match(output.results[0].findings[0].message, /--missing-after-selector/);
 });
+
+test("10pxの文字は生成元の単独セレクタだけに許可する", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "html-version-font-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  for (const [name, css, expected] of [
+    ["version", "#ver { font-size: 10px; }", 0],
+    ["nested", "@media screen { #ver { font-size: 10px; } }", 0],
+    ["body", "body { font-size: 10px; }", 1],
+    ["combined", "#ver, p { font-size: 10px; }", 1],
+    ["nested-body", "#ver { & ~ main { font-size: 10px; } }", 1],
+    ["other-size", "#ver { font-size: 9px; }", 1],
+  ]) {
+    const file = path.join(dir, `${name}.html`);
+    fs.writeFileSync(file, `<!DOCTYPE html><html lang="ja"><head><title>検査</title><style>${css}</style></head><body></body></html>`);
+    const result = spawnSync(process.execPath, [path.join(skillRoot, "scripts/check-page.mjs"), file], { encoding: "utf8" });
+    assert.equal(result.status, expected, result.stderr || result.stdout);
+    assert.equal(JSON.parse(result.stdout).results.flatMap((r) => r.findings).filter((f) => f.check === "font-size-steps").length, expected);
+  }
+});
