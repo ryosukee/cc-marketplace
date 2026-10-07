@@ -371,7 +371,7 @@
   /* form の残回答量。値は設問カードと同じ完了判定から更新する */
   #answer-progress { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
                      background: var(--bg); padding-top: env(safe-area-inset-top); border-bottom: 1px solid var(--rule); }
-  #remaining { display: block; padding: 3px 16px; text-align: right; font-size: 0.875em; color: var(--sub); }
+  #remaining { display: block; padding: 3px 16px; text-align: center; font-size: 0.875em; color: var(--sub); }
   #remaining-track { appearance: none; display: block; width: 100%; height: 4px; border: 0; background: var(--surface-code); }
   #remaining-track::-webkit-progress-bar { background: var(--surface-code); }
   #remaining-track::-webkit-progress-value { background: var(--link); transition: width 180ms ease; }
@@ -428,6 +428,9 @@
             padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
   .subbtn:hover { border-color: var(--link); color: var(--link); }
   #res { font-size: 0.875em; color: var(--sub); }
+  /* コピー成功はボタン内に表示する。status の通知は支援技術へ残す */
+  #res.copy-success { position: absolute; width: 1px; height: 1px; padding: 0;
+                      overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @media screen and (max-width: 359px) {
     .bar-actions #copy { font-size: 0.875em; padding: 9px 10px; }
     .bar-actions #back { padding: 8px; }
@@ -863,15 +866,27 @@
   // クリップボードはクリック直後に同期で呼ぶ。await を挟むと Safari / Firefox が
   // user activation を失って NotAllowedError で reject する。
   var receivedMessage = document.getElementById('res').textContent;
+  var copyButton = document.getElementById('copy');
+  var copyButtonLabel = copyButton.textContent;
   var copyMessageTimer = null;
   function copyText(text) {
     var res = document.getElementById('res');
     clearTimeout(copyMessageTimer);
     function ok() {
+      clearTimeout(copyMessageTimer);
+      copyButton.textContent = 'コピーしました';
+      res.classList.add('copy-success');
       res.textContent = 'コピーしました';
-      copyMessageTimer = setTimeout(function () { res.textContent = receivedMessage; }, 3000);
+      copyMessageTimer = setTimeout(function () {
+        copyButton.textContent = copyButtonLabel;
+        res.classList.remove('copy-success');
+        res.textContent = receivedMessage;
+      }, 3000);
     }
     function ng() {
+      clearTimeout(copyMessageTimer);
+      copyButton.textContent = copyButtonLabel;
+      res.classList.remove('copy-success');
       var p = document.getElementById('preview');
       p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
       res.textContent = 'コピーできません。回答のテキスト欄から手動でコピーしてください';
