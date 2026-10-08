@@ -1,0 +1,196 @@
+{
+  "format": 1,
+  "file": "demo-f002",
+  "type": "form",
+  "title": "予定送信の変更を確認する",
+  "project": "demo",
+  "context": [
+    "メッセージを受け付けてすぐ送る処理を、指定時刻に送る予約処理へ変える架空の提案です。"
+  ],
+  "formIntro": [
+    "コードと処理のつながりを読み、対象カードへ指示を書けます。棄却の例では、変更を外したときの影響を確認できます。"
+  ],
+  "sections": [
+    {
+      "kind": "explain",
+      "heading": "送信する前に予約を保存する",
+      "blocks": [
+        {
+          "code": {
+            "id": "reservation-code",
+            "title": "送信予定時刻と本文を保存する",
+            "file": "src/schedule.ts",
+            "language": "typescript",
+            "startLine": 40,
+            "text": "export async function reserveMessage(message, sendAt) {\n  validateMessage(message);\n  await queue.save({ message, sendAt });\n  return { status: \"scheduled\" };\n}",
+            "annotations": [
+              {
+                "line": 42,
+                "title": "送信前に保存する",
+                "text": "予約の保存が成功してから受付済みを返す。送信は予定時刻になってから行う。"
+              }
+            ]
+          }
+        },
+        {
+          "diff": {
+            "id": "reservation-diff",
+            "title": "即時送信から予約保存への差分",
+            "file": "src/schedule.ts",
+            "beforeStart": 42,
+            "afterStart": 42,
+            "before": "  await sendMessage(message);\n  return { status: \"sent\" };",
+            "after": "  await queue.save({ message, sendAt });\n  return { status: \"scheduled\" };"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "explain",
+      "heading": "修正したい処理に指示を書く",
+      "blocks": [
+        "提案された変更と、背景として示す既存実装の両方へ指示を書けます。入力しても変更件数は減りません。",
+        {
+          "calls": {
+            "id": "schedule-proposal",
+            "title": "予約してから送信する処理",
+            "interaction": "propose",
+            "nodes": [
+              {
+                "id": "submit",
+                "name": "submitMessage()",
+                "status": "existing",
+                "file": "src/submit.ts",
+                "line": 12,
+                "summary": "入力を受け取り、予約処理へ渡す。",
+                "children": [
+                  {
+                    "id": "reserve",
+                    "name": "reserveMessage()",
+                    "status": "modified",
+                    "file": "src/schedule.ts",
+                    "line": 40,
+                    "summary": "即時送信を予約保存へ変える。",
+                    "detail": {
+                      "title": "予約を保存するコード",
+                      "blocks": [
+                        {
+                          "code": {
+                            "id": "reservation-detail",
+                            "title": "送信予定時刻と本文を保存する",
+                            "file": "src/schedule.ts",
+                            "language": "typescript",
+                            "startLine": 40,
+                            "text": "export async function reserveMessage(message, sendAt) {\n  validateMessage(message);\n  await queue.save({ message, sendAt });\n  return { status: \"scheduled\" };\n}",
+                            "annotations": [
+                              {
+                                "line": 42,
+                                "title": "送信前に保存する",
+                                "text": "予約の保存が成功してから受付済みを返す。送信は予定時刻になってから行う。"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "children": [
+                      {
+                        "id": "due",
+                        "name": "queue.save()",
+                        "status": "added",
+                        "file": "src/queue.ts",
+                        "line": 8,
+                        "summary": "送信予定時刻と本文を永続化する。"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "validate",
+                    "name": "validateMessage()",
+                    "status": "existing",
+                    "file": "src/validation.ts",
+                    "line": 3,
+                    "summary": "本文の検査。背景の既存実装にも変更を提案できる。"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "explain",
+      "heading": "棄却する変更と配下への影響を確かめる",
+      "blocks": [
+        "採否だけを確かめる資料では棄却と復元を使います。この例では予約保存を棄却すると、配下の保存処理も外れ、変更するファイルは 2 件から 0 件になります。",
+        {
+          "calls": {
+            "id": "schedule-rejection",
+            "title": "予約保存の変更を棄却する例",
+            "interaction": "reject",
+            "nodes": [
+              {
+                "id": "submit",
+                "name": "submitMessage()",
+                "status": "existing",
+                "file": "src/submit.ts",
+                "line": 12,
+                "summary": "入力を受け取り、予約処理へ渡す。",
+                "children": [
+                  {
+                    "id": "reserve",
+                    "name": "reserveMessage()",
+                    "status": "modified",
+                    "file": "src/schedule.ts",
+                    "line": 40,
+                    "summary": "棄却すると、配下の保存処理も対象外になる。",
+                    "children": [
+                      {
+                        "id": "due",
+                        "name": "queue.save()",
+                        "status": "added",
+                        "file": "src/queue.ts",
+                        "line": 8,
+                        "summary": "送信予定時刻と本文を永続化する。"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "validate",
+                    "name": "validateMessage()",
+                    "status": "existing",
+                    "file": "src/validation.ts",
+                    "line": 3,
+                    "summary": "本文の検査は既存のまま維持する。"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "question",
+      "heading": "この変更をどう進めるか",
+      "blocks": [
+        "対象への指示や棄却の補足も、設問への回答とまとめてコピーできます。"
+      ],
+      "question": {
+        "label": "予定送信の変更",
+        "text": "この変更をどう進めますか。",
+        "options": [
+          {
+            "label": "指示を反映して進める",
+            "description": "入力した修正提案と変更提案を確認して進める。"
+          },
+          {
+            "label": "方針から再検討する",
+            "description": "棄却した範囲と理由を確認して組み直す。"
+          }
+        ]
+      }
+    }
+  ]
+}

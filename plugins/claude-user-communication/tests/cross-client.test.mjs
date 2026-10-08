@@ -205,3 +205,19 @@ test("10pxの文字は生成元の単独セレクタだけに許可する", (t) 
     assert.equal(JSON.parse(result.stdout).results.flatMap((r) => r.findings).filter((f) => f.check === "font-size-steps").length, expected);
   }
 });
+
+test("長いコード原文はセル制限から外すが、同じセルの説明文は検査する", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "html-code-cell-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  for (const [name, cell, expected] of [
+    ["code", `<code>${"x".repeat(100)}</code>`, 0],
+    ["prose", "説明".repeat(30), 1],
+    ["mixed", `<code>${"x".repeat(100)}</code>${"説明".repeat(30)}`, 1],
+  ]) {
+    const file = path.join(dir, `${name}.html`);
+    fs.writeFileSync(file, `<html><body><table><tr><td>${cell}</td></tr></table></body></html>`);
+    const result = spawnSync(process.execPath, [path.join(skillRoot, "scripts/check-page.mjs"), file], { encoding: "utf8" });
+    const findings = JSON.parse(result.stdout).results.flatMap((r) => r.findings);
+    assert.equal(findings.filter((f) => f.check === "long-cells").length, expected, result.stdout);
+  }
+});

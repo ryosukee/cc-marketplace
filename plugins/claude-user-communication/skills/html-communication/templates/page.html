@@ -1065,6 +1065,8 @@
     });
     var free = document.getElementById('free').value.trim();
     lines.push('- 補足: ' + (free || 'なし'));
+    var feedback = window.HTMLCodeFeedback && window.HTMLCodeFeedback.export();
+    if (feedback && feedback.length) lines.push('- 対象別提案: ' + JSON.stringify(feedback));
     return { text: lines.join('\n'), n: n, total: QS.length };
   }
   function saveDraft() {
@@ -1079,9 +1081,11 @@
     document.querySelectorAll('.note[data-note]').forEach(function (t) { if (t.value) d.texts['n:' + t.dataset.note] = t.value; });
     var free = document.getElementById('free').value;
     if (free) d.texts['free'] = free;
+    if (window.HTMLCodeFeedback) d.feedback = window.HTMLCodeFeedback.snapshot();
     try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
   }
   function applyDraft(d) {
+    if (window.HTMLCodeFeedback && Array.isArray(d.feedback)) window.HTMLCodeFeedback.restoreDraft(d.feedback);
     Object.keys(d.radios || {}).forEach(function (name) {
       var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
       if (el) el.checked = true;
@@ -1158,6 +1162,7 @@
 
   document.addEventListener('input', function () { if (!ANSWERED) saveDraft(); refresh(); });
   document.addEventListener('change', function () { if (!ANSWERED) saveDraft(); refresh(); });
+  document.addEventListener('rich-feedback-change', function () { if (!ANSWERED) saveDraft(); refresh(); });
   document.getElementById('copy').addEventListener('click', function () { copyText(build().text); });
   document.getElementById('reset').addEventListener('click', function () {
     if (ANSWERED) return;
@@ -1165,6 +1170,7 @@
     document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(function (r) { r.checked = false; });
     document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
     document.getElementById('free').value = '';
+    if (window.HTMLCodeFeedback) window.HTMLCodeFeedback.reset();
     refresh();
     closeMenu(true);
   });

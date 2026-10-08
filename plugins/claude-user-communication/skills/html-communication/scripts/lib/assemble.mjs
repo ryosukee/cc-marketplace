@@ -73,6 +73,14 @@ export function assemblePage(jsonPath, { force = false, out = null } = {}) {
   const a = html.indexOf(open), b = html.indexOf("</script>", a);
   if (a < 0 || b < 0) return { ok: false, out: outPath, findings: [{ check: "template", where: TEMPLATE_PATH, message: `雛形に data-scope="${unused}" の script が無い` }] };
   html = html.slice(0, a) + html.slice(b + "</script>".length).replace(/^\n/, "");
+  if (r.rich) {
+    const css = fs.readFileSync(path.join(SKILL_ROOT, "templates", "rich-code.css"), "utf8");
+    const js = fs.readFileSync(path.join(SKILL_ROOT, "templates", "rich-code.js"), "utf8");
+    html = html.replace("</head>", `<style data-scope="rich-code">\n${css}</style>\n</head>`);
+    const scope = isForm ? "form" : "report";
+    const anchor = `<script data-scope="${scope}">`;
+    html = html.replace(anchor, `<script data-scope="rich-code">\n${js}</script>\n${anchor}`);
+  }
   if (isSlides) {
     const css = fs.readFileSync(path.join(SKILL_ROOT, "templates", "slides.css"), "utf8");
     const js = fs.readFileSync(path.join(SKILL_ROOT, "templates", "slides.js"), "utf8");
