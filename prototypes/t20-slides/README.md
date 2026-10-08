@@ -12,6 +12,7 @@ Install exact engines in the scratch directory, without a global install:
 npm install --prefix /tmp/html-communication-research/slides-deps --no-save --package-lock=false @marp-team/marp-cli@4.5.1 reveal.js@6.0.2
 node /Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace-html-slides-prototype/prototypes/t20-slides/build.mjs
 node /Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace-html-slides-prototype/prototypes/t20-slides/capture.mjs
+node /Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace-html-slides-prototype/prototypes/t20-slides/check-navigation.mjs
 ```
 
 [build.mjs](./build.mjs) derives [slides.md](./slides.md) from the JSON and invokes the real Marp CLI; generated HTML is not edited by hand. Scratch output is `/tmp/html-communication-research/slides-demos`. Marp's primary file is `marp.html` using Bespoke; `marp-reading.html` is a secondary bare-template comparison.
@@ -40,4 +41,10 @@ Reveal's third slide reveals one fragment, then its fourth slide moves and enlar
 
 At 390px, native and Reveal use custom vertical reflow with 19px lead text. This is not Reveal's standard Scroll View. Marp remains a scaled 1280×720 slide: 24px lead text is approximately 7.31px on screen, making the reading limitation visible. Desktop canvas scales are approximately 1.056 for native/Marp and 1.06 for Reveal.
 
-All observed non-file network requests were zero. JavaScript-off reading exposes all four slides and the detail appendix; CSS print emulation exposes them as well. Actual PDF export, printer pagination, other browsers and integration into the current shared template were not tested. Reading mode is chosen on load; switching between desktop and mobile widths requires reloading this prototype.
+All observed non-file network requests were zero. JavaScript-off reading exposes all four slides and the detail appendix; CSS print emulation exposes them as well. Actual PDF export, printer pagination, other browsers and integration into the current shared template were not tested.
+
+Native now reacts to width changes without reloading. Below 701px it shows all four slides for reading; widening restores the selected slide and navigation. Native's arrow keys also work while a navigation button is focused; first/last navigation buttons are disabled at the corresponding boundary.
+
+[check-navigation.mjs](./check-navigation.mjs) checks the published native HTTPS page with actual previous/next button clicks, arrow keys, dialog suspension and repeated 390px/1440px changes in both directions, in light/dark mode from both initial widths. [navigation-verification.json](./navigation-verification.json) records four result groups. Set `T20_NAV_BASE` to test another directory containing the same reserved filenames. The earlier 23 groups tested file-based keyboard navigation and initial widths; they did not cover served button clicks or width changes.
+
+Reveal's reading mode remains chosen on load. Initial desktop button navigation works in Chromium, but widening a page loaded below 701px leaves Reveal uninitialized. Reload at the desired width before trying navigation. A destroy/reinitialize attempt did not pass the resize checks (slides were hidden after returning to reading, and a restored deck lacked a current index); it was reverted rather than retaining unstable behavior. This limitation remains unresolved, following the user's instruction not to spend more effort if a simple fix fails.

@@ -1,0 +1,49 @@
+{
+  "base": "https://mac-mini.hake-tarpon.ts.net/",
+  "results": [
+    {
+      "engine": "native",
+      "colorScheme": "light",
+      "initialWidth": 390,
+      "desktopVisits": 3,
+      "buttons": true,
+      "keyboard": true,
+      "dialog": true,
+      "resizeBothWays": true,
+      "errors": []
+    },
+    {
+      "engine": "native",
+      "colorScheme": "light",
+      "initialWidth": 1440,
+      "desktopVisits": 4,
+      "buttons": true,
+      "keyboard": true,
+      "dialog": true,
+      "resizeBothWays": true,
+      "errors": []
+    },
+    {
+      "engine": "native",
+      "colorScheme": "dark",
+      "initialWidth": 390,
+      "desktopVisits": 3,
+      "buttons": true,
+      "keyboard": true,
+      "dialog": true,
+      "resizeBothWays": true,
+      "errors": []
+    },
+    {
+      "engine": "native",
+      "colorScheme": "dark",
+      "initialWidth": 1440,
+      "desktopVisits": 4,
+      "buttons": true,
+      "keyboard": true,
+      "dialog": true,
+      "resizeBothWays": true,
+      "errors": []
+    }
+  ]
+}
