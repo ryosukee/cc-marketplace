@@ -65,6 +65,7 @@ export function assemblePage(jsonPath, { force = false, out = null } = {}) {
 
   let html = fs.readFileSync(TEMPLATE_PATH, "utf8");
   const isForm = src.type === "form";
+  const isSlides = src.presentation === "slides";
   // 雛形は report 用（見出しツリーの現在地）と form 用（回答の操作）の script を持つ。
   // 使わないほうを種別で落とす。位置ではなく data-scope で決めるので、script が増えても取り違えない
   const unused = isForm ? "report" : "form";
@@ -72,6 +73,13 @@ export function assemblePage(jsonPath, { force = false, out = null } = {}) {
   const a = html.indexOf(open), b = html.indexOf("</script>", a);
   if (a < 0 || b < 0) return { ok: false, out: outPath, findings: [{ check: "template", where: TEMPLATE_PATH, message: `雛形に data-scope="${unused}" の script が無い` }] };
   html = html.slice(0, a) + html.slice(b + "</script>".length).replace(/^\n/, "");
+  if (isSlides) {
+    const css = fs.readFileSync(path.join(SKILL_ROOT, "templates", "slides.css"), "utf8");
+    const js = fs.readFileSync(path.join(SKILL_ROOT, "templates", "slides.js"), "utf8");
+    html = html.replace("</head>", `<style data-scope="slides">\n${css}</style>\n</head>`)
+      .replace("<body>", '<body data-presentation="slides">')
+      .replace("</body>", `<script data-scope="slides">\n${js}</script>\n</body>`);
+  }
   const rep = (from, to) => { html = html.split(from).join(to); };
   rep("{{タイトル}}", esc(src.title));
   rep("{{skill のバージョン}}", version);

@@ -120,6 +120,9 @@ export function loadSource(jsonPath) {
   catch (e) { return { source: null, text, findings: [{ check: "source", where: jsonPath, message: `JSON として読めない: ${e.message}` }] }; }
 
   if (src.format !== FORMAT) add("format", `format は ${FORMAT} にする（${JSON.stringify(src.format)}）`);
+  const isSlides = src.presentation === "slides";
+  if (src.presentation != null && !isSlides) add("presentation", "presentation は slides だけを書く");
+  if (isSlides && src.type !== "report") add("presentation", "slides は report にだけ指定する");
   const stem = path.basename(jsonPath).replace(/\.json$/, "");
   if (src.file !== stem) add("file", `file "${src.file}" がファイル名 ${stem} と違う`);
   if (src.type !== "form" && src.type !== "report") add("type", `type は form か report（${JSON.stringify(src.type)}）`);
@@ -157,12 +160,18 @@ export function loadSource(jsonPath) {
       if (item.children != null) walkTree(item.children, `${w}.children`, inDetail);
     });
   };
-  const walkBlocks = (blocks, where, inDetail = false) => {
+  const walkBlocks = (blocks, where, inDetail = false, allowStep = false) => {
     if (!Array.isArray(blocks)) { add(where, "blocks は配列"); return; }
+    let lastStep = 0;
     blocks.forEach((b, i) => {
       const w = `${where}[${i}]`;
       if (typeof b === "string") { strings.push({ where: w, text: b }); return; }
       if (!b || typeof b !== "object") { add(w, "ブロックは文字列かオブジェクト"); return; }
+      if (Object.hasOwn(b, "step")) {
+        if (!isSlides || !allowStep || inDetail) add(w, "step は slides の summary / sections.blocks / reference.blocks / generation の直下にだけ書く");
+        if (!Number.isInteger(b.step) || b.step < 1 || b.step < lastStep || b.step > lastStep + 1) add(w, "step は 1 から始める昇順の連番。同じ番号は同時表示する");
+        else lastStep = b.step;
+      }
       const kinds = Object.keys(b).filter((k) => BLOCK_KINDS.includes(k));
       if (kinds.length !== 1) { add(w, `ブロックの種類が決まらない（${Object.keys(b).join(", ")}）。使えるのは ${BLOCK_KINDS.join(" / ")}`); return; }
       const kind = kinds[0], v = b[kind];
@@ -248,7 +257,7 @@ export function loadSource(jsonPath) {
     if (refKeys(g.name).length) add(`groups[${i}].name`, "グループ名に [^キー] は置けない。記法は解釈されず、そのまま出る");
   });
   if (src.type === "form" && Array.isArray(src.formIntro)) walkBlocks(src.formIntro, "formIntro");
-  if (src.type === "report" && Array.isArray(src.summary)) walkBlocks(src.summary, "summary");
+  if (src.type === "report" && Array.isArray(src.summary)) walkBlocks(src.summary, "summary", false, isSlides);
   let nq = 0, ne = 0;
   (src.sections || []).forEach((sec, i) => {
     const w = `sections[${i}]`;
@@ -257,7 +266,7 @@ export function loadSource(jsonPath) {
     if (typeof sec.heading !== "string" || !sec.heading.trim()) add(w, "heading が無い");
     else { strings.push({ where: `${w}.heading`, text: sec.heading }); if (AUTO_NUM.test(sec.heading)) add(w, "見出しに番号を書かない。説明 n / 設問 n は組み立て時に付く"); }
     if (sec.id != null) add(w, "id は書かない。e1 / q1 は並び順から付く");
-    walkBlocks(sec.blocks || [], `${w}.blocks`);
+    walkBlocks(sec.blocks || [], `${w}.blocks`, false, isSlides);
     if (sec.kind === "question") {
       nq++;
       const q = sec.question;
@@ -322,10 +331,10 @@ export function loadSource(jsonPath) {
   if (src.type === "report" && nq > 0) add("sections", `report に設問の節が ${nq} 個ある`);
   if (src.type === "form" && nq === 0) add("sections", "form に設問の節が無い");
   for (const g of src.groups || []) if (!usedGroups.has(g.id)) add("groups", `グループ "${g.id}" を使う設問が無い`);
-  if (src.reference) walkBlocks(src.reference.blocks || [], "reference.blocks");
+  if (src.reference) walkBlocks(src.reference.blocks || [], "reference.blocks", false, isSlides);
   if (src.reference?.lead) strings.push({ where: "reference.lead", text: src.reference.lead });
   if (typeof src.generation === "string") strings.push({ where: "generation", text: src.generation });
-  else if (Array.isArray(src.generation)) walkBlocks(src.generation, "generation");
+  else if (Array.isArray(src.generation)) walkBlocks(src.generation, "generation", false, isSlides);
   for (const [k, v] of Object.entries(src.footnotes || {})) { if (typeof v !== "string") add(`footnotes.${k}`, "本文は文字列"); else strings.push({ where: `footnotes.${k}`, text: v }); }
   for (const [k, v] of Object.entries(src.supplements || {})) { if (typeof v !== "string") add(`supplements.${k}`, "本文は文字列"); else strings.push({ where: `supplements.${k}`, text: v }); }
 
@@ -465,6 +474,7 @@ export function renderPage(src, opts = {}) {
   const { version = "", figures = loadFigures(null), patternsDir = null, d2 = new Map() } = opts;
   const findings = [];
   const isForm = src.type === "form";
+  const isSlides = src.presentation === "slides";
   const answers = src.answers || null;
   const answered = !!answers;
 
@@ -503,6 +513,8 @@ export function renderPage(src, opts = {}) {
   });
   const collectTree = (items) => items.forEach((it) => { collect(it.text); collectBlocks(it.blocks); if (it.children) collectTree(it.children); });
   const collectList = (items) => items.forEach((it) => { if (typeof it === "string") collect(it); else { collect(it.text); if (it.items) collectList(it.items); } });
+  // スライドの表紙も、表示順の初出として採番する。
+  if (isSlides) { src.context.forEach(collect); collectBlocks(src.summary); }
   for (const s of sections) {
     collect(s.heading); collectBlocks(s.blocks);
     if (s.kind === "question") {
@@ -611,7 +623,10 @@ export function renderPage(src, opts = {}) {
       default: return "";
     }
   };
-  const renderBlocks = (blocks) => (blocks || []).map(renderBlock).join("\n\n");
+  const renderBlocks = (blocks) => (blocks || []).map((b) => {
+    const html = renderBlock(b);
+    return isSlides && b && typeof b === "object" && b.step != null ? `<div class="slide-step" data-step="${b.step}">${html}</div>` : html;
+  }).join("\n\n");
 
   // 回答の状態
   const ansItems = new Map();
@@ -653,10 +668,14 @@ export function renderPage(src, opts = {}) {
   };
 
   const parts = [];
+  let slideN = 0;
+  const slide = (body, titleId) => `<div class="slide-frame"><section class="slide" data-slide="${++slideN}" aria-labelledby="${titleId}">${body}</section></div>`;
   at("title");
   const titleHtml = inline(src.title, ctx);
   const contextHtml = src.context.map((c, i) => { at(`context[${i}]`); return inline(c, ctx); }).join(" ");
-  parts.push(`<main>\n\n<div id="bd">\n\n<h1>${titleHtml}</h1>\n\n<div class="vnav">\n${contextHtml}\n</div>`);
+  parts.push(`<main>\n\n<div id="bd">`);
+  const intro = `<h1 id="page-title">${titleHtml}</h1>\n\n<div class="vnav">\n${contextHtml}\n</div>`;
+  if (!isSlides) parts.push(intro);
   if (isForm && Array.isArray(src.formIntro) && src.formIntro.length) {
     at("formIntro");
     const introHtml = renderBlocks(src.formIntro);
@@ -664,26 +683,29 @@ export function renderPage(src, opts = {}) {
   } else if (!isForm) {
     at("summary");
     const summaryHtml = renderBlocks(src.summary);
-    parts.push(`<div class="summary">\n<span class="eyebrow">まとめ</span>\n${summaryHtml}\n</div>`);
+    const summary = `<div class="summary">\n<span class="eyebrow">まとめ</span>\n${summaryHtml}\n</div>`;
+    parts.push(isSlides ? slide(intro + "\n" + summary, "page-title") : summary);
   }
   sections.forEach((s, i) => {
     const w = `sections[${i}]`;
     at(w);
     if (s.kind === "explain") {
-      parts.push(`<p class="secnum">説明 ${s.n} / ${NE}</p>\n<h2 id="s-${s.id}">${inline(s.heading, ctx)}</h2>\n\n${renderBlocks(s.blocks)}`);
+      const content = `<p class="secnum">説明 ${s.n} / ${NE}</p>\n<h2 id="s-${s.id}">${inline(s.heading, ctx)}</h2>\n\n${renderBlocks(s.blocks)}`;
+      parts.push(isSlides ? slide(content, `s-${s.id}`) : content);
     } else {
       const rlabel = s.group ? `${esc(s.gname)} ${s.gn} / ${s.gN}（設問 ${s.n} / ${NQ}）` : `設問 ${s.n} / ${NQ}`;
       parts.push(`<section class="rng" data-q="${s.id}" aria-labelledby="rl-${s.id}">\n<p class="rlabel" id="rl-${s.id}">${rlabel}</p>\n\n<h2 id="s-${s.id}">${inline(s.heading, ctx)}</h2>\n\n${renderBlocks(s.blocks)}\n\n${renderCard(s, w)}\n\n</section>`);
     }
   });
-  if (src.reference) { at("reference"); parts.push(`<h2 id="s-ref">参考資料（判断には不要）</h2>\n<p class="d">${inline(src.reference.lead, ctx)}</p>\n\n${renderBlocks(src.reference.blocks)}`); }
+  if (src.reference) { at("reference"); const content = `<h2 id="s-ref">参考資料（判断には不要）</h2>\n<p class="d">${inline(src.reference.lead, ctx)}</p>\n\n${renderBlocks(src.reference.blocks)}`; parts.push(isSlides ? slide(content, "s-ref") : content); }
   if (src.generation) {
     at("generation");
     // 先頭の文字列は「読み飛ばしてよい。」に続けて弱い段落に入れ、残りはブロック（文字列は弱い段落、箇条書きはそのまま）
     const g = typeof src.generation === "string" ? [src.generation] : src.generation;
     const first = typeof g[0] === "string" ? inline(g[0], ctx) : "";
     const rest = (typeof g[0] === "string" ? g.slice(1) : g).map((b) => (typeof b === "string" ? { note: b } : b));
-    parts.push(`<h2 id="s-gen">生成に関する補足（判断には不要）</h2>\n<p class="d">読み飛ばしてよい。${first}</p>` + (rest.length ? `\n\n${renderBlocks(rest)}` : ""));
+    const content = `<h2 id="s-gen">生成に関する補足（判断には不要）</h2>\n<p class="d">読み飛ばしてよい。${first}</p>` + (rest.length ? `\n\n${renderBlocks(rest)}` : "");
+    parts.push(isSlides ? slide(content, "s-gen") : content);
   }
   if (isForm) parts.push(`<h2 id="s-preview">付録 回答の preview</h2>\n<p class="d">「回答をコピー」で入る内容。コピーが失敗したらこの欄を全選択して手動コピー。</p>\n<textarea id="preview" aria-label="回答の preview" readonly></textarea>`);
   parts.push(`</div>`);
@@ -722,7 +744,15 @@ export function renderPage(src, opts = {}) {
     parts.push(`<div id="answer-progress">\n  <span id="remaining" role="status"></span>\n${fnToggle ? `  ${fnToggle}\n` : ""}  <progress id="remaining-track" aria-label="未回答の設問" max="${qs.length}" value="${qs.length}"></progress>\n</div>`);
     parts.push(`<div id="bar">\n  <div id="bar-in">\n    <div class="bar-actions">\n      <a id="back" href="./index.html">一覧に戻る</a>\n      <button type="button" id="copy">回答をコピー</button>\n      <button type="button" id="answer-menu-toggle" class="subbtn" aria-expanded="false" aria-controls="answer-menu">その他 ▾</button>\n    </div>\n    <div class="bar-info"><span id="proj">${esc(src.project)}</span><small id="ver">${ver}</small><span id="res" role="status">${res}</span></div>\n    <div id="answer-menu" hidden>\n      <div class="answer-menu-head"><span>その他の操作</span><button type="button" id="answer-menu-close" class="subbtn">閉じる</button></div>\n      <label for="free">全体補足</label>\n      <textarea id="free" rows="6" placeholder="補足があれば記入（自動保存）"${dis}>${free}</textarea>\n      <button type="button" id="reset" class="subbtn"${dis}>回答をリセット</button>\n    </div>\n  </div>\n</div>`);
   } else {
-    if (fnToggle) parts.push(`<div id="reading-tools">${fnToggle}</div>`);
+    if (isSlides) {
+      parts.unshift(`<nav class="slide-tools" aria-label="スライド操作" hidden>
+<button type="button" id="slide-prev" aria-label="前のスライドまたは要点">前へ</button>
+<span id="slide-position" role="status" aria-live="polite"></span>
+<button type="button" id="slide-next" aria-label="次のスライドまたは要点">次へ</button>
+<button type="button" id="slide-reading" aria-pressed="false">読む表示</button>
+<button type="button" id="slide-static" aria-pressed="false">静止表示</button>${fnToggle}
+</nav><p id="slide-fit-warning" role="alert" hidden>スライドに収まらない内容があります。読む表示で全文を確認し、内容を分割してください。</p>`);
+    } else if (fnToggle) parts.push(`<div id="reading-tools">${fnToggle}</div>`);
     const res = answered ? `\n    <span id="res">確認済み（${esc(answers.received)}）</span>` : "";
     parts.push(`<div id="footer-nav">\n  <div>\n    <a id="back" href="./index.html">一覧に戻る</a>\n    <span id="proj">${esc(src.project)}</span>${res}\n    <small id="ver">${ver}</small>\n  </div>\n</div>`);
   }

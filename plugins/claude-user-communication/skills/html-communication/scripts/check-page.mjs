@@ -179,7 +179,14 @@ function checkFile(path) {
 
   // 2. フォントサイズの段階数（図の CSS は対象外）
   const sizes = new Map(); // value -> [line...]
-  const fontSource = maskFigureStyles(src);
+  const slideFonts = new Set([...ALLOWED_FONT_SIZES, "32px", "1.75em"]);
+  for (const style of src.matchAll(/<style\b[^>]*\bdata-scope="slides"[^>]*>([\s\S]*?)<\/style>/g)) {
+    for (const m of style[1].matchAll(/font-size:\s*([0-9.]+(?:px|em|rem|%))/g)) {
+      if (!slideFonts.has(m[1])) findings.push({ check: "font-size-steps", line: lineOf(src, style.index), message: `スライドの許可外の font-size ${m[1]}` });
+    }
+  }
+  const fontSource = maskFigureStyles(src).replace(/(<style\b[^>]*\bdata-scope="slides"[^>]*>)([\s\S]*?)(<\/style>)/g,
+    (_, open, css, close) => open + css.replace(/[^\n]/g, " ") + close);
   // 共通生成元の1行だけは10pxを許す。CSSの葉の宣言ブロックで、単独の #ver に限る。
   // selectorのカンマ併記や本文のinline styleまで小さい文字を許可しない。
   const versionFonts = new Set();
