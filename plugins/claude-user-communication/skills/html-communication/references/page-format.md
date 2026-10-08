@@ -31,6 +31,7 @@ HTML の `<meta name="source">` に生成元のハッシュが入り、`check-so
 | `format` | 数値 | 書式の版。いまは `1` |
 | `file` | 文字列 | ファイル名の語幹。`ccm-f085`。JSON のファイル名と一致させる |
 | `type` | 文字列 | `form`（設問あり）か `report`（読むだけ） |
+| `presentation` | 文字列（report だけ・任意） | `slides` なら固定 16:9 のスライド。省略すると通常のレポート。[スライドの作成と操作](./slides.md)は、この形式を選んだときだけ読む |
 | `title` | 文字列 | ページの題名。index.html の `title` と一字一致させる |
 | `project` | 文字列 | index.html の `project` と同じ値。下部バーのバッジに出る |
 | `context` | 文字列の配列 | 議題の広い前提を 2〜3 文で書く。題名の直後に置く |

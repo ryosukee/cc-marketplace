@@ -17,7 +17,7 @@ try {
   for (const name of fs.readdirSync(path.join(root, "docs/features"))) {
     fs.copyFileSync(path.join(root, "docs/features", name), path.join(temp, "src", name));
   }
-  for (const file of ["demo-r001", "demo-f001"]) {
+  for (const file of ["demo-r001", "demo-f001", "demo-r002"]) {
     const result = assemblePage(path.join(temp, "src", `${file}.json`));
     assert.equal(result.ok, true, JSON.stringify(result.findings));
   }
@@ -60,6 +60,24 @@ try {
   await page.locator("#answer-menu-toggle").click();
   await page.locator("#free").fill("機能紹介用の回答例です。狭い画面でも操作を確認します。");
   await shot("answers");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await go("demo-r002");
+  await page.waitForSelector(".slide-frame.is-current");
+  await shot("slides");
+  await page.locator("#slide-next").click();
+  await page.waitForTimeout(350);
+  await page.locator(".slide-frame.is-current .detail-link").click();
+  await shot("slide-detail", page.locator("#detail-viewer[open]"));
+  await page.keyboard.press("Escape");
+  await page.locator("#slide-next").click();
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator('.slide-frame.is-current .slide-step[data-unrevealed]').count(), 2);
+  await shot("slide-steps-before");
+  await page.locator("#slide-next").click();
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator('.slide-frame.is-current .slide-step[data-unrevealed]').count(), 1);
+  await shot("slide-steps-after");
+  assert.equal(await page.locator(".slide[data-overflow]").count(), 0, "機能紹介の全枚が固定の枠に収まる");
   assert.deepEqual(errors, []);
   console.log(`README images: ${output}`);
 } finally {
