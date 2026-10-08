@@ -18,7 +18,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 
 export const FORMAT = 1;
-export const BLOCK_KINDS = ["note", "h3", "ul", "ol", "table", "quote", "pre", "fig", "custom"];
+export const BLOCK_KINDS = ["note", "h3", "ul", "ol", "table", "quote", "pre", "fig", "custom", "detail", "tree"];
 
 export function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -145,7 +145,19 @@ export function loadSource(jsonPath) {
   const figIds = [];
   const strings = []; // { where, text } 参照の解決とタグ混入の検査に使う
   const AUTO_NUM = /^(説明|設問)\s*\d/;
-  const walkBlocks = (blocks, where) => {
+  const walkTree = (items, where, inDetail) => {
+    if (!Array.isArray(items) || !items.length) { add(where, "tree は空でない項目の配列"); return; }
+    items.forEach((item, i) => {
+      const w = `${where}[${i}]`;
+      if (!item || typeof item !== "object" || Array.isArray(item)) { add(w, "項目は { text, blocks?, children? }"); return; }
+      for (const k of Object.keys(item)) if (!["text", "blocks", "children"].includes(k)) add(w, `tree の項目に ${k} は使えない`);
+      if (typeof item.text !== "string" || !item.text.trim()) add(w, "text は空でない文字列");
+      else strings.push({ where: `${w}.text`, text: item.text });
+      if (item.blocks != null) walkBlocks(item.blocks, `${w}.blocks`, inDetail);
+      if (item.children != null) walkTree(item.children, `${w}.children`, inDetail);
+    });
+  };
+  const walkBlocks = (blocks, where, inDetail = false) => {
     if (!Array.isArray(blocks)) { add(where, "blocks は配列"); return; }
     blocks.forEach((b, i) => {
       const w = `${where}[${i}]`;
@@ -156,6 +168,21 @@ export function loadSource(jsonPath) {
       const kind = kinds[0], v = b[kind];
       if (kind === "note" || kind === "h3") { if (typeof v !== "string") add(w, `${kind} は文字列`); else strings.push({ where: w, text: v }); }
       else if (kind === "ul" || kind === "ol") walkList(v, w);
+      else if (kind === "tree") walkTree(v, `${w}.tree`, inDetail);
+      else if (kind === "detail") {
+        if (inDetail) add(w, "detail の中に detail は置けない");
+        if (!v || typeof v !== "object" || Array.isArray(v)) { add(w, "detail は { label, title, blocks }"); return; }
+        for (const k of Object.keys(v)) if (!["label", "title", "blocks"].includes(k)) add(w, `detail に ${k} は使えない`);
+        for (const k of ["label", "title"]) {
+          if (typeof v[k] !== "string" || !v[k].trim()) add(w, `${k} は空でない文字列`);
+          else {
+            strings.push({ where: `${w}.detail.${k}`, text: v[k] });
+            if (k === "label" && (refKeys(v[k]).length || /\[[^\]]+\]\([^)]*\)/.test(v[k]))) add(w, "detail の label にリンクや脚注参照は置けない");
+          }
+        }
+        if (!Array.isArray(v.blocks) || !v.blocks.length) add(w, "detail の blocks は空でない配列");
+        else walkBlocks(v.blocks, `${w}.detail.blocks`, true);
+      }
       else if (kind === "pre") { if (typeof v !== "string") add(w, "pre は文字列"); }
       else if (kind === "quote") {
         if (!v || typeof v !== "object" || typeof v.src !== "string" || !Array.isArray(v.paragraphs) || !v.paragraphs.length) add(w, "quote は { src, url?, paragraphs }。src（出典）は文字列で書く");
@@ -173,10 +200,26 @@ export function loadSource(jsonPath) {
         });
       } else if (kind === "fig" || kind === "custom") {
         if (!v || typeof v !== "object" || typeof v.id !== "string") { add(w, `${kind} は { id${kind === "fig" ? ", caption" : ""} }`); return; }
+        if (kind === "custom" && v.notes != null) add(w, "notes は fig にだけ書く");
         if (kind === "fig") {
           if (typeof v.caption !== "string") add(w, "fig は caption が要る");
           else { if (/^図\s*\d/.test(v.caption)) add(w, "caption に番号を書かない。図 n は組み立て時に付く"); strings.push({ where: `${w}.caption`, text: v.caption }); }
           if (v.d2 !== undefined && v.d2 !== true) add(w, "fig の d2 は true だけを書く");
+          if (v.notes != null) {
+            if (!Array.isArray(v.notes) || !v.notes.length) add(w, "fig の notes は空でない { label, text } の配列");
+            else v.notes.forEach((note, j) => {
+              const nw = `${w}.fig.notes[${j}]`;
+              if (!note || typeof note !== "object" || Array.isArray(note)) { add(nw, "図の補足は { label, text }"); return; }
+              for (const k of Object.keys(note)) if (!["label", "text"].includes(k)) add(nw, `図の補足に ${k} は使えない`);
+              for (const k of ["label", "text"]) {
+                if (typeof note[k] !== "string" || !note[k].trim()) add(nw, `${k} は空でない文字列`);
+                else {
+                  strings.push({ where: `${nw}.${k}`, text: note[k] });
+                  if (k === "label" && (refKeys(note[k]).length || /\[[^\]]+\]\([^)]*\)/.test(note[k]))) add(nw, "図の補足の label にリンクや脚注参照は置けない");
+                }
+              }
+            });
+          }
           if (v.d2 === true) {
             if (typeof v.alt !== "string" || !v.alt.trim()) add(w, "D2 の図（d2: true）は alt が要る。図が何を示すかを文で書く");
             else strings.push({ where: `${w}.alt`, text: v.alt });
@@ -454,8 +497,11 @@ export function renderPage(src, opts = {}) {
     else if (kind === "ul" || kind === "ol") collectList(v);
     else if (kind === "quote") collect(v.src || "");
     else if (kind === "table") { collect(v.caption); v.columns.forEach((c) => collect(typeof c === "string" ? c : c.text)); v.rows.forEach((r) => (Array.isArray(r) ? r : r.cells).forEach((c) => collect(typeof c === "string" ? c : c.text))); }
-    else if (kind === "fig") collect(v.caption);
+    else if (kind === "fig") { collect(v.caption); for (const note of v.notes || []) { collect(note.label); collect(note.text); } }
+    else if (kind === "detail") { collect(v.label); collect(v.title); collectBlocks(v.blocks); }
+    else if (kind === "tree") collectTree(v);
   });
+  const collectTree = (items) => items.forEach((it) => { collect(it.text); collectBlocks(it.blocks); if (it.children) collectTree(it.children); });
   const collectList = (items) => items.forEach((it) => { if (typeof it === "string") collect(it); else { collect(it.text); if (it.items) collectList(it.items); } });
   for (const s of sections) {
     collect(s.heading); collectBlocks(s.blocks);
@@ -494,8 +540,16 @@ export function renderPage(src, opts = {}) {
   };
 
   // ブロック
-  let tableN = 0, figN = 0;
+  let tableN = 0, figN = 0, detailN = 0, noteN = 0;
   const usedFigs = new Set();
+  const renderTree = (items) => `<ul class="detail-tree">\n${items.map((it) => {
+    const body = renderBlocks(it.blocks) + (it.children ? renderTree(it.children) : "");
+    return body ? `<li><details class="tree-branch" open><summary>${inline(it.text, ctx)}</summary><div class="tree-body">${body}</div></details></li>` : `<li>${inline(it.text, ctx)}</li>`;
+  }).join("\n")}\n</ul>`;
+  const renderFigureNotes = (notes) => (notes || []).map((note) => {
+    const id = `figure-note-${++noteN}`;
+    return `<details class="figure-note" open><summary aria-controls="${id}">${inline(note.label, ctx)}</summary><div class="figure-note-body" id="${id}"><p>${inline(note.text, ctx)}</p></div></details>`;
+  }).join("\n");
   const renderList = (tag, items) => `<${tag}>\n` + items.map((it) => {
     if (typeof it === "string") return `<li>${inline(it, ctx)}</li>`;
     return `<li>${inline(it.text, ctx)}${it.items ? "\n" + renderList("ul", it.items) : ""}</li>`;
@@ -514,6 +568,11 @@ export function renderPage(src, opts = {}) {
       case "h3": return `<h3>${inline(v, ctx)}</h3>`;
       case "ul": return renderList("ul", v);
       case "ol": return renderList("ol", v);
+      case "tree": return renderTree(v);
+      case "detail": {
+        const id = `detail-${++detailN}`;
+        return `<div class="detail-block"><a class="detail-link" href="#${id}" aria-haspopup="dialog">${inline(v.label, ctx)}</a><section class="detail-content" id="${id}" aria-labelledby="${id}-title"><h3 id="${id}-title">${inline(v.title, ctx)}</h3>\n${renderBlocks(v.blocks)}\n</section></div>`;
+      }
       case "pre": return `<pre><code>${esc(v)}</code></pre>`;
       case "quote": {
         // 引用の段落は逐語。記法を解釈せず、改行だけ <br> にする
@@ -540,14 +599,14 @@ export function renderPage(src, opts = {}) {
           if (!size) { findings.push({ check: "source", where: `fig:${v.id}`, message: `D2 の図 "${v.id}" の SVG に viewBox が無い` }); return `<!-- fig ${esc(v.id)} が無い -->`; }
           const n = ++figN;
           const uri = "data:image/svg+xml;base64," + Buffer.from(svg).toString("base64");
-          return `<div class="fig">\n<img class="d2" width="${size.width}" height="${size.height}" alt="${esc(v.alt)}" src="${uri}">\n<p class="cap">図 ${n} ${inline(v.caption, ctx)}</p>\n</div>`;
+          return `<div class="fig">\n<img class="d2" width="${size.width}" height="${size.height}" alt="${esc(v.alt)}" src="${uri}">\n<p class="cap">図 ${n} ${inline(v.caption, ctx)}</p>\n${renderFigureNotes(v.notes)}\n</div>`;
         }
         const markup = figures.templates.get(v.id);
         usedFigs.add(v.id);
         if (markup == null) { findings.push({ check: "source", where: `${kind}:${v.id}`, message: `図 "${v.id}" の markup が figures ファイルに無い` }); return `<!-- ${kind} ${esc(v.id)} が無い -->`; }
         if (kind === "custom") return markup;
         const n = ++figN;
-        return `<div class="fig">\n${markup}\n<p class="cap">図 ${n} ${inline(v.caption, ctx)}</p>\n</div>`;
+        return `<div class="fig">\n${markup}\n<p class="cap">図 ${n} ${inline(v.caption, ctx)}</p>\n${renderFigureNotes(v.notes)}\n</div>`;
       }
       default: return "";
     }
@@ -656,12 +715,14 @@ export function renderPage(src, opts = {}) {
 
   const qs = sections.filter((s) => s.kind === "question").map((s) => ({ id: s.id, label: plain(s.question.label) }));
   const ver = `generated by html-communication v${esc(version)}`;
+  const fnToggle = fnHtml.length || suHtml.length ? '<button type="button" id="fn-toggle" aria-controls="fn-pane" aria-expanded="true" hidden>脚注と補足</button>' : "";
   if (isForm) {
     const res = answered ? `回答済み（${esc(answers.received)} 受領）` : "";
     const free = answered && answers.free ? esc(answers.free) : "";
-    parts.push(`<div id="answer-progress">\n  <span id="remaining" role="status"></span>\n  <progress id="remaining-track" aria-label="未回答の設問" max="${qs.length}" value="${qs.length}"></progress>\n</div>`);
+    parts.push(`<div id="answer-progress">\n  <span id="remaining" role="status"></span>\n${fnToggle ? `  ${fnToggle}\n` : ""}  <progress id="remaining-track" aria-label="未回答の設問" max="${qs.length}" value="${qs.length}"></progress>\n</div>`);
     parts.push(`<div id="bar">\n  <div id="bar-in">\n    <div class="bar-actions">\n      <a id="back" href="./index.html">一覧に戻る</a>\n      <button type="button" id="copy">回答をコピー</button>\n      <button type="button" id="answer-menu-toggle" class="subbtn" aria-expanded="false" aria-controls="answer-menu">その他 ▾</button>\n    </div>\n    <div class="bar-info"><span id="proj">${esc(src.project)}</span><small id="ver">${ver}</small><span id="res" role="status">${res}</span></div>\n    <div id="answer-menu" hidden>\n      <div class="answer-menu-head"><span>その他の操作</span><button type="button" id="answer-menu-close" class="subbtn">閉じる</button></div>\n      <label for="free">全体補足</label>\n      <textarea id="free" rows="6" placeholder="補足があれば記入（自動保存）"${dis}>${free}</textarea>\n      <button type="button" id="reset" class="subbtn"${dis}>回答をリセット</button>\n    </div>\n  </div>\n</div>`);
   } else {
+    if (fnToggle) parts.push(`<div id="reading-tools">${fnToggle}</div>`);
     const res = answered ? `\n    <span id="res">確認済み（${esc(answers.received)}）</span>` : "";
     parts.push(`<div id="footer-nav">\n  <div>\n    <a id="back" href="./index.html">一覧に戻る</a>\n    <span id="proj">${esc(src.project)}</span>${res}\n    <small id="ver">${ver}</small>\n  </div>\n</div>`);
   }
