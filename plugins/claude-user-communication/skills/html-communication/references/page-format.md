@@ -77,6 +77,9 @@ form の `formIntro`、report の `summary`、節の `blocks`、`reference.block
 | `{ "table": { "caption": "…", "columns": [...], "rows": [...] } }` | 表。下記 |
 | `{ "quote": { "src": "出典の題名", "url": "https://…", "paragraphs": ["…"] } }` | 引用。`url` は任意。段落は逐語で、記法を解釈しない |
 | `{ "pre": "…" }` | コード。記法を解釈せずそのまま出す |
+| `{ "code": { "id": "…", "text": "…", ... } }` | 行番号と注釈のあるコード。[コード・差分・呼び出しツリー](./rich-code.md)を読む |
+| `{ "diff": { "id": "…", "before": "…", "after": "…", ... } }` | 変更前後のコード差分。[コード・差分・呼び出しツリー](./rich-code.md)を読む |
+| `{ "calls": { "id": "…", "title": "…", "nodes": [...] } }` | 枝線と関数カードの呼び出しツリー。[コード・差分・呼び出しツリー](./rich-code.md)を読む |
 | `{ "fig": { "id": "board", "caption": "何の図か" } }` | 図。markup は figures ファイルから取り、「図 n」が付く |
 | `{ "fig": { "id": "flow", "caption": "何の図か", "d2": true, "alt": "図が示す内容" } }` | D2 の図。[図の JSON](./figure-format.md) |
 | `{ "custom": { "id": "cards" } }` | パターン集などの markup をそのまま置く。キャプションと番号は付かない |
@@ -91,7 +94,7 @@ form の `formIntro`、report の `summary`、節の `blocks`、`reference.block
 
 ## 文字列の中の記法
 
-段落・セル・見出し・選択肢・脚注・補足のすべての文字列で、次の 6 種だけを解釈する。
+段落・セル・見出し・選択肢・脚注・補足の文字列で、次の 6 種だけを解釈する。
 それ以外の文字はエスケープされる。HTML のタグは書けない（書くと `check-source.mjs` が指摘する）。
 
 | 記法 | 出力 |
@@ -104,6 +107,7 @@ form の `formIntro`、report の `summary`、節の `blocks`、`reference.block
 | `[^キー]` | 脚注か補足の参照マーカー |
 
 改行（`\n`）は `<br>` になる。`pre` と `quote.paragraphs` の中では記法を解釈しない。
+`code.text` と `diff.before`・`diff.after` も原文として扱い、HTML や上記の記法を解釈しない。
 
 記法の文字をそのまま出すときは、前にバックスラッシュを置く（`\*` `` \` `` `\=` `\[` `\]` `\\` の 6 つ。JSON の文字列では `\\*` と書く）。
 強調と斜体は英数字の語の途中では効かない。`180*180*180` や `docs/**` のように、前後が英数字・`/` の `*` は記法にならない。日本語の文の途中では効く。
@@ -128,3 +132,4 @@ code span の中身をバッククォートで始めたいときは、囲むバ�
 - 設問を書くときは [設問と回答](./form-format.md) を読む。
 - 図・画像・独自 markup を置くときは [図と markup](./figure-format.md) を読む。
 - 詳細パネル・階層・図のそばの補足を置くときは [共通操作](./detail-operations.md) を読む。
+- 行番号付きコード・差分・呼び出し関係を置くときは [コード・差分・呼び出しツリー](./rich-code.md) を読む。

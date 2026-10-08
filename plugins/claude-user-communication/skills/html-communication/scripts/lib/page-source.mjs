@@ -16,9 +16,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { validateRichBlock, renderRichBlock, collectRichStrings } from "./rich-code.mjs";
+import { feedbackFindings } from "./feedback.mjs";
 
 export const FORMAT = 1;
-export const BLOCK_KINDS = ["note", "h3", "ul", "ol", "table", "quote", "pre", "fig", "custom", "detail", "tree"];
+export const BLOCK_KINDS = ["note", "h3", "ul", "ol", "table", "quote", "pre", "fig", "custom", "detail", "tree", "code", "diff", "calls"];
 
 export function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -147,6 +149,7 @@ export function loadSource(jsonPath) {
   const usedGroups = new Set();
   const figIds = [];
   const strings = []; // { where, text } 参照の解決とタグ混入の検査に使う
+  const richIds = new Set();
   const AUTO_NUM = /^(説明|設問)\s*\d/;
   const walkTree = (items, where, inDetail) => {
     if (!Array.isArray(items) || !items.length) { add(where, "tree は空でない項目の配列"); return; }
@@ -178,6 +181,9 @@ export function loadSource(jsonPath) {
       if (kind === "note" || kind === "h3") { if (typeof v !== "string") add(w, `${kind} は文字列`); else strings.push({ where: w, text: v }); }
       else if (kind === "ul" || kind === "ol") walkList(v, w);
       else if (kind === "tree") walkTree(v, `${w}.tree`, inDetail);
+      else if (["code", "diff", "calls"].includes(kind)) {
+        validateRichBlock(kind, v, `${w}.${kind}`, { add, strings, walkBlocks, inDetail, isForm: src.type === "form", ids: richIds });
+      }
       else if (kind === "detail") {
         if (inDetail) add(w, "detail の中に detail は置けない");
         if (!v || typeof v !== "object" || Array.isArray(v)) { add(w, "detail は { label, title, blocks }"); return; }
@@ -408,6 +414,9 @@ export function loadSource(jsonPath) {
     }
   }
 
+  if (src.answers?.feedback != null && findings.length === 0) {
+    for (const message of feedbackFindings(src.answers.feedback, src)) add("answers.feedback", message);
+  }
   return { source: src, text, findings, figIds, counts: { questions: nq, explains: ne } };
 }
 
@@ -510,6 +519,7 @@ export function renderPage(src, opts = {}) {
     else if (kind === "fig") { collect(v.caption); for (const note of v.notes || []) { collect(note.label); collect(note.text); } }
     else if (kind === "detail") { collect(v.label); collect(v.title); collectBlocks(v.blocks); }
     else if (kind === "tree") collectTree(v);
+    else if (["code", "diff", "calls"].includes(kind)) collectRichStrings(kind, v, collect, collectBlocks);
   });
   const collectTree = (items) => items.forEach((it) => { collect(it.text); collectBlocks(it.blocks); if (it.children) collectTree(it.children); });
   const collectList = (items) => items.forEach((it) => { if (typeof it === "string") collect(it); else { collect(it.text); if (it.items) collectList(it.items); } });
@@ -553,6 +563,7 @@ export function renderPage(src, opts = {}) {
 
   // ブロック
   let tableN = 0, figN = 0, detailN = 0, noteN = 0;
+  let rich = false, codeN = 0;
   const usedFigs = new Set();
   const renderTree = (items) => `<ul class="detail-tree">\n${items.map((it) => {
     const body = renderBlocks(it.blocks) + (it.children ? renderTree(it.children) : "");
@@ -581,6 +592,11 @@ export function renderPage(src, opts = {}) {
       case "ul": return renderList("ul", v);
       case "ol": return renderList("ol", v);
       case "tree": return renderTree(v);
+      case "code": case "diff": case "calls": rich = true; return renderRichBlock(kind, v, {
+        esc, inline: (text) => inline(text, ctx), answered, feedback: answers?.feedback || [],
+        regionNumber: kind === "code" ? ++codeN : undefined,
+        renderDetail: (title, blocks) => renderBlock({ detail: { label: "コードを見る", title, blocks } }),
+      });
       case "detail": {
         const id = `detail-${++detailN}`;
         return `<div class="detail-block"><a class="detail-link" href="#${id}" aria-haspopup="dialog">${inline(v.label, ctx)}</a><section class="detail-content" id="${id}" aria-labelledby="${id}-title"><h3 id="${id}-title">${inline(v.title, ctx)}</h3>\n${renderBlocks(v.blocks)}\n</section></div>`;
@@ -767,7 +783,7 @@ export function renderPage(src, opts = {}) {
     extraCss += `\n/* ===== ${name} ===== */\n` + fs.readFileSync(p, "utf8");
   }
 
-  return { body: parts.join("\n\n") + "\n", extraCss, figureStyle: figures.style, lead: figures.lead, qs, answered, findings, counts: { questions: NQ, explains: NE, tables: tableN, figures: figN } };
+  return { body: parts.join("\n\n") + "\n", extraCss, figureStyle: figures.style, lead: figures.lead, qs, answered, rich, findings, counts: { questions: NQ, explains: NE, tables: tableN, figures: figN } };
 }
 
 // ---------------------------------------------------------------------------
@@ -793,6 +809,7 @@ export function parseAnswerText(text, src, received) {
       : s.question.multiple === true ? { multiple: [] } : {}),
   }));
   const unparsed = [];
+  let feedback = null;
   const seen = new Set();
   let free = null;
   const lines = text.replace(/\r\n?/g, "\n").split("\n");
@@ -863,6 +880,17 @@ export function parseAnswerText(text, src, received) {
   for (const raw of lines) {
     const line = raw.replace(/\s+$/, "");
     let m;
+    if ((m = /^-\s*対象別提案[:：]\s*(.*)$/.exec(line))) {
+      cur = null;
+      if (feedback !== null) { unparsed.push(`${line}（対象別提案が重複）`); continue; }
+      try {
+        const records = JSON.parse(m[1]);
+        const errors = feedbackFindings(records, src);
+        if (errors.length) unparsed.push(`${line}（${errors.join(" / ")}）`);
+        else feedback = records;
+      } catch { unparsed.push(`${line}（対象別提案は JSON 配列で書く）`); }
+      continue;
+    }
     if (/^##\s/.test(line)) { cur = null; continue; }
     if ((m = ANSWER_LINE.exec(line))) {
       const item = items[Number(m[1]) - 1];
@@ -878,5 +906,5 @@ export function parseAnswerText(text, src, received) {
     if (cur === "free") free = (free || "") + "\n" + line;
     else if (cur) cur.note = (cur.note ? cur.note + "\n" : "") + line.trim();
   }
-  return { received, raw: text, items, free, unparsed };
+  return { received, raw: text, items, free, ...(feedback?.length ? { feedback } : {}), unparsed };
 }

@@ -3,7 +3,7 @@
 // html-validate / linkinator が見ない点を検査する:
 //   1. 図の CSS が fallback 無しで参照する未定義の CSS custom property
 //   2. フォントサイズの段階数 (16px 基底 + 1.4em / 1.15em / 1em / 0.875em、#ver のみ10px)
-//   3. 40 字超のセル (td のテキスト)
+//   3. 40 字超のセル (td の説明文。code の原文は除外)
 //   4. aria-labelledby と caption id の対応
 //   5. 脚注の双方向対応 (fn-N と fnref-N-M のペアリング。リンク先の存在は linkinator が見る)
 //   6. main 内の class / id が Readability の削除・減点正規表現に当たらないか
@@ -223,10 +223,10 @@ function checkFile(path) {
     }
   }
 
-  // 3. 40 字超のセル
+  // 3. 40 字超の説明文セル。コード原文は短縮せず横スクロールで読む。
   let longCells = 0, worst = { len: 0, line: 0, text: "" };
   for (const m of src.matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/g)) {
-    const text = stripTags(m[1]);
+    const text = stripTags(m[1].replace(/<code\b[^>]*>[\s\S]*?<\/code>/g, " "));
     if (text.length > CELL_LIMIT) {
       longCells++;
       if (text.length > worst.len) worst = { len: text.length, line: lineOf(src, m.index), text: text.slice(0, 30) };

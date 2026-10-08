@@ -17,7 +17,7 @@ try {
   for (const name of fs.readdirSync(path.join(root, "docs/features"))) {
     fs.copyFileSync(path.join(root, "docs/features", name), path.join(temp, "src", name));
   }
-  for (const file of ["demo-r001", "demo-f001", "demo-r002"]) {
+  for (const file of ["demo-r001", "demo-f001", "demo-r002", "demo-f002"]) {
     const result = assemblePage(path.join(temp, "src", `${file}.json`));
     assert.equal(result.ok, true, JSON.stringify(result.findings));
   }
@@ -60,6 +60,41 @@ try {
   await page.locator("#answer-menu-toggle").click();
   await page.locator("#free").fill("機能紹介用の回答例です。狭い画面でも操作を確認します。");
   await shot("answers");
+  await go("demo-f002");
+  const code = page.locator('#rich-reservation-code');
+  await shot("code", code);
+  await code.locator('[data-code-note="42"]').click();
+  // The annotation is positioned outside the code block. Include both without
+  // taking the entire, vertically long form.
+  await page.mouse.move(0, 0);
+  const noteClip = await page.evaluate(() => {
+    const code = document.querySelector('#rich-reservation-code').getBoundingClientRect();
+    const note = document.querySelector('.code-note.is-code-popup').getBoundingClientRect();
+    const x = Math.max(0, Math.min(code.left, note.left) - 12);
+    const y = Math.max(0, Math.min(code.top, note.top) - 12);
+    return { x, y, width: Math.min(innerWidth - x, Math.max(code.right, note.right) - x + 12), height: Math.min(innerHeight - y, Math.max(code.bottom, note.bottom) - y + 12) };
+  });
+  await page.screenshot({ path: path.join(output, 'code-note.png'), clip: noteClip });
+  await page.locator('.code-note.is-code-popup [data-code-note-close]').click();
+  await page.setViewportSize({ width: 1700, height: 960 });
+  await shot("code-diff", page.locator('#rich-reservation-diff'));
+  await page.setViewportSize({ width: 1440, height: 1600 });
+  const proposals = page.locator('#rich-schedule-proposal');
+  const reserve = proposals.locator('[data-node="reserve"] > .call-card');
+  await reserve.locator('[data-proposal-toggle]').click();
+  await reserve.locator('[data-feedback-note]').fill('保存に失敗したら、予約済みと表示しないでください。');
+  const existing = proposals.locator('[data-node="validate"] > .call-card');
+  await existing.locator('[data-proposal-toggle]').click();
+  await existing.locator('[data-feedback-note]').fill('空白だけの本文も検査で拒否してください。');
+  await shot("call-proposal", proposals);
+  const rejection = page.locator('#rich-schedule-rejection');
+  const reject = rejection.locator('[data-node="reserve"] > .call-card');
+  await reject.locator('[data-reject-toggle]').click();
+  await reject.locator('[data-feedback-note]').fill('まず即時送信を維持し、予約送信は別に検討します。');
+  assert.equal(await rejection.locator('[data-call-count]').textContent(), '0');
+  assert.equal(await rejection.locator('[data-file-count]').textContent(), '0');
+  await shot("call-rejection", rejection);
+  await page.setViewportSize({ width: 1440, height: 960 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await go("demo-r002");
   await page.waitForSelector(".slide-frame.is-current");
