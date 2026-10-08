@@ -66,6 +66,7 @@ test("残回答量とメニューが保存・復元・コピー・リセット�
       write(source);
       const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme, reducedMotion: "reduce" });
       const page = await context.newPage();
+      await page.clock.install();
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
       await page.addInitScript(() => {
@@ -89,6 +90,7 @@ test("残回答量とメニューが保存・復元・コピー・リセット�
         assert.equal(progress.position, n / 3);
       };
       await remaining(3);
+      assert.equal(await page.locator("#remaining").evaluate((el) => getComputedStyle(el).textAlign), "center");
       assert.equal(await page.locator("#cnt").count(), 0);
       for (const id of ["back", "copy", "answer-menu-toggle"]) {
         const button = await page.locator(`#${id}`).boundingBox();
@@ -126,7 +128,21 @@ test("残回答量とメニューが保存・復元・コピー・リセット�
       assert.equal(await page.locator("#answer-menu-toggle").evaluate((el) => el === document.activeElement), true);
       await page.reload();
       await remaining(0);
+      const copyLabel = await page.locator("#copy").textContent();
+      const barHeight = (await page.locator("#bar").boundingBox()).height;
       await page.locator("#copy").click();
+      await page.waitForFunction(() => document.getElementById("copy").textContent === "コピーしました");
+      assert.equal(await page.locator("#res").getAttribute("role"), "status");
+      assert.equal(await page.locator("#res").textContent(), "コピーしました");
+      assert.equal((await page.locator("#res").boundingBox()).height, 1);
+      assert.equal((await page.locator("#bar").boundingBox()).height, barHeight);
+      await page.clock.fastForward(2000);
+      await page.locator("#copy").click();
+      await page.clock.fastForward(1500);
+      assert.equal(await page.locator("#copy").textContent(), "コピーしました", "連打すると最新の成功から3秒まで表示する");
+      await page.clock.fastForward(1500);
+      assert.equal(await page.locator("#copy").textContent(), copyLabel);
+      assert.equal(await page.locator("#res").textContent(), "");
       const answer = await page.evaluate(() => window.copied.at(-1));
       assert.match(answer, /- 補足: 全体への補足\n2行目/);
       assert.match(answer, /項目別選択/);
@@ -142,11 +158,16 @@ test("残回答量とメニューが保存・復元・コピー・リセット�
       assert.equal(await page.locator("#free").inputValue(), "");
       await page.locator("h1").click();
       assert.equal(await page.locator("#answer-menu").isVisible(), false);
-      // clipboard 非対応時は、コピー可能なテキストへ移動する。
+      // 成功表示中でも、clipboard 非対応の失敗通知は画面に表示する。
+      await page.locator("#copy").click();
       await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined }));
       await page.locator("#copy").click();
       assert.equal(await page.locator("#preview").evaluate((el) => el === document.activeElement), true);
       assert.match(await page.locator("#res").textContent(), /手動でコピー/);
+      assert.equal(await page.locator("#copy").textContent(), copyLabel);
+      assert.equal(await page.locator("#res").evaluate((el) => el.classList.contains("copy-success")), false);
+      await page.clock.fastForward(3000);
+      assert.match(await page.locator("#res").textContent(), /手動でコピー/, "成功タイマーが失敗通知を消さない");
       // localStorage の未回答下書きがあっても、受領した回答を優先する。
       const parsed = parseAnswerText(answer, source, "2026-10-08");
       assert.deepEqual(parsed.unparsed, []);

@@ -371,7 +371,7 @@
   /* form の残回答量。値は設問カードと同じ完了判定から更新する */
   #answer-progress { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
                      background: var(--bg); padding-top: env(safe-area-inset-top); border-bottom: 1px solid var(--rule); }
-  #remaining { display: block; padding: 3px 16px; text-align: right; font-size: 0.875em; color: var(--sub); }
+  #remaining { display: block; padding: 3px 16px; text-align: center; font-size: 0.875em; color: var(--sub); }
   #remaining-track { appearance: none; display: block; width: 100%; height: 4px; border: 0; background: var(--surface-code); }
   #remaining-track::-webkit-progress-bar { background: var(--surface-code); }
   #remaining-track::-webkit-progress-value { background: var(--link); transition: width 180ms ease; }
@@ -428,6 +428,9 @@
             padding: 8px 10px; font-size: 0.875em; cursor: pointer; white-space: nowrap; }
   .subbtn:hover { border-color: var(--link); color: var(--link); }
   #res { font-size: 0.875em; color: var(--sub); }
+  /* コピー成功はボタン内に表示する。status の通知は支援技術へ残す */
+  #res.copy-success { position: absolute; width: 1px; height: 1px; padding: 0;
+                      overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @media screen and (max-width: 359px) {
     .bar-actions #copy { font-size: 0.875em; padding: 9px 10px; }
     .bar-actions #back { padding: 8px; }
@@ -487,8 +490,80 @@
     #footer-nav > div { max-width: 1240px; margin-left: calc(50% - 620px); }
   }
 
+  /* 詳細と図の補足は、JS が使えないときは本文に全文を残す。 */
+  [hidden] { display: none !important; }
+  .detail-block { margin: 0 0 1.8em; }
+  .detail-content { min-width: 0; }
+  .detail-content > h3 { margin-top: 0; }
+  .detail-tree { list-style: none; padding-left: 0; }
+  .detail-tree .detail-tree { padding-left: 18px; border-left: 1px solid var(--rule); }
+  .tree-branch > summary, .figure-note > summary { cursor: pointer; color: var(--link); }
+  .tree-body { padding: 10px 0 0 18px; }
+  .tree-body > p:last-child { margin-bottom: 10px; }
+  .figure-note { margin: 8px 0; }
+  .figure-note > summary { width: fit-content; border: 1px solid var(--control-border);
+                           border-radius: 4px; padding: 3px 8px; font-size: 0.875em; }
+  .figure-note-body > p { margin: 8px 0; }
+  #detail-viewer { width: min(1000px, calc(100vw - 32px)); max-width: none;
+                   max-height: calc(100dvh - 40px); margin: auto 16px auto auto;
+                   padding: 0; border: 1px solid var(--control-border); border-radius: 8px;
+                   color: var(--fg); background: var(--bg); }
+  #detail-viewer::backdrop { background: rgba(0, 0, 0, .35); }
+  .detail-head { position: sticky; top: 0; z-index: 1; display: flex; justify-content: flex-end;
+                 padding: 8px 16px; background: var(--bg); border-bottom: 1px solid var(--rule); }
+  #detail-viewer-body { padding: 20px; }
+  #detail-viewer-body .detail-content > p { max-width: 720px; }
+  #detail-close, #reading-popup-close, #fn-toggle { color: var(--link); background: var(--bg);
+                   border: 1px solid var(--control-border); border-radius: 4px;
+                   padding: 3px 8px; cursor: pointer; font: inherit; font-size: 0.875em; }
+  #reading-popup { position: fixed; z-index: 200; width: min(480px, calc(100vw - 24px));
+                   max-height: min(60dvh, 480px); overflow: auto; padding: 12px;
+                   background: var(--bg); color: var(--fg); border: 1px solid var(--control-border);
+                   border-radius: 6px; box-shadow: 0 4px 20px var(--tw-shadow); }
+  .reading-popup-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  #reading-popup-title { margin: 0 0 8px; font-weight: 700; font-size: 0.875em; }
+  #reading-popup-body { font-size: 0.875em; }
+  #reading-popup-body > p { margin: 0; }
+  #reading-popup-body .fnnum, #reading-popup-body .sunum,
+  #reading-popup-body .fnback, #reading-popup-body .suback { display: none; }
+  #reading-popup[data-pinned="false"] #reading-popup-close { visibility: hidden; }
+  .detail-link:focus-visible, summary:focus-visible, #fn-toggle:focus-visible,
+  #detail-close:focus-visible, #reading-popup-close:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  #answer-progress:has(#fn-toggle) #remaining { padding: 3px 106px; min-height: 34px; white-space: nowrap; }
+  #fn-toggle { position: absolute; right: 8px; top: calc(3px + env(safe-area-inset-top)); }
+  #reading-tools { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+                   height: calc(36px + env(safe-area-inset-top)); background: var(--bg); border-bottom: 1px solid var(--rule); }
+  body:has(#reading-tools) main { padding-top: calc(60px + env(safe-area-inset-top)); }
+  html:has(#reading-tools) { scroll-padding-top: calc(44px + env(safe-area-inset-top)); }
+  body:has(#reading-tools) #toc-pane, body:has(#reading-tools) #fn-pane { top: calc(60px + env(safe-area-inset-top)); }
+  @media screen and (min-width: 1024px) and (max-width: 1339px) {
+    body.fn-pane-closed main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "bd"; }
+  }
+  @media screen and (min-width: 1340px) {
+    body.fn-pane-closed main { grid-template-columns: 300px minmax(0, 1fr); grid-template-areas: "q bd"; }
+    body.fn-pane-closed:has(#bar) main { padding-bottom: calc(var(--answer-bar-height, 100px) + 24px); }
+  }
+  @media screen and (min-width: 1700px) {
+    body.fn-pane-closed main { grid-template-columns: 320px minmax(0, 1fr); }
+  }
+  @media screen and (min-width: 2100px) {
+    body.fn-pane-closed main { grid-template-columns: 360px minmax(0, 1fr); }
+  }
+  @media screen and (min-width: 1024px) {
+    body.fn-pane-closed #bd > p, body.fn-pane-closed #bd > ul, body.fn-pane-closed #bd > ol,
+    body.fn-pane-closed #bd > blockquote, body.fn-pane-closed #bd > .vnav,
+    body.fn-pane-closed #bd > .summary, body.fn-pane-closed .rng > p,
+    body.fn-pane-closed .rng > ul, body.fn-pane-closed .rng > ol { max-width: 720px; }
+  }
+  @media screen and (max-width: 639px) {
+    #detail-viewer { width: 100%; max-height: 100dvh; height: 100dvh; margin: 0; border-radius: 0; }
+    #detail-viewer-body { padding: 16px; }
+  }
   @media print {
-    #bar, #answer-progress, #footer-nav, #image-viewer { display: none; }
+    #bar, #answer-progress, #reading-tools, #footer-nav, #image-viewer,
+    #detail-viewer, #reading-popup, .detail-link { display: none !important; }
+    .detail-content[hidden], #fn-pane[hidden] { display: block !important; }
+    .tree-branch > .tree-body, .figure-note > .figure-note-body { display: block !important; }
     body:has(#bar) main { padding: 0; }
     main, main > * { max-width: none; display: block; }
     #q-pane, #toc-pane, #fn-pane { position: static; max-height: none; overflow: visible; }
@@ -500,6 +575,14 @@
 {{図の CSS}}</head>
 <body>
 {{アイコン}}{{本文}}
+<dialog id="detail-viewer" aria-label="詳細">
+  <div class="detail-head"><button type="button" id="detail-close">閉じる</button></div>
+  <div id="detail-viewer-body"></div>
+</dialog>
+<div id="reading-popup" role="dialog" aria-modal="false" aria-labelledby="reading-popup-title" hidden>
+  <div class="reading-popup-head"><p id="reading-popup-title"></p><button type="button" id="reading-popup-close">閉じる</button></div>
+  <div id="reading-popup-body"></div>
+</div>
 <dialog id="image-viewer" aria-labelledby="image-viewer-title">
   <div class="image-viewer-shell">
     <div class="image-viewer-head">
@@ -567,34 +650,215 @@
   });
 })();
 
-/* 脚注と補足への参照。脚注 pane が本文の横に出ている幅（2 pane 以上）では、pane の中だけを動かす。
-   アンカーのままだと、ブラウザが飛び先を出すためにページ全体もスクロールし、読んでいた位置を失う。
-   1 列では脚注が本文の末尾にあるので、アンカーの既定の動きに任せる。
-   ハッシュが変わらず :target が効かないので、着地点の強調は .is-target で付ける。 */
+/* 詳細・階層・脚注と図の補足の共通操作。原文は DOM に残し、印刷時には全て戻す。 */
 (function () {
   var pane = document.getElementById('fn-pane');
-  if (!pane) return;
-  var side = window.matchMedia('screen and (min-width: 1024px)');
-  var lit = null;
-  document.addEventListener('click', function (event) {
-    if (!side.matches || event.defaultPrevented || event.button !== 0 ||
-        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    var a = event.target.closest && event.target.closest('.fnref a, .suref a');
-    if (!a) return;
-    var t = document.getElementById((a.getAttribute('href') || '').slice(1));
-    if (!t || !pane.contains(t)) return;
-    var margin = parseFloat(window.getComputedStyle(t).scrollMarginTop) || 0;
-    pane.scrollTop += t.getBoundingClientRect().top - pane.getBoundingClientRect().top - margin;
-    /* pane が画面から外れていると（sticky の効く範囲を過ぎたとき）pane だけ動かしても見えない。
-       そのときはアンカーの既定の動きに任せる */
-    var tr = t.getBoundingClientRect();
-    if (tr.top < 0 || tr.top >= window.innerHeight) return;
-    event.preventDefault();
-    if (lit) lit.classList.remove('is-target');
-    lit = t;
-    t.classList.add('is-target');
-    if (!t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
-    t.focus({ preventScroll: true });
+  var toggle = document.getElementById('fn-toggle');
+  if (pane && toggle) {
+    function setPane(open) {
+      pane.hidden = !open;
+      document.body.classList.toggle('fn-pane-closed', !open);
+      toggle.setAttribute('aria-expanded', String(open));
+    }
+    toggle.hidden = false;
+    setPane(false);
+    toggle.addEventListener('click', function () { setPane(pane.hidden); });
+    // 戻りリンク等から閉じた pane を直接指定した場合も行き先を見せる。
+    function revealHash() {
+      var target = document.getElementById(location.hash.slice(1));
+      if (target && pane.contains(target)) { setPane(true); target.scrollIntoView(); }
+    }
+    window.addEventListener('hashchange', revealHash);
+    revealHash();
+  }
+  var branches = [].slice.call(document.querySelectorAll('.tree-branch'));
+  branches.forEach(function (branch) { branch.open = false; });
+  var dialog = document.getElementById('detail-viewer');
+  var detailBody = document.getElementById('detail-viewer-body');
+  var detailClose = document.getElementById('detail-close');
+  var currentDetail = null, detailHome = null, detailOpener = null;
+  var popup = document.getElementById('reading-popup');
+  var popupBody = document.getElementById('reading-popup-body');
+  var popupTitle = document.getElementById('reading-popup-title');
+  var popupClose = document.getElementById('reading-popup-close');
+  var popupAnchor = null, pinned = false, leaveTimer = null, returningFocus = false;
+  var hover = window.matchMedia('(any-hover: hover)');
+  function closePopup(returnFocus) {
+    clearTimeout(leaveTimer);
+    var opener = popupAnchor;
+    if (opener) {
+      opener.setAttribute('aria-expanded', 'false');
+      if (opener.readingMarkup != null) { opener.innerHTML = opener.readingMarkup; opener.style.minWidth = ''; }
+    }
+    popup.hidden = true;
+    popupAnchor = null;
+    pinned = false;
+    popupBody.replaceChildren();
+    document.body.appendChild(popup);
+    if (returnFocus && opener && opener.isConnected) {
+      returningFocus = true;
+      opener.focus({ preventScroll: true });
+      returningFocus = false;
+    }
+  }
+  function positionPopup() {
+    if (popup.hidden || !popupAnchor) return;
+    var rect = popupAnchor.getBoundingClientRect();
+    var box = popup.getBoundingClientRect();
+    var top = rect.bottom + 8;
+    if (top + box.height > innerHeight - 12) top = rect.top - box.height - 8;
+    popup.style.left = Math.max(12, Math.min(rect.left, innerWidth - box.width - 12)) + 'px';
+    popup.style.top = Math.max(12, Math.min(top, innerHeight - box.height - 12)) + 'px';
+  }
+  function pinPopup() {
+    pinned = true;
+    popup.dataset.pinned = 'true';
+    clearTimeout(leaveTimer);
+    if (popupAnchor && popupAnchor.readingMarkup != null) popupAnchor.innerHTML = popupAnchor.readingMarkup;
+  }
+  function openPopup(anchor, pin) {
+    if (returningFocus) return;
+    clearTimeout(leaveTimer);
+    if (popupAnchor === anchor && !popup.hidden) { if (pin) pinPopup(); return; }
+    // 固定した内容は、別の補足をクリックするまで hover / focus では入れ替えない。
+    if (pinned && !pin) return;
+    var modal = anchor.closest('dialog[open]');
+    var originalOpener = popup.contains(anchor) ? popupAnchor : anchor;
+    closePopup(false);
+    var note = anchor.closest('.figure-note');
+    var source = note ? note.querySelector('.figure-note-body') : document.getElementById((anchor.getAttribute('href') || '').slice(1));
+    if (!source) return;
+    popupAnchor = originalOpener || anchor;
+    popupAnchor.setAttribute('aria-expanded', 'true');
+    var clone = source.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.removeAttribute('hidden');
+    [].slice.call(clone.querySelectorAll('[id]')).forEach(function (el) { el.removeAttribute('id'); });
+    popupBody.appendChild(clone);
+    popupTitle.textContent = note ? anchor.readingLabel : (anchor.closest('.fnref') ? '脚注 ' : '補足 ') + anchor.textContent;
+    if (note && !pin) {
+      anchor.style.minWidth = anchor.getBoundingClientRect().width + 'px';
+      anchor.textContent = 'クリックで固定';
+    }
+    // modal の外の要素は inert になるため、呼び出し元が modal 内ならその中へ置く。
+    (modal || document.body).appendChild(popup);
+    pinned = !!pin;
+    popup.dataset.pinned = String(pinned);
+    popup.hidden = false;
+    popup.scrollTop = 0;
+    positionPopup();
+  }
+  function leavePopup() {
+    clearTimeout(leaveTimer);
+    leaveTimer = setTimeout(function () {
+      if (!pinned && popupAnchor && !popup.matches(':hover') && !popupAnchor.matches(':hover') &&
+          !popup.contains(document.activeElement) && document.activeElement !== popupAnchor) closePopup(false);
+    }, 250);
+  }
+  function enhanceAnchor(anchor) {
+    anchor.setAttribute('aria-haspopup', 'dialog');
+    anchor.setAttribute('aria-expanded', 'false');
+    anchor.setAttribute('aria-controls', 'reading-popup');
+    anchor.addEventListener('pointerenter', function (event) {
+      if (event.pointerType !== 'touch' && hover.matches) openPopup(anchor, false);
+    });
+    anchor.addEventListener('pointerleave', leavePopup);
+    anchor.addEventListener('focus', function () { openPopup(anchor, false); });
+    anchor.addEventListener('blur', leavePopup);
+    anchor.addEventListener('click', function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      if (popupAnchor === anchor && pinned) closePopup(true);
+      else { openPopup(anchor, true); if (event.detail === 0) popupClose.focus({ preventScroll: true }); }
+    });
+    anchor.addEventListener('keydown', function (event) {
+      if (event.key !== ' ') return;
+      event.preventDefault();
+      if (popupAnchor === anchor && pinned) closePopup(true);
+      else { openPopup(anchor, true); popupClose.focus({ preventScroll: true }); }
+    });
+  }
+  [].slice.call(document.querySelectorAll('.figure-note')).forEach(function (note) {
+    note.open = false;
+    var summary = note.querySelector('summary');
+    summary.readingMarkup = summary.innerHTML;
+    summary.readingLabel = summary.textContent;
+    summary.setAttribute('aria-label', summary.textContent);
+    enhanceAnchor(summary);
+  });
+  [].slice.call(document.querySelectorAll('.fnref a, .suref a')).forEach(enhanceAnchor);
+  // 脚注の本文中にある別の脚注参照も、複製から原文を引いてその場で読める。
+  popupBody.addEventListener('click', function (event) {
+    var ref = event.target.closest('.fnref a, .suref a');
+    if (ref) {
+      event.preventDefault(); openPopup(ref, true);
+      // 切替でフォーカス中の複製が消えるため、keyboard 起動時は新しい popup 内へ戻す。
+      if (event.detail === 0) popupClose.focus({ preventScroll: true });
+    }
+    else pinPopup();
+  });
+  popup.addEventListener('pointerenter', function () { clearTimeout(leaveTimer); });
+  popup.addEventListener('pointerleave', leavePopup);
+  popup.addEventListener('focusout', leavePopup);
+  popupClose.addEventListener('click', function () { closePopup(true); });
+  document.addEventListener('pointerdown', function (event) {
+    if (!popup.hidden && !popup.contains(event.target) && event.target !== popupAnchor && !popupAnchor.contains(event.target)) closePopup(false);
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !popup.hidden) {
+      event.preventDefault(); event.stopImmediatePropagation(); closePopup(true);
+    }
+  }, true);
+  window.addEventListener('resize', positionPopup);
+  document.addEventListener('scroll', positionPopup, true);
+  if (dialog && typeof dialog.showModal === 'function') {
+    var links = [].slice.call(document.querySelectorAll('.detail-link'));
+    links.forEach(function (link) {
+      var content = document.getElementById(link.getAttribute('href').slice(1));
+      content.hidden = true;
+      link.addEventListener('click', function (event) {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        closePopup(false);
+        currentDetail = content;
+        detailHome = content.parentNode;
+        detailOpener = link;
+        content.hidden = false;
+        detailBody.appendChild(content);
+        dialog.setAttribute('aria-labelledby', content.getAttribute('aria-labelledby'));
+        dialog.showModal();
+        dialog.scrollTop = 0;
+        detailClose.focus();
+      });
+    });
+    detailClose.addEventListener('click', function () { dialog.close(); });
+    dialog.addEventListener('click', function (event) { if (event.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', function () {
+      closePopup(false);
+      if (currentDetail) { currentDetail.hidden = true; detailHome.appendChild(currentDetail); }
+      if (detailOpener && detailOpener.isConnected) detailOpener.focus({ preventScroll: true });
+      currentDetail = detailHome = detailOpener = null;
+      dialog.removeAttribute('aria-labelledby');
+    });
+  }
+  // CSS だけでは閉じた details の内容を印刷できないブラウザがあるため、印刷中だけ開く。
+  var printStates = [];
+  window.addEventListener('beforeprint', function () {
+    closePopup(false);
+    var imageDialog = document.getElementById('image-viewer');
+    if (imageDialog && imageDialog.open) imageDialog.close();
+    if (dialog && dialog.open) {
+      // close イベントは非同期なので、印刷に先立ち原文を本文へ戻す。
+      dialog.close();
+      if (currentDetail) { currentDetail.hidden = true; detailHome.appendChild(currentDetail); }
+    }
+    printStates = [].slice.call(document.querySelectorAll('.tree-branch, .figure-note, .qd')).map(function (el) {
+      var state = [el, el.open]; el.open = true; return state;
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    printStates.forEach(function (state) { state[0].open = state[1]; });
+    printStates = [];
   });
 })();
 </script>
@@ -863,15 +1127,27 @@
   // クリップボードはクリック直後に同期で呼ぶ。await を挟むと Safari / Firefox が
   // user activation を失って NotAllowedError で reject する。
   var receivedMessage = document.getElementById('res').textContent;
+  var copyButton = document.getElementById('copy');
+  var copyButtonLabel = copyButton.textContent;
   var copyMessageTimer = null;
   function copyText(text) {
     var res = document.getElementById('res');
     clearTimeout(copyMessageTimer);
     function ok() {
+      clearTimeout(copyMessageTimer);
+      copyButton.textContent = 'コピーしました';
+      res.classList.add('copy-success');
       res.textContent = 'コピーしました';
-      copyMessageTimer = setTimeout(function () { res.textContent = receivedMessage; }, 3000);
+      copyMessageTimer = setTimeout(function () {
+        copyButton.textContent = copyButtonLabel;
+        res.classList.remove('copy-success');
+        res.textContent = receivedMessage;
+      }, 3000);
     }
     function ng() {
+      clearTimeout(copyMessageTimer);
+      copyButton.textContent = copyButtonLabel;
+      res.classList.remove('copy-success');
       var p = document.getElementById('preview');
       p.scrollIntoView({ behavior: 'smooth' }); p.focus(); p.select();
       res.textContent = 'コピーできません。回答のテキスト欄から手動でコピーしてください';
