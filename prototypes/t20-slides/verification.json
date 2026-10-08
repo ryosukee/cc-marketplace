@@ -1,0 +1,297 @@
+[
+  {
+    "engine": "native",
+    "feature": "custom dialog keyboard",
+    "openAndFocusReturn": true
+  },
+  {
+    "engine": "native",
+    "width": 1440,
+    "colorScheme": "light",
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "h1": 1190.671875,
+    "scale": 1.05555419921875,
+    "font": "24px",
+    "reflow": false,
+    "color": "rgb(250, 249, 245)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "native",
+    "width": 1440,
+    "colorScheme": "dark",
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "h1": 1190.671875,
+    "scale": 1.05555419921875,
+    "font": "24px",
+    "reflow": false,
+    "color": "rgb(21, 34, 42)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "native",
+    "width": 390,
+    "colorScheme": "light",
+    "scrollWidth": 390,
+    "viewport": 390,
+    "h1": 346,
+    "scale": 0.3046875,
+    "font": "19px",
+    "reflow": true,
+    "color": "rgb(250, 249, 245)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "native",
+    "width": 390,
+    "colorScheme": "dark",
+    "scrollWidth": 390,
+    "viewport": 390,
+    "h1": 346,
+    "scale": 0.3046875,
+    "font": "19px",
+    "reflow": true,
+    "color": "rgb(21, 34, 42)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "native",
+    "javaScriptEnabled": false,
+    "offline": true,
+    "printAllFour": true,
+    "detailFullText": true,
+    "externalRequests": 0
+  },
+  {
+    "engine": "native",
+    "javaScriptEnabled": true,
+    "offline": true,
+    "printAllFour": true,
+    "detailFullText": true,
+    "externalRequests": 0
+  },
+  {
+    "engine": "marp",
+    "feature": "details Enter",
+    "open": true,
+    "geometry": {
+      "clientHeight": 720,
+      "scrollHeight": 720,
+      "noteBottom": 752.986083984375,
+      "footerTop": 768.8194580078125
+    }
+  },
+  {
+    "engine": "marp",
+    "feature": "pure summary Space conflict",
+    "observed": {
+      "open": false,
+      "slide": 3,
+      "focus": "BODY"
+    }
+  },
+  {
+    "engine": "marp",
+    "width": 1440,
+    "colorScheme": "light",
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "h1": 1190.666748046875,
+    "scale": 1.055555534362793,
+    "font": "24px",
+    "reflow": false,
+    "color": "rgb(250, 249, 245)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "marp",
+    "width": 1440,
+    "colorScheme": "dark",
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "h1": 1190.666748046875,
+    "scale": 1.055555534362793,
+    "font": "24px",
+    "reflow": false,
+    "color": "rgb(21, 34, 42)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "marp",
+    "width": 390,
+    "colorScheme": "light",
+    "scrollWidth": 390,
+    "viewport": 390,
+    "h1": 343.6875,
+    "scale": 0.3046875,
+    "font": "24px",
+    "reflow": false,
+    "color": "rgb(250, 249, 245)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "marp",
+    "width": 390,
+    "colorScheme": "dark",
+    "scrollWidth": 390,
+    "viewport": 390,
+    "h1": 343.6875,
+    "scale": 0.3046875,
+    "font": "24px",
+    "reflow": false,
+    "color": "rgb(21, 34, 42)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "marp",
+    "javaScriptEnabled": false,
+    "offline": true,
+    "printAllFour": true,
+    "detailFullText": true,
+    "externalRequests": 0
+  },
+  {
+    "engine": "marp",
+    "javaScriptEnabled": true,
+    "offline": true,
+    "printAllFour": true,
+    "detailFullText": true,
+    "externalRequests": 0
+  },
+  {
+    "engine": "reveal",
+    "feature": "custom dialog keyboard",
+    "openAndFocusReturn": true
+  },
+  {
+    "engine": "reveal",
+    "feature": "pure fragment / auto-animate",
+    "fragment": true,
+    "fragmentStyle": {
+      "opacity": "1",
+      "color": "rgb(9, 105, 103)",
+      "filter": "none",
+      "expectedColor": "rgb(9, 105, 103)",
+      "ancestors": [
+        {
+          "tag": "SECTION",
+          "opacity": "1",
+          "filter": "none"
+        },
+        {
+          "tag": "DIV",
+          "opacity": "1",
+          "filter": "none"
+        },
+        {
+          "tag": "DIV",
+          "opacity": "1",
+          "filter": "none"
+        },
+        {
+          "tag": "BODY",
+          "opacity": "1",
+          "filter": "none"
+        },
+        {
+          "tag": "HTML",
+          "opacity": "1",
+          "filter": "none"
+        }
+      ]
+    },
+    "motion": {
+      "events": [
+        {
+          "from": "2",
+          "to": "3"
+        }
+      ],
+      "state": "running",
+      "targets": 7,
+      "codeTarget": true
+    }
+  },
+  {
+    "engine": "reveal",
+    "width": 1440,
+    "colorScheme": "light",
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "h1": 1195.6800537109375,
+    "scale": 1.0599998474121093,
+    "font": "24px",
+    "reflow": false,
+    "color": "rgb(250, 249, 245)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "reveal",
+    "width": 1440,
+    "colorScheme": "dark",
+    "scrollWidth": 1440,
+    "viewport": 1440,
+    "h1": 1195.6800537109375,
+    "scale": 1.0599998474121093,
+    "font": "24px",
+    "reflow": false,
+    "color": "rgb(21, 34, 42)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "reveal",
+    "width": 390,
+    "colorScheme": "light",
+    "scrollWidth": 390,
+    "viewport": 390,
+    "h1": 346,
+    "scale": 0.3046875,
+    "font": "19px",
+    "reflow": true,
+    "color": "rgb(250, 249, 245)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "reveal",
+    "width": 390,
+    "colorScheme": "dark",
+    "scrollWidth": 390,
+    "viewport": 390,
+    "h1": 346,
+    "scale": 0.3046875,
+    "font": "19px",
+    "reflow": true,
+    "color": "rgb(21, 34, 42)",
+    "externalRequests": 0,
+    "errors": []
+  },
+  {
+    "engine": "reveal",
+    "javaScriptEnabled": false,
+    "offline": true,
+    "printAllFour": true,
+    "detailFullText": true,
+    "externalRequests": 0
+  },
+  {
+    "engine": "reveal",
+    "javaScriptEnabled": true,
+    "offline": true,
+    "printAllFour": true,
+    "detailFullText": true,
+    "externalRequests": 0
+  }
+]

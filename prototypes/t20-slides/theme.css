@@ -1,0 +1,57 @@
+/* @theme t20 */
+:root, section.canvas {
+  --paper: #faf9f5; --ink: #182c36; --muted: #586772; --accent: #096967;
+  --line: #c8d1d2; --code: #edf0ec; --on-accent: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root, section.canvas {
+    --paper: #15222a; --ink: #ecf1ed; --muted: #b3c2c4; --accent: #7dd5c8;
+    --line: #455860; --code: #24353d; --on-accent: #132b29;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; }
+section.canvas {
+  width: 1280px; height: 720px; padding: 58px 76px 48px; background: var(--paper); color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+  font-size: 24px; line-height: 1.65; text-align: left; position: relative; overflow: hidden;
+}
+section.canvas h1, section.canvas h2 { font-family: inherit; font-weight: 650; letter-spacing: -.025em; line-height: 1.18; color: var(--ink); text-transform: none; margin: 18px 0 24px; }
+section.canvas h1 { font-size: 76px; }
+section.canvas h2 { font-size: 54px; }
+section.canvas p { margin: 0; }
+section.canvas .eyebrow { color: var(--accent); font-weight: 650; letter-spacing: .13em; font-size: 17px; }
+section.canvas .lead { max-width: 860px; color: var(--muted); font-size: 24px; line-height: 1.7; }
+section.canvas .points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 52px; }
+section.canvas .point { border-top: 2px solid var(--line); padding-top: 18px; }
+section.canvas .point b { font-size: 30px; color: var(--ink); font-weight: 600; }
+section.canvas .point span { display: block; color: var(--accent); font-size: 16px; margin-bottom: 8px; }
+section.canvas .point p { font-size: 21px; color: var(--muted); margin-top: 8px; }
+section.canvas .two-columns { display: grid; grid-template-columns: 1.1fr 1fr; gap: 86px; }
+section.canvas .two-columns .lead { max-width: 480px; }
+section.canvas .flow { margin-top: 22px; border-left: 2px solid var(--line); padding-left: 34px; }
+section.canvas .flow div { padding-bottom: 24px; }
+section.canvas .flow b { display: block; color: var(--accent); font-size: 31px; font-weight: 600; }
+section.canvas .flow p { font-size: 20px; color: var(--muted); }
+section.canvas .detail-open, section.canvas .inline-detail > summary {
+  display: inline-block; margin-top: 26px; padding: 10px 18px; color: var(--accent); border: 1px solid var(--accent);
+  border-radius: 4px; font: inherit; font-size: 21px; text-align: left; cursor: pointer; background: transparent;
+}
+section.canvas .inline-detail { margin: 0; font-size: 17px; }
+section.canvas .inline-detail p { font-size: 17px; line-height: 1.6; margin: 8px 0; }
+section.canvas .inline-detail pre { font-size: 16px; margin-top: 8px; padding: 8px 12px; }
+section.canvas .note { font-size: 17px; line-height: 1.6; color: var(--muted); margin-top: 20px; max-width: 840px; }
+section.canvas .comparison { border-collapse: collapse; width: 100%; margin-top: 25px; font-size: 21px; }
+section.canvas .comparison th, section.canvas .comparison td { border: 0; border-bottom: 1px solid var(--line); padding: 10px 22px 10px 0; text-align: left; }
+section.canvas .comparison th { width: 130px; font-weight: 600; color: var(--accent); }
+section.canvas .fragment-note { margin-top: 22px; color: var(--accent); font-size: 21px; }
+section.canvas pre { margin: 20px 0 0; padding: 20px 26px; color: var(--ink); background: var(--code); font-size: 26px; border: 1px solid var(--line); border-radius: 0; line-height: 1.6; font-family: 'SF Mono', Consolas, monospace; box-shadow: none; white-space: pre-wrap; }
+section.canvas pre code { font: inherit; background: none; color: inherit; padding: 0; max-height: none; white-space: pre-wrap; }
+section.canvas .small-code { margin-top: 15px; width: 540px; padding: 11px 18px; font-size: 20px; }
+section.canvas .code-large { margin-top: 25px; width: 950px; font-size: 27px; }
+section.canvas .slide-footer { position: absolute; left: 76px; right: 76px; bottom: 26px; display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 10px; color: var(--muted); font-size: 15px; }
+button:focus-visible, summary:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+@media print {
+  :root, section.canvas { --paper: #ffffff; --ink: #182c36; --muted: #586772; --accent: #096967; --line: #c8d1d2; --code: #edf0ec; }
+}

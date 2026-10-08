@@ -1,0 +1,9 @@
+{
+  "title": "html-communication：説明を短く、根拠は詳しく",
+  "slides": [
+    {"eyebrow":"HTML COMMUNICATION", "title":"説明を短く、\n根拠は詳しく", "lead":"要点を先に読み、必要な根拠をその場で確かめる。", "points":[["01","要点","判断に必要な説明を先に。"],["02","詳細","表とコードは必要なときに。"],["03","出典","全文と参照先を残す。"]]},
+    {"eyebrow":"OVERVIEW → EVIDENCE", "title":"必要な根拠を、\nその場で開く", "lead":"概要には結論を置く。詳しい説明へ進んでも、読んでいた位置を失わない。", "detail":{"title":"詳細を開く","paragraphs":["詳細は、概要から省いた根拠を読む場所。閉じると起動点へ戻り、本文を読み続けられる。","この試作は親子関係と原文の保持を示す操作例。既存の共通テンプレートをそのまま組み込んだものではない。"],"code":"const detailOpen = true;"}},
+    {"eyebrow":"ONE DOCUMENT, THREE LAYERS", "title":"読む深さを、\n情報の役割で分ける", "lead":"同じ内容を三つのエンジンで表示する。比較対象は見た目ではなく、操作と制作の条件。", "rows":[["要点","最初から見える","短く、判断の手掛かりに"],["詳細","必要なときに開く","長い説明・表・コード"],["出典","全文を確かめる","脚注とリンクを保持"]],"fragment":"必要な内容だけ、順に示す。","code":"const detailOpen = false;"},
+    {"eyebrow":"A SMALL CHANGE", "title":"小さな変更を、\n読み手の操作につなぐ", "lead":"詳細を開くときだけ状態を変え、閉じたら本文へ戻る。", "code":"const detailOpen = true;\n\nif (detailOpen) {\n  detailDialog.showModal();\n}","note":"Reveal.js では前のスライドのコード領域を移動・拡大する標準 auto-animate を試す。他の二つは静的な切替。"}
+  ]
+}

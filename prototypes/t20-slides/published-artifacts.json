@@ -1,0 +1,17 @@
+[
+  {
+    "path": "/Users/ryosuke/.local/share/claude-html-communication/ccm-r017.html",
+    "bytes": 18093,
+    "sha256": "1b8bafc716c7ba63d0700245ff473f13235c2ebb406d2cb11ee371ba3f15db92"
+  },
+  {
+    "path": "/Users/ryosuke/.local/share/claude-html-communication/ccm-r018.html",
+    "bytes": 93784,
+    "sha256": "c9b069d6aeac29ccf50e292db6171f9b5f51f638bc759eff6c3489765a7176bc"
+  },
+  {
+    "path": "/Users/ryosuke/.local/share/claude-html-communication/ccm-r019.html",
+    "bytes": 191462,
+    "sha256": "bbce51c0c39994c53a2fc3d5d0c683c8224cec47bccdf6584854af459acfdd52"
+  }
+]
