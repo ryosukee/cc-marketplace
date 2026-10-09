@@ -1,0 +1,21 @@
+<section class="state-hierarchy">
+  <h3>親状態の中にある状態</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" role="img" aria-label="親状態の稼働中に属する待機と処理中を、親の枠内に示す。">
+    <defs>
+      <marker id="state-hierarchy-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0L10 5L0 10Z" fill="context-stroke"/>
+      </marker>
+    </defs>
+    <rect class="boundary" x="14" y="20" width="332" height="184" rx="10"/>
+    <text x="180" y="45">稼働中</text>
+    <rect class="box" x="34" y="100" width="110" height="42" rx="7"/>
+    <text x="89.0" y="126.0">待機</text>
+    <rect class="box" x="216" y="100" width="110" height="42" rx="7"/>
+    <text x="271.0" y="126.0">処理中</text>
+    <path class="line" d="M144 112H216"/>
+    <text x="180" y="90">開始</text>
+    <path class="line" d="M216 132H144"/>
+    <text x="180" y="169">完了</text>
+  </svg>
+  <p>親の稼働中に属する待機・処理中を、親の枠内に置く階層状態図。単に関連項目を囲む枠とは区別する。</p>
+</section>

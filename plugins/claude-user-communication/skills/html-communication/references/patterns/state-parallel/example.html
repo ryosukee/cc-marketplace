@@ -1,0 +1,20 @@
+<section class="state-parallel">
+  <h3>同時に有効な複数の状態軸</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" role="img" aria-label="動作中の通信と保存という状態軸が同時に有効であることを領域で分けて示す。">
+    <defs>
+      <marker id="state-parallel-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0L10 5L0 10Z" fill="context-stroke"/>
+      </marker>
+    </defs>
+    <rect class="boundary" x="14" y="20" width="332" height="184" rx="10"/>
+    <text x="180" y="45">動作中</text>
+    <path class="boundary" d="M180 60V204" stroke-dasharray="5 4"/>
+    <text x="94" y="86">通信</text>
+    <text x="266" y="86">保存</text>
+    <rect class="box" x="34" y="112" width="120" height="42" rx="7"/>
+    <text x="94.0" y="138.0">接続中</text>
+    <rect class="box" x="206" y="112" width="120" height="42" rx="7"/>
+    <text x="266.0" y="138.0">未保存</text>
+  </svg>
+  <p>通信と保存など、同時に有効な状態を領域で分ける並行状態図。成功か失敗かという択一の分岐には使わない。</p>
+</section>

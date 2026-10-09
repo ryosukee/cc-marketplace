@@ -1,0 +1,9 @@
+/* 承認済み図法見本の静的CSS。操作は共通ランタイムが持つ。 */
+.flowchart-decision { border: 1px solid var(--rule); border-radius: 10px; padding: 16px; min-width: 0; }
+.flowchart-decision h3 { margin: 0 0 8px; font-size: 1em; }
+.flowchart-decision p { font-size: .875em; line-height: 1.7; margin: 12px 0 0; }
+.flowchart-decision svg { display: block; width: 100%; height: auto; max-width: 360px; margin: auto; color: var(--fg); }
+.flowchart-decision svg text { fill: currentColor; font: 14px system-ui, sans-serif; text-anchor: middle; }
+.flowchart-decision svg .box { fill: var(--bg); stroke: var(--fg); stroke-width: 1.5; }
+.flowchart-decision svg .line { fill: none; stroke: var(--link); stroke-width: 1.5; marker-end: url(#flowchart-decision-arrow); }
+.flowchart-decision svg .boundary { fill: none; stroke: var(--fg); stroke-width: 1.5; }

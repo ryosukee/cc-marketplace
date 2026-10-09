@@ -51,7 +51,7 @@ async function fixture(t) {
 
 test("共通詳細操作は明暗・狭幅・pane幅で原文とフォーカスを保つ", { skip }, async (t) => {
   const { browser, url } = await fixture(t);
-  for (const src of [report, form]) for (const width of [320, 390, 1440, 1700]) for (const colorScheme of ["light", "dark"]) {
+  for (const src of [report, form]) for (const width of [320, 390, 1024, 1440, 1700]) for (const colorScheme of ["light", "dark"]) {
     await t.test(`${src.type} ${width}px ${colorScheme}`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme, reducedMotion: "reduce" });
       context.setDefaultTimeout(5000);
@@ -71,8 +71,9 @@ test("共通詳細操作は明暗・狭幅・pane幅で原文とフォーカス�
       const closedWidth = (await page.locator("#bd").boundingBox()).width;
       await page.locator("#fn-toggle").click();
       assert.equal(await page.locator("#fn-pane").isVisible(), true);
-      if (width >= 1024) assert.ok(closedWidth > (await page.locator("#bd").boundingBox()).width + 200, "閉じた脚注列は本文へ渡す");
-      await page.locator("#fn-toggle").click();
+      assert.equal((await page.locator("#bd").boundingBox()).width, closedWidth, "脚注dialogは本文幅を変えない");
+      assert.equal(await page.locator("#fn-drawer").evaluate(el => el.open), true);
+      await page.locator(".fn-drawer-top button").click();
       const link = page.locator(".detail-link");
       await link.focus(); await page.keyboard.press("Enter");
       assert.equal(await page.locator("#detail-viewer").evaluate((el) => el.open), true);
@@ -86,8 +87,9 @@ test("共通詳細操作は明暗・狭幅・pane幅で原文とフォーカス�
         assert.equal(await page.evaluate(() => document.activeElement === document.body || document.getElementById("detail-viewer").contains(document.activeElement)), true);
       }
       await page.locator('#detail-viewer-body .fnref a[href="#fn-1"]').click();
-      assert.equal(await page.locator("#reading-popup").evaluate((el) => el.parentNode.id), "detail-viewer");
-      assert.match(await page.locator("#reading-popup-body").textContent(), /詳細の出典/);
+      assert.equal(await page.locator("#fn-drawer").evaluate((el) => el.open), true);
+      assert.equal(await page.locator("#fn-1").evaluate(el => el.classList.contains("note-target")), true);
+      assert.match(await page.locator("#fn-pane").textContent(), /詳細の出典/);
       await page.keyboard.press("Escape");
       assert.equal(await page.locator("#detail-viewer").evaluate((el) => el.open), true);
       assert.equal(await page.locator("#reading-popup").isVisible(), false);
@@ -123,7 +125,8 @@ test("共通詳細操作は明暗・狭幅・pane幅で原文とフォーカス�
       assert.equal(await note.textContent(), "図の補足");
       assert.equal(await page.locator('#reading-popup-body a[href="https://example.com/source"]').count(), 1);
       await page.locator('#reading-popup-body .fnref a').click();
-      assert.match(await page.locator("#reading-popup-body").textContent(), /図の出典/);
+      assert.equal(await page.locator("#fn-drawer").evaluate(el => el.open), true);
+      assert.equal(await page.locator("#fn-3").evaluate(el => el.classList.contains("note-target")), true);
       await page.keyboard.press("Escape");
       assert.equal(await note.evaluate((el) => el === document.activeElement), true);
       await page.keyboard.press("Space");
@@ -131,8 +134,8 @@ test("共通詳細操作は明暗・狭幅・pane幅で原文とフォーカス�
       await page.locator("h1").click();
       assert.equal(await page.locator("#reading-popup").isVisible(), false, "outside clickで固定を閉じる");
       const ref = page.locator('#bd > p .fnref a[href="#fn-4"], .rng > p .fnref a[href="#fn-4"]');
-      await ref.click();
-      assert.equal(await page.locator("#fn-pane").isVisible(), false, "全文popupはpaneを開かない");
+      await ref.hover();
+      assert.equal(await page.locator("#fn-pane").isVisible(), false, "hoverはpaneを開かない");
       assert.match(await page.locator("#reading-popup-body").textContent(), /脚注の全文/);
       assert.ok(await page.locator("#reading-popup").evaluate((el) => el.scrollHeight > el.clientHeight), "長い全文は省略せずscrollする");
       const popup = await page.locator("#reading-popup").boundingBox();
@@ -141,47 +144,61 @@ test("共通詳細操作は明暗・狭幅・pane幅で原文とフォーカス�
       assert.equal(await page.evaluate(() => {
         const ids = [].map.call(document.querySelectorAll('[id]'), (el) => el.id); return new Set(ids).size === ids.length;
       }), true, "popupで参照IDを複製しない");
+      await page.locator("#reading-popup-pin").click();
+      assert.equal(await page.locator("#reading-popup-pin").textContent(), "固定を外す");
+      await page.mouse.move(1, 100);
+      await page.waitForTimeout(300);
+      assert.equal(await page.locator("#reading-popup").isVisible(), true);
+      await page.locator("#reading-popup-pin").click();
+      await page.mouse.move(1, 100);
+      await page.waitForTimeout(350);
+      assert.equal(await page.locator("#reading-popup").isVisible(), false, "固定を外してhoverを離れると閉じる");
+      await ref.click();
+      assert.equal(await page.locator("#fn-drawer").evaluate(el => el.open), true);
+      assert.equal(await page.locator("#fn-4").evaluate(el => el.classList.contains("note-target")), true);
+      assert.ok(await page.locator("#fn-pane").evaluate(el => el.scrollHeight > el.clientHeight), "長い脚注はdialog内でscrollする");
       await page.keyboard.press("Escape");
+      await page.waitForFunction(() => document.activeElement.matches('.fnref a[href="#fn-4"]'));
       assert.equal(await ref.evaluate((el) => el === document.activeElement), true);
+      assert.equal(await page.locator("#reading-popup").isVisible(), false, "復帰focusでpreviewを再表示しない");
       assert.deepEqual(errors, []);
       await context.close();
     });
   }
 });
 
-test("popup内の脚注をEnterで切り替えてもフォーカスと元の戻り先を保つ", { skip }, async (t) => {
+test("参照previewの固定をkeyboardで切り替え、マーカーと戻りリンクでdialogを往復する", { skip }, async (t) => {
   const { browser, url } = await fixture(t);
   const context = await browser.newContext({ viewport: { width: 390, height: 900 } });
   context.setDefaultTimeout(5000);
   const page = await context.newPage(); await page.goto(url(report));
-  // 本文 → 脚注 → 別の脚注。Tabで到達した複製内リンクが切替時に削除される経路。
   const mainRef = page.locator('#bd > p .fnref a[href="#fn-4"]');
-  await mainRef.focus(); await page.keyboard.press("Enter");
-  assert.equal(await page.locator("#reading-popup-close").evaluate((el) => el === document.activeElement), true);
+  await mainRef.focus();
+  assert.equal(await page.locator("#reading-popup").isVisible(), true);
   await page.keyboard.press("Tab");
-  assert.equal(await page.evaluate(() => document.activeElement.getAttribute("href")), "https://example.com/source");
-  await page.keyboard.press("Tab");
-  assert.equal(await page.evaluate(() => document.activeElement.getAttribute("href")), "#fn-3");
+  assert.equal(await page.locator("#reading-popup-pin").evaluate(el => el === document.activeElement), true);
   await page.keyboard.press("Enter");
-  assert.match(await page.locator("#reading-popup-body").textContent(), /図の出典/);
-  assert.equal(await page.locator("#reading-popup-close").evaluate((el) => el === document.activeElement), true,
-    "消したcloneのリンクから新しいpopupの閉じるボタンへfocusを移す");
+  assert.equal(await page.locator("#reading-popup-pin").getAttribute("aria-pressed"), "true");
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#reading-popup-pin").getAttribute("aria-pressed"), "false");
   await page.keyboard.press("Escape");
-  assert.equal(await mainRef.evaluate((el) => el === document.activeElement), true);
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator("#fn-drawer").evaluate(el => el.open), true);
+  assert.equal(await page.locator("#fn-4").evaluate(el => el === document.activeElement), true);
+  await page.locator('#fn-4 .fnback').click();
+  await page.waitForFunction(() => !document.getElementById('fn-drawer').open);
+  assert.equal(await mainRef.evaluate(el => el === document.activeElement), true);
   assert.equal(await page.locator("#reading-popup").isVisible(), false);
-  // 詳細modal内から同じ切替を行っても、focusをmodalの外へ落とさない。
   const detailLink = page.locator(".detail-link");
   await detailLink.focus(); await page.keyboard.press("Enter");
   const detailRef = page.locator('#detail-viewer-body .fnref a[href="#fn-1"]');
-  await detailRef.focus(); await page.keyboard.press("Enter");
-  await page.keyboard.press("Tab");
-  assert.equal(await page.evaluate(() => document.activeElement.getAttribute("href")), "#fn-3");
-  await page.keyboard.press("Enter");
-  assert.equal(await page.locator("#reading-popup").evaluate((el) => el.parentNode.id), "detail-viewer");
-  assert.equal(await page.locator("#reading-popup-close").evaluate((el) => el === document.activeElement), true);
+  await detailRef.focus();
+  assert.equal(await page.locator("#reading-popup").evaluate(el => el.parentNode.id), "detail-viewer");
+  await page.keyboard.press("Space");
+  assert.equal(await page.locator("#fn-drawer").evaluate(el => el.open), true);
   await page.keyboard.press("Escape");
-  assert.equal(await detailRef.evaluate((el) => el === document.activeElement), true);
-  assert.equal(await page.locator("#detail-viewer").evaluate((el) => el.open), true);
+  await page.waitForFunction(() => document.activeElement.matches('#detail-viewer-body .fnref a'));
+  assert.equal(await page.locator("#detail-viewer").evaluate(el => el.open), true);
   await page.keyboard.press("Escape");
   await page.waitForFunction(() => document.activeElement.matches(".detail-link"));
   await context.close();
@@ -197,6 +214,9 @@ test("touch 1tapの固定、JS無効の全文、印刷の展開を保つ", { ski
   assert.equal(await note.textContent(), "図の補足");
   await page.locator("#reading-popup-close").tap();
   assert.equal(await page.locator("#reading-popup").isVisible(), false);
+  await page.locator('#bd > p .fnref a[href="#fn-4"]').tap();
+  assert.equal(await page.locator("#fn-drawer").evaluate(el => el.open), true);
+  await page.locator(".fn-drawer-top button").tap();
   await page.locator(".detail-link").tap();
   await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
   await page.emulateMedia({ media: "print" });

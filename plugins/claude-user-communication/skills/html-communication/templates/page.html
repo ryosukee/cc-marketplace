@@ -16,15 +16,11 @@
     report : #bar の代わりに #footer-nav。#q-pane と .rng[data-q] は無く、左の列には見出しツリー #toc-pane。
              冒頭ブロックの見出し語は「まとめ」
 
-  構造は 3 pane（左に設問、report では見出しツリー・中央に本文・右に脚注）。1340px 以上で 3 列になり、
-  それ未満は DOM 順のまま 本文 → 設問 → 脚注 の 1 列で流れる。
-  DOM 順をこの並びにするのは、狭幅で読み終えた直後に答えられるようにするため。
-
-  幅の段は 5 つ。列幅は 左（設問 / 見出しツリー） / 本文 / 脚注 の順。
-    〜1023px  1 列（本文 640px） / 1024px〜  2 pane（— / 640 / 300）
-    1340px〜  3 pane（300 / 640 / 300） / 1700px〜（320 / 960 / 320） / 2100px〜（360 / 1240 / 360）
-  広い段で伸ばすのは表・図・コードだけ。地の文には上限を掛ける（720px / 800px）。
-  列と一緒に伸ばすと 1 行が長くなりすぎ、行の頭へ視線を戻せなくなる。
+  1024px 以上は左に設問（report は見出しツリー）、右に広い本文の 2 pane。
+  設問欄だけをスクロールし、回答操作は左 pane の下端に置く。
+  狭幅では設問を判断材料の直後へ戻し、回答操作は画面下部に置く。
+  脚注と補足は本文幅を変えない overlay dialog に出す。
+  地の文は 720px まで、図・表・コードは本文列の幅を使う。
 
   色の役割は 3 つに固定する。増やさない。
     青 --link      = 操作できるもの + 現在地
@@ -123,13 +119,13 @@
                     margin-bottom: 6px; letter-spacing: 0.02em; }
   blockquote p { margin: 6px 0; }
 
-  /* 設問のグループ容器。グループ化しないページでは使わない（3 pane の pane 内専用） */
+  /* 設問のグループ容器。グループ化しないページでは使わない（2 pane の pane 内専用） */
   .qgrp { margin: 0 0 14px; }
   .qgrp-h { font-size: 0.875em; font-weight: 700; color: var(--sub); letter-spacing: 0.06em;
             border-bottom: 1px solid var(--rule); padding: 0 0 2px; margin: 0 0 8px; }
-  @media (max-width: 1339.98px) { .qgrp { display: none; } }
+  @media (max-width: 1023.98px) { .qgrp { display: none; } }
 
-  /* 表。3 pane と干渉するので本文カラムより広げない。横スクロールで逃がす */
+  /* 表。2 pane と干渉するので本文カラムより広げない。横スクロールで逃がす */
   .table-wrap { overflow-x: auto;
     background:
       linear-gradient(to right, var(--bg) 70%, transparent) left / 28px 100% no-repeat local,
@@ -196,7 +192,7 @@
   .rng.on::before { background: var(--link); }
   /* 範囲のラベルは見出しの上に出る補助表示。「設問 2」とだけ書き、
      「設問 2 の判断材料」のように役割を説明しない。読み手が知りたいのは
-     いま設問のどれを読んでいるかで、この範囲が何であるかは 3 pane の並びが示している。
+     いま設問のどれを読んでいるかで、この範囲が何であるかは 2 pane の並びが示している。
      太字にすると節の見出しと強さが並び、どちらが節の名前か分からなくなる。
      最小の段のまま、太さと色で後ろへ下げる */
   .rng > .rlabel { font-size: 0.875em; font-weight: 400; color: var(--sub);
@@ -294,76 +290,12 @@
   .suref a:hover { text-decoration: underline; }
   .suref:target a { background: var(--surface-now); color: var(--link); border-radius: 3px; }
 
-  /* pane の段階は 3 つ。設問カードは JS が本文と左 pane の間を移す（同じ DOM ノードを移動）。
-       1 pane（〜1023px）  本文だけ。設問は本文の該当範囲の直後、脚注は本文末尾
-       2 pane（1024〜1339） 本文 + 脚注補足。設問は本文の該当範囲の直後のまま
-       3 pane（1340px〜）   左に設問・中央に本文・右に脚注補足
-     設問を左 pane へ出すのは 3 pane のときだけ。2 pane 以下で最下部にまとめると、
-     判断材料と設問が離れて往復が発生する。
-     #q-pane を既定で隠すのは、設問が本文側にある状態では見出しだけが残るため。 */
-  #q-pane { display: none; }
-
-  /* report の見出しツリー。設問が無いぶん左の列が空くので、本文の節の一覧を置く。
-     出すのは 3 pane のときだけ。1 列と 2 pane で出すと本文の冒頭に目次が生えるのと同じ形になる。 */
-  #toc-pane { display: none; }
+  /* JS 無効時は設問を本文中、脚注を本文末尾に残す。 */
+  #q-pane, #toc-pane { display: none; }
   #toc-pane a { display: block; font-size: 0.875em; color: var(--link); text-decoration: none;
                 padding: 3px 0 3px 10px; border-left: 2px solid transparent; }
   #toc-pane a:hover { text-decoration: underline; }
-  /* 現在地は本文の範囲の縦罫と同じ当て方にする。2px の --link で、面は敷かない */
   #toc-pane a.on { border-left-color: var(--link); font-weight: 700; }
-
-  /* 2 pane。640 + 24 + 300 = 964px + main の左右 padding 40px */
-  @media screen and (min-width: 1024px) and (max-width: 1339px) {
-    main { max-width: 1004px; display: grid;
-           grid-template-columns: 640px 300px; column-gap: 24px;
-           grid-template-areas: "bd fn"; align-items: start; }
-    #bd { grid-area: bd; min-width: 0; }
-    #fn-pane { grid-area: fn; position: sticky; top: 24px;
-               max-height: calc(100vh - 200px); overflow-y: auto; }
-  }
-
-  /* 3 pane。300 + 24 + 640 + 24 + 300 = 1288px 必要なので発動は 1340px 以上 */
-  /* 3 pane。列の合計 300 + 24 + 640 + 24 + 300 = 1288px に main の左右 padding 40px を足す */
-  @media screen and (min-width: 1340px) {
-    html { scroll-padding-bottom: 40px; }
-    main { max-width: 1328px; padding-bottom: 40px; display: grid;
-           grid-template-columns: 300px 640px 300px; column-gap: 24px;
-           grid-template-areas: "q bd fn"; align-items: start; }
-    #bd { grid-area: bd; min-width: 0; }
-    #q-pane, #toc-pane { grid-area: q; display: block; }
-    #fn-pane { grid-area: fn; }
-    #q-pane, #toc-pane, #fn-pane { position: sticky; top: 24px; overflow-y: auto; }
-    /* form の下部バーは右列の下に敷くので、form で丈を削るのは脚注 pane だけ */
-    #q-pane { max-height: calc(100vh - 60px); }
-    #fn-pane { max-height: calc(100vh - 240px); }
-    /* report の追従ナビは全幅に敷くので、その分だけ両方の pane の丈を削る。ナビの高さは約 60px で、
-       ホームインジケータのある端末ではセーフエリアがそれに足される。
-       form の残回答バーと操作欄の高さは、後段の form 専用ルールで調整する */
-    #toc-pane, main:has(#toc-pane) #fn-pane { max-height: calc(100vh - 100px - env(safe-area-inset-bottom)); }
-  }
-
-  /* 3 pane のワイド段。本文の列と両 pane を広げ、表と図を大きく見せる。
-     地の文だけは伸ばさない。640px は全角 40 字で、列と一緒に伸ばすと
-     1 行が長くなりすぎて視線の戻りが効かなくなる。伸ばすのは表・図・コードだけ。
-     列の合計 320 + 24 + 960 + 24 + 320 = 1648px に main の左右 padding 40px を足して 1688px。
-     発動は 1700px 以上（1688px が収まる最小の幅） */
-  @media screen and (min-width: 1700px) {
-    main { max-width: 1688px; grid-template-columns: 320px 960px 320px; }
-    /* 地の文の行長の上限。全角 45 字 */
-    #bd > p, #bd > ul, #bd > ol, #bd > blockquote, #bd > h1, #bd > h2, #bd > h3,
-    #bd > .vnav, #bd > .summary,
-    .rng > p, .rng > ul, .rng > ol, .rng > blockquote, .rng > h2, .rng > h3 { max-width: 720px; }
-  }
-
-  /* 3 pane のウルトラワイド段。
-     列の合計 360 + 24 + 1240 + 24 + 360 = 2008px に padding 40px を足して 2048px */
-  @media screen and (min-width: 2100px) {
-    main { max-width: 2048px; grid-template-columns: 360px 1240px 360px; }
-    /* 地の文の行長の上限。全角 50 字 */
-    #bd > p, #bd > ul, #bd > ol, #bd > blockquote, #bd > h1, #bd > h2, #bd > h3,
-    #bd > .vnav, #bd > .summary,
-    .rng > p, .rng > ul, .rng > ol, .rng > blockquote, .rng > h2, .rng > h3 { max-width: 800px; }
-  }
 
   /* 本文中に置かれた設問カードは、範囲の判断材料の直後に来るので折り畳まない */
   .rng > .qd { margin-top: 18px; }
@@ -436,60 +368,6 @@
     .bar-actions #back { padding: 8px; }
   }
 
-  /* 3 pane のときは回答の追従領域を脚注 pane の真下だけに寄せる。
-     全幅に敷くと本文と設問の下にも帯ができ、縦のスペースを削ってしまう。
-     設問 pane の下ではなく脚注 pane の下に置くのは、設問カードの縦の場所を最大に取るため。
-     この上書きは #bar の定義より後ろに置く。前に置くと後続の left: 0 に負ける。
-     右列の左端 = 画面中央 - (1328 / 2) + 左 padding 20 + 300 + 24 + 640 + 24 = 50% + 344px。
-     右端は画面端まで伸ばす。補足入力のメニューは、この領域から画面内へ広げる */
-  @media screen and (min-width: 1340px) {
-    #bar { left: calc(50% + 344px); right: 0; width: auto; padding-left: 10px; padding-right: 10px; }
-    #bar-in { max-width: none; }
-    /* 状態メッセージは失敗時に長くなる。狭い bar では折り返しを許す */
-    #res { white-space: normal; }
-    /* 一覧復帰・回答コピー・その他を1行に保つ */
-    .bar-actions { gap: 6px; }
-    #back, .subbtn { padding: 8px; }
-    body:has(#bar) main { padding-bottom: 40px; }
-    html:has(#bar) { scroll-padding-bottom: 40px; }
-    body:has(#bar) #q-pane, body:has(#bar) #fn-pane { top: calc(60px + env(safe-area-inset-top)); }
-    body:has(#bar) #q-pane { max-height: calc(100dvh - 100px - env(safe-area-inset-top)); }
-    body:has(#bar) #fn-pane { max-height: calc(100dvh - 200px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
-  }
-  @media screen and (min-width: 1024px) and (max-width: 1339px) {
-    body:has(#bar) #fn-pane { top: calc(60px + env(safe-area-inset-top)); }
-  }
-  /* ワイド段の bar。上の 1340px の上書きより後ろに置く（同じ詳細度なので後勝ち）。
-     右列の左端 = 画面中央 - (1688 / 2) + 左 padding 20 + 320 + 24 + 960 + 24 = 50% + 504px */
-  @media screen and (min-width: 1700px) {
-    #bar { left: calc(50% + 504px); }
-  }
-  /* 右列の左端 = 画面中央 - (2048 / 2) + 左 padding 20 + 360 + 24 + 1240 + 24 = 50% + 644px */
-  @media screen and (min-width: 2100px) {
-    #bar { left: calc(50% + 644px); }
-  }
-
-  /* report の追従ナビの中身を本文の列に合わせる。#bar と違って帯は全幅に敷いたままにし、
-     中の div だけを動かす（操作ボタンが無いので右へ寄せる理由が無い）。
-     margin-left の 50% は #footer-nav の内容幅に対する割合で、左右の padding が main と
-     同じ 20px なので、本文の列の左端と画面中央の差をそのまま書ける */
-  @media screen and (min-width: 1024px) and (max-width: 1339px) {
-    /* 2 pane。画面中央 - (1004 / 2) + 左 padding 20 = 50% - 482px */
-    #footer-nav > div { max-width: 640px; margin-left: calc(50% - 482px); margin-right: 0; }
-  }
-  @media screen and (min-width: 1340px) {
-    /* 3 pane。画面中央 - (1328 / 2) + 左 padding 20 + 300 + 24 = 50% - 320px */
-    #footer-nav > div { max-width: 640px; margin-left: calc(50% - 320px); margin-right: 0; }
-  }
-  @media screen and (min-width: 1700px) {
-    /* 画面中央 - (1688 / 2) + 左 padding 20 + 320 + 24 = 50% - 480px */
-    #footer-nav > div { max-width: 960px; margin-left: calc(50% - 480px); }
-  }
-  @media screen and (min-width: 2100px) {
-    /* 画面中央 - (2048 / 2) + 左 padding 20 + 360 + 24 = 50% - 620px */
-    #footer-nav > div { max-width: 1240px; margin-left: calc(50% - 620px); }
-  }
-
   /* 詳細と図の補足は、JS が使えないときは本文に全文を残す。 */
   [hidden] { display: none !important; }
   .detail-block { margin: 0 0 1.8em; }
@@ -536,25 +414,6 @@
   body:has(#reading-tools) main { padding-top: calc(60px + env(safe-area-inset-top)); }
   html:has(#reading-tools) { scroll-padding-top: calc(44px + env(safe-area-inset-top)); }
   body:has(#reading-tools) #toc-pane, body:has(#reading-tools) #fn-pane { top: calc(60px + env(safe-area-inset-top)); }
-  @media screen and (min-width: 1024px) and (max-width: 1339px) {
-    body.fn-pane-closed main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "bd"; }
-  }
-  @media screen and (min-width: 1340px) {
-    body.fn-pane-closed main { grid-template-columns: 300px minmax(0, 1fr); grid-template-areas: "q bd"; }
-    body.fn-pane-closed:has(#bar) main { padding-bottom: calc(var(--answer-bar-height, 100px) + 24px); }
-  }
-  @media screen and (min-width: 1700px) {
-    body.fn-pane-closed main { grid-template-columns: 320px minmax(0, 1fr); }
-  }
-  @media screen and (min-width: 2100px) {
-    body.fn-pane-closed main { grid-template-columns: 360px minmax(0, 1fr); }
-  }
-  @media screen and (min-width: 1024px) {
-    body.fn-pane-closed #bd > p, body.fn-pane-closed #bd > ul, body.fn-pane-closed #bd > ol,
-    body.fn-pane-closed #bd > blockquote, body.fn-pane-closed #bd > .vnav,
-    body.fn-pane-closed #bd > .summary, body.fn-pane-closed .rng > p,
-    body.fn-pane-closed .rng > ul, body.fn-pane-closed .rng > ol { max-width: 720px; }
-  }
   @media screen and (max-width: 639px) {
     #detail-viewer { width: 100%; max-height: 100dvh; height: 100dvh; margin: 0; border-radius: 0; }
     #detail-viewer-body { padding: 16px; }
@@ -571,6 +430,80 @@
     table, pre, .qd { break-inside: avoid; }
     @page { margin: 16mm; }
   }
+  /* 2 pane、回答操作と独立した脚注 dialog。 */
+@media screen {
+  html:has(body.page-layout) { scrollbar-gutter: stable; }
+  body.page-layout main { display: block; max-width: 800px; }
+  body.page-layout #bd { min-width: 0; }
+  body.page-layout #q-pane, body.page-layout #toc-pane { display: none; }
+  body.page-layout #bar { left: 0; right: 0; width: auto; }
+  body.page-layout #bar-in { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 8px; }
+  body.page-layout .bar-actions { display: contents; }
+  body.page-layout #copy { grid-column: 1; grid-row: 1; }
+  body.page-layout #answer-menu-toggle { grid-column: 2; grid-row: 1; }
+  body.page-layout .bar-info { grid-column: 1; grid-row: 2; min-width: 0; }
+  body.page-layout #back { grid-column: 2; grid-row: 2; align-self: start;
+    padding: 4px 6px; font-size: 0.875em; line-height: 1.5; text-align: center; white-space: nowrap; }
+  #reading-popup-pin:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  body.page-layout #fn-toggle { min-height: 28px; padding: 3px 8px; line-height: 1.4; }
+  body.page-layout #answer-menu { position: fixed; z-index: 120; margin: 0; }
+  body.page-layout .answer-menu-actions { display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: 8px; margin-top: 12px; }
+  body.page-layout #answer-menu #reset { margin-top: 0; }
+  body.page-layout #fn-pane .note-target { outline: 2px solid var(--link); outline-offset: 4px; }
+  body.page-layout #fn-pane { overscroll-behavior: contain; }
+  body.page-layout #footer-nav > div { max-width: 760px; margin: auto; }
+  body.page-layout #bd > p, body.page-layout #bd > ul,
+  body.page-layout #bd > ol, body.page-layout #bd > blockquote,
+  body.page-layout .rng > p, body.page-layout .rng > ul,
+  body.page-layout .rng > ol { max-width: 720px; }
+  #fn-drawer { position: fixed; inset: 0 0 0 auto; width: min(440px, 100vw);
+    max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0;
+    padding: 0; border: 0; border-left: 1px solid var(--rule);
+    background: var(--bg); color: var(--fg); box-shadow: 0 0 32px var(--tw-shadow); }
+  #fn-drawer[open] { display: flex; flex-direction: column; }
+  #fn-drawer::backdrop { background: rgb(0 0 0 / 22%); }
+  .fn-drawer-top { display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex: none; padding: max(16px, env(safe-area-inset-top)) 20px 12px;
+    border-bottom: 1px solid var(--rule); }
+  #fn-drawer-title { margin: 0; font-size: 1.15em; }
+  body.page-layout #fn-drawer #fn-pane { display: block; position: static;
+    grid-area: auto; overflow-y: auto; min-height: 0; max-height: none;
+    padding: 20px 24px max(24px, env(safe-area-inset-bottom)); }
+  html.fn-drawer-open, html.fn-drawer-open body { overflow: hidden; }
+  @media (min-width: 1024px) {
+    body.page-layout main {
+      max-width: 1760px; display: grid; grid-template-columns: 300px minmax(0, 1fr);
+      grid-template-areas: "q bd"; gap: 32px; padding-left: 24px; padding-right: 24px; }
+    body.page-layout #bd { grid-area: bd; }
+    body.page-layout #q-pane { grid-area: q; display: flex; flex-direction: column;
+      position: sticky; top: calc(60px + env(safe-area-inset-top));
+      height: calc(100dvh - 68px - env(safe-area-inset-top)); max-height: none; overflow: visible; }
+    body.page-layout:has(#bar) #q-pane { max-height: none; }
+    body.page-layout #question-list { flex: 1; min-height: 0; overflow-y: auto; padding-right: 8px; }
+    body.page-layout #q-pane #bar { flex: none; position: static; padding: 12px 0 0;
+      border-top: 1px solid var(--rule); z-index: auto; }
+    body.page-layout #bar-in { max-width: none; }
+    body.page-layout .bar-actions { flex-wrap: nowrap; gap: 8px; }
+    body.page-layout .bar-actions #copy { flex: 1 1 auto; }
+    body.page-layout .bar-info { gap: 4px 8px; }
+    body.page-layout .bar-info #proj { border: 0; padding: 0; font-size: 0.875em; }
+    body.page-layout .bar-info #ver { flex-basis: 100%; margin: 0; }
+    body.page-layout:has(#bar) main { padding-bottom: 40px; }
+    html:has(body.page-layout #bar) { scroll-padding-bottom: 40px; }
+    body.page-layout #toc-pane { grid-area: q; display: block; position: sticky;
+      top: 60px; max-height: calc(100dvh - 140px); overflow-y: auto; }
+    body.page-layout #footer-nav > div { max-width: none; margin: 0 0 0 max(332px, calc((100vw - 1712px) / 2 + 332px)); }
+  }
+}
+@media print {
+  #fn-drawer, .fn-drawer-top { display: none !important; }
+  body.page-layout #fn-pane { display: block !important; position: static;
+    max-height: none; overflow: visible; }
+  #question-list { overflow: visible; height: auto; }
+  #answer-menu { display: none !important; }
+}
+
 {{追加 CSS}}</style>
 {{図の CSS}}</head>
 <body>
@@ -580,7 +513,7 @@
   <div id="detail-viewer-body"></div>
 </dialog>
 <div id="reading-popup" role="dialog" aria-modal="false" aria-labelledby="reading-popup-title" hidden>
-  <div class="reading-popup-head"><p id="reading-popup-title"></p><button type="button" id="reading-popup-close">閉じる</button></div>
+  <div class="reading-popup-head"><p id="reading-popup-title"></p><button type="button" id="reading-popup-pin" class="subbtn" aria-pressed="false" hidden>固定</button><button type="button" id="reading-popup-close">閉じる</button></div>
   <div id="reading-popup-body"></div>
 </div>
 <dialog id="image-viewer" aria-labelledby="image-viewer-title">
@@ -652,25 +585,6 @@
 
 /* 詳細・階層・脚注と図の補足の共通操作。原文は DOM に残し、印刷時には全て戻す。 */
 (function () {
-  var pane = document.getElementById('fn-pane');
-  var toggle = document.getElementById('fn-toggle');
-  if (pane && toggle) {
-    function setPane(open) {
-      pane.hidden = !open;
-      document.body.classList.toggle('fn-pane-closed', !open);
-      toggle.setAttribute('aria-expanded', String(open));
-    }
-    toggle.hidden = false;
-    setPane(false);
-    toggle.addEventListener('click', function () { setPane(pane.hidden); });
-    // 戻りリンク等から閉じた pane を直接指定した場合も行き先を見せる。
-    function revealHash() {
-      var target = document.getElementById(location.hash.slice(1));
-      if (target && pane.contains(target)) { setPane(true); target.scrollIntoView(); }
-    }
-    window.addEventListener('hashchange', revealHash);
-    revealHash();
-  }
   var branches = [].slice.call(document.querySelectorAll('.tree-branch'));
   branches.forEach(function (branch) { branch.open = false; });
   var dialog = document.getElementById('detail-viewer');
@@ -681,7 +595,20 @@
   var popupBody = document.getElementById('reading-popup-body');
   var popupTitle = document.getElementById('reading-popup-title');
   var popupClose = document.getElementById('reading-popup-close');
-  var popupAnchor = null, pinned = false, leaveTimer = null, returningFocus = false;
+  var popupPin = document.getElementById('reading-popup-pin');
+  document.addEventListener('reference-focus', function (event) {
+    suppressedAnchor = event.detail;
+    returningFocus = true;
+    event.detail.focus({ preventScroll: true });
+    returningFocus = false;
+  });
+  function requestReference(anchor) {
+    var id = (anchor.getAttribute('href') || '').slice(1);
+    var opener = popup.contains(anchor) ? popupAnchor : anchor;
+    closePopup(false);
+    document.dispatchEvent(new CustomEvent('footnote-request', { detail: { id: id, opener: opener } }));
+  }
+  var popupAnchor = null, pinned = false, leaveTimer = null, returningFocus = false, suppressedAnchor = null;
   var hover = window.matchMedia('(any-hover: hover)');
   function closePopup(returnFocus) {
     clearTimeout(leaveTimer);
@@ -693,6 +620,7 @@
     popup.hidden = true;
     popupAnchor = null;
     pinned = false;
+    popupPin.textContent = '固定'; popupPin.setAttribute('aria-pressed', 'false');
     popupBody.replaceChildren();
     document.body.appendChild(popup);
     if (returnFocus && opener && opener.isConnected) {
@@ -712,12 +640,13 @@
   }
   function pinPopup() {
     pinned = true;
+    popupPin.textContent = '固定を外す'; popupPin.setAttribute('aria-pressed', 'true');
     popup.dataset.pinned = 'true';
     clearTimeout(leaveTimer);
     if (popupAnchor && popupAnchor.readingMarkup != null) popupAnchor.innerHTML = popupAnchor.readingMarkup;
   }
   function openPopup(anchor, pin) {
-    if (returningFocus) return;
+    if (returningFocus || (!pin && anchor === suppressedAnchor)) return;
     clearTimeout(leaveTimer);
     if (popupAnchor === anchor && !popup.hidden) { if (pin) pinPopup(); return; }
     // 固定した内容は、別の補足をクリックするまで hover / focus では入れ替えない。
@@ -726,6 +655,8 @@
     var originalOpener = popup.contains(anchor) ? popupAnchor : anchor;
     closePopup(false);
     var note = anchor.closest('.figure-note');
+    popup.dataset.kind = note ? 'figure' : 'reference';
+    popupPin.hidden = !!note; popupClose.hidden = !note;
     var source = note ? note.querySelector('.figure-note-body') : document.getElementById((anchor.getAttribute('href') || '').slice(1));
     if (!source) return;
     popupAnchor = originalOpener || anchor;
@@ -743,6 +674,8 @@
     // modal の外の要素は inert になるため、呼び出し元が modal 内ならその中へ置く。
     (modal || document.body).appendChild(popup);
     pinned = !!pin;
+    popupPin.textContent = pinned ? '固定を外す' : '固定';
+    popupPin.setAttribute('aria-pressed', String(pinned));
     popup.dataset.pinned = String(pinned);
     popup.hidden = false;
     popup.scrollTop = 0;
@@ -762,16 +695,23 @@
     anchor.addEventListener('pointerenter', function (event) {
       if (event.pointerType !== 'touch' && hover.matches) openPopup(anchor, false);
     });
-    anchor.addEventListener('pointerleave', leavePopup);
+    anchor.addEventListener('pointerleave', function () { if (suppressedAnchor === anchor) suppressedAnchor = null; leavePopup(); });
     anchor.addEventListener('focus', function () { openPopup(anchor, false); });
-    anchor.addEventListener('blur', leavePopup);
+    anchor.addEventListener('blur', function () { if (suppressedAnchor === anchor) suppressedAnchor = null; leavePopup(); });
     anchor.addEventListener('click', function (event) {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
+      if (anchor.matches('.fnref a, .suref a')) { requestReference(anchor); return; }
       if (popupAnchor === anchor && pinned) closePopup(true);
       else { openPopup(anchor, true); if (event.detail === 0) popupClose.focus({ preventScroll: true }); }
     });
     anchor.addEventListener('keydown', function (event) {
+      if (anchor.matches('.fnref a, .suref a')) {
+        if (event.key === 'Tab' && !event.shiftKey && !popup.hidden && popupAnchor === anchor) {
+          event.preventDefault(); popupPin.focus({ preventScroll: true }); return;
+        }
+        if (event.key === ' ') { event.preventDefault(); requestReference(anchor); return; }
+      }
       if (event.key !== ' ') return;
       event.preventDefault();
       if (popupAnchor === anchor && pinned) closePopup(true);
@@ -786,20 +726,30 @@
     summary.setAttribute('aria-label', summary.textContent);
     enhanceAnchor(summary);
   });
-  [].slice.call(document.querySelectorAll('.fnref a, .suref a')).forEach(enhanceAnchor);
-  // 脚注の本文中にある別の脚注参照も、複製から原文を引いてその場で読める。
+  [].slice.call(document.querySelectorAll('.fnref a, .suref a')).forEach(function (anchor) {
+    enhanceAnchor(anchor);
+    anchor.setAttribute('aria-controls', 'reading-popup fn-drawer');
+    anchor.setAttribute('aria-label', (anchor.closest('.fnref') ? '脚注 ' : '補足 ') + anchor.textContent + 'をサイドパネルで開く');
+  });
+  // プレビュー内の参照マーカーも原文の脚注 dialog へ案内する。
   popupBody.addEventListener('click', function (event) {
     var ref = event.target.closest('.fnref a, .suref a');
     if (ref) {
-      event.preventDefault(); openPopup(ref, true);
-      // 切替でフォーカス中の複製が消えるため、keyboard 起動時は新しい popup 内へ戻す。
-      if (event.detail === 0) popupClose.focus({ preventScroll: true });
+      event.preventDefault(); requestReference(ref);
     }
-    else pinPopup();
+    else if (popup.dataset.kind !== 'reference') pinPopup();
   });
   popup.addEventListener('pointerenter', function () { clearTimeout(leaveTimer); });
   popup.addEventListener('pointerleave', leavePopup);
   popup.addEventListener('focusout', leavePopup);
+  popupPin.addEventListener('click', function (event) {
+    if (pinned) {
+      pinned = false; popup.dataset.pinned = 'false';
+      popupPin.textContent = '固定'; popupPin.setAttribute('aria-pressed', 'false');
+      if (event.detail > 0) popupPin.blur();
+      leavePopup();
+    } else pinPopup();
+  });
   popupClose.addEventListener('click', function () { closePopup(true); });
   document.addEventListener('pointerdown', function (event) {
     if (!popup.hidden && !popup.contains(event.target) && event.target !== popupAnchor && !popupAnchor.contains(event.target)) closePopup(false);
@@ -861,6 +811,143 @@
     printStates = [];
   });
 })();
+</script>
+<script data-scope="layout">
+/* 2 pane と脚注 dialog。入力・脚注の原文ノードを移し、複製しない。 */
+(() => {
+  'use strict';
+  document.body.classList.add('page-layout');
+  const pane = document.getElementById('q-pane');
+  const bar = document.getElementById('bar');
+  const menu = document.getElementById('answer-menu');
+  if (pane && bar && menu) {
+    const menuActions = document.createElement('div');
+    menuActions.className = 'answer-menu-actions';
+    menuActions.append(menu.querySelector('#reset'));
+    bar.querySelector('#bar-in').append(bar.querySelector('#back'));
+    menu.append(menuActions);
+    const list = document.createElement('div');
+    list.id = 'question-list';
+    while (pane.firstChild) list.append(pane.firstChild);
+    pane.append(list);
+    const home = document.createComment('answer-controls-home');
+    bar.before(home);
+    const wide = matchMedia('(min-width: 1024px)');
+    const place = () => {
+      if (wide.matches) pane.append(bar);
+      else home.after(bar);
+    };
+    wide.addEventListener('change', place);
+    place();
+    // The auxiliary menu must not be clipped by the questions' scroll area.
+    document.body.append(menu);
+    const positionMenu = () => {
+      if (menu.hidden) return;
+      const rect = bar.getBoundingClientRect();
+      const width = Math.min(420, innerWidth - 24);
+      menu.style.width = width + 'px';
+      menu.style.left = Math.max(12, Math.min(rect.left, innerWidth - width - 12)) + 'px';
+      menu.style.right = 'auto';
+      menu.style.bottom = Math.max(12, innerHeight - rect.top + 8) + 'px';
+      menu.style.maxHeight = Math.max(160, rect.top - 24) + 'px';
+    };
+    new MutationObserver(positionMenu).observe(menu, { attributes: true, attributeFilter: ['hidden'] });
+    addEventListener('resize', positionMenu);
+  }
+  const notes = document.getElementById('fn-pane');
+  const toggle = document.getElementById('fn-toggle');
+  if (!notes || !toggle) return;
+  const home = document.createComment('footnotes-home');
+  notes.before(home);
+  const drawer = document.createElement('dialog');
+  drawer.id = 'fn-drawer';
+  drawer.setAttribute('aria-labelledby', 'fn-drawer-title');
+  const top = document.createElement('div'); top.className = 'fn-drawer-top';
+  const heading = document.createElement('h2'); heading.id = 'fn-drawer-title'; heading.textContent = '脚注と補足';
+  const close = document.createElement('button'); close.type = 'button'; close.className = 'subbtn'; close.textContent = '閉じる';
+  top.append(heading, close); drawer.append(top, notes); document.body.append(drawer);
+  if (typeof drawer.showModal !== 'function') { drawer.remove(); home.after(notes); return; }
+  notes.hidden = false;
+  toggle.hidden = false; toggle.setAttribute('aria-controls', 'fn-drawer');
+  toggle.setAttribute('aria-haspopup', 'dialog'); toggle.setAttribute('aria-expanded', 'false');
+  let opener = toggle, focusTarget = null, printing = false, closeHandled = true;
+  const focusWithoutPreview = target => document.dispatchEvent(new CustomEvent('reference-focus', { detail: target }));
+  const open = (target, source) => {
+    if (!drawer.open) {
+      opener = source || document.activeElement;
+      const popupClose = document.getElementById('reading-popup-close');
+      if (!document.getElementById('reading-popup').hidden) popupClose.click();
+      drawer.showModal();
+      closeHandled = false;
+      document.documentElement.classList.add('fn-drawer-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      close.focus({ preventScroll: true });
+    }
+    notes.querySelectorAll('.note-target').forEach(note => note.classList.remove('note-target'));
+    if (target) {
+      target.classList.add('note-target');
+      notes.scrollTo({ top: notes.scrollTop + target.getBoundingClientRect().top - notes.getBoundingClientRect().top - 12 });
+      target.setAttribute('tabindex', '-1');
+      focusWithoutPreview(target);
+    }
+  };
+  document.addEventListener('footnote-request', event => {
+    const target = document.getElementById(event.detail.id);
+    if (target && notes.contains(target)) open(target, event.detail.opener);
+  });
+  const finishClose = () => {
+    if (closeHandled || drawer.open) return;
+    closeHandled = true;
+    // Native focus restoration happens during close(), before the queued close event.
+    if (!document.getElementById('reading-popup').hidden) document.getElementById('reading-popup-close').click();
+    document.documentElement.classList.remove('fn-drawer-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    if (!printing) focusWithoutPreview(focusTarget || (opener?.isConnected ? opener : toggle));
+    focusTarget = null;
+  };
+  const shut = (target = null) => {
+    focusTarget = target;
+    if (drawer.open) drawer.close();
+    finishClose();
+  };
+  toggle.addEventListener('click', () => open());
+  close.addEventListener('click', () => shut());
+  drawer.addEventListener('cancel', event => { event.preventDefault(); shut(); });
+  drawer.addEventListener('click', event => {
+    if (event.target !== drawer) return;
+    const r = drawer.getBoundingClientRect();
+    if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) shut();
+  });
+  drawer.addEventListener('close', finishClose);
+  notes.addEventListener('click', event => {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const target = document.getElementById(link.hash.slice(1));
+    if (!target || notes.contains(target)) return;
+    event.preventDefault();
+    target.setAttribute('tabindex', '-1');
+    const focus = target.matches('.fnref, .suref') ? target.querySelector('a') || target : target;
+    shut(focus);
+    requestAnimationFrame(() => { target.scrollIntoView({ block: 'center' }); focusWithoutPreview(focus); });
+  });
+  const revealHash = () => {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target && notes.contains(target)) open(target);
+  };
+  addEventListener('hashchange', revealHash);
+  revealHash();
+  addEventListener('beforeprint', () => {
+    printing = true;
+    shut();
+    home.after(notes);
+    notes.hidden = false;
+  });
+  addEventListener('afterprint', () => {
+    drawer.append(notes);
+    printing = false;
+  });
+})();
+
 </script>
 <script data-scope="report">
 /* report の見出しツリーの現在地。report の節は要素で包まれていないので、h2 の位置で決める。
@@ -930,19 +1017,21 @@
   var ranges = [].slice.call(document.querySelectorAll('.rng[data-q]'));
   var qds = [].slice.call(document.querySelectorAll('.qd[data-for]'));
 
-  /* 設問カードの置き場を画面幅で切り替える。3 pane では左 pane、それ以外は本文の
+  /* 設問カードの置き場を画面幅で切り替える。2 pane では左 pane、それ以外は本文の
      判断材料の直後。DOM ノードを移すだけなので入力値も下書きも保たれる。
      本文側の位置はコメントノードで覚えておく（兄弟が動いても戻せる）。 */
-  var mq3 = window.matchMedia('(min-width: 1340px)');
+  var wideQuestions = window.matchMedia('(min-width: 1024px)');
+  var printQuestions = window.matchMedia('print');
+  var questionsPrinting = printQuestions.matches;
   qds.forEach(function (d) {
     var home = document.createComment('qd-home:' + d.dataset.for);
     d.parentNode.insertBefore(home, d);
     d.__home = home;
   });
   function place() {
-    var pane = document.getElementById('q-pane');
-    if (!mq3.matches) {
-      /* 3 pane でなければ本文側の元位置へ戻す */
+    var pane = document.getElementById('question-list');
+    if (questionsPrinting || !wideQuestions.matches) {
+      /* 印刷と狭幅では判断材料の直後へ戻す。 */
       qds.forEach(function (d) {
         if (d.parentNode === pane || (d.parentNode && d.parentNode.classList &&
             d.parentNode.classList.contains('qgrp'))) {
@@ -951,7 +1040,7 @@
       });
       return;
     }
-    /* 3 pane では本文の順（qds の並び）で pane に置く。グループ容器はそのグループの
+    /* 2 pane では本文の順（qds の並び）で pane に置く。グループ容器はそのグループの
        最初のカードが来る位置へ移し、同じグループの後続カードはその容器へ入る。
        グループ外のカードは pane 直下に置く。容器を pane に書いた順は並びに効かない。
        末尾へ積むだけだと、グループ外のカードが全グループより後ろに来て番号順が崩れる。
@@ -977,7 +1066,7 @@
   var pinned = {};
   var lastBest = null;
   function follow() {
-    if (!ranges.length) return;
+    if (questionsPrinting || !ranges.length) return;
     var vh = window.innerHeight, best = null, bestOv = 0;
     /* 読み位置は画面の上から 35%。まずその線を含む範囲を採り、
        どの範囲も含まなければ重なりが最大の範囲へ落とす。
@@ -998,9 +1087,9 @@
     qds.forEach(function (d) {
       var on = !!(best && d.dataset.for === best.dataset.q);
       d.classList.toggle('on', on);
-      /* 折り畳みは 3 pane の pane を短く保つための仕掛け。
+      /* 折り畳みは 2 pane の pane を短く保つための仕掛け。
          本文中に置かれているときは位置そのものが対応を示すので常に開く */
-      if (!mq3.matches) { d.open = true; return; }
+      if (!wideQuestions.matches) { d.open = true; return; }
       if (!pinned[d.dataset.for]) d.open = on;
     });
   }
@@ -1011,8 +1100,14 @@
     if (sm) sm.addEventListener('click', function () { pinned[d.dataset.for] = true; });
   });
   function relayout() { place(); follow(); }
-  if (mq3.addEventListener) mq3.addEventListener('change', relayout);
-  else if (mq3.addListener) mq3.addListener(relayout);
+  function printPlacement(printing) { questionsPrinting = printing; place(); }
+  window.addEventListener('beforeprint', function () { printPlacement(true); });
+  window.addEventListener('afterprint', function () { printPlacement(false); });
+  function printMediaChanged(event) { printPlacement(event.matches); }
+  if (printQuestions.addEventListener) printQuestions.addEventListener('change', printMediaChanged);
+  else if (printQuestions.addListener) printQuestions.addListener(printMediaChanged);
+  if (wideQuestions.addEventListener) wideQuestions.addEventListener('change', relayout);
+  else if (wideQuestions.addListener) wideQuestions.addListener(relayout);
   window.addEventListener('scroll', follow, { passive: true });
   window.addEventListener('resize', relayout);
   relayout();

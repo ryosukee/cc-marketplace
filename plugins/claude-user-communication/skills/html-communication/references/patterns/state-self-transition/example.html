@@ -1,0 +1,19 @@
+<section class="state-self-transition">
+  <h3>同じ状態へ戻る再試行</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" role="img" aria-label="通知失敗からの再送信が受理なら通知済みへ進み、拒否なら通知失敗へ戻る関係を示す。">
+    <defs>
+      <marker id="state-self-transition-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0L10 5L0 10Z" fill="context-stroke"/>
+      </marker>
+    </defs>
+    <rect class="box" x="16" y="130" width="124" height="42" rx="7"/>
+    <text x="78.0" y="156.0">通知失敗</text>
+    <rect class="box" x="224" y="130" width="120" height="42" rx="7"/>
+    <text x="284.0" y="156.0">通知済み</text>
+    <path class="line" d="M140 151H224"/>
+    <text x="182" y="122">再送・受理</text>
+    <path class="line" d="M46 130V48H110V130"/>
+    <text x="78" y="30">再送・拒否</text>
+  </svg>
+  <p>再送信が失敗して同じ状態へ戻る場合、自己ループを外側へ出す。状態が変わらなくても、試行を履歴に残す。</p>
+</section>
