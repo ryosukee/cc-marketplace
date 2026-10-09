@@ -6,6 +6,10 @@
   const bar = document.getElementById('bar');
   const menu = document.getElementById('answer-menu');
   if (pane && bar) {
+    const menuActions = document.createElement('div');
+    menuActions.className = 'answer-menu-actions';
+    menuActions.append(bar.querySelector('#back'), menu.querySelector('#reset'));
+    menu.append(menuActions);
     const list = document.createElement('div');
     list.id = 'question-list';
     while (pane.firstChild) list.append(pane.firstChild);
@@ -50,9 +54,10 @@
   toggle.hidden = false; toggle.setAttribute('aria-controls', 'fn-drawer');
   toggle.setAttribute('aria-haspopup', 'dialog'); toggle.setAttribute('aria-expanded', 'false');
   let opener = toggle, focusTarget = null, printing = false;
-  const open = (target) => {
+  const focusWithoutPreview = target => document.dispatchEvent(new CustomEvent('reference-focus', { detail: target }));
+  const open = (target, source) => {
     if (!drawer.open) {
-      opener = document.activeElement;
+      opener = source || document.activeElement;
       const popupClose = document.getElementById('reading-popup-close');
       if (!document.getElementById('reading-popup').hidden) popupClose.click();
       drawer.showModal();
@@ -60,8 +65,18 @@
       toggle.setAttribute('aria-expanded', 'true');
       close.focus({ preventScroll: true });
     }
-    if (target) target.scrollIntoView({ block: 'nearest' });
+    notes.querySelectorAll('.note-target').forEach(note => note.classList.remove('note-target'));
+    if (target) {
+      target.classList.add('note-target');
+      notes.scrollTo({ top: notes.scrollTop + target.getBoundingClientRect().top - notes.getBoundingClientRect().top - 12 });
+      target.setAttribute('tabindex', '-1');
+      focusWithoutPreview(target);
+    }
   };
+  document.addEventListener('footnote-request', event => {
+    const target = document.getElementById(event.detail.id);
+    if (target && notes.contains(target)) open(target, event.detail.opener);
+  });
   const shut = (target = null) => { focusTarget = target; if (drawer.open) drawer.close(); };
   toggle.addEventListener('click', () => open());
   close.addEventListener('click', () => shut());
@@ -71,9 +86,11 @@
     if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) shut();
   });
   drawer.addEventListener('close', () => {
+    // Native dialog focus restoration can reopen the marker preview.
+    if (!document.getElementById('reading-popup').hidden) document.getElementById('reading-popup-close').click();
     document.documentElement.classList.remove('fn-drawer-open');
     toggle.setAttribute('aria-expanded', 'false');
-    if (!printing) (focusTarget || (opener?.isConnected ? opener : toggle)).focus({ preventScroll: true });
+    if (!printing) focusWithoutPreview(focusTarget || (opener?.isConnected ? opener : toggle));
     focusTarget = null;
   });
   notes.addEventListener('click', event => {
@@ -84,7 +101,7 @@
     event.preventDefault();
     target.setAttribute('tabindex', '-1');
     shut(target);
-    requestAnimationFrame(() => { target.scrollIntoView({ block: 'center' }); target.focus({ preventScroll: true }); });
+    requestAnimationFrame(() => { target.scrollIntoView({ block: 'center' }); focusWithoutPreview(target); });
   });
   const revealHash = () => {
     const target = document.getElementById(location.hash.slice(1));

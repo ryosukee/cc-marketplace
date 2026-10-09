@@ -5,7 +5,13 @@
   body.two-pane-trial #bd { min-width: 0; }
   body.two-pane-trial #q-pane, body.two-pane-trial #toc-pane { display: none; }
   body.two-pane-trial #bar { left: 0; right: 0; width: auto; }
+  body.two-pane-trial #fn-toggle { min-height: 28px; padding: 3px 8px; line-height: 1.4; }
   body.two-pane-trial #answer-menu { position: fixed; z-index: 120; margin: 0; }
+  body.two-pane-trial .answer-menu-actions { display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: 8px; margin-top: 12px; }
+  body.two-pane-trial #answer-menu #reset { margin-top: 0; }
+  body.two-pane-trial #fn-pane .note-target { outline: 2px solid var(--link); outline-offset: 4px; }
+  body.two-pane-trial #fn-pane { overscroll-behavior: contain; }
   body.two-pane-trial #footer-nav > div { max-width: 760px; margin: auto; }
   body.two-pane-trial #bd > p, body.two-pane-trial #bd > ul,
   body.two-pane-trial #bd > ol, body.two-pane-trial #bd > blockquote,
@@ -32,13 +38,14 @@
     body.two-pane-trial #bd { grid-area: bd; }
     body.two-pane-trial #q-pane { grid-area: q; display: flex; flex-direction: column;
       position: sticky; top: calc(60px + env(safe-area-inset-top));
-      height: calc(100dvh - 84px - env(safe-area-inset-top)); max-height: none; overflow: visible; }
+      height: calc(100dvh - 68px - env(safe-area-inset-top)); max-height: none; overflow: visible; }
+    body.two-pane-trial:has(#bar) #q-pane { max-height: none; }
     body.two-pane-trial #question-list { flex: 1; min-height: 0; overflow-y: auto; padding-right: 8px; }
     body.two-pane-trial #q-pane #bar { flex: none; position: static; padding: 12px 0 0;
       border-top: 1px solid var(--rule); z-index: auto; }
     body.two-pane-trial #bar-in { max-width: none; }
-    body.two-pane-trial .bar-actions { flex-wrap: wrap; gap: 8px; }
-    body.two-pane-trial .bar-actions #copy { flex-basis: 100%; order: -1; }
+    body.two-pane-trial .bar-actions { flex-wrap: nowrap; gap: 8px; }
+    body.two-pane-trial .bar-actions #copy { flex: 1 1 auto; }
     body.two-pane-trial .bar-info { gap: 4px 8px; }
     body.two-pane-trial .bar-info #proj { border: 0; padding: 0; font-size: 0.875em; }
     body.two-pane-trial .bar-info #ver { flex-basis: 100%; margin: 0; }
