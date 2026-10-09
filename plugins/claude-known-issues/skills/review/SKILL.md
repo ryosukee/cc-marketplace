@@ -12,7 +12,7 @@ description: Claude Code の既知バグ一覧を突合し、ワークアラウ�
 - 引数なし: 差分突合。前回突合した版から現在までの changelog に、一覧のエントリを解決する変更があるかを見る。
   Claude Code の更新を SessionStart hook が検知するたびに通知される通常の経路
 - `full`: 全件突合。changelog ではなく、一覧の全エントリの `how_to_verify` を実行して、
-  期待結果と違うものを解除候補にする。手動で実行する
+  解除条件を満たしたものを解除候補に、手順が対象を捉えていないものを差し替え候補にする。手動で実行する
 
 ## ワークフロー
 
@@ -60,13 +60,21 @@ agent は一覧と state を編集しない。`how_to_verify` の実行でプロ
 
 1. 各エントリの `log` に、agent の追記案の 1 行を加える。単引用符で囲み、中の単引用符は `''` にする。
    複数行に折り返さない
-2. 解除候補があれば、エントリの `dependents` をユーザーに提示し、解除してよいか確認する。
+2. agent の報告に `how_to_verify` の差し替え案があれば、判定を問わず、差し替え案（対象を捉えていない行・根拠・
+   差し替えの手順・TO での実行結果）をユーザーに提示し、差し替えてよいか確認する。
+   承認されたら `how_to_verify` の該当行と解除条件を差し替え、log に差し替えたことを 1 行足す。
+   承認されなければ `how_to_verify` は変えず、差し替えを保留したことを log に書く。
+   `verify_broken` のエントリは、agent が報告した作れなかった理由と読んだ範囲をそのままユーザーに伝える。
+   why: 対象を捉えていない手順を残すと、次の突合でその行が期待と違う結果を出し続け、
+   修正が入ったときと区別できない。解除より先に差し替えるのは、解除済みの一覧に残る手順を、
+   解除の判定に使った手順と揃えるため
+3. 解除候補があれば、エントリの `dependents` をユーザーに提示し、解除してよいか確認する。
    承認されたら dependents の各場所を直し、エントリに `resolved_at`（日付）と
    `resolved_version` を足して `known-issues.resolved.yml` へ移す。
    最後に `grep -c resolved_at known-issues.yml` が 0 であることを確かめる（移し忘れの検知）
-3. プローブの残存を確かめる: `find ~/.claude "$PWD" -name '.known-issues-probe-*'` が空でなければ消し、
+4. プローブの残存を確かめる: `find ~/.claude "$PWD" -name '.known-issues-probe-*'` が空でなければ消し、
    log に書く
-4. state を更新し、claim を解除する。差分では `reviewed_version` を TO に、`pending_version` を null に。
+5. state を更新し、claim を解除する。差分では `reviewed_version` を TO に、`pending_version` を null に。
    全件では `last_full_review_at` を更新し、`reviewed_version` は進めない
 
 ```
