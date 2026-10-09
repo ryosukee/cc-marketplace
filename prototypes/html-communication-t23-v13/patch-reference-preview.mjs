@@ -40,10 +40,11 @@ export function patchReferencePreview(html) {
   });`);
   replace("      event.preventDefault(); openPopup(ref, true);", "      event.preventDefault(); requestReference(ref); return;");
   replace("    else pinPopup();", "    else if (popup.dataset.kind !== 'reference') pinPopup();");
-  replace("  popupClose.addEventListener('click', function () { closePopup(true); });", `  popupPin.addEventListener('click', function () {
+  replace("  popupClose.addEventListener('click', function () { closePopup(true); });", `  popupPin.addEventListener('click', function (event) {
     if (pinned) {
       pinned = false; popup.dataset.pinned = 'false';
       popupPin.textContent = '固定'; popupPin.setAttribute('aria-pressed', 'false');
+      if (event.detail > 0) popupPin.blur();
       leavePopup();
     } else pinPopup();
   });

@@ -8,7 +8,8 @@
   if (pane && bar) {
     const menuActions = document.createElement('div');
     menuActions.className = 'answer-menu-actions';
-    menuActions.append(bar.querySelector('#back'), menu.querySelector('#reset'));
+    menuActions.append(menu.querySelector('#reset'));
+    bar.querySelector('#bar-in').append(bar.querySelector('#back'));
     menu.append(menuActions);
     const list = document.createElement('div');
     list.id = 'question-list';
