@@ -1,0 +1,58 @@
+/* Prototype only: use with the isolated assembler built by build.mjs. */
+@media screen {
+  html:has(body.two-pane-trial) { scrollbar-gutter: stable; }
+  body.two-pane-trial main { display: block; max-width: 800px; }
+  body.two-pane-trial #bd { min-width: 0; }
+  body.two-pane-trial #q-pane, body.two-pane-trial #toc-pane { display: none; }
+  body.two-pane-trial #bar { left: 0; right: 0; width: auto; }
+  body.two-pane-trial #answer-menu { position: fixed; z-index: 120; margin: 0; }
+  body.two-pane-trial #footer-nav > div { max-width: 760px; margin: auto; }
+  body.two-pane-trial #bd > p, body.two-pane-trial #bd > ul,
+  body.two-pane-trial #bd > ol, body.two-pane-trial #bd > blockquote,
+  body.two-pane-trial .rng > p, body.two-pane-trial .rng > ul,
+  body.two-pane-trial .rng > ol { max-width: 720px; }
+  #fn-drawer { position: fixed; inset: 0 0 0 auto; width: min(440px, 100vw);
+    max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0;
+    padding: 0; border: 0; border-left: 1px solid var(--rule);
+    background: var(--bg); color: var(--fg); box-shadow: 0 0 32px var(--tw-shadow); }
+  #fn-drawer[open] { display: flex; flex-direction: column; }
+  #fn-drawer::backdrop { background: rgb(0 0 0 / 22%); }
+  .fn-drawer-top { display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex: none; padding: max(16px, env(safe-area-inset-top)) 20px 12px;
+    border-bottom: 1px solid var(--rule); }
+  #fn-drawer-title { margin: 0; font-size: 1.15em; }
+  body.two-pane-trial #fn-drawer #fn-pane { display: block; position: static;
+    grid-area: auto; overflow-y: auto; min-height: 0; max-height: none;
+    padding: 20px 24px max(24px, env(safe-area-inset-bottom)); }
+  html.fn-drawer-open, html.fn-drawer-open body { overflow: hidden; }
+  @media (min-width: 1024px) {
+    body.two-pane-trial main, body.two-pane-trial.fn-pane-closed main {
+      max-width: 1760px; display: grid; grid-template-columns: 300px minmax(0, 1fr);
+      grid-template-areas: "q bd"; gap: 32px; padding-left: 24px; padding-right: 24px; }
+    body.two-pane-trial #bd { grid-area: bd; }
+    body.two-pane-trial #q-pane { grid-area: q; display: flex; flex-direction: column;
+      position: sticky; top: calc(60px + env(safe-area-inset-top));
+      height: calc(100dvh - 84px - env(safe-area-inset-top)); max-height: none; overflow: visible; }
+    body.two-pane-trial #question-list { flex: 1; min-height: 0; overflow-y: auto; padding-right: 8px; }
+    body.two-pane-trial #q-pane #bar { flex: none; position: static; padding: 12px 0 0;
+      border-top: 1px solid var(--rule); z-index: auto; }
+    body.two-pane-trial #bar-in { max-width: none; }
+    body.two-pane-trial .bar-actions { flex-wrap: wrap; gap: 8px; }
+    body.two-pane-trial .bar-actions #copy { flex-basis: 100%; order: -1; }
+    body.two-pane-trial .bar-info { gap: 4px 8px; }
+    body.two-pane-trial .bar-info #proj { border: 0; padding: 0; font-size: 0.875em; }
+    body.two-pane-trial .bar-info #ver { flex-basis: 100%; margin: 0; }
+    body.two-pane-trial:has(#bar) main { padding-bottom: 40px; }
+    html:has(body.two-pane-trial #bar) { scroll-padding-bottom: 40px; }
+    body.two-pane-trial #toc-pane { grid-area: q; display: block; position: sticky;
+      top: 60px; max-height: calc(100dvh - 140px); overflow-y: auto; }
+    body.two-pane-trial #footer-nav > div { max-width: none; margin: 0 0 0 max(332px, calc((100vw - 1712px) / 2 + 332px)); }
+  }
+}
+@media print {
+  #fn-drawer, .fn-drawer-top { display: none !important; }
+  body.two-pane-trial #fn-pane { display: block !important; position: static;
+    max-height: none; overflow: visible; }
+  #question-list { overflow: visible; height: auto; }
+  #answer-menu { display: none !important; }
+}
