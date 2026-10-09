@@ -1,0 +1,3 @@
+@import "/tmp/html-communication-research/detail-prototype/node_modules/tailwindcss/theme.css" prefix(mtr);
+@import "/tmp/html-communication-research/detail-prototype/node_modules/tailwindcss/utilities.css" prefix(mtr);
+@source "./prototype.figures.html";
