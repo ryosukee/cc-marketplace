@@ -17,10 +17,11 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { validateRichBlock, renderRichBlock, collectRichStrings } from "./rich-code.mjs";
+import { validateStateMachine, renderStateMachine } from "./state-machine.mjs";
 import { feedbackFindings } from "./feedback.mjs";
 
 export const FORMAT = 1;
-export const BLOCK_KINDS = ["note", "h3", "ul", "ol", "table", "quote", "pre", "fig", "custom", "detail", "tree", "code", "diff", "calls"];
+export const BLOCK_KINDS = ["note", "h3", "ul", "ol", "table", "quote", "pre", "fig", "custom", "detail", "tree", "code", "diff", "calls", "stateMachine"];
 
 export function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -180,6 +181,7 @@ export function loadSource(jsonPath) {
       const kind = kinds[0], v = b[kind];
       if (kind === "note" || kind === "h3") { if (typeof v !== "string") add(w, `${kind} は文字列`); else strings.push({ where: w, text: v }); }
       else if (kind === "ul" || kind === "ol") walkList(v, w);
+      else if (kind === "stateMachine") validateStateMachine(v, `${w}.stateMachine`, { add, ids: richIds });
       else if (kind === "tree") walkTree(v, `${w}.tree`, inDetail);
       else if (["code", "diff", "calls"].includes(kind)) {
         validateRichBlock(kind, v, `${w}.${kind}`, { add, strings, walkBlocks, inDetail, isForm: src.type === "form", ids: richIds });
@@ -563,7 +565,7 @@ export function renderPage(src, opts = {}) {
 
   // ブロック
   let tableN = 0, figN = 0, detailN = 0, noteN = 0;
-  let rich = false, codeN = 0;
+  let rich = false, stateMachine = false, codeN = 0;
   const usedFigs = new Set();
   const renderTree = (items) => `<ul class="detail-tree">\n${items.map((it) => {
     const body = renderBlocks(it.blocks) + (it.children ? renderTree(it.children) : "");
@@ -587,6 +589,7 @@ export function renderPage(src, opts = {}) {
     const kind = Object.keys(b).find((k) => BLOCK_KINDS.includes(k));
     const v = b[kind];
     switch (kind) {
+      case "stateMachine": stateMachine = true; return renderStateMachine(v, esc);
       case "note": return `<p class="d">${inline(v, ctx)}</p>`;
       case "h3": return `<h3>${inline(v, ctx)}</h3>`;
       case "ul": return renderList("ul", v);
@@ -731,7 +734,7 @@ export function renderPage(src, opts = {}) {
     parts.push(`<aside id="q-pane" aria-label="設問">\n<p class="pane-h">設問 ${NQ} 件（読んでいる範囲のものが開く／見出しで開閉）</p>${grps ? "\n" + grps : ""}\n</aside>`);
   } else {
     // report の見出しツリー。節の見出しだけを並べ、参考資料と生成に関する補足は載せない
-    // （どちらも読み飛ばしてよい節なので）。3 pane のときだけ CSS が出す
+    // （どちらも読み飛ばしてよい節なので）。2 pane の目次へ置く
     const items = sections.filter((s) => s.kind === "explain").map((s) => `<a href="#s-${s.id}">${esc(plain(s.heading))}</a>`).join("\n");
     if (items) parts.push(`<aside id="toc-pane" aria-label="節の一覧">\n<p class="pane-h">節</p>\n${items}\n</aside>`);
   }
@@ -783,7 +786,7 @@ export function renderPage(src, opts = {}) {
     extraCss += `\n/* ===== ${name} ===== */\n` + fs.readFileSync(p, "utf8");
   }
 
-  return { body: parts.join("\n\n") + "\n", extraCss, figureStyle: figures.style, lead: figures.lead, qs, answered, rich, findings, counts: { questions: NQ, explains: NE, tables: tableN, figures: figN } };
+  return { body: parts.join("\n\n") + "\n", extraCss, figureStyle: figures.style, lead: figures.lead, qs, answered, rich, stateMachine, findings, counts: { questions: NQ, explains: NE, tables: tableN, figures: figN } };
 }
 
 // ---------------------------------------------------------------------------

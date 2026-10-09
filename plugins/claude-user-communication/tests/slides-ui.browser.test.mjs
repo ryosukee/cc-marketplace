@@ -62,14 +62,17 @@ test("詳細・脚注・図の補足・入力中のキーはdeckと競合しな�
   await page.keyboard.press('ArrowRight'); await at(page, 2);
   assert.match(await page.locator('#detail-viewer-body').textContent(), /根拠の全文/);
   await page.locator('#detail-viewer-body .fnref a').click();
-  assert.match(await page.locator('#reading-popup-body').textContent(), /検証の出典/);
+  assert.equal(await page.locator('#fn-drawer').evaluate(el => el.open), true);
+  assert.match(await page.locator('#fn-pane .note-target').textContent(), /検証の出典/);
   await page.keyboard.press('ArrowRight'); await at(page, 2);
   await page.keyboard.press('Escape'); await page.keyboard.press('Escape');
   await page.waitForFunction(() => document.activeElement.matches('.detail-link'));
   await page.keyboard.press('ArrowRight'); assert.equal(await page.locator('.slide-step[data-unrevealed]').count(), 1);
   const ref = page.locator('.slide-frame.is-current .slide > p .fnref a'); await ref.click();
-  assert.equal(await page.locator('#reading-popup').isVisible(), true);
+  assert.equal(await page.locator('#fn-drawer').evaluate(el => el.open), true);
+  const unrevealed = await page.locator('.slide-step[data-unrevealed]').count();
   await page.keyboard.press('ArrowRight'); await at(page, 2);
+  assert.equal(await page.locator('.slide-step[data-unrevealed]').count(), unrevealed, '脚注dialog内の矢印キーはdeckの要点を進めない');
   await page.keyboard.press('Escape');
   await page.evaluate(() => { const input = document.createElement('input'); document.querySelector('.slide-frame.is-current .slide').append(input); input.focus(); });
   await page.keyboard.press('ArrowRight'); assert.equal(await page.locator('.slide-step[data-unrevealed]').count(), 1);
@@ -139,8 +142,8 @@ test("初期fragmentと履歴から該当枚へ移り、参照先の段階要点
   await page.goBack(); await at(page, 3);
   await page.goForward(); await at(page, 2);
   await page.locator('#fnref-2-1 a').click();
-  assert.equal(await page.locator('#reading-popup').isVisible(), true);
-  assert.match(await page.locator('#reading-popup-body').textContent(), /後の要点の出典/);
+  assert.equal(await page.locator('#fn-drawer').evaluate(el => el.open), true);
+  assert.match(await page.locator('#fn-pane .note-target').textContent(), /後の要点の出典/);
   assert.equal(new URL(page.url()).hash, '#fnref-2-1'); await at(page, 2);
 });
 

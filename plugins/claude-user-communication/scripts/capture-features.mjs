@@ -17,7 +17,7 @@ try {
   for (const name of fs.readdirSync(path.join(root, "docs/features"))) {
     fs.copyFileSync(path.join(root, "docs/features", name), path.join(temp, "src", name));
   }
-  for (const file of ["demo-r001", "demo-f001", "demo-r002", "demo-f002"]) {
+  for (const file of ["demo-r001", "demo-f001", "demo-r002", "demo-f002", "demo-r003"]) {
     const result = assemblePage(path.join(temp, "src", `${file}.json`));
     assert.equal(result.ok, true, JSON.stringify(result.findings));
   }
@@ -48,10 +48,11 @@ try {
   await page.locator(".figure-note > summary").first().click();
   await shot("diagram-note");
   await page.keyboard.press("Escape");
-  await page.locator(".fnref a").last().click();
+  await page.locator(".fnref a").last().hover();
+  await page.locator("#reading-popup-pin").click();
   await shot("footnote");
   await page.keyboard.press("Escape");
-  await page.locator("#fn-toggle").click();
+  await page.locator(".fnref a").last().click();
   await shot("footnote-pane");
   await go("demo-f001");
   const card = page.locator('.qd[data-for="q1"]');
@@ -94,6 +95,13 @@ try {
   assert.equal(await rejection.locator('[data-call-count]').textContent(), '0');
   assert.equal(await rejection.locator('[data-file-count]').textContent(), '0');
   await shot("call-rejection", rejection);
+  await go("demo-r003");
+  await page.setViewportSize({ width: 1700, height: 1400 });
+  const machine = page.locator('[data-state-machine]').first();
+  await shot("state-machine", machine);
+  await machine.locator('[data-transition="reserved-send-rejected"]').click();
+  await machine.locator('[data-transition="failed-send-accepted"]').click();
+  await shot("state-machine-history", machine);
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await go("demo-r002");

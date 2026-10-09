@@ -61,7 +61,7 @@ test("残回答量とメニューが保存・復元・コピー・リセット�
   const url = `http://127.0.0.1:${server.address().port}/${source.file}.html`;
   const browser = await playwright.chromium.launch();
   t.after(() => browser.close());
-  for (const width of [320, 390, 1340, 1440]) for (const colorScheme of ["light", "dark"]) {
+  for (const width of [320, 390, 1024, 1440]) for (const colorScheme of ["light", "dark"]) {
     await t.test(`${width}px ${colorScheme}`, async () => {
       write(source);
       const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme, reducedMotion: "reduce" });
@@ -76,7 +76,7 @@ test("残回答量とメニューが保存・復元・コピー・リセット�
         } } });
       });
       await page.goto(url);
-      // 3 pane では設問カードが折り畳まれるので、利用者と同じく見出しから開く。
+      // 2 pane では設問カードが折り畳まれるので、利用者と同じく見出しから開く。
       const choose = async (id, selector) => {
         const card = page.locator(`.qd[data-for="${id}"]`);
         if (!await card.evaluate((el) => el.open)) await card.locator("summary").click();
@@ -90,6 +90,17 @@ test("残回答量とメニューが保存・復元・コピー・リセット�
         assert.equal(progress.position, n / 3);
       };
       await remaining(3);
+      const copyRect = await page.locator("#copy").boundingBox();
+      const menuRect = await page.locator("#answer-menu-toggle").boundingBox();
+      const backRect = await page.locator("#back").boundingBox();
+      assert.equal(copyRect.y, menuRect.y, "コピーとその他は同じ行");
+      assert.ok(backRect.y >= menuRect.y + menuRect.height, "一覧に戻るは下の行");
+      assert.ok(backRect.x > copyRect.x, "一覧に戻るは操作欄の右側");
+      if (width >= 1024) {
+        assert.equal(await page.locator("#bar").evaluate(el => el.parentNode.id), "q-pane");
+        assert.equal(await page.locator("#q1").evaluate(el => el.closest('#question-list')?.id), "question-list");
+        assert.ok((await page.locator("#bd").boundingBox()).x > (await page.locator("#q-pane").boundingBox()).x);
+      } else assert.equal(await page.locator("#q1").evaluate(el => Boolean(el.closest('.rng'))), true);
       assert.equal(await page.locator("#remaining").evaluate((el) => getComputedStyle(el).textAlign), "center");
       assert.equal(await page.locator("#cnt").count(), 0);
       for (const id of ["back", "copy", "answer-menu-toggle"]) {

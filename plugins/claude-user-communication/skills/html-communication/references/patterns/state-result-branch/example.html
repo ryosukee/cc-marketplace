@@ -1,0 +1,22 @@
+<section class="state-result-branch">
+  <h3>同じ操作の結果で状態が分かれる</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" role="img" aria-label="予約済みから通知送信の受理・拒否によって異なる状態へ移る関係を示す。">
+    <defs>
+      <marker id="state-result-branch-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0L10 5L0 10Z" fill="context-stroke"/>
+      </marker>
+    </defs>
+    <rect class="box" x="122" y="8" width="116" height="38" rx="7"/>
+    <text x="180.0" y="32.0">予約済み</text>
+    <path class="line" d="M180 46V100H76V168"/>
+    <path class="line" d="M180 100H284V168"/>
+    <text x="180" y="80">通知送信</text>
+    <text x="76" y="140">受理</text>
+    <text x="284" y="140">拒否</text>
+    <rect class="box" x="18" y="168" width="116" height="38" rx="7"/>
+    <text x="76.0" y="192.0">通知済み</text>
+    <rect class="box" x="226" y="168" width="116" height="38" rx="7"/>
+    <text x="284.0" y="192.0">通知失敗</text>
+  </svg>
+  <p>業務状態をノード、操作と結果を矢印に置く状態図。受理と拒否は択一の結果で、同時に二つの状態へ進む図ではありません。</p>
+</section>

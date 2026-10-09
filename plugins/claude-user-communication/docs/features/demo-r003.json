@@ -1,0 +1,278 @@
+{
+  "format": 1,
+  "file": "demo-r003",
+  "type": "report",
+  "title": "状態とイベントを試す",
+  "project": "demo",
+  "context": [
+    "開始状態を選び、イベントの結果と通信を確かめる。"
+  ],
+  "summary": [
+    "状態図と通信の履歴を組み合わせた操作例。"
+  ],
+  "sections": [
+    {
+      "kind": "explain",
+      "heading": "通知予約を試す",
+      "blocks": [
+        {
+          "stateMachine": {
+            "id": "reservation",
+            "title": "通知予約の状態遷移",
+            "initial": "reserved",
+            "legend": "青い枠は現在の状態。◇は状態ではなく、通知送信の結果の分岐。",
+            "description": "通知送信は受理で通知済み、拒否で通知失敗へ遷移する。通知失敗から再送できる。",
+            "width": 640,
+            "height": 660,
+            "participants": [
+              {
+                "id": "manager",
+                "label": "予約管理"
+              },
+              {
+                "id": "service",
+                "label": "通知サービス"
+              }
+            ],
+            "nodes": [
+              {
+                "id": "reserved",
+                "label": "予約済み",
+                "description": "通知送信前の予約",
+                "x": 230,
+                "y": 32,
+                "width": 184,
+                "height": 86
+              },
+              {
+                "id": "notified",
+                "label": "通知済み",
+                "description": "送信要求が受理された",
+                "x": 40,
+                "y": 310,
+                "width": 184,
+                "height": 86
+              },
+              {
+                "id": "failed",
+                "label": "通知失敗",
+                "description": "送信要求が拒否された",
+                "x": 380,
+                "y": 310,
+                "width": 184,
+                "height": 86
+              },
+              {
+                "id": "cancelled",
+                "label": "取消済み",
+                "description": "取り消された予約",
+                "x": 230,
+                "y": 570,
+                "width": 184,
+                "height": 86
+              }
+            ],
+            "transitions": [
+              {
+                "id": "reserved-send-accepted",
+                "from": "reserved",
+                "to": "notified",
+                "event": "通知送信",
+                "result": "成功（受理）",
+                "x": 70,
+                "y": 246,
+                "width": 120,
+                "height": 38,
+                "messages": [
+                  {
+                    "from": "manager",
+                    "to": "service",
+                    "label": "通知送信要求"
+                  },
+                  {
+                    "from": "service",
+                    "to": "manager",
+                    "label": "受理応答"
+                  }
+                ]
+              },
+              {
+                "id": "reserved-send-rejected",
+                "from": "reserved",
+                "to": "failed",
+                "event": "通知送信",
+                "result": "失敗（拒否）",
+                "x": 410,
+                "y": 246,
+                "width": 120,
+                "height": 38,
+                "messages": [
+                  {
+                    "from": "manager",
+                    "to": "service",
+                    "label": "通知送信要求"
+                  },
+                  {
+                    "from": "service",
+                    "to": "manager",
+                    "label": "拒否応答"
+                  }
+                ]
+              },
+              {
+                "id": "failed-send-accepted",
+                "from": "failed",
+                "to": "notified",
+                "event": "通知再送信",
+                "result": "成功（受理）",
+                "x": 220,
+                "y": 450,
+                "width": 120,
+                "height": 38,
+                "messages": [
+                  {
+                    "from": "manager",
+                    "to": "service",
+                    "label": "通知送信要求"
+                  },
+                  {
+                    "from": "service",
+                    "to": "manager",
+                    "label": "受理応答"
+                  }
+                ]
+              },
+              {
+                "id": "failed-send-rejected",
+                "from": "failed",
+                "to": "failed",
+                "event": "通知再送信",
+                "result": "失敗（拒否）",
+                "x": 490,
+                "y": 450,
+                "width": 120,
+                "height": 38,
+                "messages": [
+                  {
+                    "from": "manager",
+                    "to": "service",
+                    "label": "通知送信要求"
+                  },
+                  {
+                    "from": "service",
+                    "to": "manager",
+                    "label": "拒否応答"
+                  }
+                ]
+              },
+              {
+                "id": "reserved-cancel-local",
+                "from": "reserved",
+                "to": "cancelled",
+                "event": "予約取り消し",
+                "result": "予約取り消し",
+                "x": 50,
+                "y": 28,
+                "width": 140,
+                "height": 38,
+                "messages": [],
+                "local": "対外通信なし · 予約管理内で取消を記録"
+              },
+              {
+                "id": "failed-cancel-local",
+                "from": "failed",
+                "to": "cancelled",
+                "event": "予約取り消し",
+                "result": "予約取り消し",
+                "x": 446,
+                "y": 564,
+                "width": 140,
+                "height": 38,
+                "messages": [],
+                "local": "対外通信なし · 予約管理内で取消を記録"
+              }
+            ],
+            "paths": [
+              {
+                "transitions": [
+                  "reserved-send-accepted",
+                  "reserved-send-rejected"
+                ],
+                "d": "M320 112V190",
+                "arrow": false
+              },
+              {
+                "transitions": [
+                  "reserved-send-accepted"
+                ],
+                "d": "M308 202H130V310",
+                "arrow": true
+              },
+              {
+                "transitions": [
+                  "reserved-send-rejected"
+                ],
+                "d": "M332 202H470V310",
+                "arrow": true
+              },
+              {
+                "transitions": [
+                  "failed-send-accepted",
+                  "failed-send-rejected"
+                ],
+                "d": "M470 392V476",
+                "arrow": false
+              },
+              {
+                "transitions": [
+                  "failed-send-accepted"
+                ],
+                "d": "M458 488H130V392",
+                "arrow": true
+              },
+              {
+                "transitions": [
+                  "failed-send-rejected"
+                ],
+                "d": "M482 488H580V370H562",
+                "arrow": true
+              },
+              {
+                "transitions": [
+                  "reserved-cancel-local"
+                ],
+                "d": "M230 72H20V610H230",
+                "arrow": true
+              },
+              {
+                "transitions": [
+                  "failed-cancel-local"
+                ],
+                "d": "M562 330H620V610H412",
+                "arrow": true
+              }
+            ],
+            "decorations": [
+              {
+                "d": "M320 190L332 202L320 214L308 202Z"
+              },
+              {
+                "text": "通知送信",
+                "x": 320,
+                "y": 165
+              },
+              {
+                "d": "M470 476L482 488L470 500L458 488Z"
+              },
+              {
+                "text": "通知再送信",
+                "x": 470,
+                "y": 440
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

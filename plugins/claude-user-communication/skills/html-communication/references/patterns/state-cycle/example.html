@@ -1,0 +1,19 @@
+<section class="state-cycle">
+  <h3>相互に切り替わる状態</h3>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" role="img" aria-label="稼働中と一時停止中が別々のイベントで相互に切り替わる関係を示す。">
+    <defs>
+      <marker id="state-cycle-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0L10 5L0 10Z" fill="context-stroke"/>
+      </marker>
+    </defs>
+    <rect class="box" x="16" y="94" width="124" height="42" rx="7"/>
+    <text x="78.0" y="120.0">稼働中</text>
+    <rect class="box" x="224" y="94" width="120" height="42" rx="7"/>
+    <text x="284.0" y="120.0">一時停止中</text>
+    <path class="line" d="M140 106H224"/>
+    <text x="182" y="88">一時停止</text>
+    <path class="line" d="M224 126H140"/>
+    <text x="182" y="160">再開</text>
+  </svg>
+  <p>往復する状態を並べ、方向ごとに線とイベントを分ける。上下の進行順を無理に与えず、戻る関係を読める配置にする。</p>
+</section>

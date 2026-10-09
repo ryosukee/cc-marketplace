@@ -115,6 +115,28 @@ Archify は独立した HTML Viewer を作る skill であり、ページへ取�
 このディレクトリや gallery には追加しない。現在の skill 一覧で Archify が利用できなければ、
 既存パターンまたは Tailwind のインライン図を使う。html-communication から Archify を自動で導入しない。
 
+## 処理順と状態の図を選ぶ
+
+処理順を示すのか、保持する状態とイベントによる変化を示すのかを先に決める。
+状態図は関係の意味に合わせて選び、すべてを一律の上下の進行順にはしない。
+
+| 伝える関係 | パターン | 配置で示すこと |
+| --- | --- | --- |
+| 処理順と条件判断 | [flowchart-decision](./flowchart-decision/README.md) | 処理の矩形と判断の菱形を分け、結果を枝へ置く |
+| 同じ操作の結果による状態の分岐 | [state-result-branch](./state-result-branch/README.md) | 開始状態から択一の結果へ枝分かれする |
+| 同じ状態へ戻る遷移 | [state-self-transition](./state-self-transition/README.md) | 自己ループを外側へ出す |
+| 異なる状態間の往復 | [state-cycle](./state-cycle/README.md) | 状態を並べ、往路と復路を別の線にする |
+| 親状態と子状態 | [state-hierarchy](./state-hierarchy/README.md) | 子状態を親状態の枠内へ置く |
+| 同時に有効な複数の状態軸 | [state-parallel](./state-parallel/README.md) | 親の中を領域に分け、状態軸の名前を付ける |
+
+処理順は [flowchart-decision](./flowchart-decision/README.md) を使う。
+状態の分岐は [state-result-branch](./state-result-branch/README.md)、同じ状態へ戻る経路は [state-self-transition](./state-self-transition/README.md)、往復は [state-cycle](./state-cycle/README.md) を使う。
+親子関係は [state-hierarchy](./state-hierarchy/README.md)、同時に有効な状態軸は [state-parallel](./state-parallel/README.md) を使う。
+
+これらは操作スクリプトを持たない静止見本である。
+状態ノードの選択・イベント実行・履歴表示は共通実装へ指定し、パターンごとに同じ操作を複製しない。
+採用条件と近縁表現との違い、図法の一次資料は各パターンの README にある。
+
 ## 図を Tailwind で組む
 
 独自のインライン図は Tailwind CLI で作る。外部 CDN は読み込めないので、生成のたびに CLI を回して
@@ -262,7 +284,7 @@ index の「見せ方のパターン集」からリンクで辿れる。
 ### gallery が雛形のページレイアウトを引き継がない理由
 
 生成物の本文は `main` ではなく `.gallery` で包む。雛形の CSS は `main` を
-3 pane のグリッドにするメディアクエリを持っており、連結すると gallery の本文まで
-3 列に割れる（実際に起きた）。器を `.gallery` にすれば、雛形のページレイアウト用セレクタ
+ページ用のグリッドにするメディアクエリを持っており、連結すると gallery にも
+ページの列配置が適用される。器を `.gallery` にすれば、雛形のページレイアウト用セレクタ
 （`main` / `#bar` / `#q-pane` / `#toc-pane` / `#fn-pane`）がどれも一致しない。
 持ち込みたいのは色トークンと文字組だけで、ページの骨格ではない。

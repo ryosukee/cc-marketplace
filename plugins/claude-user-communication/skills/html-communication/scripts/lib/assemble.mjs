@@ -81,6 +81,12 @@ export function assemblePage(jsonPath, { force = false, out = null } = {}) {
     const anchor = `<script data-scope="${scope}">`;
     html = html.replace(anchor, `<script data-scope="rich-code">\n${js}</script>\n${anchor}`);
   }
+  if (r.stateMachine) {
+    const css = fs.readFileSync(path.join(SKILL_ROOT, "templates", "state-machine.css"), "utf8");
+    const js = fs.readFileSync(path.join(SKILL_ROOT, "templates", "state-machine.js"), "utf8");
+    html = html.replace("</head>", `<style data-scope="state-machine">\n${css}</style>\n</head>`)
+      .replace("</body>", `<script data-scope="state-machine">\n${js}</script>\n</body>`);
+  }
   if (isSlides) {
     const css = fs.readFileSync(path.join(SKILL_ROOT, "templates", "slides.css"), "utf8");
     const js = fs.readFileSync(path.join(SKILL_ROOT, "templates", "slides.js"), "utf8");

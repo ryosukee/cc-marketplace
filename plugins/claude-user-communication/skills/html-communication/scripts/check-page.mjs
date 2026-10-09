@@ -21,10 +21,11 @@
 //  15. 未回答ページのチェックボックスの既定 checked（回答済みの checked disabled は除く）
 //  16. 前景色に opacity を重ねている (コントラストが下がる。値はトークンで決める)
 //  17. 設問カードの summary に回答済みマーカー (.qstat) が無い
+//  18. 状態図の宣言データと共通 runtime の存在
 //
 // 7〜16 は op-review の facet が繰り返し指摘していたものを機械へ移したもの
 // (2026-08-18。ih-f007 の実測で clarity facet の指摘 58 件の大半がこの形だった)。
-// 上の 17 項目に対して check の値は 19 種ある。項目 10 が identifier-gloss と figure-order、
+// 上の 18 項目に対して check の値は 20 種ある。項目 10 が identifier-gloss と figure-order、
 // 項目 11 が heading-series と question-count に分かれているため。
 // 数を書き換えるときは grep -o 'check: "[a-z-]*"' scripts/check-page.mjs | sort -u で数え直す。
 //
@@ -32,6 +33,7 @@
 // 出力: JSON (stdout)。exit 0 = 指摘なし, 1 = 指摘あり, 2 = 前提条件エラー。
 
 import { readFileSync } from "node:fs";
+import { validateStateMachine } from "./lib/state-machine.mjs";
 
 const ALLOWED_FONT_SIZES = new Set(["16px", "1.4em", "1.15em", "1em", "0.875em"]);
 const CELL_LIMIT = 40;
@@ -151,7 +153,7 @@ function customPropertyReferences(css) {
    同じ長さの空白へ潰して、フォント段の検査だけから外す。改行は残すので行番号はずれない。
    Readability の class 検査は図にも効かせる（図が Reader View で消えるのは実害） */
 function maskFigureStyles(src) {
-  return src.replace(/(<style\b[^>]*\bdata-scope="figures"[^>]*>)([\s\S]*?)(<\/style>)/g,
+  return src.replace(/(<style\b[^>]*\bdata-scope="(?:figures|state-machine)"[^>]*>)([\s\S]*?)(<\/style>)/g,
     (_, open, body, close) => open + body.replace(/[^\n]/g, " ") + close);
 }
 
@@ -159,10 +161,19 @@ function checkFile(path) {
   const src = readFileSync(path, "utf8");
   const findings = [];
 
+  // Shared state diagrams must carry valid declarative data and their common runtime.
+  const machineIds = new Set();
+  for (const block of src.matchAll(/<script type="application\/json" data-state-machine-source>([\s\S]*?)<\/script>/g)) {
+    const add = (where, message) => findings.push({ check: "state-machine-source", line: lineOf(src, block.index), message: `${where}: ${message}` });
+    try { validateStateMachine(JSON.parse(block[1]), "stateMachine", { add, ids: machineIds }); }
+    catch (error) { add("stateMachine", `JSON が読めない: ${error.message}`); }
+    if (!src.includes('<script data-scope="state-machine">')) add("stateMachine", "共通 runtime が無い");
+  }
+
   // 1. 図の CSS が fallback 無しで参照する未定義の CSS custom property
   const definitions = customPropertyDefinitions(src);
   const undefinedReferences = new Map();
-  for (const style of src.matchAll(/<style\b[^>]*\bdata-scope=(["'])figures\1[^>]*>([\s\S]*?)<\/style>/g)) {
+  for (const style of src.matchAll(/<style\b[^>]*\bdata-scope=(["'])(?:figures|state-machine)\1[^>]*>([\s\S]*?)<\/style>/g)) {
     const css = maskCssCommentsAndStrings(style[2]);
     const bodyStart = style.index + style[0].indexOf(style[2]);
     for (const reference of customPropertyReferences(css)) {
