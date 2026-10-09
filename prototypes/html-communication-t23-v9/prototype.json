@@ -1,0 +1,43 @@
+{
+  "format": 1,
+  "file": "ccm-f124",
+  "type": "form",
+  "title": "図のノードと矢印で操作する画面を確認する",
+  "project": "cc-marketplace",
+  "context": [
+    "html-communication に、状態遷移・オートマトンを操作して確認する表示を加える。",
+    "[初期状態と現在状態を分けた操作画面](./ccm-f123.html)への回答を受け、初期状態の選択とイベント実行を図へ移した。"
+  ],
+  "formIntro": [
+    "図を直接操作する画面と、現在状態の説明の配置を確認する。"
+  ],
+  "sections": [
+    {
+      "kind": "question",
+      "heading": "図を直接操作する画面で進めるか",
+      "blocks": [
+        {
+          "fig": {
+            "id": "state-transition",
+            "caption": "ノードと矢印で操作する状態遷移図と通信履歴"
+          }
+        }
+      ],
+      "question": {
+        "label": "図を直接操作する画面",
+        "text": "ノードで初期状態を選び、矢印でイベントを実行する画面で進めるか。",
+        "options": [
+          {
+            "label": "この操作画面で進める"
+          },
+          {
+            "label": "まだ改善が必要"
+          }
+        ]
+      }
+    }
+  ],
+  "generation": [
+    "この画面は試作で、html-communication の生成機能にはまだ取り込んでいない。"
+  ]
+}
