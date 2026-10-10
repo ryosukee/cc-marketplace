@@ -1,7 +1,7 @@
 ---
 name: adopt-html-communication-features
 user-invocable: true
-description: この repository で、類似 skill・Web ページ・動画・公開コードを参考に html-communication の機能や UX を改善するときに使う。参考資料と現行機能の比較、取り込む機能の選択、操作できる試作の比較、共通機能への統合と公開までを進める。通常の HTML 資料の作成や、参考資料の比較を伴わない不具合修正には使わない。
+description: 類似 skill・Web ページ・動画・公開コードを参考に html-communication の機能や UX を改善するときに使う。参考資料と現行機能の比較、取り込む機能の選択、操作できる試作の比較、共通機能への統合と公開までを進める。通常の HTML 資料の作成や、参考資料の比較を伴わない不具合修正には使わない。
 ---
 
 # 類似資料から html-communication へ機能を取り込む
