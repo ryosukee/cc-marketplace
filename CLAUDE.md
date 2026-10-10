@@ -27,6 +27,7 @@ cc-marketplace/
 │   ├── rules/                    # プロジェクト固有ルール (設計原則、規約)
 │   └── skills/                   # このプロジェクトでだけ使う skill
 ├── .agents/
+│   ├── skills/                   # Codex から使う開発用 skill への symlink
 │   └── plugins/
 │       └── marketplace.json      # Codex の marketplace カタログ
 ├── .claude-plugin/
@@ -76,6 +77,12 @@ cc-marketplace/
 Claude Code と Codex の対応 CodingAgent、共有方式、requirements に関する設計判断は、
 `docs/cross-client-architecture.md` を正の所在とする。plugin を実装するときは、
 `.claude/rules/plugin-design.md` の必須事項に従う。
+
+## 開発用 skill
+
+類似資料から html-communication の機能や UX を取り込む作業には、
+[類似資料から html-communication へ機能を取り込む](./.claude/skills/adopt-html-communication-features/SKILL.md) がある。
+Claude Code は `.claude/skills/`、Codex は `.agents/skills/` から同じ本文を参照する。
 
 ## Plugin 一覧
 
