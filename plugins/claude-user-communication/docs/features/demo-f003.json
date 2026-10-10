@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "file": "demo-f003",
+  "type": "form",
+  "title": "回答に応じた説明と順位・数値の回答",
+  "project": "機能紹介",
+  "context": ["作業の進め方を選び、優先順位と試作に使う時間を答える。"],
+  "sections": [
+    {
+      "kind": "question",
+      "heading": "どこから始めるか",
+      "blocks": [
+        "始め方を選ぶと、選んだ始め方の説明が開く。選ばなかった始め方の説明も、見出しをクリックして読める。",
+        { "conditional": { "title": "調査から始める場合", "when": { "question": "q1", "equals": "調査から" }, "blocks": ["既存の資料を読み、調査が必要な点を絞る。"] } },
+        { "conditional": { "title": "試作から始める場合", "when": { "question": "q1", "equals": "試作から" }, "blocks": ["短い試作で操作を確かめ、結果を次の調査へ使う。"] } }
+      ],
+      "question": { "label": "始め方", "text": "最初に行う作業を選ぶ。", "options": [{ "label": "調査から" }, { "label": "試作から" }] }
+    },
+    {
+      "kind": "question",
+      "heading": "何を優先するか",
+      "blocks": ["上から優先する順に並べる。全項目を残して順位を答える。"],
+      "question": { "type": "rank", "label": "優先順位", "text": "作業で優先するものを並べる。", "options": [{ "label": "読みやすさ" }, { "label": "操作のしやすさ" }, { "label": "実装の速さ" }] }
+    },
+    {
+      "kind": "question",
+      "heading": "試作に何時間使うか",
+      "blocks": ["スライダーと数値欄は同じ値を表す。初期値を表示しただけでは、この設問は未回答のままになる。値を変更するか「この値で回答」を押すと、この設問が回答済みになる。"],
+      "question": { "type": "number", "label": "試作の時間", "text": "試作に使う時間を答える。", "number": { "min": 0, "max": 8, "step": 0.5, "initial": 2, "unit": "時間" } }
+    }
+  ]
+}

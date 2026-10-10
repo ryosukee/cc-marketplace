@@ -95,6 +95,32 @@ Claude Code では同梱の名前付き agent、Codex では子 agent が判定�
 
 ![未回答量と全体補足のメニューを持つ確認フォーム](./docs/images/answers.png)
 
+### 回答に応じた説明
+
+選んだ回答に合う説明を開き、他の条件は見出しを残して折り畳む。
+他の条件も手動で開ける。判断材料の一部分にも使え、設問の数と回答行は変わらない。
+印刷と JavaScript が無効な場合は、全条件の説明を読める。
+
+![選んだ始め方の説明が開いた確認フォーム](./docs/images/conditional-answer.png)
+
+### 順位と数値を答える
+
+優先順位は全項目を残して並べ替える。マウス・タッチのドラッグと上下ボタンを使える。
+初期順序を表示しただけでは未回答で、移動するか「この順序で回答」を押すと回答になる。
+
+![初期順序を表示した未回答の設問](./docs/images/rank-answer-before.png)
+
+![項目を移動して回答済みになった順位の設問](./docs/images/rank-answer.png)
+
+数値はスライダーと数値欄で同じ値を操作する。値の変更か「この値で回答」で回答する。
+空欄・範囲外・刻み違いの入力は確定やコピーを止め、下書きから訂正できる。
+順位・数値も進捗、補足、下書き、リセット、回答の受領に連動する。
+書式は[条件付き説明と順位・数値回答](./skills/html-communication/references/answer-controls.md)で指定する。
+
+![初期値を表示した未回答の数値欄](./docs/images/number-answer-before.png)
+
+![値を変えて回答済みになったスライダーと数値欄](./docs/images/number-answer.png)
+
 ### 行番号付きコードと右側の注釈
 
 コードを原文と行番号で表示し、長い行は横スクロールと折り返しを切り替えて読む。
@@ -211,6 +237,8 @@ Node.js または `npx` が使えなければ生成・検査は実行できな�
 ブラウザ試験は Playwright と Chromium が導入済みの場合に実行する。
 別の場所に導入した Playwright を使うときは、`HTML_COMMUNICATION_PLAYWRIGHT_MODULE` に
 その `index.mjs` の絶対パスを渡す。未導入ならブラウザ試験だけをスキップする。
+順位・数値のブラウザ試験と撮影では、`HTML_COMMUNICATION_BROWSER_EXECUTABLE` に
+既存の Chromium 系ブラウザの絶対パスを渡せる。省略時は Playwright の Chromium を使う。
 `HTML_COMMUNICATION_SCREENSHOTS` に保存先の絶対パスを渡すと、操作欄の開閉画像も保存する。
 これらは検証時の指定であり、ページを生成・閲覧するための依存は増えない。
 
@@ -221,6 +249,7 @@ Node.js または `npx` が使えなければ生成・検査は実行できな�
 [スライドの生成元](./docs/features/demo-r002.json)を現行テンプレートで組み立て、ブラウザで撮影する。
 [コードと対象別提案の生成元](./docs/features/demo-f002.json)も同じ撮影スクリプトで組み立てる。
 [状態遷移の生成元](./docs/features/demo-r003.json)からは、初期表示と操作後の履歴を撮影する。
+[条件付き説明と順位・数値の生成元](./docs/features/demo-f003.json)からは、説明の開閉と順位・数値の回答状態を撮影する。
 検証用の明暗・狭幅の画像は、README に掲載する画像とは別に扱う。
 
 Playwright と Chromium が使える開発環境で、次のコマンドを実行する。

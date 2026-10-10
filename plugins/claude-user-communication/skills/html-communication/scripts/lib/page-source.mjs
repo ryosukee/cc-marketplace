@@ -19,9 +19,10 @@ import crypto from "node:crypto";
 import { validateRichBlock, renderRichBlock, collectRichStrings } from "./rich-code.mjs";
 import { validateStateMachine, renderStateMachine } from "./state-machine.mjs";
 import { feedbackFindings } from "./feedback.mjs";
+import { validateAnswerQuestion, validateConditions, validAnswerPayload } from "./answer-controls.mjs";
 
 export const FORMAT = 1;
-export const BLOCK_KINDS = ["note", "h3", "ul", "ol", "table", "quote", "pre", "fig", "custom", "detail", "tree", "code", "diff", "calls", "stateMachine"];
+export const BLOCK_KINDS = ["note", "h3", "ul", "ol", "table", "quote", "pre", "fig", "custom", "detail", "tree", "code", "diff", "calls", "stateMachine", "conditional"];
 
 export function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -183,6 +184,17 @@ export function loadSource(jsonPath) {
       else if (kind === "ul" || kind === "ol") walkList(v, w);
       else if (kind === "stateMachine") validateStateMachine(v, `${w}.stateMachine`, { add, ids: richIds });
       else if (kind === "tree") walkTree(v, `${w}.tree`, inDetail);
+      else if (kind === "conditional") {
+        if (!v || typeof v !== "object" || Array.isArray(v)) { add(w, "conditional は { title, when, blocks }"); return; }
+        for (const k of Object.keys(v)) if (!["title", "when", "blocks"].includes(k)) add(w, `conditional に ${k} は使えない`);
+        if (typeof v.title !== "string" || !v.title.trim()) add(w, "conditional の title は空でない文字列");
+        else {
+          strings.push({ where: `${w}.conditional.title`, text: v.title });
+          if (refKeys(v.title).length || /\[[^\]]+\]\([^)]*\)/.test(v.title)) add(w, "conditional の title にリンクや脚注参照は置けない");
+        }
+        if (!Array.isArray(v.blocks) || !v.blocks.length) add(w, "conditional の blocks は空でない配列");
+        else walkBlocks(v.blocks, `${w}.conditional.blocks`, inDetail);
+      }
       else if (["code", "diff", "calls"].includes(kind)) {
         validateRichBlock(kind, v, `${w}.${kind}`, { add, strings, walkBlocks, inDetail, isForm: src.type === "form", ids: richIds });
       }
@@ -281,12 +293,13 @@ export function loadSource(jsonPath) {
       if (!q || typeof q !== "object") { add(w, "設問の節は question が要る"); return; }
       if (typeof q.label !== "string" || !q.label.trim()) add(`${w}.question`, "label が無い"); else strings.push({ where: `${w}.question.label`, text: q.label });
       if (typeof q.text !== "string" || !q.text.trim()) add(`${w}.question`, "text（設問文）が無い"); else strings.push({ where: `${w}.question.text`, text: q.text });
+      validateAnswerQuestion(q, `${w}.question`, { add, strings });
       if (Object.hasOwn(q, "multiple") && typeof q.multiple !== "boolean") add(`${w}.question`, "multiple は真偽値。複数選択にするときは true");
       if (Object.hasOwn(q, "items") && !Array.isArray(q.items)) add(`${w}.question`, "items は項目の配列");
       const itemRadios = Array.isArray(q.items);
       if (itemRadios && q.multiple != null) add(`${w}.question`, "items を使う設問に multiple は置かない");
-      if (!Array.isArray(q.options) || !q.options.length) add(`${w}.question`, "options が無い");
-      else {
+      if (q.type !== "number" && (!Array.isArray(q.options) || !q.options.length)) add(`${w}.question`, "options が無い");
+      else if (Array.isArray(q.options)) {
         let rec = 0;
         const valueAt = new Map(); // 選択肢の値 → 最初に使った位置
         q.options.forEach((o, j) => {
@@ -338,6 +351,7 @@ export function loadSource(jsonPath) {
   });
   if (src.type === "report" && nq > 0) add("sections", `report に設問の節が ${nq} 個ある`);
   if (src.type === "form" && nq === 0) add("sections", "form に設問の節が無い");
+  validateConditions(src, add, optionValue);
   for (const g of src.groups || []) if (!usedGroups.has(g.id)) add("groups", `グループ "${g.id}" を使う設問が無い`);
   if (src.reference) walkBlocks(src.reference.blocks || [], "reference.blocks", false, isSlides);
   if (src.reference?.lead) strings.push({ where: "reference.lead", text: src.reference.lead });
@@ -378,7 +392,14 @@ export function loadSource(jsonPath) {
         if (seenIds.has(it.id)) add(w, `id "${it.id}" の回答が重複している`);
         seenIds.add(it.id);
         const values = Array.isArray(s.question?.options) ? s.question.options.map((o) => (o && typeof o.label === "string" ? optionValue(o) : null)) : [];
-        if (Array.isArray(s.question.items)) {
+        if (["rank", "number"].includes(s.question.type)) {
+          const key = s.question.type === "rank" ? "order" : "number";
+          for (const field of Object.keys(it)) if (!["id", "label", "value", "note", key].includes(field)) add(w, `${s.question.type} の回答に ${field} は使えない`);
+          if (it.value !== null) add(w, `${s.question.type} の value は null にする`);
+          if (it.note != null && typeof it.note !== "string") add(w, "note は文字列");
+          const data = key === "order" ? { order: it.order } : { value: it.number };
+          if (it[key] !== null && !validAnswerPayload(data, s.question, values)) add(w, `${key} の回答が不正`);
+        } else if (Array.isArray(s.question.items)) {
           if (it.value !== null) add(w, "項目別選択の value は null にする");
           if (Object.hasOwn(it, "multiple") || Object.hasOwn(it, "other")) add(w, "項目別選択に multiple と other は置かない");
           if (!it.selections || typeof it.selections !== "object" || Array.isArray(it.selections)) add(w, "項目別選択の selections はオブジェクト");
@@ -520,6 +541,7 @@ export function renderPage(src, opts = {}) {
     else if (kind === "table") { collect(v.caption); v.columns.forEach((c) => collect(typeof c === "string" ? c : c.text)); v.rows.forEach((r) => (Array.isArray(r) ? r : r.cells).forEach((c) => collect(typeof c === "string" ? c : c.text))); }
     else if (kind === "fig") { collect(v.caption); for (const note of v.notes || []) { collect(note.label); collect(note.text); } }
     else if (kind === "detail") { collect(v.label); collect(v.title); collectBlocks(v.blocks); }
+    else if (kind === "conditional") { collect(v.title); collectBlocks(v.blocks); }
     else if (kind === "tree") collectTree(v);
     else if (["code", "diff", "calls"].includes(kind)) collectRichStrings(kind, v, collect, collectBlocks);
   });
@@ -534,7 +556,7 @@ export function renderPage(src, opts = {}) {
       collect(s.question.label);
       collect(s.question.text);
       for (const item of s.question.items || []) { collect(item.label); collect(item.text || ""); }
-      s.question.options.forEach((o) => { collect(o.label); (Array.isArray(o.description) ? o.description : o.description ? [o.description] : []).forEach(collect); collect(o.pros || ""); collect(o.cons || ""); });
+      (s.question.options || []).forEach((o) => { collect(o.label); (Array.isArray(o.description) ? o.description : o.description ? [o.description] : []).forEach(collect); collect(o.pros || ""); collect(o.cons || ""); });
     }
   }
   if (src.reference) { collect(src.reference.lead); collectBlocks(src.reference.blocks); }
@@ -566,6 +588,7 @@ export function renderPage(src, opts = {}) {
   // ブロック
   let tableN = 0, figN = 0, detailN = 0, noteN = 0;
   let rich = false, stateMachine = false, codeN = 0;
+  let answerControls = sections.some((s) => s.when || ["rank", "number"].includes(s.question?.type));
   const usedFigs = new Set();
   const renderTree = (items) => `<ul class="detail-tree">\n${items.map((it) => {
     const body = renderBlocks(it.blocks) + (it.children ? renderTree(it.children) : "");
@@ -595,6 +618,7 @@ export function renderPage(src, opts = {}) {
       case "ul": return renderList("ul", v);
       case "ol": return renderList("ol", v);
       case "tree": return renderTree(v);
+      case "conditional": answerControls = true; return `<details class="conditional" data-when="${esc(JSON.stringify(v.when))}" open><summary>${inline(v.title, ctx)}<span class="condition-state"></span></summary><div class="conditional-body">${renderBlocks(v.blocks)}</div></details>`;
       case "code": case "diff": case "calls": rich = true; return renderRichBlock(kind, v, {
         esc, inline: (text) => inline(text, ctx), answered, feedback: answers?.feedback || [],
         regionNumber: kind === "code" ? ++codeN : undefined,
@@ -658,6 +682,24 @@ export function renderPage(src, opts = {}) {
     const label = s.group ? `${esc(s.gname)} ${s.gn} / ${s.gN} ${inline(q.label, ctx)}` : `設問 ${s.n} / ${NQ} ${inline(q.label, ctx)}`;
     const a = ansItems.get(s.id);
     const note = a && a.note ? esc(a.note) : "";
+    if (q.type === "rank" || q.type === "number") {
+      let control;
+      if (q.type === "rank") {
+        const values = q.options.map(optionValue), order = a?.order || values;
+        const rows = order.map((value) => {
+          const o = q.options.find((o) => optionValue(o) === value);
+          const desc = o.description == null ? [] : Array.isArray(o.description) ? o.description : [o.description];
+          const consequences = o.pros == null ? "" : `<span class="proscons"><span><span class="pro">メリット</span>${inline(o.pros, ctx)}</span><span><span class="con">デメリット</span>${inline(o.cons, ctx)}</span></span>`;
+          return `<li data-rank-value="${esc(value)}"><span class="rank-label">${inline(o.label, ctx)}${desc.length ? `<span class="d">${desc.map((d) => inline(d, ctx)).join("<br>")}</span>` : ""}${consequences}</span><span class="rank-actions" hidden><button type="button" data-rank-drag aria-label="${esc(plain(o.label))}をドラッグで移動"${dis}>↕</button><button type="button" data-rank-up aria-label="${esc(plain(o.label))}を上へ"${dis}>↑</button><button type="button" data-rank-down aria-label="${esc(plain(o.label))}を下へ"${dis}>↓</button></span></li>`;
+        }).join("\n");
+        control = `<p class="d">ドラッグか上下ボタンで順序を変える。変更しない場合も「この順序で回答」を押す。</p><ol class="rank-list">${rows}</ol><button type="button" class="subbtn" data-answer-confirm hidden${dis}>この順序で回答</button>`;
+      } else {
+        const n = q.number, value = a?.number ?? n.initial;
+        const attrs = `min="${n.min}" max="${n.max}" step="${n.step}" value="${value}"${dis}`;
+        control = `<p class="d" id="${s.id}-number-hint">${n.min}〜${n.max}${n.unit ? ` ${esc(n.unit)}` : ""}、${n.step} 刻み。初期値を使う場合も「この値で回答」を押す。</p><div class="number-controls"><label for="${s.id}-range">スライダー</label><input type="range" id="${s.id}-range" data-number-range ${attrs} aria-describedby="${s.id}-number-hint"><label for="${s.id}-number">数値${n.unit ? `（${esc(n.unit)}）` : ""}</label><input type="number" id="${s.id}-number" data-number-input ${attrs} aria-describedby="${s.id}-number-hint ${s.id}-number-error" required></div><p class="number-error" id="${s.id}-number-error" role="status"></p><button type="button" class="subbtn" data-answer-confirm hidden${dis}>この値で回答</button>`;
+      }
+      return `<details class="qd" data-for="${s.id}"${s.group ? ` data-grp="${esc(s.group)}"` : ""} open>\n<summary>${label}<span class="qstat">未回答</span></summary><p class="qtext">${inline(q.text, ctx)}</p><div class="q" id="${s.id}" data-answer-type="${q.type}" data-confirmed="${q.type === "rank" ? !!a?.order : a?.number != null}"${q.type === "number" ? ` data-number-spec="${esc(JSON.stringify(q.number))}"` : ""}>${control}<span class="answer-control-status" role="status"></span><noscript><p>回答操作には JavaScript が必要です。表示された項目と範囲を読み、順位または数値を会話に記入してください。</p></noscript><textarea class="note" data-note="${s.id}" aria-label="設問 ${s.n} への補足" placeholder="補足（任意）"${dis}>${note}</textarea></div></details>`;
+    }
     if (Array.isArray(q.items)) {
       const items = q.items.map((item) => {
         const opts = q.options.map((o) => {
@@ -709,8 +751,10 @@ export function renderPage(src, opts = {}) {
     const w = `sections[${i}]`;
     at(w);
     if (s.kind === "explain") {
-      const content = `<p class="secnum">説明 ${s.n} / ${NE}</p>\n<h2 id="s-${s.id}">${inline(s.heading, ctx)}</h2>\n\n${renderBlocks(s.blocks)}`;
-      parts.push(isSlides ? slide(content, `s-${s.id}`) : content);
+      const heading = `<h2 id="s-${s.id}">${inline(s.heading, ctx)}</h2>`;
+      const blocks = renderBlocks(s.blocks);
+      const content = `<p class="secnum">説明 ${s.n} / ${NE}</p>\n${heading}\n\n${blocks}`;
+      parts.push(s.when ? `<p class="secnum">説明 ${s.n} / ${NE}</p><details class="conditional" data-when="${esc(JSON.stringify(s.when))}" open><summary>${heading}<span class="condition-state"></span></summary><div class="conditional-body">${blocks}</div></details>` : isSlides ? slide(content, `s-${s.id}`) : content);
     } else {
       const rlabel = s.group ? `${esc(s.gname)} ${s.gn} / ${s.gN}（設問 ${s.n} / ${NQ}）` : `設問 ${s.n} / ${NQ}`;
       parts.push(`<section class="rng" data-q="${s.id}" aria-labelledby="rl-${s.id}">\n<p class="rlabel" id="rl-${s.id}">${rlabel}</p>\n\n<h2 id="s-${s.id}">${inline(s.heading, ctx)}</h2>\n\n${renderBlocks(s.blocks)}\n\n${renderCard(s, w)}\n\n</section>`);
@@ -786,7 +830,7 @@ export function renderPage(src, opts = {}) {
     extraCss += `\n/* ===== ${name} ===== */\n` + fs.readFileSync(p, "utf8");
   }
 
-  return { body: parts.join("\n\n") + "\n", extraCss, figureStyle: figures.style, lead: figures.lead, qs, answered, rich, stateMachine, findings, counts: { questions: NQ, explains: NE, tables: tableN, figures: figN } };
+  return { body: parts.join("\n\n") + "\n", extraCss, figureStyle: figures.style, lead: figures.lead, qs, answered, rich, stateMachine, answerControls, findings, counts: { questions: NQ, explains: NE, tables: tableN, figures: figN } };
 }
 
 // ---------------------------------------------------------------------------
@@ -807,6 +851,7 @@ export function parseAnswerText(text, src, received) {
     id: `q${i + 1}`,
     label: plain(s.question.label),
     value: null,
+    ...(s.question.type === "rank" ? { order: null } : s.question.type === "number" ? { number: null } : {}),
     ...(Array.isArray(s.question.items)
       ? { selections: Object.fromEntries(s.question.items.map((item) => [item.id, null])) }
       : s.question.multiple === true ? { multiple: [] } : {}),
@@ -819,7 +864,8 @@ export function parseAnswerText(text, src, received) {
   let cur = null; // 直前の項目（続きの行を足す）
   const setValue = (item, question, body) => {
     let v, note;
-    if ((question.multiple === true && body.trimStart().startsWith("複数選択:"))
+    if ((["rank", "number"].includes(question.type) && /^(順位|数値):/.test(body.trimStart()))
+      || (question.multiple === true && body.trimStart().startsWith("複数選択:"))
       || (Array.isArray(question.items) && body.trimStart().startsWith("項目別選択:"))) {
       const start = body.indexOf("{");
       if (start < 0) return false;
@@ -841,7 +887,18 @@ export function parseAnswerText(text, src, received) {
       [v, note] = body.split(/\s+※\s+/, 2);
       v = v.trim();
     }
-    if (Array.isArray(question.items)) {
+    if (["rank", "number"].includes(question.type)) {
+      if (v !== "未回答" && v !== "") {
+        const prefix = question.type === "rank" ? "順位" : "数値";
+        const match = new RegExp(`^${prefix}:\\s*(\\{.*\\})$`).exec(v);
+        if (!match) return false;
+        let data;
+        try { data = JSON.parse(match[1]); } catch { return false; }
+        if (!validAnswerPayload(data, question, (question.options || []).map(optionValue))) return false;
+        if (question.type === "rank") item.order = data.order;
+        else item.number = data.value;
+      }
+    } else if (Array.isArray(question.items)) {
       if (v !== "未回答" && v !== "") {
         const match = /^項目別選択:\s*(\{.*\})$/.exec(v);
         if (!match) return false;
