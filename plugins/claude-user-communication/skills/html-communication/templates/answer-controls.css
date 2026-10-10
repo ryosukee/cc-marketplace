@@ -1,0 +1,28 @@
+.conditional { margin: 16px 0; border-block: 1px solid var(--rule); padding: 10px 0; }
+.conditional > summary { cursor: pointer; font-weight: 700; }
+.conditional > summary h2 { display: inline; margin: 0; }
+.condition-state { display: block; margin: 4px 0 0 18px; color: var(--sub); font-size: 0.875em; font-weight: 400; }
+.conditional-body { margin-top: 12px; }
+.rank-list { padding-left: 24px; }
+.rank-list > li { margin: 6px 0; padding: 8px; border: 1px solid var(--rule); border-radius: 5px; }
+.rank-label { overflow-wrap: anywhere; }
+.rank-label > .d { display: block; }
+.rank-actions { display: flex; gap: 6px; margin-top: 8px; }
+.rank-actions[hidden] { display: none; }
+.rank-actions button { min-width: 38px; min-height: 38px; color: var(--fg); background: var(--bg); border: 1px solid var(--control-border); border-radius: 4px; }
+.rank-actions button:disabled { color: var(--sub); cursor: default; }
+[data-rank-drag] { touch-action: none; cursor: grab; }
+.is-dragging { outline: 2px solid var(--focus); }
+.rank-drop-target { border-color: var(--link) !important; background: var(--surface-now); }
+.number-controls { display: grid; gap: 6px; margin-block: 12px; }
+.number-controls input { box-sizing: border-box; width: 100%; min-width: 0; }
+.number-controls input[type="number"] { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--control-border); border-radius: 4px; padding: 8px; }
+.number-controls input[type="range"] { min-height: 36px; accent-color: var(--link-fill); }
+.number-error { margin: 6px 0; color: var(--sub); font-size: 0.875em; }
+.answer-control-status { display: block; margin-top: 8px; font-size: 0.875em; }
+.rank-actions button:focus-visible, .number-controls input:focus-visible, .conditional > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media print {
+  .rank-actions, [data-answer-confirm], .answer-control-status { display: none !important; }
+  .conditional-body { display: block !important; }
+  .conditional { break-inside: auto; }
+}

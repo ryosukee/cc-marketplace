@@ -17,12 +17,12 @@ try {
   for (const name of fs.readdirSync(path.join(root, "docs/features"))) {
     fs.copyFileSync(path.join(root, "docs/features", name), path.join(temp, "src", name));
   }
-  for (const file of ["demo-r001", "demo-f001", "demo-r002", "demo-f002", "demo-r003"]) {
+  for (const file of ["demo-r001", "demo-f001", "demo-r002", "demo-f002", "demo-r003", "demo-f003"]) {
     const result = assemblePage(path.join(temp, "src", `${file}.json`));
     assert.equal(result.ok, true, JSON.stringify(result.findings));
   }
   fs.mkdirSync(output, { recursive: true });
-  browser = await chromium.launch();
+  browser = await chromium.launch(process.env.HTML_COMMUNICATION_BROWSER_EXECUTABLE ? { executablePath: process.env.HTML_COMMUNICATION_BROWSER_EXECUTABLE } : {});
   const page = await browser.newPage({ viewport: { width: 1440, height: 960 }, colorScheme: "light", reducedMotion: "reduce" });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -61,6 +61,21 @@ try {
   await page.locator("#answer-menu-toggle").click();
   await page.locator("#free").fill("機能紹介用の回答例です。狭い画面でも操作を確認します。");
   await shot("answers");
+  await go("demo-f003");
+  const choice = page.locator('.qd[data-for="q1"]');
+  if (!await choice.evaluate(el => el.open)) await choice.locator('summary').click();
+  await page.locator('#q1 input[value="調査から"]').check();
+  await shot("conditional-answer", page.locator('#bd .rng').first());
+  const rank = page.locator('.qd[data-for="q2"]');
+  if (!await rank.evaluate(el => el.open)) await rank.locator('summary').click();
+  await shot("rank-answer-before", rank);
+  await rank.locator('[data-rank-down]').first().click();
+  await shot("rank-answer", rank);
+  const number = page.locator('.qd[data-for="q3"]');
+  if (!await number.evaluate(el => el.open)) await number.locator('summary').click();
+  await shot("number-answer-before", number);
+  await number.locator('[data-number-input]').fill('2.5');
+  await shot("number-answer", number);
   await go("demo-f002");
   const code = page.locator('#rich-reservation-code');
   await shot("code", code);

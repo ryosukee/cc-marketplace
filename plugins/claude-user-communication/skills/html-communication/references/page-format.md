@@ -59,6 +59,7 @@ HTML の `<meta name="source">` に生成元のハッシュが入り、`check-so
 ```
 
 - `explain` は設問を持たない読む専用の節。`question` は設問を 1 つ持つ節。1 節 1 設問
+- form の説明節は `when` で回答条件を指定できる。[条件付き説明の書式](./answer-controls.md#回答に応じた説明)に従い、設問の省略には使わない
 - `id` は書かない。説明は `e1` `e2`、設問は `q1` `q2` と並び順から付き、見出しのアンカーは `#s-e1` `#s-q1` になる
 - `group` は任意。書くときは `groups` にある `id` を使う。設問 pane のグループ容器と、
   範囲のラベル「{グループ名} n / N（設問 通し / 総数）」が組み立て時にできる
@@ -85,6 +86,7 @@ form の `formIntro`、report の `summary`、節の `blocks`、`reference.block
 | `{ "custom": { "id": "cards" } }` | パターン集などの markup をそのまま置く。キャプションと番号は付かない |
 | `{ "detail": { "label": "…", "title": "…", "blocks": [...] } }` | 詳細パネル。[操作の書式](./detail-operations.md#詳細パネル)を読む |
 | `{ "tree": [{ "text": "…", "blocks": [...], "children": [...] }] }` | 階層を1段ずつ開く。[操作の書式](./detail-operations.md#階層を1段ずつ開く)を読む |
+| `{ "conditional": { "title": "…", "when": { "question": "q1", "equals": "…" }, "blocks": [...] } }` | 回答に合う説明を開き、条件外も見出しを残す。[条件付き説明の書式](./answer-controls.md#回答に応じた説明)を読む |
 
 表の `columns` は文字列か `{ "text": "…", "num": true }`（数値の列）。
 `rows` はセルの配列か `{ "cells": [...], "key": true }`（判断を分ける行のハイライト）。

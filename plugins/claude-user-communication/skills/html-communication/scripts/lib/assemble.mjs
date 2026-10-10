@@ -87,6 +87,12 @@ export function assemblePage(jsonPath, { force = false, out = null } = {}) {
     html = html.replace("</head>", `<style data-scope="state-machine">\n${css}</style>\n</head>`)
       .replace("</body>", `<script data-scope="state-machine">\n${js}</script>\n</body>`);
   }
+  if (r.answerControls) {
+    const css = fs.readFileSync(path.join(SKILL_ROOT, "templates", "answer-controls.css"), "utf8");
+    const js = fs.readFileSync(path.join(SKILL_ROOT, "templates", "answer-controls.js"), "utf8");
+    html = html.replace("</head>", `<style data-scope="answer-controls">\n${css}</style>\n</head>`)
+      .replace('<script data-scope="form">', `<script data-scope="answer-controls">\n${js}</script>\n<script data-scope="form">`);
+  }
   if (isSlides) {
     const css = fs.readFileSync(path.join(SKILL_ROOT, "templates", "slides.css"), "utf8");
     const js = fs.readFileSync(path.join(SKILL_ROOT, "templates", "slides.js"), "utf8");

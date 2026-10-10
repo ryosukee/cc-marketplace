@@ -1113,6 +1113,7 @@
   relayout();
 
   function ans(qid) {
+    if (window.HTMLAnswerControls && window.HTMLAnswerControls.has(qid)) return window.HTMLAnswerControls.answer(qid);
     var group = document.getElementById(qid);
     if (group && group.dataset.itemRadios === 'true') {
       var data = {}, any = false;
@@ -1177,9 +1178,12 @@
     var free = document.getElementById('free').value;
     if (free) d.texts['free'] = free;
     if (window.HTMLCodeFeedback) d.feedback = window.HTMLCodeFeedback.snapshot();
+    if (window.HTMLAnswerControls) d.controls = window.HTMLAnswerControls.snapshot();
     try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
   }
   function applyDraft(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return;
+    if (window.HTMLAnswerControls) window.HTMLAnswerControls.restore(d.controls);
     if (window.HTMLCodeFeedback && Array.isArray(d.feedback)) window.HTMLCodeFeedback.restoreDraft(d.feedback);
     Object.keys(d.radios || {}).forEach(function (name) {
       var el = document.querySelector('input[name="' + name + '"][value="' + CSS.escape(d.radios[name]) + '"]');
@@ -1200,6 +1204,7 @@
     });
   }
   function refresh() {
+    if (window.HTMLAnswerControls) window.HTMLAnswerControls.updateConditions();
     var r = build();
     document.getElementById('preview').value = r.text;
     var remaining = r.total - r.n;
@@ -1258,7 +1263,19 @@
   document.addEventListener('input', function () { if (!ANSWERED) saveDraft(); refresh(); });
   document.addEventListener('change', function () { if (!ANSWERED) saveDraft(); refresh(); });
   document.addEventListener('rich-feedback-change', function () { if (!ANSWERED) saveDraft(); refresh(); });
-  document.getElementById('copy').addEventListener('click', function () { copyText(build().text); });
+  document.addEventListener('answer-controls-change', function () { if (!ANSWERED) saveDraft(); refresh(); });
+  document.getElementById('copy').addEventListener('click', function () {
+    if (window.HTMLAnswerControls && window.HTMLAnswerControls.invalid()) {
+      clearTimeout(copyMessageTimer);
+      copyButton.textContent = copyButtonLabel;
+      var res = document.getElementById('res');
+      res.classList.remove('copy-success');
+      res.textContent = '数値の入力を直してからコピーしてください';
+      window.HTMLAnswerControls.focusInvalid();
+      return;
+    }
+    copyText(build().text);
+  });
   document.getElementById('reset').addEventListener('click', function () {
     if (ANSWERED) return;
     try { localStorage.removeItem(KEY); } catch (e) {}
@@ -1266,6 +1283,7 @@
     document.querySelectorAll('.other, .note[data-note]').forEach(function (t) { t.value = ''; });
     document.getElementById('free').value = '';
     if (window.HTMLCodeFeedback) window.HTMLCodeFeedback.reset();
+    if (window.HTMLAnswerControls) window.HTMLAnswerControls.reset();
     refresh();
     closeMenu(true);
   });
