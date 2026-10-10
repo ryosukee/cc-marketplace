@@ -185,8 +185,12 @@ why: skill の説明の多くはメインのセッションに向けて書かれ
 - Claude の subagent は Agent ツールで起動し、`model` 引数でモデルを指定する。
   `model` 引数が無い場合は、agent 定義の `model`、`CLAUDE_CODE_SUBAGENT_MODEL`、親のモデルの順に使う。
   `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` が有効な場合やモデルの利用制限がある場合は、指定値どおりに動くとは限らないため実際のモデルを確認する
-- 表 1 の公開版を使う場合は、`claude-haiku-5-5`、`claude-sonnet-5-5`、`claude-opus-5-5`、`claude-fable-5-1` を指定する。
-  `haiku`・`sonnet`・`opus`・`fable` の alias は、接続先や親のモデルによって別の版を指すことがある。
+- Agent ツールの `model` 引数は、`haiku`・`sonnet`・`opus`・`fable` の alias だけを受け付ける。
+  `claude-sonnet-5-5` のような版名を渡すと、入力の検証で拒否されて起動しない。
+  alias は、接続先や親のモデルによって別の版を指すことがある
+- 表 1 の公開版に固定する場合は、agent 定義の `model` frontmatter に
+  `claude-haiku-5-5`、`claude-sonnet-5-5`、`claude-opus-5-5`、`claude-fable-5-1` を書く。
+  frontmatter は版名を受け付ける（[Subagents の Choose a model](https://code.claude.com/docs/en/sub-agents)）。
   Haiku 5.5 は Claude Code v2.1.293 以降で使う
 - effort は subagent 定義の `effort` frontmatter で指定できるが、環境変数や契約・組織の上限が優先される場合がある。
   起動ツールに effort の指定欄が無い場合は、定義またはセッションから引き継いだ値を確認する。
