@@ -27,6 +27,7 @@ cc-marketplace/
 │   ├── rules/                    # プロジェクト固有ルール (設計原則、規約)
 │   └── skills/                   # このプロジェクトでだけ使う skill
 ├── .agents/
+│   ├── skills/                   # Codex から使う開発用 skill への symlink
 │   └── plugins/
 │       └── marketplace.json      # Codex の marketplace カタログ
 ├── .claude-plugin/
