@@ -8,14 +8,11 @@ user-invocable: true
 allowed-tools: Bash
 argument-hint: "[status]"
 note: >-
-  この skill が起動を持たないのはワークアラウンド。Monitor ツールの入力スキーマから persistent が消え、
-  timeout_ms が 1,800,000 ms (30 分) で頭打ちになったため、期限切れのたびに Claude が起動し直すことになり、
-  その応答でセッション JSONL が更新されて閾値 3000 秒に到達しなくなった。
+  この skill が起動を持たず、plugin monitor に監視を起動させるのは、Monitor ツールでは期限の無い監視を作れないため。
+  Monitor ツールの監視は期限が最大 30 分で、期限が切れるたびに Claude へ起動し直しを促す通知が届く。
+  Claude が起動し直すと、その応答でセッション JSONL が更新されるので、アイドル時間が閾値 3000 秒に届かない。
   changelog 2.1.271 "Changed Monitor watches to always have a deadline (at most 30 minutes;
   10 in single-prompt `-p` runs) and notify Claude to re-arm, replacing the no-timeout `persistent` option"。
-  v2.1.271 で binary 側の既定も false から true へ変わっている。
-  解除の条件は、セッションに送られる Monitor の入力スキーマに persistent が戻ること。
-  そのときは起動を Monitor ツールへ戻すかを判断する。
 ---
 
 # cache-keepalive

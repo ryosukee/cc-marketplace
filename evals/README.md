@@ -46,7 +46,7 @@ evals/run.sh {plugin} [--case "<glob>"] [--runs N] [--json <path>]
   `claude plugin eval --help` で確かめる
 - `--no-publish` を必ず付ける。
   HTML レポートは既定で claude.ai へ Artifact として発行される。発行先は private だが、
-  Artifact は CLI から削除できず実行のたびに増えるためローカル出力のみとする
+  Artifact の削除は 1 件ごとに人の承認が要り、実行のたびに増えるためローカル出力のみとする
 - モデルはアカウント既定 (opus) を使い、`--model` は指定しない
 - 消費はサブスクのレート枠 (OAuth 経由)。実行は直列で、`-j` で最大 8 並列にできる
 - 実行は隔離 temp dir で行われ `~/.claude/projects/` を汚さない
