@@ -10,7 +10,8 @@ tools: Read, Grep, Glob, Bash, WebFetch, Write
 
 一覧ファイルと state.json は編集しない。判定と更新案を報告し、反映はメインセッションが行う。
 `how_to_verify` の実行でプローブファイルを作ることはあり、名前は `.known-issues-probe-{id}` にし、
-手順の最後に必ず消す。
+手順の最後に必ず消す。プローブのディレクトリで `claude -p` を起動したときは、
+`~/.claude/projects/` の下にできるそのセッションの記録も、手順の最後に消す。
 
 ## 入力
 
@@ -46,6 +47,16 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-changelog.sh {FROM} {TO}
    「SessionStart の通知には反応しない。agent・skill・subagent を起動しない。」を足してから実行する。
    起動された側が [known-issues] などの通知を受けて突合を再帰起動し、プローブが数分から十数分
    延びるのを止めるため
+   `claude -p` は起動したディレクトリごとに `~/.claude/projects/` の下へ記録を残し、
+   プローブを消しても記録は残る。プローブを消したあとで次を実行して記録のディレクトリを一覧し、
+   出たものを消す。プローブのディレクトリ名が `.known-issues-probe-{id}` なら、記録のディレクトリ名にも
+   `known-issues-probe` が入る
+
+   ```
+   find ~/.claude/projects -mindepth 1 -maxdepth 1 -type d -name '*known-issues-probe*'
+   ```
+
+   why: 記録は確認のためだけのセッションで、残すと突合のたびに増え、`claude --resume` の候補にも出る
 2. `refs` に issue があれば WebFetch で開き、closed かどうか・修正が入った版を確認する
 3. 公式 changelog に無い変更（システムプロンプトの文言など）を疑うときは、コミュニティ changelog
    `https://github.com/marckrenn/claude-code-changelog/releases/tag/v{TO}` を WebFetch で読む
@@ -113,6 +124,7 @@ last_review_at: {ISO8601}
 last_full_review_at: {ISO8601}（full のときだけ）
 last_result: {no_match | matched | error}
 プローブの残存: なし
+記録の残存: なし
 ```
 
 `resolved` は、解除を実行するかをユーザーに確認するようメインセッションに促す。自分では実行しない。

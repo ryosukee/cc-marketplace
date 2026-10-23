@@ -54,7 +54,7 @@ claim は `${CLAUDE_PLUGIN_DATA}/review.claim`。TTL は 2 時間で、超えた
 - `MODE`: `diff` または `full`
 
 agent は一覧と state を編集しない。`how_to_verify` の実行でプローブファイルを作ることはあり、
-自分で消す。
+自分で消す。プローブで起動した `claude -p` の記録（`~/.claude/projects/` の下）も自分で消す。
 
 ### ステップ 4: 結果の反映
 
@@ -73,7 +73,11 @@ agent は一覧と state を編集しない。`how_to_verify` の実行でプロ
    `resolved_version` を足して `known-issues.resolved.yml` へ移す。
    最後に `grep -c resolved_at known-issues.yml` が 0 であることを確かめる（移し忘れの検知）
 4. プローブの残存を確かめる: `find ~/.claude "$PWD" -name '.known-issues-probe-*'` が空でなければ消し、
-   log に書く
+   log に書く。続けて、プローブで起動した `claude -p` の記録の残存を確かめる:
+   `find ~/.claude/projects -mindepth 1 -maxdepth 1 -type d -name '*known-issues-probe*'` の出力を見て、
+   空でなければ出たディレクトリを消す。記録は一覧のエントリに関わらないので、log には書かない。
+   why: `claude -p` は起動したディレクトリごとに記録を残し、プローブを消しても記録は残る。
+   残すと突合のたびに増え、`claude --resume` の候補にも出る
 5. state を更新し、claim を解除する。差分では `reviewed_version` を TO に、`pending_version` を null に。
    全件では `last_full_review_at` を更新し、`reviewed_version` は進めない
 
