@@ -2,7 +2,7 @@
 paths:
   - "never-match-reference-only"
 note: |
-  モデル情報と公開ベンチマークの確認日: 2026-10-08。
+  モデル情報と公開ベンチマークの確認日: 2026-10-08。GPT-6.1 Terra の情報だけ 2026-10-29。
   作業への割り当ては公開情報からの運用上の判断であり、この repo の作業で実測した結果ではない。
 ---
 
@@ -90,6 +90,40 @@ Luna の最大 effort の値を、単純な抽出で low effort を使ったと�
 複雑な実装には Sol を開始候補とし、Sol で不足した要件を Astra で検証する。
 表の差だけから全作業を Astra に切り替えない。
 
+GPT-6.1 Terra の同じページの値は、Terminal-Bench 4.0 が 49.49% ±1.82 で、Sol と Astra を下回る。
+Code Migration の値は掲載されていない。
+掲載されていないことを低い点数として扱わない。
+
+> 情報源: Vals AI の GPT-6.1 Terra<br>
+> [GPT-6.1 Terra](https://www.vals.ai/models/openai_gpt-6.1-terra)の Benchmarks Accuracy Rankings と Hyperparameter Settings。
+> 設定は max effort、最大出力 128,000 tokens で、表 3 の各ページと同じ表示。
+
+## Codex の画像の読み取りと画面操作
+
+GPT-6.1 Terra は 2026-10-26 に公開された。
+OpenAI は、視覚推論・正確な画面操作・文章作成に向けた、速く効率の良いモデルと位置づけている。
+勧める用途は、提供した資料に基づく簡潔な文章、成果の決まった画面操作、範囲を限ったコード修正である。
+
+> 情報源: OpenAI の GPT-6.1 Terra の資料<br>
+> [GPT-6.1 Terra](https://developers.openai.com/api/docs/models/gpt-6.1-terra)の説明は "A fast, efficient model for visual reasoning, precise computer use, and clear, natural writing."。
+> [Model selection](https://developers.openai.com/api/docs/guides/model-selection)は "for concise writing based on supplied material, computer-use tasks with a defined outcome, and scoped code fixes." と書く。
+> [Using GPT-6](https://developers.openai.com/api/docs/guides/latest-model)は、Terra の例に商品写真とカタログの照合と技術図面の比較を挙げ、effort は medium から始めるよう勧める。3D の作業への言及は無い。
+> 公開日は [API Changelog](https://developers.openai.com/api/docs/changelog)の 2026-10-26 の項。
+
+3D の作業に強いという評価は、OpenAI の資料ではなく第三者の実例から出ている。
+Blender の操作や写真からの CAD 記述の生成の実例があり、図面から OBJ を起こす検証では、閉じたメッシュを作れたが寸法の向きを読み違えた。
+これらはハーネス・試行回数・比較相手が揃っておらず、Sol・Astra との 3D の作業での優劣は確かめられていない。
+
+> 情報源: 第三者の 3D の検証<br>
+> [GPT-6.1 Terra drives Blender to 3D model a Roadster](https://www.whatpeoplemade.com/i/gpt-6-1-terra-drives-blender-to-3d-model-a-roadster-175105.html)は、Codex と fal plugin で Terra が Blender で車をモデリングし、カメラを動かした実例。画像生成と動画生成の別モデルを組み合わせている。
+> 写真から CAD 記述を起こす速度の個人測定が Reddit の r/codex に投稿されているが、ページを取得できず原文は未確認。
+> [GPT-6.1 Terra Review](https://joinoasis.com/blog/gpt-6-1-terra-review-with-benchmarks)は、図面から OBJ を起こした結果を "The dimensional reading is only a partial match." と評し、"Treat this output as a first reconstruction to review, rather than production CAD." と結ぶ。
+> OpenAI の発表記事（[Introducing GPT-6.1 Terra](https://openai.com/index/introducing-gpt-6-1-terra/)）は、Agents' Last Exam と OSWorld 2.1 の課題に図面から 3D モデルを作る作業を含むと報告されているが、記事が取得できず原文は未確認。
+
+画像を読む作業では Terra を Sol より単価の低い候補にする。
+読み取った寸法・向き・位置関係は元の画像と突き合わせて検算する。
+コーディングが主の作業では、表 3 の差と OpenAI の用途の説明から、Sol を開始候補のまま変えない。
+
 ## 検索を伴う調査
 
 Parallel の Search Capability Leaderboard は、DSQA・HLE・WISER 各 100 問を、検索あり・なしで測る。
@@ -128,15 +162,16 @@ Luna を選べば常に早く完了するとは扱わない。
 > 情報源: Claude のモデル仕様<br>
 > [Models overview](https://platform.claude.com/docs/en/models/overview)と[Claude Haiku 5.5](https://platform.claude.com/docs/en/models/haiku-5-5/overview)の Pricing。
 
-| 入力 / 出力（USD / 100 万 tokens） | GPT-6 Luna | GPT-6.1 Sol | GPT-6 Astra |
-| --- | --- | --- | --- |
-| 入力 272,000 tokens 以下 | 0.10 / 0.50 | 2 / 10 | 10 / 50 |
-| 入力 272,000 tokens 超 | 0.20 / 0.75 | 4 / 15 | 20 / 75 |
+| 入力 / 出力（USD / 100 万 tokens） | GPT-6 Luna | GPT-6.1 Terra | GPT-6.1 Sol | GPT-6 Astra |
+| --- | --- | --- | --- | --- |
+| 入力 272,000 tokens 以下 | 0.10 / 0.50 | 1 / 5 | 2 / 10 | 10 / 50 |
+| 入力 272,000 tokens 超 | 0.20 / 0.75 | 2 / 7.50 | 4 / 15 | 20 / 75 |
 
 ※ 表 6 OpenAI API の標準単価
 
 > 情報源: OpenAI のモデル仕様<br>
-> [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna)、[GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol)、[GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra)の Pricing。
+> [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna)、[GPT-6.1 Terra](https://developers.openai.com/api/docs/models/gpt-6.1-terra)、[GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol)、[GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra)の Pricing。
+> Terra は入力が 272,000 tokens を超えると、リクエスト全体に入力 2 倍・出力 1.5 倍の単価がかかる。context window は 1,050,000 tokens。
 
 長い会話を fork する場合は、引き継ぐ入力も含めて費用を比較する。
 API 単価と契約枠の消費は別に確認し、表の単価から契約枠の残りを計算しない。
