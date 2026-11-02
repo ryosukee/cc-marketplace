@@ -58,9 +58,17 @@ while :; do
 	esac
 	compact_out="$(printf '%s' "$out" | node "$(dirname "$0")/diffo-compact-payload.mjs" 2>/dev/null)" || compact_out="$out"
 
-	wake_message="$(printf '%s\n\n%s' \
-		'diffo のバックグラウンド監視からレビューが届いた。ref-diffo と必要な規範を読み、payload の threadIds 全件を反映・検証して返信すること。スレッドは解決しない。この poller は通知後に終了するため、全件返信後に新しい poller を起動すること。' \
-		"$compact_out")"
+	# レイヤー作成の依頼には threadIds が無く、payload の指示で agent のコメントを resolve させる。
+	# 指摘向けの前置き文はこれと食い違うため、依頼の種類で前置き文を分ける。
+	case "$compact_out" in
+		*'"kind":"layers"'*)
+			wake_intro='diffo のバックグラウンド監視からレイヤー作成の依頼が届いた。ref-diffo を読み、payload の prompt に従ってレイヤーとインラインコメントを投稿すること。この poller は通知後に終了するため、投稿後に新しい poller を起動すること。'
+			;;
+		*)
+			wake_intro='diffo のバックグラウンド監視からレビューが届いた。ref-diffo と必要な規範を読み、payload の threadIds 全件を反映・検証して返信すること。スレッドは解決しない。この poller は通知後に終了するため、全件返信後に新しい poller を起動すること。'
+			;;
+	esac
+	wake_message="$(printf '%s\n\n%s' "$wake_intro" "$compact_out")"
 
 	while ! queue_result="$(codex queue --thread "$TARGET_CODEX_THREAD_ID" --message "$wake_message" 2>&1)"; do
 		printf '%s\n' "$queue_result" >&2

@@ -38,3 +38,26 @@ console.log(JSON.stringify(rows.some(r=>r.command==='npx')?{status:'feedback',ki
   assert.ok(queued[0].args[4].includes('t-1'));
   assert.deepEqual(readdirSync(path.join(state, 'diffo-codex-poll')), []);
 });
+
+test('a layers request is queued with the layers intro and the inline-comment guide', (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'diffo-poll-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const bin = path.join(dir, 'bin');
+  mkdirSync(bin);
+  const stub = (name, code) => writeFileSync(path.join(bin, name), `#!/usr/bin/env node\n${code}`, { mode: 0o755 });
+  stub('codex', `import fs from 'node:fs';\nfs.appendFileSync(process.env.POLL_TEST_LOG, JSON.stringify({command:'codex',args:process.argv.slice(2)})+'\\n');`);
+  stub('npx', `console.log(JSON.stringify({status:'feedback',kind:'layers',threadIds:[],prompt:'The reviewer asked for layers. Nothing else is owed for this item \\u2014 no reply, no comment.'}));`);
+  const log = path.join(dir, 'calls.jsonl');
+  const result = spawnSync('/bin/bash', [path.join(root, 'bin/diffo-codex-poll'), '01a11848-2e04-7150-893b-c998ea3e0b5c'], {
+    cwd: dir, encoding: 'utf8', timeout: 10000,
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, XDG_STATE_HOME: path.join(dir, 'state'), POLL_TEST_LOG: log },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const queued = readFileSync(log, 'utf8').split('\n').filter(Boolean).map(JSON.parse)
+    .filter(row => row.args[0] === 'queue' && row.args.includes('--thread'));
+  assert.equal(queued.length, 1);
+  const message = queued[0].args[4];
+  assert.ok(message.startsWith('diffo のバックグラウンド監視からレイヤー作成の依頼が届いた。'));
+  assert.equal(message.includes('スレッドは解決しない'), false);
+  assert.ok(message.includes('# レイヤーを投稿するときのインライン補足'));
+});

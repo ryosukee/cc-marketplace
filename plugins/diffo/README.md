@@ -6,6 +6,7 @@
 
 - Diffo の実行前に ref-diffo の読み込みを確認し、未読なら読み込みへ誘導する hook
 - CodingAgent のメイン会話を止めずに、バックグラウンドでポーリングを続けて Diffo のレビュー通知を受け取る仕組み
+- レイヤー作成の依頼に、変更箇所への補足をインラインコメントで付ける指示を足す仕組み
 - Diffo の Web UI の表示を変更し、機能を追加するパッチ
 
 ## 必要なものと導入
@@ -26,6 +27,11 @@ Codex でレビュー通知を自動受信する場合は、上記に加えて�
 - Bash
 - `shasum`
 - `awk`
+
+レイヤーの更新を依頼したときに、前回のインラインコメントを resolve させる場合は、以下も必要。
+
+- `curl`
+- `jq`
 
 Diffo のブラウザ表示を変更する同梱スクリプト `bin/diffo-patch` を使う場合は、以下も必要。
 
@@ -67,6 +73,24 @@ Claude Code では plugin の hook を有効にする。hook を無効にした�
 同梱スクリプトとシェルのコマンド列・コマンド置換。
 任意の別スクリプト内部や動的に組み立てたコマンドまで解析する仕組みではない。
 読み込みの確認は、手順の内容をモデルが理解・遵守したことまでは保証しない。
+
+## レイヤー作成の依頼にインライン補足を足す
+
+Diffo の Layers タブでレイヤーの作成か更新を依頼すると、poll は `"kind":"layers"` の payload を返す。
+Diffo の依頼文は、レイヤーの投稿以外にコメントを付けないよう求めている。
+poll loop は payload を `bin/diffo-compact-payload.mjs` に通し、
+依頼文のその文を [レイヤーを投稿するときのインライン補足](./references/layer-inline-comments.md) の本文に差し替える。
+Diffo がその文を変えて見つからないときは、本文を依頼文の末尾に足す。
+Codex の poller は、この依頼に限って、スレッドへの返信ではなくレイヤーの投稿を求める前置き文を付ける。
+
+指示は poll の payload にだけ入る。チャットでレイヤーを頼んだときと、plugin の poll loop を通さずに
+`diffo poll` を実行したときには届かない。
+
+レイヤーの更新では、前回 agent が付けたインラインコメントを resolve してから付け直させる。
+Diffo の CLI に resolve のコマンドは無いため、Diffo のブラウザ画面が使う HTTP API
+（`GET /api/review` と `POST /api/review/threads/:id/state`）を `curl` で呼ばせる。
+この API は Diffo の help に載っておらず、Diffo の更新で変わることがある。
+resolve したスレッドは `diffo-patch` の既定の表示では隠れ、表示を切り替えると見られる。
 
 ## 未導入・異常終了時
 
