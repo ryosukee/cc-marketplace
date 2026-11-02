@@ -69,7 +69,7 @@ function withLayerGuide(payload) {
   if (typeof payload.prompt !== 'string') throw new Error('unsupported payload');
   const guide = readFileSync(LAYER_GUIDE, 'utf8').trim();
   const prompt = payload.prompt.includes(LAYER_NO_COMMENT)
-    ? payload.prompt.replace(LAYER_NO_COMMENT, `\n${guide}\n`)
+    ? payload.prompt.replace(LAYER_NO_COMMENT, `\n\n${guide}`)
     : `${payload.prompt.trimEnd()}\n\n${guide}\n`;
   return JSON.stringify({ ...payload, prompt });
 }

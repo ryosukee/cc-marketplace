@@ -79,6 +79,8 @@ test('a layers request gets the inline-comment guide in place of the no-comment 
   assert.ok(result.prompt.includes(layerGuideHeading));
   assert.ok(result.prompt.startsWith('The reviewer asked for layers'));
   assert.ok(result.prompt.indexOf(layerGuideHeading) < result.prompt.indexOf('Then run `diffo poll`'));
+  assert.ok(result.prompt.includes(`\n\n${layerGuideHeading}\n`));
+  assert.ok(result.prompt.includes('4. poll を再開する\n\nThen run `diffo poll`'));
 });
 
 test('a layers request without the no-comment line gets the guide appended', () => {
