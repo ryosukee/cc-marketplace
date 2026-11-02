@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
-// poll の prompt だけから今回の指摘を抜き出す。取得できなければ入力をそのまま返す。
+// poll の prompt だけから今回の指摘を抜き出す。レイヤー作成の依頼には、インライン補足の指示を差し込む。
+// どちらもできなければ入力をそのまま返す。
 import { readFileSync } from 'node:fs';
+
+const LAYER_GUIDE = new URL('../references/layer-inline-comments.md', import.meta.url);
+// Diffo の依頼文の末尾にある、コメントを付けないよう求める文。この文を指示に差し替える。
+const LAYER_NO_COMMENT = 'Nothing else is owed for this item — no reply, no comment.';
 
 function readPayload(raw) {
   for (const line of raw.trimEnd().split(/\r?\n/).reverse()) {
@@ -60,8 +65,18 @@ function parseThreads(prompt) {
   return result;
 }
 
+function withLayerGuide(payload) {
+  if (typeof payload.prompt !== 'string') throw new Error('unsupported payload');
+  const guide = readFileSync(LAYER_GUIDE, 'utf8').trim();
+  const prompt = payload.prompt.includes(LAYER_NO_COMMENT)
+    ? payload.prompt.replace(LAYER_NO_COMMENT, `\n${guide}\n`)
+    : `${payload.prompt.trimEnd()}\n\n${guide}\n`;
+  return JSON.stringify({ ...payload, prompt });
+}
+
 function compact(raw) {
   const payload = readPayload(raw);
+  if (payload.kind === 'layers') return withLayerGuide(payload);
   if (payload.kind !== 'threads' || !Array.isArray(payload.threadIds)
       || payload.threadIds.length === 0 || typeof payload.prompt !== 'string') {
     throw new Error('unsupported payload');

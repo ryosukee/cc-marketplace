@@ -58,6 +58,36 @@ test('unlabeled thread keeps null intent', () => {
   assert.equal(JSON.parse(format(input)).threads[0].intent, null);
 });
 
+const layerGuideHeading = '# レイヤーを投稿するときのインライン補足';
+const noComment = 'Nothing else is owed for this item — no reply, no comment.';
+
+test('a layers request gets the inline-comment guide in place of the no-comment line', () => {
+  const prompt = [
+    'The reviewer asked for layers in `repo` (branch `main`): outline the changeset as steps to read in order.',
+    '',
+    `Post it: \`diffo layers --json '<Layer[]>'\`. ${noComment}`,
+    '',
+    'Then run `diffo poll` again to keep listening.',
+    '',
+  ].join('\n');
+  const input = `diffo: waiting\n${JSON.stringify({ status: 'feedback', kind: 'layers', threadIds: [], prompt })}\n`;
+  const result = JSON.parse(format(input));
+  assert.equal(result.status, 'feedback');
+  assert.equal(result.kind, 'layers');
+  assert.deepEqual(result.threadIds, []);
+  assert.equal(result.prompt.includes(noComment), false);
+  assert.ok(result.prompt.includes(layerGuideHeading));
+  assert.ok(result.prompt.startsWith('The reviewer asked for layers'));
+  assert.ok(result.prompt.indexOf(layerGuideHeading) < result.prompt.indexOf('Then run `diffo poll`'));
+});
+
+test('a layers request without the no-comment line gets the guide appended', () => {
+  const prompt = 'The reviewer asked for layers.\n\nThen run `diffo poll` again.\n';
+  const result = JSON.parse(format(JSON.stringify({ status: 'feedback', kind: 'layers', threadIds: [], prompt })));
+  assert.ok(result.prompt.startsWith(prompt.trimEnd()));
+  assert.ok(result.prompt.indexOf(layerGuideHeading) > result.prompt.indexOf('Then run'));
+});
+
 test('unrecognized and incomplete payloads fall back to the exact input', () => {
   const finish = JSON.stringify({ status: 'feedback', kind: 'finish', threadIds: [], prompt: 'LGTM' });
   const mismatch = JSON.stringify({
