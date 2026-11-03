@@ -51,7 +51,8 @@ gh pr view <number> --json body -q .body
 ```
 
 新規作成と同じ気持ちで body 全体を確認する。
-現在の差分（`git diff <base>...HEAD --stat` + コミットログ）と取得した body を比較し、以下を確認する:
+`git fetch origin <base>` で remote の base を取得してから、
+現在の差分（`git diff origin/<base>...HEAD --stat` + コミットログ）と取得した body を比較し、以下を確認する:
 
 - 概要が現在の変更内容を正確に反映しているか
 - How to check の項目が現在の差分に対して妥当か（不要な項目、追加すべき項目）

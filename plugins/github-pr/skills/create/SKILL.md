@@ -9,14 +9,33 @@ GitHub Pull Request の作成を自動化するスキル。gh CLI を優先し�
 
 ## ワークフロー
 
-### ステップ0: 現在の状態を分析（並列実行）
+### ステップ0: 現在の状態を分析
 
-以下を並列で実行:
+`<base>` は PR の base branch を表す。指定が無ければ `main`。
+
+最初に remote の base を取得する。
+
+```bash
+git fetch origin <base>
+```
+
+続けて以下を並列で実行する。比べる相手は手元の `<base>` ではなく `origin/<base>` にする。
 
 - `git status` — コミットされていない変更を確認
 - `git branch --show-current` — 現在のブランチ名
-- `git log main..HEAD --oneline` — PR に含まれるコミット一覧
-- `git diff main...HEAD --stat` — 変更ファイルの概要
+- `git log origin/<base>..HEAD --oneline` — PR に含まれるコミット一覧
+- `git diff origin/<base>...HEAD --stat` — 変更ファイルの概要
+
+最後に、PR で変えたファイルを base 側も変えていないかを確かめる。
+
+```bash
+git diff --stat HEAD...origin/<base> -- <PR で変えたファイル>
+```
+
+出力が空でなければ、PR の作成に進む前に base 側の変更をユーザーに示し、rebase か merge で取り込むかを確認する。
+
+why: 手元の `<base>` は fetch しない限り古いままで、比べると base に入った commit まで PR の commit として数える。
+base 側で同じファイルが変わっていると、PR の本文と行指定コメントが merge 後の内容と食い違うか、merge で衝突する。
 
 ### ステップ1: ブランチ & プッシュ & ベースブランチ確認
 
