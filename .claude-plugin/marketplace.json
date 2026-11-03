@@ -59,11 +59,6 @@
       "description": "実装のための仕様策定 plugin。要件定義書 (requirements)、設計書 (design)、テスト計画書 (test-plan) の 3 skill + spec-reviewer agent で、実装前の曖昧さをゼロにする"
     },
     {
-      "name": "claude-user-communication",
-      "source": "./plugins/claude-user-communication",
-      "description": "ユーザーへの確認・提示のコミュニケーション方法。入り組んだ内容の HTML ページ提示 (claude-html-communication) の 1 skill + 提示前レビューの sentence-reviewer / page-reviewer agent を提供する"
-    },
-    {
       "name": "claude-known-issues",
       "source": "./plugins/claude-known-issues",
       "description": "Claude Code の既知バグ・制約とワークアラウンドの一覧。更新を検知して修正が入ったかを agent が判定し、解除手順を提示する"

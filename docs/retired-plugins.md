@@ -3,6 +3,13 @@
 廃止した plugin の記録。コードは削除し、git 履歴から取り出す。
 廃止するときは [Plugin 更新手順](../.claude/rules/plugin-release.md) の削除手順に従い、ここへ 1 件足す。
 
+- claude-user-communication（2026-11-03、最終版 0.62.0）
+    - 削除 commit: この項目を追加した commit。`git log -1 --diff-filter=D --format=%H -- plugins/claude-user-communication` で確認できる。
+    - 理由: HTML の報告・確認フォームと原典・回答・状態の管理を、
+      [agent-html-communication](https://github.com/ryosukee/agent-html-communication)のサーバーと両 client 用 plugin へ移した。
+      この marketplace からの配布は終了し、旧 plugin のコードは archive へ移さず削除する。
+    - 復元: `git restore --source=5fc41e38f41a7a2d898d8975b6731e9dc2617ed0 -- plugins/claude-user-communication`。
+      同じ commit の両 marketplace と README から登録内容を確認できる。
 - plane-kanban（2026-09-22、最終版 0.2.1、削除 commit 8543648）
     - 理由: Plane をタスク管理に使わない方針へ変わり、Claude Code と Codex の両方から
       アンインストールした。plugin の eval が持っていた知見（stub の差し込み方、fixture の
