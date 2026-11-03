@@ -56,7 +56,9 @@ cc-marketplace の plugin を Claude Code と Codex の両方で利用できる�
 | plugin | 対応 CodingAgent | 概要 |
 | --- | --- | --- |
 | ja-writing-ambiguity | Claude Code only | 日本語の文章で読み手が意味を決められなくなる書き方を防ぐための plugin。書く前に読む参照知識として、止める型を定める |
-| [claude-user-communication](./plugins/claude-user-communication/README.md) | Claude Code + Codex | 入り組んだ報告・比較・確認を、ターミナルではなく HTML ページでユーザーに示すための plugin。ページの作り方・提示前のレビュー・回答の記録の運用を、Claude Code と Codex で共有して定める |
+
+HTML による報告・比較・確認は、[agent-html-communication](https://github.com/ryosukee/agent-html-communication)で提供する。
+旧 `claude-user-communication` の配布終了は、[廃止した plugin](./docs/retired-plugins.md)に記録している。
 
 ### meta
 
@@ -125,7 +127,6 @@ claude plugins install impl-spec@cc-tools
 claude plugins install markdownlint@cc-tools
 claude plugins install mkdocs-setup@cc-tools
 claude plugins install security-guards@cc-tools
-claude plugins install claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
 claude plugins install claude-known-issues@cc-tools
 claude plugins install usage-line@cc-tools                 # 要セットアップ (plugin README 参照)
 claude plugins install github-pr@cc-tools
@@ -139,13 +140,12 @@ ln -s ~/ghq_root/github.com/ryosukee/cc-marketplace/rules ~/.claude/rules/cc-mar
 ### Codex
 
 このリポジトリのルートで marketplace を登録し、必要な plugin をインストールする。
-現在 Codex に対応する plugin は `diffo`、`session`、`claude-user-communication`。
+現在 Codex に対応する plugin は `diffo`、`session`。
 
 ```bash
 codex plugin marketplace add .
 codex plugin add diffo@cc-tools
 codex plugin add session@cc-tools
-codex plugin add claude-user-communication@cc-tools  # 要環境変数 (plugin README 参照)
 ```
 
 ## アップデート

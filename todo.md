@@ -35,6 +35,9 @@ Codex の marketplace 登録、remote URL、ローカルの ghq 配置、rules �
 
 # cc-marketplace への依頼
 
+HTML の機能改善と回答状態の検討は、[agent-html-communication](https://github.com/ryosukee/agent-html-communication)で再開する。
+以下の 2 件は旧 plugin への依頼であり、現行のサーバーと API の挙動に照らして整理する。
+
 渡し先は `/Users/ryosuke/ghq_root/github.com/ryosukee/cc-marketplace`。
 2026-08-28 から 08-30 のセッションで出たもの。1 つのプロンプトに束ねて渡す。
 
@@ -60,7 +63,8 @@ html-communication のパターン集へシーケンス図を足す。依頼文�
 
 # cc-marketplace セッションへの依頼: シーケンス図を html-communication のパターン集とギャラリーへ入れる
 
-このファイルの中身をそのまま cc-marketplace のセッションへ渡してください。
+この依頼の再開先は [agent-html-communication](https://github.com/ryosukee/agent-html-communication)とする。
+以下は持ち込み時の原文として残す。旧 plugin 名とローカルページのパスは、現在の実装先・閲覧先として使わない。
 
 ---
 
@@ -453,9 +457,12 @@ handover の作成時とレビュー時に、引き継いだ項目がまだ要�
 
 「モデルが更新されたら指示ファイルを外して棚卸しすべきだ」という主張の裏付けと、
 その棚卸しを自動化する skill を作れるかを調べた結果が
-`https://mac-mini.hake-tarpon.ts.net/ccm-r008.html` にある
-（実体は `/Users/ryosuke/.local/share/claude-html-communication/ccm-r008.html`）。
-共通ページの index では未確認のまま登録してある。
+[ハーネス棚卸しの調査レポート](https://marujirou.hake-tarpon.ts.net:8444/view/ccm-r008)にある。
+確認状態は新サーバーの一覧で確かめる。
+
+移行前の参照記録は `https://mac-mini.hake-tarpon.ts.net/ccm-r008.html` と、
+`/Users/ryosuke/.local/share/claude-html-communication/ccm-r008.html`。
+旧 index では未確認として登録されていた。
 
 読むときに効きそうな結論を 3 つだけ書く。
 
