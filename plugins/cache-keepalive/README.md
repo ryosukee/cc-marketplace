@@ -22,7 +22,7 @@ prompt cache の期限が延びる。ユーザーが作業している間はス�
 
 | データ | 場所 |
 | --- | --- |
-| 監視プロセスの pid | `${CLAUDE_PLUGIN_DATA}/keepalive-{session-id}.pid` |
+| 監視プロセスの pid と通知のオン・オフ | `${CLAUDE_PLUGIN_DATA}/keepalive-{session-id}.pid` |
 
 `${CLAUDE_PLUGIN_DATA}` は plugin 更新をまたいで残る永続ディレクトリで、
 実体は `~/.claude/plugins/data/cache-keepalive-cc-tools/`。
@@ -30,7 +30,16 @@ pid ファイルは監視プロセスが終了時に消す。30 日を過ぎた 
 監視スクリプトが起動するたびに削除する。v0.11.0 が使っていた off ファイル (`keepalive-*.off`) も、日数を問わず同じときに削除する。
 `/plugin uninstall` は既定でこのディレクトリも削除する。残したい場合は `--keep-data` を付ける。
 
-通知のオン・オフはファイルに保存しない。監視プロセスのメモリだけが持つ。
+pid ファイルは 1 行目が監視プロセスの pid、2 行目が通知のオン・オフ (`on` か `off`)。
+書くのは監視プロセスだけで、起動時と切り替えのたびに書き直す。
+2 行目はステータスラインなど、別のプロセスが表示に使うための写しで、正の状態は監視プロセスのメモリにある。
+v0.12.0 以前の監視プロセスは 2 行目を書かないので、読み手は 2 行目が無いときをオンとして扱う。
+
+ステータスラインから読む例:
+
+```bash
+state=$(sed -n 2p "$HOME/.claude/plugins/data/cache-keepalive-cc-tools/keepalive-${session_id}.pid")
+```
 
 ## 依存
 

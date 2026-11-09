@@ -7,7 +7,9 @@
 # 見つかるまで発火せずに探し続け、待ちに上限を設けない (ccm-f088 / ccm-f090 の決定)。
 # 動いていることの記録は pid ファイルだけが持つ。status はこれを照合する。
 #
-# 通知のオン・オフはシグナルで切り替え、このプロセスのメモリだけに持つ (CCM-T29)。
+# 通知のオン・オフはシグナルで切り替え、このプロセスのメモリに持つ (CCM-T29)。
+# 別プロセスのステータスラインが表示に使えるよう、pid ファイルの 2 行目にも書き写す。
+# pid ファイルを書くのはこのプロセスだけで、終了時に消すので、状態が後に残らない。
 # Claude Code は同じセッションで monitor を起動し直せないので、オフの間もプロセスは止めない。
 #   SIGURG: オフ / SIGWINCH: オン / SIGINFO: 状態の問い合わせ
 # どれも既定の動作が無視なので、trap を持たない旧版のプロセスに届いても終了しない。
@@ -56,15 +58,22 @@ find "$data_dir" -maxdepth 1 \( -name 'keepalive-*.log' -o -name 'keepalive-*.pi
 # v0.11.0 が使っていた off ファイルは、もう読まないので日数を問わず落とす
 find "$data_dir" -maxdepth 1 -name 'keepalive-*.off' -delete 2>/dev/null || true
 
+# pid ファイルは 1 行目が pid、2 行目が通知のオン・オフ (on / off)。
+# 読み手は 1 行目だけを読む signal-watcher.sh と、2 行目も読むステータスライン。
+# 書き換えの途中を読まれないよう、一時ファイルに書いて mv で置き換える
+write_pid_file() {
+  printf '%s\n%s\n' "$$" "$keepalive" > "${pid_file}.tmp" && mv -f "${pid_file}.tmp" "$pid_file"
+}
+
 # pid は JSONL の解決より前に書く。JSONL 待ちの間も status がこのプロセスを扱えるようにする
-echo "$$" > "$pid_file"
+write_pid_file
 
 # sleep は子プロセスなので、親を kill しただけでは残る。
 # 残った sleep は継承した stdout を掴み続け、読み手が EOF を受け取れなくなる。
 # 変数に控えた pid では取りこぼす (wait が中断された後、トラップが走る前に
 # 後続の代入が実行される) ので、実際の子プロセスを OS に問い合わせて落とす。
 cleanup() {
-  rm -f "$pid_file"
+  rm -f "$pid_file" "${pid_file}.tmp"
   pkill -P $$ >/dev/null 2>&1 || true
   return 0
 }
@@ -81,6 +90,8 @@ on_signal() {
     off) keepalive=off ;;
     on) keepalive=on ;;
   esac
+  # 書けなくても通知の切り替えは効いているので、監視は止めない。表示が古くなるだけ
+  write_pid_file 2>/dev/null || true
   report_state
   pkill -P $$ -x sleep >/dev/null 2>&1 || true
 }
