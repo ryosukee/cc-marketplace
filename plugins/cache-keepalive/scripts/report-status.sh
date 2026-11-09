@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# このセッションの cache-keepalive の監視プロセスが動いているかを JSON で出す。
+# このセッションの cache-keepalive の監視プロセスが動いているかと、通知のオン・オフを JSON で出す。
 # 判定は pid ファイル + kill -0 + コマンドライン照合。
 # 照合は配置が変わっても安定な 2 点 (plugin 名 cache-keepalive と --session-id の引数) だけで行い、
 # 版数ディレクトリを含む絶対パスやスクリプト名には依存しない。kill -0 だけだと、
@@ -30,6 +30,7 @@ data_dir="$(ck_data_dir "$data_arg")"
 command -v jq >/dev/null 2>&1 || ck_die "jq が見つからない"
 
 pid_file="$(ck_pid_file "$data_dir" "$session_id")"
+keepalive="$(ck_keepalive_state "$(ck_off_file "$data_dir" "$session_id")")"
 
 pid=""
 if [ -f "$pid_file" ]; then
@@ -52,11 +53,13 @@ fi
 
 jq -n \
   --arg state "$state" \
+  --arg keepalive "$keepalive" \
   --arg session "$session_id" \
   --arg pid "$pid" \
   --arg pid_file "$pid_file" \
   '{
      state: $state,
+     keepalive: $keepalive,
      session_id: $session,
      pid: (if $pid == "" then null else ($pid | tonumber) end),
      pid_file: $pid_file

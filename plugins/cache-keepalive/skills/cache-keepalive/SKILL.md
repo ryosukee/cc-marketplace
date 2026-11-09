@@ -1,12 +1,12 @@
 ---
 name: cache-keepalive
 description: >-
-  prompt cache (extended cache, TTL 1h) の keepalive の監視状態を確認する。
-  監視自体は plugin monitor がセッション開始時に起動するので、この skill は起動も停止も行わない。
-  "cache-keepalive" "キャッシュキープアライブ" "keep cache alive" 等で発動。
+  prompt cache (extended cache, TTL 1h) の keepalive の状態を確認し、このセッションの keepalive 通知をオン・オフする。
+  監視自体は plugin monitor がセッション開始時に起動するので、この skill は監視プロセスの起動も停止も行わない。
+  "cache-keepalive" "キャッシュキープアライブ" "keep cache alive" "keepalive を止めて" "keepalive をオフ" 等で発動。
 user-invocable: true
 allowed-tools: Bash
-argument-hint: "[status]"
+argument-hint: "[status|on|off]"
 note: >-
   この skill が起動を持たず、plugin monitor に監視を起動させるのは、Monitor ツールでは期限の無い監視を作れないため。
   Monitor ツールの監視は期限が最大 30 分で、期限が切れるたびに Claude へ起動し直しを促す通知が届く。
@@ -40,10 +40,18 @@ Claude Code 本体はこの行を Claude への通知として配信し、Claude
   ローカルコマンドの記録など、API コールを伴わない書き込みでも進むことがある
 - アクティブ時はスクリプトが sleep するだけで、会話ターンは一切発生しない
 - 動いていることの記録は pid ファイル (`${CLAUDE_PLUGIN_DATA}/keepalive-{session id}.pid`) だけが持つ
+- 通知のオン・オフは off ファイル (`${CLAUDE_PLUGIN_DATA}/keepalive-{session id}.off`) の有無で決まる。
+  あればオフで、スクリプトは閾値を超えても通知を出さずに待つ。オフの間も監視プロセスは止めない。
+  off ファイルはセッションごとなので、オフは実行したセッションだけに効き、新しいセッションはオンで始まる
+
+## 引数で分ける
+
+- 引数なし・`status`: 「status の確認」を行う
+- `off`: 「通知のオン・オフ」を `off` で行う
+- `on`: 「通知のオン・オフ」を `on` で行う
+- それ以外: 「status の確認」を行う
 
 ## status の確認
-
-引数が何であっても状態の確認だけを行う。
 
 1. 状態を取る。
 
@@ -51,17 +59,32 @@ Claude Code 本体はこの行を Claude への通知として配信し、Claude
     CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" "${CLAUDE_PLUGIN_ROOT}/scripts/report-status.sh"
     ```
 
-2. 出力 JSON の `state` で報告を分ける。
+2. 出力 JSON の `state` と `keepalive` で報告を分ける。
 
-    - `running`: 「cache-keepalive: 有効」と報告し、`pid` を添える
-    - `not-running`: 「cache-keepalive: 動いていない」と報告し、下記「monitor が起動しないとき」の
+    - `state` が `running` で `keepalive` が `on`: 「cache-keepalive: 有効」と報告し、`pid` を添える
+    - `state` が `running` で `keepalive` が `off`: 「cache-keepalive: このセッションの通知はオフ」と報告し、
+      `pid` を添える。`/cache-keepalive on` で戻せることを案内する
+    - `state` が `not-running`: 「cache-keepalive: 動いていない」と報告し、下記「monitor が起動しないとき」の
       確認手順を案内する。Claude Code 本体は plugin 名と monitor 名の組をセッション単位で
       重複排除するので、同じセッションでは起動し直せない。新しいセッションの開始で起動し直す
 
 3. exit 2 のときは stderr の文言をそのまま報告し、原因を推測で埋めない。
 
-停止のサブコマンドは無い。止めたいときは `state` が `running` のときの `pid` を
-ユーザーが手で kill する (pid ファイルは監視プロセスが終了時に消す)。
+## 通知のオン・オフ
+
+1. 切り替える。`<on|off>` には引数をそのまま入れる。
+
+    ```bash
+    CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA}" "${CLAUDE_PLUGIN_ROOT}/scripts/set-keepalive.sh" <on|off>
+    ```
+
+2. 出力 JSON の `keepalive` を「cache-keepalive: このセッションの通知を on にした / off にした」と報告する。
+3. 続けて「status の確認」の 1 を実行し、`state` が `not-running` なら、
+   切り替えは記録したが監視が動いていないことを添えて「monitor が起動しないとき」を案内する。
+4. exit 2 のときは stderr の文言をそのまま報告し、原因を推測で埋めない。
+
+監視プロセスを止めるサブコマンドは無い。止めると同じセッションでは起動し直せないので、
+通知を止めたいときは `off` を使う。
 
 ## monitor が起動しないとき
 

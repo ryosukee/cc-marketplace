@@ -6,6 +6,10 @@
 # 無く keepalive の出番も無いので、「JSONL が無い」はエラーではなく正常な待機として扱う。
 # 見つかるまで発火せずに探し続け、待ちに上限を設けない (ccm-f088 / ccm-f090 の決定)。
 # 動いていることの記録は pid ファイルだけが持つ。status はこれを照合する。
+#
+# 通知のオン・オフは、セッションごとの off ファイルの有無で決まる (ccm-t28)。
+# Claude Code は同じセッションで monitor を起動し直せないので、オフの間もプロセスは止めず、
+# 通知を出す直前に off ファイルを確かめて、あれば出さずに待つ。
 set -euo pipefail
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
@@ -42,9 +46,11 @@ session_id="$(ck_session_id "$session_arg")"
 [ -n "$session_id" ] || ck_die "session id が解決できない (--session-id と CLAUDE_CODE_SESSION_ID のどちらも空)"
 
 pid_file="$(ck_pid_file "$data_dir" "$session_id")"
+off_file="$(ck_off_file "$data_dir" "$session_id")"
 
-# 古いセッションの pid と、旧版が残したログを落とす (data dir が無制限に増えるのを防ぐ)
-find "$data_dir" -maxdepth 1 \( -name 'keepalive-*.log' -o -name 'keepalive-*.pid' \) \
+# 古いセッションの pid・off ファイルと、旧版が残したログを落とす (data dir が無制限に増えるのを防ぐ)
+find "$data_dir" -maxdepth 1 \
+  \( -name 'keepalive-*.log' -o -name 'keepalive-*.pid' -o -name 'keepalive-*.off' \) \
   -mtime "+${retention_days}" -delete 2>/dev/null || true
 
 # pid は JSONL の解決より前に書く。JSONL 待ちの間も status がこのプロセスを扱えるようにする
@@ -98,7 +104,11 @@ while true; do
   now="$(date +%s)"
   elapsed=$((now - mtime))
   if [ "$elapsed" -ge "$threshold" ]; then
-    echo "[cache-keepalive] キャッシュキープアライブです。OK とだけ返答してください。"
+    # オフの間は出さない。オンに戻す操作は会話のターンで JSONL を更新するので、
+    # 次に起きたときの elapsed はオンに戻した時点から数え直される
+    if [ "$(ck_keepalive_state "$off_file")" = on ]; then
+      echo "[cache-keepalive] キャッシュキープアライブです。OK とだけ返答してください。"
+    fi
     nap "$threshold"
   else
     nap $((threshold - elapsed))

@@ -35,3 +35,17 @@ ck_data_dir() {
 ck_pid_file() {
   printf '%s/keepalive-%s.pid' "$1" "${2:-nosession}"
 }
+
+# このファイルがある間、そのセッションの keepalive 通知はオフ。無ければオン
+ck_off_file() {
+  printf '%s/keepalive-%s.off' "$1" "${2:-nosession}"
+}
+
+# $1: off ファイルのパス。オン・オフを on / off で返す
+ck_keepalive_state() {
+  if [ -e "$1" ]; then
+    printf 'off'
+  else
+    printf 'on'
+  fi
+}
