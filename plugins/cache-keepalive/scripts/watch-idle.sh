@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # セッション JSONL の mtime を監視し、無操作が閾値を超えたときだけ stdout に 1 行出す。
-# stdout の 1 行が Claude への keepalive 通知になるので、それ以外を stdout へ書かない。
+# stdout の 1 行が Claude への通知になるので、keepalive と状態の報告以外を stdout へ書かない。
 #
 # セッション JSONL は、セッションに最初の入力が入るまで作られない。それまでは cache も
 # 無く keepalive の出番も無いので、「JSONL が無い」はエラーではなく正常な待機として扱う。
 # 見つかるまで発火せずに探し続け、待ちに上限を設けない (ccm-f088 / ccm-f090 の決定)。
 # 動いていることの記録は pid ファイルだけが持つ。status はこれを照合する。
 #
-# 通知のオン・オフは、セッションごとの off ファイルの有無で決まる (ccm-t28)。
-# Claude Code は同じセッションで monitor を起動し直せないので、オフの間もプロセスは止めず、
-# 通知を出す直前に off ファイルを確かめて、あれば出さずに待つ。
+# 通知のオン・オフはシグナルで切り替え、このプロセスのメモリだけに持つ (CCM-T29)。
+# Claude Code は同じセッションで monitor を起動し直せないので、オフの間もプロセスは止めない。
+#   SIGURG: オフ / SIGWINCH: オン / SIGINFO: 状態の問い合わせ
+# どれも既定の動作が無視なので、trap を持たない旧版のプロセスに届いても終了しない。
+# 切り替えと問い合わせの結果は、状態の 1 行を stdout に書いて Claude への通知で返す。
 set -euo pipefail
 
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
@@ -23,6 +25,7 @@ jsonl=""
 threshold="${CACHE_KEEPALIVE_THRESHOLD_SECONDS:-3000}"
 retention_days=30
 jsonl_search_seconds=60
+keepalive=on
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -46,12 +49,12 @@ session_id="$(ck_session_id "$session_arg")"
 [ -n "$session_id" ] || ck_die "session id が解決できない (--session-id と CLAUDE_CODE_SESSION_ID のどちらも空)"
 
 pid_file="$(ck_pid_file "$data_dir" "$session_id")"
-off_file="$(ck_off_file "$data_dir" "$session_id")"
 
-# 古いセッションの pid・off ファイルと、旧版が残したログを落とす (data dir が無制限に増えるのを防ぐ)
-find "$data_dir" -maxdepth 1 \
-  \( -name 'keepalive-*.log' -o -name 'keepalive-*.pid' -o -name 'keepalive-*.off' \) \
+# 古いセッションの pid と、旧版が残したログを落とす (data dir が無制限に増えるのを防ぐ)
+find "$data_dir" -maxdepth 1 \( -name 'keepalive-*.log' -o -name 'keepalive-*.pid' \) \
   -mtime "+${retention_days}" -delete 2>/dev/null || true
+# v0.11.0 が使っていた off ファイルは、もう読まないので日数を問わず落とす
+find "$data_dir" -maxdepth 1 -name 'keepalive-*.off' -delete 2>/dev/null || true
 
 # pid は JSONL の解決より前に書く。JSONL 待ちの間も status がこのプロセスを扱えるようにする
 echo "$$" > "$pid_file"
@@ -67,6 +70,23 @@ cleanup() {
 }
 trap cleanup EXIT
 trap 'exit 143' TERM INT
+
+# 切り替えと問い合わせ。シグナルで wait が中断されると待機中の sleep が残るので落とし、
+# ループの先頭から経過時間を測り直させる
+report_state() {
+  echo "[cache-keepalive:status] このセッションの keepalive 通知は ${keepalive} です。この状態をユーザーに伝えてください。"
+}
+on_signal() {
+  case "$1" in
+    off) keepalive=off ;;
+    on) keepalive=on ;;
+  esac
+  report_state
+  pkill -P $$ -x sleep >/dev/null 2>&1 || true
+}
+trap 'on_signal off' URG
+trap 'on_signal on' WINCH
+trap 'on_signal status' INFO
 
 # sleep を前面で実行するとトラップが sleep の終了まで走らない。
 # 子プロセスにして wait すると、シグナルで即座に起きる。
@@ -104,9 +124,9 @@ while true; do
   now="$(date +%s)"
   elapsed=$((now - mtime))
   if [ "$elapsed" -ge "$threshold" ]; then
-    # オフの間は出さない。オンに戻す操作は会話のターンで JSONL を更新するので、
-    # 次に起きたときの elapsed はオンに戻した時点から数え直される
-    if [ "$(ck_keepalive_state "$off_file")" = on ]; then
+    # オフの間は出さない。切り替えは会話のターンの中で行うので JSONL も更新され、
+    # オンに戻した後の経過時間はその時点から数え直される
+    if [ "$keepalive" = on ]; then
       echo "[cache-keepalive] キャッシュキープアライブです。OK とだけ返答してください。"
     fi
     nap "$threshold"

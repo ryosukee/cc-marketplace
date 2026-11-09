@@ -10,10 +10,9 @@ prompt cache (extended cache, TTL 1h) の expire 前に軽量プロンプトを�
 | 要素 | 役割 |
 | --- | --- |
 | plugin monitor `cache-keepalive-watch` | セッション開始時に監視スクリプトを起動する。`when` は `always` |
-| `scripts/watch-idle.sh` | セッション JSONL の mtime を監視し、閾値を超えたときだけ stdout に 1 行出す。off ファイルがあれば出さない |
-| `scripts/report-status.sh` | 監視プロセスが動いているか (pid + コマンドライン照合) と、通知のオン・オフを JSON で返す |
-| `scripts/set-keepalive.sh` | このセッションの通知をオン・オフする (off ファイルを置く・消す) |
-| cache-keepalive skill | 状態の報告と、通知のオン・オフ。監視プロセスの起動も停止も持たない |
+| `scripts/watch-idle.sh` | セッション JSONL の mtime を監視し、閾値を超えたときだけ stdout に 1 行出す。シグナルで通知のオン・オフと状態の報告を受ける |
+| `scripts/signal-watcher.sh` | そのセッションの監視プロセス (pid + コマンドライン照合) に、オフ・オン・状態の問い合わせのシグナルを送る |
+| cache-keepalive skill | 通知のオン・オフと状態の確認。監視プロセスの起動も停止も持たない |
 
 監視スクリプトの stdout の 1 行が Claude への通知になる。Claude が OK と応答したターンで
 prompt cache の期限が延びる。ユーザーが作業している間はスクリプトが sleep するだけで、
@@ -24,19 +23,20 @@ prompt cache の期限が延びる。ユーザーが作業している間はス�
 | データ | 場所 |
 | --- | --- |
 | 監視プロセスの pid | `${CLAUDE_PLUGIN_DATA}/keepalive-{session-id}.pid` |
-| 通知をオフにしたセッションの印 | `${CLAUDE_PLUGIN_DATA}/keepalive-{session-id}.off` |
 
 `${CLAUDE_PLUGIN_DATA}` は plugin 更新をまたいで残る永続ディレクトリで、
 実体は `~/.claude/plugins/data/cache-keepalive-cc-tools/`。
-pid ファイルは監視プロセスが終了時に消す。off ファイルは `on` で消える。
-30 日を過ぎた pid・off ファイルと、旧版 (v0.9.x 以前) が残したログは、監視スクリプトが起動するたびに削除する。
+pid ファイルは監視プロセスが終了時に消す。30 日を過ぎた pid と、旧版 (v0.9.x 以前) が残したログは、
+監視スクリプトが起動するたびに削除する。v0.11.0 が使っていた off ファイル (`keepalive-*.off`) も、日数を問わず同じときに削除する。
 `/plugin uninstall` は既定でこのディレクトリも削除する。残したい場合は `--keep-data` を付ける。
+
+通知のオン・オフはファイルに保存しない。監視プロセスのメモリだけが持つ。
 
 ## 依存
 
 - `bash`: 監視スクリプトの実行
-- `jq`: `report-status.sh` の JSON 組み立て。無い場合は exit 2 で「jq が見つからない」と報告する
 - `stat -f`: BSD 系 (macOS) の書式を使う
+- `SIGINFO`: 状態の問い合わせに使う。BSD 系 (macOS) にあり、Linux には無い
 
 ## setup
 
@@ -54,9 +54,22 @@ Claude Code の `settings.json` の `env` に置く。
 ## 通知のオン・オフ
 
 `/cache-keepalive off` で、そのセッションの keepalive 通知を止める。`/cache-keepalive on` で戻す。
-セッションの途中で何度でも切り替えられる。
+`/cache-keepalive status` で今の状態を問い合わせる。セッションの途中で何度でも切り替えられる。
 
-- オフは実行したセッションだけに効く。他のセッションと、新しく始めるセッションはオンで始まる
+| 操作 | 監視プロセスへ送るシグナル |
+| --- | --- |
+| off | `SIGURG` |
+| on | `SIGWINCH` |
+| status | `SIGINFO` |
+
+※ 表 1 操作とシグナルの対応
+
+- 監視プロセスは、シグナルを受けると切り替えた後の状態を stdout に 1 行書く。
+  この行が `[cache-keepalive:status]` で始まる通知として Claude に届き、Claude がユーザーに伝える。
+  通知は skill を実行したターンとは別に届くので、ターンが 1 回増える
+- 3 つのシグナルは、どれも既定の動作が無視。シグナルを受ける処理を持たない旧版 (v0.11.0 以前) の監視プロセスに届いても終了しない
+- オフは実行したセッションだけに効く。他のセッションと、新しく始めるセッションはオンで始まる。
+  `claude --resume` で再開したときも、監視プロセスが新しく起動するのでオンに戻る
 - オフの間も監視プロセスは動き続け、閾値を超えても通知を出さずに待つ。
   Claude Code は同じセッションで plugin monitor を起動し直せず、`/plugin disable` も動いている monitor を止めないため、
   プロセスを止める方式ではオンに戻せない
@@ -71,11 +84,11 @@ Claude Code 本体は、次のどれかに当たると monitor を起動せず�
 - Monitor ツールが使えない host
 
 起動しなかったことは `/cache-keepalive status` で分かる。監視プロセスが生きていなければ
-`not-running` を返す。`not-running` の状態でスクリプトを手で起動して代用しない。
+「動いていない」と報告する。その状態でスクリプトを手で起動して代用しない。
 本体が起動しなかった事実が隠れ、次のセッションでも同じ原因で起動しないまま気づけなくなる。
 
 監視プロセスを止めるコマンドは無い。通知を止めたいときは `/cache-keepalive off` を使う。
-status の `pid` を手で kill するとそのセッションでは起動し直せず、新しいセッションの開始まで戻らない。
+監視プロセスを手で kill するとそのセッションでは起動し直せず、新しいセッションの開始まで戻らない。
 
 ## 更新
 

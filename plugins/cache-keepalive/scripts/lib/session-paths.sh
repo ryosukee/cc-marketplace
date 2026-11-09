@@ -36,16 +36,21 @@ ck_pid_file() {
   printf '%s/keepalive-%s.pid' "$1" "${2:-nosession}"
 }
 
-# このファイルがある間、そのセッションの keepalive 通知はオフ。無ければオン
-ck_off_file() {
-  printf '%s/keepalive-%s.off' "$1" "${2:-nosession}"
-}
-
-# $1: off ファイルのパス。オン・オフを on / off で返す
-ck_keepalive_state() {
-  if [ -e "$1" ]; then
-    printf 'off'
-  else
-    printf 'on'
-  fi
+# $1: data dir、$2: session id。そのセッションの監視プロセスが生きていれば pid を、無ければ空を返す。
+# 判定は pid ファイル + kill -0 + コマンドライン照合。
+# 照合は配置が変わっても安定な 2 点 (plugin 名 cache-keepalive と --session-id の引数) だけで行い、
+# 版数ディレクトリを含む絶対パスやスクリプト名には依存しない。kill -0 だけだと、
+# 監視プロセスが死んだ後に同じ pid が別プロセスへ再利用されたとき誤って「動いている」と出る。
+ck_running_pid() {
+  local pid_file pid cmd
+  pid_file="$(ck_pid_file "$1" "$2")"
+  [ -f "$pid_file" ] || return 0
+  pid="$(head -1 "$pid_file" 2>/dev/null || true)"
+  [ -n "$pid" ] || return 0
+  kill -0 "$pid" 2>/dev/null || return 0
+  cmd="$(ps -p "$pid" -o command= 2>/dev/null || true)"
+  case "$cmd" in
+    *cache-keepalive*"--session-id ${2}"*) printf '%s' "$pid" ;;
+  esac
+  return 0
 }
