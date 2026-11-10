@@ -10,7 +10,7 @@ prompt cache (extended cache, TTL 1h) の expire 前に軽量プロンプトを�
 | 要素 | 役割 |
 | --- | --- |
 | plugin monitor `cache-keepalive-watch` | セッション開始時に監視スクリプトを起動する。`when` は `always` |
-| `scripts/watch-idle.sh` | セッション JSONL の mtime を監視し、閾値を超えたときだけ stdout に 1 行出す。シグナルで通知のオン・オフと状態の報告を受ける |
+| `scripts/watch-idle.sh` | セッション JSONL の最後の API 応答の時刻を監視し、閾値を超えたときだけ stdout に 1 行出す。シグナルで通知のオン・オフと状態の報告を受ける |
 | `scripts/signal-watcher.sh` | そのセッションの監視プロセス (pid + コマンドライン照合) に、オフ・オン・状態の問い合わせのシグナルを送る |
 | cache-keepalive skill | 通知のオン・オフと状態の確認。監視プロセスの起動も停止も持たない |
 
@@ -44,7 +44,7 @@ state=$(sed -n 2p "$HOME/.claude/plugins/data/cache-keepalive-cc-tools/keepalive
 ## 依存
 
 - `bash`: 監視スクリプトの実行
-- `stat -f`: BSD 系 (macOS) の書式を使う
+- `date -j -f`: API 応答の時刻を epoch 秒に直す。BSD 系 (macOS) の書式を使う
 - `SIGINFO`: 状態の問い合わせに使う。BSD 系 (macOS) にあり、Linux には無い
 
 ## setup
@@ -56,6 +56,11 @@ plugin を install すると plugin monitor が有効になる。ユーザーの
 JSONL はセッションに最初の入力が入るまで作られないため、
 スクリプトは見つかるまで 60 秒間隔で探し、発火せずに待つ。待ちに上限は無く、
 見つからないことをエラーとして扱わない (最初の入力より前は cache が無く、発火の出番も無い)。
+
+無操作の時間は、JSONL の最後の API 応答 (assistant の記録) の時刻から数える。
+prompt cache の期限は API 呼び出しで延びる。JSONL には API を呼ばない書き込みもあり、
+その更新時刻 (mtime) から数えると、cache が延びていないのに無操作の時間が戻り、通知が遅れる。
+JSONL は数百 MB になることがあるので、末尾 256KB、4MB、全体の順に広げて探す。
 
 閾値は既定 3000 秒 (50 分)。変えるときは `CACHE_KEEPALIVE_THRESHOLD_SECONDS` を
 Claude Code の `settings.json` の `env` に置く。

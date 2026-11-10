@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# セッション JSONL の mtime を監視し、無操作が閾値を超えたときだけ stdout に 1 行出す。
+# セッション JSONL の最後の API 応答の時刻を監視し、無操作が閾値を超えたときだけ stdout に 1 行出す。
 # stdout の 1 行が Claude への通知になるので、keepalive と状態の報告以外を stdout へ書かない。
 #
 # セッション JSONL は、セッションに最初の入力が入るまで作られない。それまでは cache も
@@ -122,7 +122,7 @@ while [ -z "$jsonl" ]; do
 done
 
 while true; do
-  if ! mtime="$(stat -f %m "$jsonl" 2>/dev/null)"; then
+  if [ ! -f "$jsonl" ]; then
     # JSONL が消えた・移動した場合は探し直す。見つかるまでは発火しない
     found="$(resolve_jsonl)"
     if [ -n "$found" ] && [ "$found" != "$jsonl" ]; then
@@ -132,10 +132,18 @@ while true; do
     nap "$jsonl_search_seconds"
     continue
   fi
+  # 無操作は最後の API 応答から数える (理由は ck_last_api_epoch の説明)
+  last_api="$(ck_last_api_epoch "$jsonl")"
+  if [ -z "$last_api" ]; then
+    # API 応答がまだ無いなら cache も無く、発火の出番も無い
+    nap "$jsonl_search_seconds"
+    continue
+  fi
   now="$(date +%s)"
-  elapsed=$((now - mtime))
+  elapsed=$((now - last_api))
+  [ "$elapsed" -ge 0 ] || elapsed=0
   if [ "$elapsed" -ge "$threshold" ]; then
-    # オフの間は出さない。切り替えは会話のターンの中で行うので JSONL も更新され、
+    # オフの間は出さない。切り替えは会話のターンの中で行い API 応答が記録されるので、
     # オンに戻した後の経過時間はその時点から数え直される
     if [ "$keepalive" = on ]; then
       echo "[cache-keepalive] キャッシュキープアライブです。OK とだけ返答してください。"

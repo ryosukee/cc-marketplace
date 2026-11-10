@@ -54,3 +54,33 @@ ck_running_pid() {
   esac
   return 0
 }
+
+# $1: セッション JSONL。最後の API 応答の時刻を epoch 秒で返す。無ければ空を返す。
+# prompt cache の期限は API 呼び出しで延びるので、無操作は JSONL の mtime ではなくこの時刻から数える。
+# JSONL には API を呼ばない書き込み (cost-state、last-prompt など) もあり、mtime はそれでも進む。
+# API 応答は assistant の記録で、model が <synthetic> のものは API を呼ばずに作られるので除く。
+# 数百 MB の JSONL を毎回全部読むと数秒かかるので、末尾 256KB → 4MB → 全体の順に広げて探す。
+# 末尾から切り出した範囲の先頭行は途中から始まりうるので捨てる。
+# timestamp は assistant の記録のトップレベルのキーで、message より後ろにあり、
+# それより後ろに入れ子のオブジェクトを持たないので、行の中の最後の一致を取る。
+ck_last_api_epoch() {
+  local jsonl="$1" bytes line="" ts
+  for bytes in 262144 4194304 all; do
+    if [ "$bytes" = all ]; then
+      line="$(grep -F '"type":"assistant"' "$jsonl" 2>/dev/null | grep -vF '"model":"<synthetic>"' | tail -1)" || true
+    else
+      line="$(tail -c "$bytes" "$jsonl" 2>/dev/null | tail -n +2 \
+        | grep -F '"type":"assistant"' | grep -vF '"model":"<synthetic>"' | tail -1)" || true
+    fi
+    [ -z "$line" ] || break
+  done
+  [ -n "$line" ] || return 0
+  ts="$(printf '%s' "$line" | grep -o '"timestamp":"[^"]*"' | tail -1)" || true
+  ts="${ts#\"timestamp\":\"}"
+  ts="${ts%\"}"
+  ts="${ts%Z}"
+  ts="${ts%%.*}"
+  [ -n "$ts" ] || return 0
+  date -j -u -f '%Y-%m-%dT%H:%M:%S' "$ts" +%s 2>/dev/null || true
+  return 0
+}

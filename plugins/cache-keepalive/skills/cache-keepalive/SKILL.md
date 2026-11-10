@@ -28,16 +28,18 @@ expire 前に軽量プロンプトを発火して TTL を延長することで�
 plugin monitor `cache-keepalive-watch` が、セッション開始時に `scripts/watch-idle.sh` を起動する。
 Claude Code 本体が直接起動するので、Monitor ツールの `timeout_ms` の上限も `persistent` の有無も影響しない。
 
-スクリプトはセッション JSONL の mtime を監視し、
-最終活動から 3000 秒 (50 分) 以上経過した時だけ stdout に 1 行出力する。
+スクリプトはセッション JSONL の最後の API 応答 (assistant の記録) の時刻を監視し、
+そこから 3000 秒 (50 分) 以上経過した時だけ stdout に 1 行出力する。
 Claude Code 本体はこの行を Claude への通知として配信し、Claude が OK と応答することで cache が refresh される。
 
 - セッション JSONL は、セッションに最初の入力が入るまで作られない。
   スクリプトは見つかるまで 60 秒間隔で探し、発火せずに待つ。待ちに上限は無く、
-  見つからないことをエラーとして扱わない (最初の入力より前は cache が無く、発火の出番も無い)
-- スクリプトの stat 実行は bash プロセスなので JSONL mtime を更新しない
-- JSONL は Claude Code 本体が会話の entry を追記するたびに更新される。
-  ローカルコマンドの記録など、API コールを伴わない書き込みでも進むことがある
+  見つからないことをエラーとして扱わない (最初の入力より前は cache が無く、発火の出番も無い)。
+  API 応答がまだ無いときも、同じく発火せずに待つ
+- JSONL の更新時刻 (mtime) は使わない。JSONL には API を呼ばない書き込み (cost-state など) もあり、
+  mtime から数えると cache が延びていないのに無操作の時間が戻る
+- 最後の API 応答は、JSONL の末尾 256KB、4MB、全体の順に広げて探す。
+  model が `<synthetic>` の assistant の記録は API を呼ばずに作られるので除く
 - アクティブ時はスクリプトが sleep するだけで、会話ターンは一切発生しない
 - 動いていることの記録は pid ファイル (`${CLAUDE_PLUGIN_DATA}/keepalive-{session id}.pid`) だけが持つ。
   `signal-watcher.sh` は pid ファイルとコマンドラインの照合で、送り先がそのセッションの監視プロセスであることを確かめる
