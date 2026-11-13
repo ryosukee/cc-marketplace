@@ -4,8 +4,14 @@ Claude Code のバージョン追跡・更新検知。
 
 ## 動作
 
-SessionStart hook で現在のバージョンを記録し、前回記録版と比較して更新を検知する。
-更新がある場合はセッション開始時に通知し、check skill で changelog を取得・要約表示する。
+SessionStart hook は、既読バージョンの記録が無い初回だけ現在のバージョンを記録する。
+以後は既読バージョンと比較し、更新を検知したら通知する。更新検知時には記録を進めない。
+check skill で changelog を取得・要約表示した後、または skip skill で通知をスキップしたときに、現在のバージョンを既読として記録する。
+
+## 依存
+
+- `jq`: check skill の更新チェック
+- `gh` CLI: changelog の取得。無い場合はバージョン情報だけを表示し、changelog の取得をスキップする
 
 ## skill
 
