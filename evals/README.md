@@ -21,7 +21,7 @@ plugins/{plugin}/evals/
 - ケースのディレクトリ名がケース名になり、`--case` の glob と結果の表示に使われる
 - `case.yaml` に `plugins:` は書かない。対象の plugin は `claude plugin eval` に渡すパスで決まる
 - 結果は `results/` に出て、`.gitignore` で除外する。全ケース実行のあとは
-  `results/latest/` に最新の 1 件だけが残り、timestamp 付きの生出力は run.sh が消す
+  `results/latest/` に結果を反映し、timestamp 付きの生出力は run.sh が消す。保持内容は「結果の確認」を参照
 
 ## 実行方法
 
@@ -76,8 +76,10 @@ evals/run.sh {plugin} [--case "<glob>"] [--runs N] [--json <path>]
 
 ## 結果の確認
 
-結果は `plugins/{plugin}/evals/results/latest/` に最新の全ケース実行分だけを保持する
-(`aggregate-result.json` + `report.html`)。HTML で確認するときはブラウザで開く。
+全ケース実行の結果は `plugins/{plugin}/evals/results/latest/` に反映する。
+`aggregate-result.json` は今回の結果で更新し、`report.html` は今回の実行で生成された場合にコピーする。
+HTML が生成されなかった場合、既存の `latest/report.html` は削除しないため、古い HTML と新しい JSON が混在しうる。
+HTML で確認するときはブラウザで開き、JSON と同じ実行の結果かを確かめる。
 
 - `results/` は git 管理しない。[Plugin evals](https://code.claude.com/docs/en/plugin-evals)が推奨する形で、
   plugin の配布物にも入らない

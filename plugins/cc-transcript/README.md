@@ -7,7 +7,7 @@
 ## 使い方
 
 ```text
-/cc-transcript                         # 直近 20 件、dialogue のみ、開き方は対話的に選択
+/cc-transcript                         # 直近 20 件、dialogue のみ、tmux 内なら window、外なら print を自動選択
 /cc-transcript 30                      # 直近 30 件
 /cc-transcript 30 window               # 直近 30 件を tmux 新規 window で開く
 /cc-transcript 30 window full          # tool 呼び出し・thinking も含める
@@ -16,7 +16,7 @@
 
 ### 引数
 
-- `$1` = N: 抽出する user/assistant レコード数 (default 20)
+- `$1` = N: 抽出件数 (default 20)。`dialogue` では user/assistant レコードをテキストブロックへ展開・フィルタした後の末尾 N 件、`full` では user/assistant レコードの末尾 N 件
 - `$2` = MODE: 開き方
 - `$3` = SCOPE: 含める範囲 (default `dialogue`)
 

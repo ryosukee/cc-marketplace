@@ -27,13 +27,16 @@ cc-marketplace/
 │   ├── rules/                    # プロジェクト固有ルール (設計原則、規約)
 │   └── skills/                   # このプロジェクトでだけ使う skill
 ├── .agents/
-│   ├── skills/                   # Codex から使う開発用 skill への symlink
 │   └── plugins/
 │       └── marketplace.json      # Codex の marketplace カタログ
 ├── .claude-plugin/
 │   └── marketplace.json          # Claude Code の marketplace カタログ
 ├── docs/
-│   └── cross-client-architecture.md # Marketplace plugin の両対応設計
+│   ├── cross-client-architecture.md # Marketplace plugin の両対応設計
+│   └── retired-plugins.md         # 廃止した plugin の記録
+├── evals/                        # plugin の eval ハーネス
+│   ├── run.sh                    # plugin ごとの eval 実行
+│   └── README.md                 # eval ハーネスの使い方
 ├── rules/                        # user global rules (symlink で配布)
 │   ├── {rule}.md                 # 常時ロード。paths を持つものは条件ロード
 │   └── {rule}/references/        # 詳細規範。paths 除外で常時ロードから外す
@@ -44,15 +47,17 @@ cc-marketplace/
         ├── .codex-plugin/
         │   └── plugin.json       # Codex 対応時の plugin マニフェスト
         ├── hooks/
-        │   └── hooks.json        # hooks 定義
+        │   └── hooks.json        # hooks 定義。既定は hooks.json。plugin.json の hooks で別ファイルを指定できる
         ├── monitors/
         │   └── monitors.json     # plugin monitor 定義（あれば）
+        ├── bin/                  # plugin が PATH に置く実行ファイル（あれば）
         ├── scripts/
         │   ├── hooks/            # hooks 実装
         │   ├── lib/              # source 用の共通ヘルパ（あれば）
-        │   └── *.sh              # skill/hook が invoke するエントリスクリプト（あれば）
+        │   └── *.sh / *.mjs      # skill/hook が invoke するエントリスクリプト（あれば）
         ├── internal/             # 永続化された状態。deprecated で version-check だけが使っている
         │   └── {resource}/
+        ├── tests/                # テスト（あれば）
         ├── evals/                # skill の発動測定（あれば）。`evals/run.sh {plugin}` で回す
         ├── skills/               # consumer skills
         │   └── {skill-name}/scripts/  # その skill 専用スクリプト（あれば）
@@ -61,7 +66,7 @@ cc-marketplace/
         ├── references/           # 両者が参照する資料（あれば）
         ├── config/               # plugin 同梱 default config（あれば）
         ├── agents/               # Claude Code consumer agents（あれば）
-        └── agent-resources/      # agent 内部専用資料（skills として公開しない）
+        └── agent-resources/      # agent 内部専用資料（あれば。skills として公開しない）
 ```
 
 ## 設計原則・コーディング規約

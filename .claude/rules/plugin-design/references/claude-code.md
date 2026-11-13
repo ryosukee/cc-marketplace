@@ -13,7 +13,8 @@ paths:
 
 ## Hook 宣言方式
 
-plugin に属する hook は plugin.json (実体は `hooks/hooks.json`) で宣言する。
+plugin に属する hook の宣言ファイルは、既定では `hooks/hooks.json` を使う。
+plugin.json の `hooks` で別のファイルを指定することもできる（例: diffo の `hooks/claude.json`）。
 `~/.claude/settings.json` に直接書かない。
 
 ```json
