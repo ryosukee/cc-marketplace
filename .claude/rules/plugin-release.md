@@ -64,6 +64,11 @@ codex plugin add {plugin}@cc-tools
 codex plugin list --marketplace cc-tools
 ```
 
+ローカルディレクトリから登録した marketplace は、そのディレクトリで checkout している branch の plugin を読む。
+main 以外の branch にあると、`codex plugin add` は古い版を入れる。
+再導入の後に `codex plugin list --marketplace cc-tools` の版が上げた版と一致するかを確かめる。
+一致しなければ、そのディレクトリを使っている作業を確かめてから利用者に伝える。
+
 ## plugin を削除する手順
 
 コードは削除し、archive へは移さない（git 履歴から取り出せる）。
