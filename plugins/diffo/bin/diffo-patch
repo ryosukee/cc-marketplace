@@ -7,6 +7,7 @@
 #   4. 再描画されても新規ラインコメントと既存スレッドへの返信の下書きを復元する
 #   5. Finish review に、締めコメントと終了通知をまとめて送る LGTM ボタンを足す
 #   6. スレッドを描くたびに、保存した行番号ではなく書いたときの行の内容で今の差分の行を探し直す。
+#      コメントした行が書き換えられていれば、base 側の行で対応する行を決めて「書き換え済み」として描き、
 #      1 か所に決まらないスレッドは、ファイル単位に「位置未確定」として描く（bundle に接続口を足す）
 #
 # 当てるタイミングは diffo を起動した後。理由は 2 つある。
@@ -102,6 +103,12 @@ else
 	echo "  ui js    : 置いた"
 fi
 
+count_occurrences() {
+	local needle="$1"
+	local file="$2"
+	(grep -oF "$needle" "$file" || true) | wc -l | tr -d '[:space:]'
+}
+
 # 3. index.html から CSS と JS を読み込む
 if grep -q 'href="/github-preview.css"' "$INDEX"; then
 	echo "  md link  : 変更なし"
@@ -117,11 +124,22 @@ else
 	echo "  ui link  : 足した"
 fi
 
-if grep -q 'src="/diffo-ui.js"' "$INDEX"; then
+# diffo-ui.js は bundle（module script）より前に、defer なしで読み込む。
+# bundle が /api/review と /api/changeset を取る前に fetch への割り込みを済ませるため。
+# 以前の版が </head> の直前に defer で足したタグは取り除いて置き直す
+ui_script_in_place() {
+	[ "$(count_occurrences 'src="/diffo-ui.js"' "$INDEX")" -eq 1 ] &&
+		perl -0ne 'exit(m{<script src="/diffo-ui\.js"></script>\s*<script type="module"} ? 0 : 1)' "$INDEX"
+}
+if ui_script_in_place; then
 	echo "  ui script: 変更なし"
 else
-	perl -0pi -e 's{(\s*)</head>}{$1  <script src="/diffo-ui.js" defer></script>$1</head>}' "$INDEX"
-	echo "  ui script: 足した"
+	if [ "$(count_occurrences '<script type="module"' "$INDEX")" -ne 1 ]; then
+		echo "diffo-patch: index.html に bundle の module script が 1 つではない" >&2
+		exit 1
+	fi
+	perl -0pi -e 's{[ \t]*<script src="/diffo-ui\.js"[^>]*></script>\n?}{}g; s{([ \t]*)(<script type="module")}{$1<script src="/diffo-ui.js"></script>\n$1$2}' "$INDEX"
+	echo "  ui script: bundle の前に置いた"
 fi
 
 # 4. marked の breaks を false にする
@@ -144,12 +162,6 @@ if ! command -v node >/dev/null 2>&1; then
 	exit 1
 fi
 node "$PLACEMENT_SRC" "$CLIENT/assets"
-
-count_occurrences() {
-	local needle="$1"
-	local file="$2"
-	(grep -oF "$needle" "$file" || true) | wc -l | tr -d '[:space:]'
-}
 
 assert_single_reference() {
 	local needle="$1"
@@ -178,6 +190,10 @@ cmp -s "$UI_JS_SRC" "$CLIENT/diffo-ui.js" || {
 assert_single_reference 'href="/github-preview.css"'
 assert_single_reference 'href="/diffo-ui.css"'
 assert_single_reference 'src="/diffo-ui.js"'
+ui_script_in_place || {
+	echo "diffo-patch: diffo-ui.js が bundle の module script の直前に defer なしで読み込まれていない" >&2
+	exit 1
+}
 
 if grep -rq '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null; then
 	echo "diffo-patch: breaks: true が残っている" >&2

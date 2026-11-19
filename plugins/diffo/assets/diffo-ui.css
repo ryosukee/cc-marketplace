@@ -32,3 +32,8 @@
   border: 1px solid var(--attn-line);
   font-weight: 600;
 }
+
+/* コメントした行がコメントの後に書き換えられ、base 側の行で対応する行に表示しているスレッド */
+.diffo-rewritten-badge {
+  border: 1px solid var(--attn-line);
+}
