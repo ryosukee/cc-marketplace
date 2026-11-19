@@ -7,6 +7,256 @@
   const lgtmMessage =
     'LGTM。レビューは完了です。`diffo end` を実行し、polling も終了してください。このメッセージへの返信は不要です。'
   const restoringInputs = new WeakSet()
+  const unplacedClass = 'diffo-unplaced-thread'
+  const unplacedBadgeClass = 'diffo-unplaced-badge'
+  const unplacedLabel = '位置未確定'
+  const unplacedTitle =
+    'コメントした行を今の差分の中で 1 か所に決められないため、ファイル単位に表示している。下のコードはコメントを書いたときの行'
+
+  // --- スレッドの表示位置を、保存した行番号ではなく snapshot から探し直す ---
+  //
+  // diffo-patch が diffo のクライアントの配置処理（通常の差分の表示だけ）に接続口を足し、
+  // スレッドを hunk と行へ振り分ける直前に placeThreads を呼ぶ。
+  // 保存済みのスレッドは変えず、表示用のコピーの anchor だけを差し替える。
+
+  const markers = { add: '+', del: '-', context: ' ' }
+  let unplacedThreadIds = new Set()
+
+  const lineOnSide = (side, kind) => (side === 'old' ? kind !== 'add' : kind !== 'del')
+  const rowOnSide = (side, row) => (side === 'old' ? row[0] !== '+' : row[0] !== '-')
+  const lineNo = (side, line) => (side === 'old' ? line.oldNo : line.newNo)
+
+  // hunk のうち、コメントした側（old なら context と del、new なら context と add）の行の並び
+  const sideSequence = (hunk, side) => {
+    const seq = []
+    for (const line of hunk.lines ?? []) {
+      if (!lineOnSide(side, line.kind)) continue
+      const no = lineNo(side, line)
+      if (no === null || no === undefined) continue
+      seq.push({ text: line.text, no })
+    }
+    return seq
+  }
+
+  // codeContext（hunk 全体）または anchored.text（範囲の先頭 10 diff 行）から、
+  // コメントした範囲と前後の行を、コメントした側の行だけで取り出す
+  const readSnapshot = (thread) => {
+    const { anchor, anchored } = thread
+    if (
+      !anchored ||
+      !Number.isInteger(anchored.start) ||
+      !Number.isInteger(anchored.end) ||
+      anchored.end < anchored.start
+    ) {
+      return null
+    }
+    let rows
+    let offset
+    if (typeof thread.codeContext === 'string' && thread.codeContext !== '') {
+      rows = thread.codeContext.split('\n')
+      offset = 0
+      if (anchored.end >= rows.length) return null
+    } else if (typeof anchored.text === 'string' && anchored.text !== '') {
+      rows = anchored.text.split('\n')
+      offset = anchored.start
+    } else {
+      return null
+    }
+
+    const side = anchor.side
+    const last = offset + rows.length - 1
+    const target = []
+    for (let i = anchored.start; i <= Math.min(anchored.end, last); i++) {
+      if (rowOnSide(side, rows[i - offset])) target.push(rows[i - offset].slice(1))
+    }
+    const before = []
+    for (let i = anchored.start - 1; i >= offset; i--) {
+      if (rowOnSide(side, rows[i - offset])) before.push(rows[i - offset].slice(1))
+    }
+    const after = []
+    for (let i = anchored.end + 1; i <= last; i++) {
+      if (rowOnSide(side, rows[i - offset])) after.push(rows[i - offset].slice(1))
+    }
+    return {
+      rows,
+      fullHunk: offset === 0,
+      truncated: anchored.end > last,
+      target,
+      before,
+      after,
+    }
+  }
+
+  const withLines = (anchor, hunkId, line, endLine) => {
+    const next = { ...anchor, hunkId, line }
+    if (anchor.endLine !== undefined) next.endLine = endLine
+    return next
+  }
+
+  // (1) 同じ hunkId の hunk が、書いたときと同じ行の並びのまま残っているなら、hunk の中の位置で決める
+  const placeInSameHunk = (thread, file, snapshot) => {
+    if (!snapshot.fullHunk) return null
+    const { anchor, anchored } = thread
+    const hunk = file.hunks.find((candidate) => candidate.id === anchor.hunkId)
+    if (!hunk || hunk.lines.length !== snapshot.rows.length) return null
+    const same = hunk.lines.every(
+      (line, index) => markers[line.kind] + line.text === snapshot.rows[index],
+    )
+    if (!same) return null
+    const covered = hunk.lines
+      .slice(anchored.start, anchored.end + 1)
+      .filter((line) => lineOnSide(anchor.side, line.kind) && lineNo(anchor.side, line) != null)
+    if (covered.length === 0) return null
+    return withLines(
+      anchor,
+      hunk.id,
+      lineNo(anchor.side, covered[0]),
+      lineNo(anchor.side, covered.at(-1)),
+    )
+  }
+
+  const contextScore = (seq, position, length, snapshot) => {
+    let score = 0
+    while (
+      score < snapshot.before.length &&
+      position - 1 - score >= 0 &&
+      seq[position - 1 - score].text === snapshot.before[score]
+    ) {
+      score++
+    }
+    let after = 0
+    while (
+      after < snapshot.after.length &&
+      position + length + after < seq.length &&
+      seq[position + length + after].text === snapshot.after[after]
+    ) {
+      after++
+    }
+    return score + after
+  }
+
+  // (2) コメントした側の行の並びの中で、範囲のテキスト列が連続して一致する箇所を探す。
+  // snapshot に前後の行があれば、候補が 1 つでも前後の行が 1 行以上一致することを求める
+  // （コメントした行が書き換わり、同じ文字列の無関係な行だけが残った場合に付けない）。
+  // 複数あれば前後の行の一致数で絞り、それでも並べば決めない
+  const searchInFile = (thread, file, snapshot) => {
+    const { anchor } = thread
+    const target = snapshot.target
+    // 範囲が 10 diff 行で切れた snapshot は末尾を確かめられないので決めない
+    if (target.length === 0 || snapshot.truncated) return null
+    const candidates = []
+    for (const hunk of file.hunks) {
+      const seq = sideSequence(hunk, anchor.side)
+      for (let position = 0; position + target.length <= seq.length; position++) {
+        if (target.every((text, offset) => seq[position + offset].text === text)) {
+          candidates.push({ hunk, seq, position })
+        }
+      }
+    }
+    if (candidates.length === 0) return null
+
+    const scored = candidates.map((candidate) => ({
+      ...candidate,
+      score: contextScore(candidate.seq, candidate.position, target.length, snapshot),
+    }))
+    const top = Math.max(...scored.map((candidate) => candidate.score))
+    const hasContext = snapshot.before.length + snapshot.after.length > 0
+    if (hasContext && top === 0) return null
+    const winners = scored.filter((candidate) => candidate.score === top)
+    if (winners.length !== 1) return null
+
+    const { hunk, seq, position } = winners[0]
+    return withLines(
+      anchor,
+      hunk.id,
+      seq[position].no,
+      seq[position + target.length - 1].no,
+    )
+  }
+
+  const sameAnchor = (a, b) =>
+    a.hunkId === b.hunkId && a.line === b.line && a.endLine === b.endLine
+
+  // スレッド 1 件の表示位置。skip は diffo の既定のまま描く
+  const locateThread = (thread, filesByPath) => {
+    const anchor = thread?.anchor
+    if (!anchor || anchor.kind !== 'hunk' || anchor.commit !== undefined || thread.github) {
+      return { kind: 'skip' }
+    }
+    if (anchor.side !== 'old' && anchor.side !== 'new') return { kind: 'skip' }
+    const file = filesByPath.get(anchor.path)
+    if (!file || !Array.isArray(file.hunks)) return { kind: 'skip' }
+    const snapshot = readSnapshot(thread)
+    if (!snapshot) return { kind: 'skip' }
+    const placed = placeInSameHunk(thread, file, snapshot) ?? searchInFile(thread, file, snapshot)
+    if (placed) return { kind: 'placed', anchor: placed }
+    return {
+      kind: 'unplaced',
+      snippet: thread.anchored?.text || thread.codeContext || null,
+    }
+  }
+
+  const placeThreads = (files, threads, partition) => {
+    const fallback = () => {
+      unplacedThreadIds = new Set()
+      return partition(files, threads)
+    }
+    if (typeof partition !== 'function') return null
+    if (!Array.isArray(files) || !Array.isArray(threads)) return fallback()
+    try {
+      const filesByPath = new Map(files.map((file) => [file.path, file]))
+      const placedThreads = []
+      const unplaced = []
+      for (const thread of threads) {
+        const located = locateThread(thread, filesByPath)
+        if (located.kind === 'placed') {
+          placedThreads.push(
+            sameAnchor(located.anchor, thread.anchor) ? thread : { ...thread, anchor: located.anchor },
+          )
+        } else if (located.kind === 'unplaced') {
+          unplaced.push({ ...thread, codeContext: located.snippet })
+        } else {
+          placedThreads.push(thread)
+        }
+      }
+      const result = partition(files, placedThreads)
+      for (const thread of unplaced) {
+        const list = result.byFile.get(thread.anchor.path)
+        if (list) list.push(thread)
+        else result.byFile.set(thread.anchor.path, [thread])
+      }
+      unplacedThreadIds = new Set(unplaced.map((thread) => thread.id))
+      return result
+    } catch (error) {
+      console.warn('diffo-ui: スレッドの表示位置を探し直せなかったため、diffo の既定の位置に描く', error)
+      return fallback()
+    }
+  }
+
+  globalThis.__diffoPlaceThreads = placeThreads
+
+  const markUnplacedThreads = () => {
+    for (const thread of document.querySelectorAll('.thread[data-thread-id]')) {
+      const unplaced = unplacedThreadIds.has(thread.dataset.threadId)
+      if (thread.classList.contains(unplacedClass) !== unplaced) {
+        thread.classList.toggle(unplacedClass, unplaced)
+      }
+      const marks = [...thread.querySelectorAll('.thread-marks')].find(
+        (candidate) => candidate.closest('.thread') === thread,
+      )
+      if (!marks) continue
+      const badge = marks.querySelector(`.${unplacedBadgeClass}`)
+      if (unplaced && !badge) {
+        const created = document.createElement('span')
+        created.className = `thread-badge ${unplacedBadgeClass}`
+        created.textContent = unplacedLabel
+        created.title = unplacedTitle
+        marks.prepend(created)
+      } else if (!unplaced && badge) {
+        badge.remove()
+      }
+    }
+  }
 
   const readDrafts = () => {
     try {
@@ -324,6 +574,7 @@
     restoreDrafts()
     markSettledSections()
     markResolvedOnlyRows()
+    markUnplacedThreads()
     mountLgtmButton()
     if (hidden) clearHiddenResolvedHover()
     document.documentElement.setAttribute(hiddenAttribute, String(hidden))

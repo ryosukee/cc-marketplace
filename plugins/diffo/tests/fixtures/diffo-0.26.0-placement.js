@@ -1,0 +1,9 @@
+// diffo 0.26.0（@diffohq/diffo、Apache-2.0）の dist/client/assets/index-DRWqL5jt.js から、
+// スレッドを hunk と行へ振り分ける関数を手を加えずに写したもの。tests/thread-placement.test.mjs が使う。
+//   Q: old/new と行番号で hunk の行を探す   Qu: スレッドを byHunk・byFile などへ振り分ける
+//   $u: 元の hunk が無いとき保存した行番号で hunk を探す   id・ad: 行の位置   od: 行ごとにスレッドをまとめる
+//   sd・cd: 範囲コメントの強調
+// 通常の差分の表示での Qu の呼び出し（diffo-patch-placement.mjs の当て先）は、テストの callSite に写してある。
+function Q(e,t,n){return e.findIndex(e=>t===`old`?e.kind!==`add`&&e.oldNo===n:e.kind!==`del`&&e.newNo===n)}
+function Qu(e,t){let n=new Set(e.flatMap(e=>e.hunks.map(e=>e.id))),r=new Set(e.map(e=>e.path)),i=new Map,a=new Map,o=new Map,s=new Map,c=[],l=(e,t,n)=>{let r=e.get(t);r?r.push(n):e.set(t,[n])};for(let u of t){let t=u.anchor;if(t.kind===`changeset`)c.push(u);else if(t.kind===`layer`)l(o,t.layerId,u);else if(t.kind===`commit`)l(s,t.sha,u);else if(t.kind===`file`)r.has(t.path)?l(a,t.path,u):c.push(u);else if(n.has(t.hunkId))l(i,t.hunkId,u);else{let n=t.commit===void 0?$u(e,t):null;n===null?r.has(t.path)?l(a,t.path,u):c.push(u):l(i,n,u)}}return{byHunk:i,byFile:a,byLayer:o,byCommit:s,changeset:c}}function $u(e,t){let n=e.find(e=>e.path===t.path);return n?n.hunks.find(e=>id(e.lines,t)!==-1)?.id??null:null}
+function id(e,t){return Q(e,t.side,t.line)}function ad(e,t){if(t.endLine!==void 0){let n=Q(e,t.side,t.endLine);if(n!==-1)return n}return id(e,t)}function od(e,t){let n=new Map;for(let r of t){if(r.anchor.kind!==`hunk`)continue;let t=ad(e,r.anchor),i=n.get(t);i?i.push(r):n.set(t,[r])}return n}function sd(e,t){let n=new Set;for(let r of t){let t=r.anchor;if(t.kind!==`hunk`||t.endLine===void 0)continue;let i=id(e,t),a=ad(e,t);if(i!==-1&&a!==-1)for(let e=Math.min(i,a);e<=Math.max(i,a);e++)n.add(e)}return n}function cd(e,t){let n=new Set;for(let r of t){let t=r.anchor;if(t.kind!==`hunk`||t.endLine===void 0)continue;let i=id(e,t),a=ad(e,t);i!==-1&&a!==-1&&n.add(Math.min(i,a))}return n}

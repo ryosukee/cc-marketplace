@@ -26,3 +26,9 @@
 :root[data-diffo-hide-resolved="true"] .diffo-resolved-only-row {
   display: none !important;
 }
+
+/* コメントした行を今の差分で 1 か所に決められず、ファイル単位に表示しているスレッド */
+.diffo-unplaced-badge {
+  border: 1px solid var(--attn-line);
+  font-weight: 600;
+}
