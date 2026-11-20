@@ -23,8 +23,9 @@ Claude Code の更新を検知したら changelog と突合し、たまに全エ
 | 進行中の突合の claim | `${CLAUDE_PLUGIN_DATA}/review.claim`（突合の完了で消える。TTL 2 時間） |
 | エントリの書き方の例 | `config/known-issues.template.yml` と `config/known-issues.resolved.template.yml`（plugin 同梱） |
 
-一覧はどちらも空（`entries: []`）で作られる。`config/` の 2 つは書き方の例で、
-この中身が一覧へ入ることはない。
+初期化では `known-issues.yml` だけが空（`entries: []`）で作られる。
+`known-issues.resolved.yml` は、解除したエントリを移す先として作られる。
+`config/` の 2 つは書き方の例で、この中身が一覧へ入ることはない。
 
 `${CLAUDE_PLUGIN_DATA}` は plugin 更新をまたいで残る永続ディレクトリで、
 実体は `~/.claude/plugins/data/claude-known-issues-cc-tools/`。
@@ -44,7 +45,8 @@ resolved を別ファイルへ移す（0.3.0 で 1 度行った）。
 1. hook が更新を検知 → `pending_version` に記録して通知
 2. Claude が review skill で claim（`review.claim`）を取り、agent を起動 → 判定。
    claim を取れなければ別セッションが突合中なので、agent を起動せずに止まる
-3. review skill が結果を反映 → `reviewed_version` を進めて `pending_version` と claim を消す
+3. review skill が結果を反映する。差分突合では `reviewed_version` を進めて `pending_version` と claim を消す。
+   全件突合では `reviewed_version` を進めず、`last_full_review_at` を更新して claim を消す
 4. `pending_version` が残ったまま次のセッションが始まったら再通知する。
    ただし claim が生きているあいだは、別セッションの突合が進行中なので通知しない。
    claim が TTL（2 時間）を超えたまま残っていたら、無効として消して再通知する

@@ -10,6 +10,17 @@ credentials 保護系の hook を束ねる plugin。
 | Edit | `.netrc` | ブロック |
 | Read | `.netrc` | ブロック |
 
+## hook
+
+| イベント | 役割 |
+| --- | --- |
+| PreToolUse | Write/Edit/Read の credentials 保護 |
+| SessionStart | `check-settings.sh` が user settings の推奨設定の不足を通知する。設定は自動変更しない |
+
+## 依存
+
+- `jq`: hook の JSON 処理と推奨設定の確認
+
 ## 実装
 
 PreToolUse マッチャーで Write/Edit/Read それぞれにフックし、

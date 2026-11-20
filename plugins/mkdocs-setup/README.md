@@ -11,3 +11,6 @@ mkdocs.yml に MkDocs Material テーマの共通設定を注入する。
 
 - `mkdocs`
 - `mkdocs-material`
+- `beautifulsoup4` (`bs4`): `source_lines.py` の HTML 処理
+- `markdown_gfm_admonition`: テンプレートで指定する Markdown 拡張
+- `mkdocs-monorepo-plugin`: monorepo 選択時のサイト統合

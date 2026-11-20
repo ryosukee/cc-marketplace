@@ -2,6 +2,10 @@
 
 SessionStart 時にプラグインの更新を検知・通知する。
 
+## 依存
+
+- `jq`: インストール済み plugin と marketplace の版数の読み取り、通知 JSON の生成
+
 ## 動作
 
 SessionStart hook でインストール済み plugin のバージョンをチェックし、

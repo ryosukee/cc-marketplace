@@ -2,6 +2,11 @@
 
 Write/Edit 後に markdownlint-cli2 を実行し、.md ファイルの lint エラーを Claude にフィードバックする。
 
+## 依存
+
+- `jq`: hook の入力 JSON の読み取り
+- `npx` (Node.js): `markdownlint-cli2` の実行
+
 ## 設定探索の仕組み
 
 対象ファイルのディレクトリから親に向かって markdownlint 設定ファイルを探索する (`.markdownlint-cli2.jsonc`, `.markdownlint.jsonc` 等)。見つかった場合はそのディレクトリに cd してから markdownlint-cli2 を実行する。

@@ -97,12 +97,14 @@ Claude Code はネストしたディレクトリも読むので、階層を挟�
 | propose-before-implement | 常時 | 設計判断を含む作業は案の提示で止め、承認を得てから実装する |
 | skill-invocation | 常時 | 発動条件に一致する skill は、記憶で代替せず Skill ツールで発動する |
 | bash-state-mutation-isolation | 常時 | 状態変更と復旧を 1 つのシェルコマンドに連結しない |
+| bash-absolute-paths | 常時 | Bash ツールのコマンドで cd を使わず、対象をすべて絶対パスで書く |
+| bulk-edit-verification | 常時 | 複数項目のデータを機械的に編集したら、触るはずのないものが残っているかを件数か一覧で確かめる |
 | markdown-formatting | `**/*.md` | Markdown の記法・書式。該当ファイルを読んだときだけ載る |
-| rule-authoring | `.claude/rules/**` `rules/**` | rule ファイルの冒頭とロード方式の使い分け |
+| rule-authoring | `.claude/rules/**/*.md` `rules/**/*.md` | rule ファイルの冒頭とロード方式の使い分け |
 | notes-authoring | `notes/**` | decision-record として運用する `notes/` を書く最中の規範。冒頭の目的・生存期間・対象議題、ファイルの構成（artifacts・確定事項・未解決課題・作業メモ）、確定項目の書き方、参照と出典、重複回避、消す手順 |
-| claude-doc-authoring | `.claude/rules/**` `rules/**` `.claude/skills/**` `plugins/*/skills/**` `plugins/*/claude-skills/**` `plugins/*/codex-skills/**` `.claude/agents/*` `plugins/*/agents/*` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・frontmatter・指示項目・参照・why・改訂 |
-| skill-authoring | `.claude/skills/**` `plugins/*/skills/**` `plugins/*/claude-skills/**` `plugins/*/codex-skills/**` | SKILL.md の書き方。2 種別の判定・frontmatter と description・スクリプト化・文体 |
-| agent-authoring | `.claude/agents/*` `plugins/*/agents/*` | agent 定義の書き方。ファイル形式・frontmatter・冒頭に書く 6 つの責務・入出力 |
+| claude-doc-authoring | `.claude/rules/**/*.md` `rules/**/*.md` `.claude/skills/*/SKILL.md` `plugins/*/skills/*/SKILL.md` `plugins/*/claude-skills/*/SKILL.md` `plugins/*/codex-skills/*/SKILL.md` `.claude/agents/*.md` `plugins/*/agents/*.md` `CLAUDE.md` | Claude 向け文書に共通の書き方。種別の選び方・命名・frontmatter・指示項目・参照・why・改訂 |
+| skill-authoring | `.claude/skills/*/SKILL.md` `plugins/*/skills/*/SKILL.md` `plugins/*/claude-skills/*/SKILL.md` `plugins/*/codex-skills/*/SKILL.md` | SKILL.md の書き方。2 種別の判定・frontmatter と description・スクリプト化・文体 |
+| agent-authoring | `.claude/agents/*.md` `plugins/*/agents/*.md` | agent 定義の書き方。ファイル形式・frontmatter・冒頭に書く 6 つの責務・入出力 |
 | claude-md-authoring | `CLAUDE.md` | CLAUDE.md の書き方。役割とサイズ・書くもの / 書かないもの・ほかの文書との重複・更新の時期 |
 
 `paths` を持つ rule は、一致するファイルを Claude が読んだときだけロードされる。
@@ -162,4 +164,6 @@ claude plugins update session@cc-tools
 新バージョンの cache ディレクトリは作られるが、`installed_plugins.json` の `installPath` が
 旧バージョンのままになり、セッションは旧版を読み続ける。
 
-状態データ (version-check のバージョン記録など) は各 plugin の resolve スクリプトが旧キャッシュから自動引き継ぎするため、手動マイグレーション不要。
+version-check の既読バージョン記録は、resolve スクリプトが旧キャッシュから自動で引き継ぐ。
+dotclaude、claude-known-issues、cache-keepalive の状態データは、plugin data のディレクトリ
+(`~/.claude/plugins/data/{plugin}-{marketplace}/`) に保存するため、版の切り替えで失われない。
