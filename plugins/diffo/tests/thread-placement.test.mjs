@@ -72,8 +72,10 @@ const placeThreads = (files, threads, partition) => {
   );
   return rawPlaceThreads(files, threads, partition);
 };
-// 直前の placeThreads で位置未確定・書き換え済みにしたスレッド（こちらの realm の値に写す）
+// 直前の placeThreads で見つからない（unplaced）・書き換えを推定した（rewritten）スレッド（こちらの realm の値に写す）
 const placementState = () => JSON.parse(JSON.stringify(uiContext.__diffoPlacementState()));
+// 直前の placeThreads で、スレッドを移したと知らせるもの（バッジの種類・行番号・理由の文）
+const relocationNotes = () => JSON.parse(JSON.stringify(uiContext.__diffoRelocationNotes()));
 
 // spec の各行は diff の接頭辞（' ' '+' '-'）付き。行番号は oldStart・newStart から振る
 const makeHunk = (id, oldStart, newStart, spec) => {
@@ -194,16 +196,58 @@ test('a rewritten commented line is drawn on the line that replaced it, marked a
   assert.deepEqual(placementState(), { unplaced: [], rewritten: { t1: 'TARGET' } });
 });
 
-test('a commented change that was reverted has no replacing lines and is unplaced with its snapshot', () => {
+test('a commented change that was reverted has no replacing lines and is unplaced with its whole hunk', () => {
   const thread = makeThread('t1', 'doc.md', original, 'new', 13);
   const files = [file('doc.md', [makeHunk('h-elsewhere', 40, 40, [' p', '+q', ' r'])])];
   const partition = placeThreads(files, [thread], diffo.Qu);
   assert.equal(drawnLines(files, partition).has('t1'), false);
   assert.deepEqual(fileThreadIds(partition, 'doc.md'), ['t1']);
   const listed = partition.byFile.get('doc.md')[0];
-  assert.equal(listed.codeContext, '+TARGET');
+  // the commented change の欄に hunk 全体を出す（コメントした行には画面で枠を付ける）
+  assert.equal(listed.codeContext, before.join('\n'));
   assert.equal(listed.anchor.line, 13);
   assert.deepEqual(placementState(), { unplaced: ['t1'], rewritten: {} });
+  const note = relocationNotes().t1;
+  assert.equal(note.kind, 'outdated');
+  assert.equal(note.label, 'outdated');
+  assert.equal(note.from, 13);
+  assert.match(note.tip, /コメントした 13 行目の行が今の差分に見つからない/);
+  assert.match(note.tip, /コメントしたときの行: TARGET/);
+});
+
+test('a thread moved only by line shift gets the relocated note with both line numbers', () => {
+  const thread = makeThread('t1', 'doc.md', original, 'new', 13);
+  const moved = makeHunk('h-target', 12, 12, before);
+  const files = [file('doc.md', [moved])];
+  placeThreads(files, [thread], diffo.Qu);
+  const note = relocationNotes().t1;
+  assert.equal(note.kind, 'relocated');
+  assert.equal(note.label, 'thread relocated');
+  assert.equal(note.from, 13);
+  assert.equal(note.to, 15);
+  assert.match(note.tip, /行番号がずれたため、コメントした 13 行目の行を 15 行目で見つけ/);
+});
+
+test('a thread that stays on the same line number gets no note', () => {
+  const thread = makeThread('t1', 'doc.md', original, 'new', 13);
+  const edited = makeHunk('h-edited', 10, 10, [' a1', ' a2', ' a3', '+TARGET', '+second changed', ' z1']);
+  const files = [file('doc.md', [edited])];
+  placeThreads(files, [thread], diffo.Qu);
+  assert.deepEqual(relocationNotes(), {});
+});
+
+test('a rewritten line gets the guessed note even when its line number did not change', () => {
+  const thread = makeThread('t1', 'doc.md', original, 'new', 13);
+  const rewritten = makeHunk('h-new', 10, 10, [' a1', ' a2', ' a3', '+TARGET (rewritten)', '+second', ' z1']);
+  const files = [file('doc.md', [rewritten])];
+  placeThreads(files, [thread], diffo.Qu);
+  const note = relocationNotes().t1;
+  assert.equal(note.kind, 'guessed');
+  assert.equal(note.label, 'thread relocated (guessed)');
+  assert.equal(note.from, 13);
+  assert.equal(note.to, 13);
+  assert.match(note.tip, /推定した 13 行目の下に/);
+  assert.match(note.tip, /コメントしたときの行: TARGET/);
 });
 
 test('duplicate lines are told apart by their neighbours, and stay unplaced when the neighbours match too', () => {
@@ -521,6 +565,76 @@ test('a range whose middle line was rewritten is marked as rewritten', () => {
   assert.equal(placed.anchor.line, 11);
   assert.equal(placed.anchor.endLine, 13);
   assert.deepEqual(placementState().rewritten, { t1: 'alpha\nbeta\ngamma' });
+});
+
+// EFSO-T28 のレビューと同じ形: agent が節を書き直し、コメントした行は別の base の行を置き換える
+// かたまりへ移った。元のかたまりには無関係な行だけが残る
+const rewrittenSection = makeHunk('h-orig', 10, 10, [
+  ' a1', ' a2', ' a3', '-old one',
+  '+target sentence about mapping creation', '+neighbour line kept', '+third line',
+  ' z1', ' z2', ' z3',
+]);
+
+test('a rewritten line that moved to another change block is found through an unchanged neighbour', () => {
+  const thread = makeThread('t1', 'doc.md', rewrittenSection, 'new', 13);
+  // 別の場所に同じくらい似た行があり、類似度だけでは決められない。残った近くの行で決まる
+  const files = [file('doc.md', [
+    makeHunk('h-c1', 10, 10, [' a1', ' a2', ' a3', '-old one', '+completely different words here', ' z1', ' z2', ' z3']),
+    makeHunk('h-c2', 30, 28, [' b1', ' b2', ' b3', '-old two', '+intro paragraph', '+target sentence about mapping, rewritten', '+neighbour line kept', ' c1', ' c2', ' c3']),
+    makeHunk('h-c3', 60, 58, [' d1', ' d2', ' d3', '-old three', '+target sentence about mapping, rewrite', ' e1', ' e2', ' e3']),
+  ])];
+  const partition = placeThreads(files, [thread], diffo.Qu);
+  assert.equal(drawnLines(files, partition).get('t1').text, 'target sentence about mapping, rewritten');
+  assert.equal(relocationNotes().t1.kind, 'guessed');
+});
+
+test('when the neighbours were rewritten too, the most similar line in the file is taken', () => {
+  const thread = makeThread('t1', 'doc.md', rewrittenSection, 'new', 13);
+  const files = [file('doc.md', [
+    makeHunk('h-c1', 10, 10, [' a1', ' a2', ' a3', '-old one', '+completely different words here', ' z1', ' z2', ' z3']),
+    makeHunk('h-c2', 30, 28, [' b1', ' b2', ' b3', '-old two', '+intro paragraph', '+target sentence about mapping, rewritten', '+neighbour changed as well', ' c1', ' c2', ' c3']),
+  ])];
+  const partition = placeThreads(files, [thread], diffo.Qu);
+  assert.equal(drawnLines(files, partition).get('t1').text, 'target sentence about mapping, rewritten');
+  assert.equal(relocationNotes().t1.kind, 'guessed');
+});
+
+test('two equally similar lines in the file leave the rewritten line outdated', () => {
+  const thread = makeThread('t1', 'doc.md', rewrittenSection, 'new', 13);
+  const files = [file('doc.md', [
+    makeHunk('h-c1', 10, 10, [' a1', ' a2', ' a3', '-old one', '+completely different words here', ' z1', ' z2', ' z3']),
+    makeHunk('h-c2', 30, 28, [' b1', ' b2', ' b3', '-old two', '+target sentence about mapping, version A', ' c1', ' c2', ' c3']),
+    makeHunk('h-c3', 60, 57, [' d1', ' d2', ' d3', '-old three', '+target sentence about mapping, version B', ' e1', ' e2', ' e3']),
+  ])];
+  const partition = placeThreads(files, [thread], diffo.Qu);
+  assert.equal(drawnLines(files, partition).has('t1'), false);
+  assert.deepEqual(fileThreadIds(partition, 'doc.md'), ['t1']);
+  assert.equal(relocationNotes().t1.kind, 'outdated');
+});
+
+test('the neighbour stage does not take a dissimilar line just because both gaps hold one line', () => {
+  const section = makeHunk('h-orig', 10, 10, [' a1', ' a2', ' a3', '-old one', '+AAAAAA', '+kept neighbour', ' z1', ' z2', ' z3']);
+  const thread = makeThread('t1', 'doc.md', section, 'new', 13);
+  // 元の変更は取り消され、別の base の位置に、同じ近くの行と無関係な行が足された
+  const files = [file('doc.md', [
+    makeHunk('h-c2', 30, 27, [' b1', ' b2', ' b3', '-old two', '+ZZZZZZ', '+kept neighbour', ' c1', ' c2', ' c3']),
+  ])];
+  const partition = placeThreads(files, [thread], diffo.Qu);
+  assert.equal(drawnLines(files, partition).has('t1'), false);
+  assert.equal(relocationNotes().t1.kind, 'outdated');
+});
+
+test('a similarity lead of exactly 0.1 over the second line is enough', () => {
+  const section = makeHunk('h-orig', 10, 10, [' a1', ' a2', ' a3', '-old one', '+abcdefghij', ' z1', ' z2', ' z3']);
+  const thread = makeThread('t1', 'doc.md', section, 'new', 13);
+  // 類似度は 0.6 と 0.5（差は 0.1）
+  const files = [file('doc.md', [
+    makeHunk('h-c2', 30, 29, [' b1', ' b2', ' b3', '-old two', '+abcdefKLMN', ' c1', ' c2', ' c3']),
+    makeHunk('h-c3', 60, 59, [' d1', ' d2', ' d3', '-old three', '+abcdeKLMNO', ' e1', ' e2', ' e3']),
+  ])];
+  const partition = placeThreads(files, [thread], diffo.Qu);
+  assert.equal(drawnLines(files, partition).get('t1').text, 'abcdefKLMN');
+  assert.equal(relocationNotes().t1.kind, 'guessed');
 });
 
 test('without the base file the rewritten line is unplaced rather than guessed', () => {

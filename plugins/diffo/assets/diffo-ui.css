@@ -27,13 +27,25 @@
   display: none !important;
 }
 
-/* コメントした行を今の差分で 1 か所に決められず、ファイル単位に表示しているスレッド */
-.diffo-unplaced-badge {
+/* plugin がスレッドの表示位置を移したことのバッジ（thread relocated / thread relocated (guessed) / outdated）。
+   理由の文は diffo の data-tip でフォーカスしたときに出る */
+.diffo-relocated-badge {
   border: 1px solid var(--attn-line);
+  cursor: help;
+}
+
+.diffo-relocated-badge[data-kind="outdated"] {
   font-weight: 600;
 }
 
-/* コメントした行がコメントの後に書き換えられ、base 側の行で対応する行に表示しているスレッド */
-.diffo-rewritten-badge {
-  border: 1px solid var(--attn-line);
+.diffo-relocated-badge:focus-visible {
+  outline: 2px solid var(--attn-line);
+  outline-offset: 1px;
+}
+
+/* the commented change の欄で、コメントした範囲の行 */
+.thread-context .ctx-line.diffo-ctx-target {
+  outline: 2px solid var(--attn-line);
+  outline-offset: -2px;
+  font-weight: 600;
 }

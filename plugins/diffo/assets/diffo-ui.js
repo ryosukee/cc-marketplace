@@ -8,15 +8,29 @@
     'LGTM。レビューは完了です。`diffo end` を実行し、polling も終了してください。このメッセージへの返信は不要です。'
   const restoringInputs = new WeakSet()
   const unplacedClass = 'diffo-unplaced-thread'
-  const unplacedBadgeClass = 'diffo-unplaced-badge'
-  const unplacedLabel = '位置未確定'
-  const unplacedTitle =
-    'コメントした行を今の差分の中で 1 か所に決められないため、ファイル単位に表示している。下のコードはコメントを書いたときの行'
   const rewrittenClass = 'diffo-rewritten-thread'
-  const rewrittenBadgeClass = 'diffo-rewritten-badge'
-  const rewrittenLabel = '書き換え済み'
-  const rewrittenTitle =
-    'コメントした行はコメントの後に書き換えられた。書き換え前と同じ base の行を置き換えている行に表示している。コメントを書いたときの行:'
+  const relocatedBadgeClass = 'diffo-relocated-badge'
+  const contextWrapClass = 'diffo-context-wrap'
+  const contextTargetClass = 'diffo-ctx-target'
+  const badgeLabels = {
+    relocated: 'thread relocated',
+    guessed: 'thread relocated (guessed)',
+    outdated: 'outdated',
+  }
+  // 行番号（範囲なら「17〜18」）
+  const lineRange = (from, to) => (to === undefined || to === from ? `${from}` : `${from}〜${to}`)
+  // バッジにフォーカスしたとき（マウス・キーボード・タップ）に diffo の data-tip で出す、移した理由
+  const relocationTip = (note) => {
+    const from = lineRange(note.from, note.fromEnd)
+    if (note.kind === 'outdated') {
+      return `コメントした ${from} 行目の行が今の差分に見つからないため、このスレッドをファイル単位の一覧に移した。コメントしたときの行: ${note.original}`
+    }
+    const to = lineRange(note.to, note.toEnd)
+    if (note.kind === 'guessed') {
+      return `コメントした ${from} 行目の行は書き換えられている。書き換えた後の行と推定した ${to} 行目の下に、このスレッドを移した。コメントしたときの行: ${note.original}`
+    }
+    return `ファイルの編集で行番号がずれたため、コメントした ${from} 行目の行を ${to} 行目で見つけ、その下にこのスレッドを移した。`
+  }
 
   // --- スレッドの表示位置を、保存した行番号ではなく snapshot から探し直す ---
   //
@@ -27,6 +41,10 @@
   const markers = { add: '+', del: '-', context: ' ' }
   let unplacedThreadIds = new Set()
   let rewrittenThreads = new Map()
+  // スレッドを移したことの記録。id → { kind: relocated | guessed | outdated, from, fromEnd, to, toEnd, original }
+  let relocationNotes = new Map()
+  // the commented change の欄に出す行と、枠を付ける行。id → { rows, start, end, inject }
+  let contextTargets = new Map()
 
   const lineOnSide = (side, kind) => (side === 'old' ? kind !== 'add' : kind !== 'del')
   const rowOnSide = (side, row) => (side === 'old' ? row[0] !== '+' : row[0] !== '-')
@@ -356,6 +374,12 @@
             (line) => line.oldNo === insertedAfter || line.oldNo === insertedAfter + 1,
           ),
     )
+    return chooseFromBlocks(blocks, kind, rows, snapshotAdds, rowIndex, commented, true)
+  }
+
+  // 今の差分の変更のかたまり blocks の追加行から、snapshot の行 rowIndex に当たる行を選ぶ。決まらなければ null。
+  // sameBase は、blocks が書いたときと同じ base の行を置き換えているか（base 側の段だけ true）
+  const chooseFromBlocks = (blocks, kind, rows, snapshotAdds, rowIndex, commented, sameBase) => {
     const current = blocks.flatMap((block) => block.adds.map((line) => ({ block, line })))
     if (current.length === 0) return null
 
@@ -395,11 +419,12 @@
     const backwardBest = (index) => bestOf(written.map((text) => similarity(text, gap[index].line.text)))
     // 同じ番目の行は、互いに最も似ている組に入るときに採る（並んだときは位置で決める）。
     // すき間が書いたときも今も 1 行だけなら、同じ base の位置の 1 対 1 の置き換えなので、類似度の下限を問わない
+    // （同じ base の行を置き換えていると分かっている base 側の段だけ）
     if (
       gapIndex >= 0 &&
       forwardBest.includes(gapIndex) &&
       backwardBest(gapIndex).includes(writtenIndex) &&
-      (forward[gapIndex] >= minimumSimilarity || gap.length === 1)
+      (forward[gapIndex] >= minimumSimilarity || (sameBase && gap.length === 1))
     ) {
       return pickLine(gap[gapIndex])
     }
@@ -408,6 +433,67 @@
     if (backward.length !== 1 || backward[0] !== writtenIndex) return null
     return pickLine(gap[forwardBest[0]])
   }
+
+  // snapshot の行 rowIndex（追加行）を含む変更のかたまりの、追加行の番号の並び
+  const snapshotBlockAdds = (rows, rowIndex) => {
+    let start = rowIndex
+    let end = rowIndex
+    while (start > 0 && rows[start - 1][0] !== ' ') start--
+    while (end < rows.length - 1 && rows[end + 1][0] !== ' ') end++
+    const adds = []
+    for (let i = start; i <= end; i++) if (rows[i][0] === '+') adds.push(i)
+    return adds
+  }
+
+  // (4) base 側の段で決まらなかった書き換え（agent の書き直しで、変更のかたまりの切れ目が変わった場合）。
+  // コメントした行と同じかたまりの、ほかの追加行と一字一句同じ行が今の差分に残っていれば、
+  // その行を含む今のかたまりの中で選ぶ。残っている行が 2 つ以上のかたまりに分かれていれば決めない
+  const mapRowByNeighbor = (file, rows, rowIndex) => {
+    if (rows[rowIndex][0] !== '+') return null
+    const snapshotAdds = snapshotBlockAdds(rows, rowIndex)
+    const neighbours = new Set(snapshotAdds.filter((i) => i !== rowIndex).map((i) => rows[i].slice(1)))
+    if (neighbours.size === 0) return null
+    const blocks = file.hunks
+      .flatMap(changeBlocks)
+      .filter((block) => block.adds.some((line) => neighbours.has(line.text)))
+    if (blocks.length !== 1) return null
+    return chooseFromBlocks(blocks, '+', rows, snapshotAdds, rowIndex, rows[rowIndex].slice(1), false)
+  }
+
+  // 類似度で選ぶとき、最も似た行が 2 番目に似た行をこれだけ上回っていなければ決めない
+  const minimumSimilarityMargin = 0.1
+
+  // (5) (4) でも決まらなければ、ファイルの今の追加行全体から、コメントした行に最も似た行を選ぶ。
+  // 下限を超え、2 番目より十分に似ていて、その行から見ても書いたときのかたまりで最も似ているのが
+  // コメントした行であるときだけ採る。書いたときのほかの行と一字一句同じ行（残った別の行）は候補にしない
+  const mapRowBySimilarity = (file, rows, rowIndex) => {
+    if (rows[rowIndex][0] !== '+') return null
+    const commented = rows[rowIndex].slice(1)
+    const snapshotTexts = new Set(rows.filter((row, i) => i !== rowIndex).map((row) => row.slice(1)))
+    const candidates = file.hunks.flatMap((hunk) =>
+      (hunk.lines ?? [])
+        .filter((line) => line.kind === 'add' && !snapshotTexts.has(line.text))
+        .map((line) => ({ hunk, line, score: similarity(commented, line.text) })),
+    )
+    if (candidates.length === 0) return null
+    const sorted = [...candidates].sort((a, b) => b.score - a.score)
+    const best = sorted[0]
+    if (best.score < minimumSimilarity) return null
+    // 差がちょうど 0.1 の境界を浮動小数点の誤差で落とさない
+    if (sorted.length > 1 && best.score - sorted[1].score < minimumSimilarityMargin - 1e-9) return null
+    const blockTexts = snapshotBlockAdds(rows, rowIndex).map((i) => rows[i].slice(1))
+    const scores = blockTexts.map((text) => similarity(text, best.line.text))
+    const top = Math.max(...scores)
+    if (scores.filter((score) => score === top).length !== 1 || blockTexts[scores.indexOf(top)] !== commented) {
+      return null
+    }
+    return { hunk: best.hunk, newNo: best.line.newNo, text: best.line.text }
+  }
+
+  const mapRow = (file, rows, baseNoOfRow, rowIndex) =>
+    mapRowByBase(file, rows, baseNoOfRow, rowIndex) ??
+    mapRowByNeighbor(file, rows, rowIndex) ??
+    mapRowBySimilarity(file, rows, rowIndex)
 
   const placeByBase = (thread, file, snapshot) => {
     const { anchor, anchored } = thread
@@ -423,14 +509,14 @@
     }
     if (newRows.length === 0) return null
     const rangeRows = anchor.endLine === undefined ? newRows.slice(0, 1) : newRows
-    const first = mapRowByBase(file, rows, baseNoOfRow, rangeRows[0])
+    const first = mapRow(file, rows, baseNoOfRow, rangeRows[0])
     if (!first) return null
     let last = first
     if (rangeRows.length > 1) {
-      last = mapRowByBase(file, rows, baseNoOfRow, rangeRows.at(-1))
+      last = mapRow(file, rows, baseNoOfRow, rangeRows.at(-1))
       if (!last || last.hunk !== first.hunk || last.newNo < first.newNo) return null
     }
-    // 範囲のすべての行を比べ、1 行でも違えば書き換え済みにする
+    // 範囲のすべての行を比べ、1 行でも違えば書き換えを推定したことにする
     const original = rangeRows.map((i) => rows[i].slice(1)).join('\n')
     const current = first.hunk.lines
       .filter((line) => line.kind !== 'del' && line.newNo >= first.newNo && line.newNo <= last.newNo)
@@ -465,16 +551,32 @@
         ? { kind: 'rewritten', anchor: byBase.anchor, original: byBase.original }
         : { kind: 'placed', anchor: byBase.anchor }
     }
-    return {
-      kind: 'unplaced',
-      snippet: thread.anchored?.text || thread.codeContext || null,
-    }
+    return { kind: 'unplaced', original: snapshot.target.join('\n') }
   }
+
+  // the commented change の欄に出す行と、コメントした範囲（枠を付ける行）。
+  // codeContext（hunk 全体）があればそれを、Resolved で無ければ anchored.text（範囲の先頭 10 diff 行）を出す
+  const contextOf = (thread) => {
+    const { anchored } = thread
+    if (typeof thread.codeContext === 'string' && thread.codeContext !== '') {
+      const rows = thread.codeContext.split('\n')
+      return { rows, start: anchored.start, end: Math.min(anchored.end, rows.length - 1) }
+    }
+    if (typeof anchored?.text === 'string' && anchored.text !== '') {
+      const rows = anchored.text.split('\n')
+      return { rows, start: 0, end: rows.length - 1 }
+    }
+    return null
+  }
+
+  const lineSpan = (anchor) => ({ line: anchor.line, end: anchor.endLine })
 
   const placeThreads = (files, threads, partition) => {
     const fallback = () => {
       unplacedThreadIds = new Set()
       rewrittenThreads = new Map()
+      relocationNotes = new Map()
+      contextTargets = new Map()
       return partition(files, threads)
     }
     if (typeof partition !== 'function') return null
@@ -484,6 +586,8 @@
       const placedThreads = []
       const unplaced = []
       const rewritten = new Map()
+      const notes = new Map()
+      const contexts = new Map()
       for (const thread of threads) {
         let located
         try {
@@ -493,15 +597,42 @@
           console.warn('diffo-ui: スレッドの表示位置を探し直せなかったため、diffo の既定の位置に描く', error)
           located = { kind: 'skip' }
         }
+        const from = lineSpan(thread.anchor)
         if (located.kind === 'placed') {
           placedThreads.push(
             sameAnchor(located.anchor, thread.anchor) ? thread : { ...thread, anchor: located.anchor },
           )
+          const to = lineSpan(located.anchor)
+          // 行番号が変わったときだけ、行番号のずれとして知らせる（hunkId だけの違いは知らせない）
+          if (to.line !== from.line || to.end !== from.end) {
+            notes.set(thread.id, { kind: 'relocated', from: from.line, fromEnd: from.end, to: to.line, toEnd: to.end })
+          }
         } else if (located.kind === 'rewritten') {
           placedThreads.push({ ...thread, anchor: located.anchor })
           rewritten.set(thread.id, located.original)
+          const to = lineSpan(located.anchor)
+          // 推定したときは、行番号が変わらなくても知らせる
+          notes.set(thread.id, {
+            kind: 'guessed',
+            from: from.line,
+            fromEnd: from.end,
+            to: to.line,
+            toEnd: to.end,
+            original: located.original,
+          })
+          const context = contextOf(thread)
+          if (context) contexts.set(thread.id, { ...context, inject: true })
         } else if (located.kind === 'unplaced') {
-          unplaced.push({ ...thread, codeContext: located.snippet })
+          // diffo はファイル単位の一覧のスレッドに codeContext を the commented change の欄として出す。
+          // hunk 全体を残し、Resolved で codeContext が無いときだけ anchored.text を出す
+          const context = contextOf(thread)
+          unplaced.push(
+            context && thread.codeContext !== context.rows.join('\n')
+              ? { ...thread, codeContext: context.rows.join('\n') }
+              : thread,
+          )
+          notes.set(thread.id, { kind: 'outdated', from: from.line, fromEnd: from.end, original: located.original })
+          if (context) contexts.set(thread.id, { ...context, inject: false })
         } else {
           placedThreads.push(thread)
         }
@@ -514,6 +645,8 @@
       }
       unplacedThreadIds = new Set(unplaced.map((thread) => thread.id))
       rewrittenThreads = rewritten
+      relocationNotes = notes
+      contextTargets = contexts
       return result
     } catch (error) {
       console.warn('diffo-ui: スレッドの表示位置を探し直せなかったため、diffo の既定の位置に描く', error)
@@ -522,11 +655,16 @@
   }
 
   globalThis.__diffoPlaceThreads = placeThreads
-  // 直前の placeThreads で、位置未確定と書き換え済みにしたスレッド（テストと検証で読む）
+  // 直前の placeThreads で、見つからない（unplaced）と書き換えを推定した（rewritten）スレッド（テストと検証で読む）
   globalThis.__diffoPlacementState = () => ({
     unplaced: [...unplacedThreadIds],
     rewritten: Object.fromEntries(rewrittenThreads),
   })
+  // 直前の placeThreads で、スレッドを移したと知らせるもの（バッジの種類と行番号。テストと検証で読む）
+  globalThis.__diffoRelocationNotes = () =>
+    Object.fromEntries(
+      [...relocationNotes].map(([id, note]) => [id, { ...note, label: badgeLabels[note.kind], tip: relocationTip(note) }]),
+    )
   // base のファイルを差し替える（テストと検証で使う。path → 本文の文字列か null）
   globalThis.__diffoSetBaseFiles = (entries) => {
     baseFiles = new Map(
@@ -609,46 +747,130 @@
   }
   if (typeof location !== 'undefined') installBaseFetch()
 
-  // thread-marks に札を付け外しする。title が null なら札を外す
-  const setBadge = (marks, badgeClass, label, title) => {
-    const badge = marks.querySelector(`.${badgeClass}`)
-    if (title === null) {
+  // thread-marks に、スレッドを移したことのバッジを付け外しする。note が無ければ外す。
+  // 理由の文は diffo の data-tip に入れ、マウス・キーボードのフォーカス・タップで出す
+  const setRelocatedBadge = (marks, note) => {
+    const badge = marks.querySelector(`.${relocatedBadgeClass}`)
+    if (!note) {
       badge?.remove()
       return
     }
-    if (badge) {
-      if (badge.title !== title) badge.title = title
-      return
+    const label = badgeLabels[note.kind]
+    const tip = relocationTip(note)
+    const target = badge ?? document.createElement('span')
+    if (!badge) {
+      target.className = `thread-badge ${relocatedBadgeClass}`
+      target.tabIndex = 0
+      marks.prepend(target)
     }
-    const created = document.createElement('span')
-    created.className = `thread-badge ${badgeClass}`
-    created.textContent = label
-    created.title = title
-    marks.prepend(created)
+    if (target.textContent !== label) target.textContent = label
+    if (target.dataset.tip !== tip) target.dataset.tip = tip
+    if (target.getAttribute('aria-label') !== `${label}: ${tip}`) target.setAttribute('aria-label', `${label}: ${tip}`)
+    if (target.dataset.kind !== note.kind) target.dataset.kind = note.kind
+  }
+
+  const ownChild = (thread, selector) =>
+    [...thread.querySelectorAll(selector)].find((candidate) => candidate.closest('.thread') === thread)
+
+  // the commented change の欄の 1 行。diffo の ctx-line と同じ形にする
+  const contextLine = (row, target) => {
+    const span = document.createElement('span')
+    span.className = `ctx-line${row[0] === '+' ? ' ctx-add' : row[0] === '-' ? ' ctx-del' : ''}${target ? ` ${contextTargetClass}` : ''}`
+    span.textContent = row
+    return span
+  }
+
+  // 開いた欄を、diffo が描き直しても開いたままにする
+  const openContexts = new Set()
+
+  // 行の下に表示したスレッド（書き換えたあと）に、diffo と同じ見た目の the commented change の欄を足す
+  const injectContext = (thread, id, context) => {
+    const head = ownChild(thread, '.thread-head')
+    if (!head) return
+    const key = `${context.start}:${context.end}:${context.rows.join('\n')}`
+    let wrap = ownChild(thread, `.${contextWrapClass}`)
+    if (wrap && wrap.dataset.key !== key) {
+      wrap.remove()
+      wrap = undefined
+    }
+    if (!wrap) {
+      wrap = document.createElement('div')
+      wrap.className = `thread-context-wrap ${contextWrapClass}`
+      wrap.dataset.key = key
+      const toggle = document.createElement('button')
+      toggle.type = 'button'
+      toggle.className = 'thread-context-toggle'
+      // diffo の欄と同じ印（#i-chev の svg。閉じているときは chevron-shut で横向き）
+      const chevron = document.createElement('span')
+      chevron.className = 'chevron'
+      const svgNs = 'http://www.w3.org/2000/svg'
+      const icon = document.createElementNS(svgNs, 'svg')
+      icon.setAttribute('class', 'icon')
+      icon.setAttribute('width', '13')
+      icon.setAttribute('height', '13')
+      icon.setAttribute('focusable', 'false')
+      icon.setAttribute('aria-hidden', 'true')
+      const use = document.createElementNS(svgNs, 'use')
+      use.setAttribute('href', '#i-chev')
+      icon.append(use)
+      chevron.append(icon)
+      const count = document.createElement('span')
+      count.className = 'thread-context-n'
+      count.textContent = `${context.rows.length} ${context.rows.length === 1 ? 'line' : 'lines'}`
+      toggle.append(chevron, 'the commented change', count)
+      const pre = document.createElement('pre')
+      pre.className = 'thread-context'
+      context.rows.forEach((row, index) =>
+        pre.append(contextLine(row, index >= context.start && index <= context.end)),
+      )
+      const setOpen = (open) => {
+        toggle.setAttribute('aria-expanded', String(open))
+        chevron.classList.toggle('chevron-shut', !open)
+        pre.hidden = !open
+        if (open) openContexts.add(id)
+        else openContexts.delete(id)
+      }
+      toggle.addEventListener('click', () => setOpen(pre.hidden))
+      wrap.append(toggle, pre)
+      setOpen(openContexts.has(id))
+    }
+    if (head.nextElementSibling !== wrap) head.insertAdjacentElement('afterend', wrap)
+  }
+
+  // diffo が描いた the commented change の欄で、コメントした範囲の行に枠を付ける
+  const frameContext = (thread, context) => {
+    const pre = ownChild(thread, '.thread-context')
+    if (!pre) return
+    const lines = pre.querySelectorAll('.ctx-line')
+    if (lines.length !== context.rows.length) return
+    lines.forEach((line, index) => {
+      const target = index >= context.start && index <= context.end
+      if (line.classList.contains(contextTargetClass) !== target) line.classList.toggle(contextTargetClass, target)
+    })
   }
 
   const markPlacedThreads = () => {
     for (const thread of document.querySelectorAll('.thread[data-thread-id]')) {
       const id = thread.dataset.threadId
       const unplaced = unplacedThreadIds.has(id)
-      const original = rewrittenThreads.get(id)
+      const rewritten = rewrittenThreads.has(id)
       if (thread.classList.contains(unplacedClass) !== unplaced) {
         thread.classList.toggle(unplacedClass, unplaced)
       }
-      if (thread.classList.contains(rewrittenClass) !== (original !== undefined)) {
-        thread.classList.toggle(rewrittenClass, original !== undefined)
+      if (thread.classList.contains(rewrittenClass) !== rewritten) {
+        thread.classList.toggle(rewrittenClass, rewritten)
       }
-      const marks = [...thread.querySelectorAll('.thread-marks')].find(
-        (candidate) => candidate.closest('.thread') === thread,
-      )
-      if (!marks) continue
-      setBadge(marks, unplacedBadgeClass, unplacedLabel, unplaced ? unplacedTitle : null)
-      setBadge(
-        marks,
-        rewrittenBadgeClass,
-        rewrittenLabel,
-        original === undefined ? null : `${rewrittenTitle}\n${original}`,
-      )
+      const marks = ownChild(thread, '.thread-marks')
+      if (marks) setRelocatedBadge(marks, relocationNotes.get(id))
+      const context = contextTargets.get(id)
+      // スレッドを畳んでいる間は、diffo が自分の欄を外すのと同じく、足した欄も外す（開いた状態は openContexts に残る）。
+      // diffo は畳んでもクラスを変えず、開閉ボタンの aria-expanded を false にして中身を thread-shut-peek に替える
+      const shut =
+        ownChild(thread, '.thread-head .thread-shut')?.getAttribute('aria-expanded') === 'false' ||
+        Boolean(ownChild(thread, '.thread-shut-peek'))
+      if (context?.inject && !shut) injectContext(thread, id, context)
+      else ownChild(thread, `.${contextWrapClass}`)?.remove()
+      if (context && !context.inject) frameContext(thread, context)
     }
   }
 
