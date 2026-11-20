@@ -58,6 +58,28 @@ test('unlabeled thread keeps null intent', () => {
   assert.equal(JSON.parse(format(input)).threads[0].intent, null);
 });
 
+test('edited reviewer and agent messages retain multiline text and latest reply boundaries', () => {
+  for (const messages of [
+    '- reviewer (edited): [image](/tmp/diffo-attachments/repo/a.png)\n  Please read it',
+    '- reviewer: original\n- reviewer (edited): updated\n  second line',
+    '- reviewer: old\n- agent (edited): revised answer\n  continued\n- reviewer (edited): latest',
+  ]) {
+    const input = JSON.stringify({ status: 'feedback', kind: 'threads', threadIds: ['aaaa-1111'],
+      prompt: `### Thread 1 — a.md\nid: aaaa-1111\nMessages:\n${messages}\n` });
+    const result = JSON.parse(format(input));
+    assert.equal('prompt' in result, false);
+    const thread = result.threads[0];
+    if (messages.includes('revised answer')) {
+      assert.equal(thread.lastAgentReply, 'revised answer\ncontinued');
+      assert.deepEqual(thread.reviewerMessages, ['latest']);
+    } else if (messages.includes('original')) {
+      assert.deepEqual(thread.reviewerMessages, ['original', 'updated\nsecond line']);
+    } else {
+      assert.deepEqual(thread.reviewerMessages, ['[image](/tmp/diffo-attachments/repo/a.png)\nPlease read it']);
+    }
+  }
+});
+
 const layerGuideHeading = '# レイヤーを投稿するときのインライン補足';
 const noComment = 'Nothing else is owed for this item — no reply, no comment.';
 

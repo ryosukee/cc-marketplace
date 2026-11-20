@@ -49,3 +49,57 @@
   outline-offset: -2px;
   font-weight: 600;
 }
+/* 添付はコメントの Markdown のリンクを正とし、表示だけをここで補う。 */
+.diffo-attachment-editor {
+  width: 100%;
+}
+
+.diffo-attachment-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.diffo-attachment-gallery:empty {
+  display: none;
+}
+
+.diffo-attachment-card {
+  position: relative;
+  max-width: 180px;
+  border: 1px solid var(--border, #8886);
+  border-radius: 8px;
+}
+
+.diffo-attachment-card > a {
+  display: block;
+  padding: 8px;
+  overflow-wrap: anywhere;
+}
+
+.diffo-attachment-card img {
+  display: block;
+  width: 140px;
+  height: 100px;
+  object-fit: contain;
+}
+
+.diffo-attachment-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border, #8886);
+  border-radius: 50%;
+  background: var(--bg, #fff);
+  color: var(--fg, #222);
+  cursor: pointer;
+}
+
+.diffo-attachment-status {
+  font-size: 12px;
+  color: var(--muted, #777);
+  white-space: pre-wrap;
+}

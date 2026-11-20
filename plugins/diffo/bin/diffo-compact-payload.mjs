@@ -26,7 +26,7 @@ function parseMessages(block) {
   if (start < 0) throw new Error('messages not found');
   const messages = [];
   for (const line of block.slice(start + '\nMessages:\n'.length).split('\n')) {
-    const match = /^- (reviewer|agent): (.*)$/.exec(line);
+    const match = /^- (reviewer|agent)(?: \(edited\))?: (.*)$/.exec(line);
     if (match) {
       messages.push({ author: match[1], text: match[2] });
     } else if (line.startsWith('  ') && messages.length > 0) {

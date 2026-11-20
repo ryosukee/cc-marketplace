@@ -16,6 +16,7 @@ const makeDiffo = (wordConstants) => {
   const dir = mkdtempSync(path.join(tmpdir(), 'diffo-patch-test-'));
   const client = path.join(dir, 'dist/client');
   mkdirSync(path.join(client, 'assets'), { recursive: true });
+  writeFileSync(path.join(dir, 'dist/cli.mjs'), 'function createApp(ctx) { const app = new Hono(); app.get("/api/file", async (c) => {}); }');
   writeFileSync(
     path.join(client, 'index.html'),
     '<!doctype html>\n<html>\n  <head>\n    <script type="module" src="/assets/index-test.js"></script>\n  </head>\n  <body></body>\n</html>\n',
@@ -42,11 +43,28 @@ test('the word diff limit is raised from 400 to 3000 once, and a second run leav
   const first = runPatch(dir);
   assert.equal(first.status, 0, first.stderr);
   assert.match(first.stdout, /word diff: 上限を 3000 文字にした/);
+  assert.match(first.stdout, /server: 当てた。起動中の diffo は古いまま/);
+  const server = readFileSync(path.join(dir, 'dist/cli.mjs'), 'utf8');
+  assert.equal(server.split('app.post("/api/plugin/attachments",').length - 1, 1);
+  assert.equal(server.split('app.get("/api/plugin/attachments/:name",').length - 1, 1);
   assert.match(bundleOf(dir), /var zd=3000,Bd=\.3,Vd=400,Hd=3,Ud=\.65;/);
   const second = runPatch(dir);
   assert.equal(second.status, 0, second.stderr);
   assert.match(second.stdout, /word diff: 変更なし/);
+  assert.match(second.stdout, /server: 変更なし/);
+  assert.equal(readFileSync(path.join(dir, 'dist/cli.mjs'), 'utf8'), server);
   assert.equal((bundleOf(dir).match(/=3000,/g) ?? []).length, 1);
+});
+
+test('the patch requires dist/cli.mjs before changing client assets', (t) => {
+  const dir = makeDiffo('var zd=400,Bd=.3,Vd=400,Hd=3,Ud=.65;');
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  rmSync(path.join(dir, 'dist/cli.mjs'));
+  const before = bundleOf(dir);
+  const result = runPatch(dir);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /dist\/cli.mjs が見つからない/);
+  assert.equal(bundleOf(dir), before);
 });
 
 test('the patch finds the limit by its value pattern even when the variable names change', (t) => {

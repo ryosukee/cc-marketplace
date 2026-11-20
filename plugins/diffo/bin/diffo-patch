@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# diffo の配信ファイルへ 7 つのパッチを当てる。何度実行しても同じ結果になる。
+# diffo の配信ファイルへ 8 つのパッチを当てる。何度実行しても同じ結果になる。
 #
 #   1. .md Preview を GitHub 風にする CSS を dist/client へ置き、index.html から link する
 #   2. marked の breaks を false にして、改行 1 つが <br> にならないようにする
@@ -12,11 +12,13 @@
 #   7. 行の中の変わった語を色付けする上限を 400 文字から 3,000 文字に上げる。
 #      diffo は片方の行が上限を超えると語の差分を計算しない。日本語の段落は 1 行が長い
 #
+#   8. コメントの添付を保存・配信する API をサーバーへ足す
+#
 # 当てるタイミングは diffo を起動した後。理由は 2 つある。
 #   - npx は初回と版が上がった直後にしかパッケージを取得しない。起動前だと当てる先が無いか、
 #     古いキャッシュへ当ててしまう
 #   - diffo のサーバーは dist/client 配下をリクエストのたびに readFile する。起動後に当てても
-#     リロードで反映され、サーバーの立て直しは要らない
+#     リロードで反映される。添付 API のパッチはサーバーの起動し直しが必要
 #
 # JS を当て直した直後はブラウザがバンドルをキャッシュしていることがある。
 # 色は変わったのに改行が変わらないときはハードリロードする。
@@ -30,8 +32,9 @@ CSS_SRC="$SCRIPT_DIR/../assets/diffo-github-preview.css"
 UI_CSS_SRC="$SCRIPT_DIR/../assets/diffo-ui.css"
 UI_JS_SRC="$SCRIPT_DIR/../assets/diffo-ui.js"
 PLACEMENT_SRC="$SCRIPT_DIR/diffo-patch-placement.mjs"
+SERVER_SRC="$SCRIPT_DIR/diffo-patch-server.mjs"
 
-for asset in "$CSS_SRC" "$UI_CSS_SRC" "$UI_JS_SRC" "$PLACEMENT_SRC"; do
+for asset in "$CSS_SRC" "$UI_CSS_SRC" "$UI_JS_SRC" "$PLACEMENT_SRC" "$SERVER_SRC"; do
 	if [ ! -f "$asset" ]; then
 		echo "diffo-patch: asset が見つからない: $asset" >&2
 		exit 1
@@ -74,6 +77,12 @@ fi
 
 CLIENT="$DIFFO_ROOT/dist/client"
 INDEX="$CLIENT/index.html"
+SERVER="$DIFFO_ROOT/dist/cli.mjs"
+
+if [ ! -f "$SERVER" ]; then
+	echo "diffo-patch: dist/cli.mjs が見つからない: $SERVER" >&2
+	exit 1
+fi
 
 if [ ! -f "$INDEX" ]; then
 	echo "diffo-patch: index.html が見つからない: $INDEX" >&2
@@ -186,6 +195,9 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 node "$PLACEMENT_SRC" "$CLIENT/assets"
 
+# 7. サーバーに添付 API を足す（実行中のサーバーは起動し直すまで変わらない）
+node "$SERVER_SRC" "$SERVER"
+
 assert_single_reference() {
 	local needle="$1"
 	local count
@@ -235,6 +247,13 @@ if [ "$placement_hooks" -ne 1 ]; then
 	echo "diffo-patch: スレッドの配置処理の接続口が 1 か所ではない ($placement_hooks 件)" >&2
 	exit 1
 fi
+
+for route in 'app.post("/api/plugin/attachments",' 'app.get("/api/plugin/attachments/:name",'; do
+	if [ "$(count_occurrences "$route" "$SERVER")" -ne 1 ]; then
+		echo "diffo-patch: 添付 API の経路が 1 か所ではない: $route" >&2
+		exit 1
+	fi
+done
 
 echo "  verify   : 適用結果を確認した"
 echo "diffo-patch: 完了。ブラウザをリロードする（JS を当て直したときはハードリロード）"

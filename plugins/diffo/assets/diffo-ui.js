@@ -7,6 +7,41 @@
   const lgtmMessage =
     'LGTM。レビューは完了です。`diffo end` を実行し、polling も終了してください。このメッセージへの返信は不要です。'
   const restoringInputs = new WeakSet()
+  const attachmentSelector = 'textarea.thread-input, textarea.cmt-edit-input'
+  const attachmentThreads = new Map()
+
+  // Markdown のリンクだけを対象にする。保存名はサーバーと同じ文字集合に限る。
+  const attachmentName = (path) => {
+    const match = /^\/(?:[^\r\n]*\/)?diffo-attachments\/[A-Za-z0-9._-]+\/([A-Za-z0-9._-]+)$/.exec(path)
+    return match && !['.', '..'].includes(match[1]) ? match[1] : null
+  }
+  const attachmentLinks = (text) => {
+    const links = []
+    const pattern = /(?<!!)\[((?:\\.|[^\]\\\n])*)\]\((?:<([^>\r\n]+)>|([^\s()]+))\)/g
+    for (const match of text.matchAll(pattern)) {
+      const path = match[2] ?? match[3]
+      const savedName = attachmentName(path)
+      if (!savedName) continue
+      links.push({
+        name: match[1].replace(/\\([\\\[\]])/g, '$1'), path, savedName,
+        url: `/api/plugin/attachments/${savedName}`,
+        image: /\.(png|jpe?g|gif|webp)$/i.test(savedName),
+        start: match.index, end: match.index + match[0].length,
+      })
+    }
+    return links
+  }
+  const removeAttachment = (text, link) => {
+    const match = attachmentLinks(text).find((item) =>
+      item.path === link.path && item.start === link.start,
+    )
+    return match ? text.slice(0, match.start) + text.slice(match.end) : text
+  }
+  const attachmentMarkdown = ({ name, path }) => {
+    const label = name.replace(/[\r\n]/g, ' ').replace(/[\\\[\]]/g, '\\$&')
+    return `[${label}](${/[\s()]/.test(path) ? `<${path}>` : path})`
+  }
+  globalThis.__diffoAttachments = { attachmentName, attachmentLinks, removeAttachment, attachmentMarkdown }
   const unplacedClass = 'diffo-unplaced-thread'
   const rewrittenClass = 'diffo-rewritten-thread'
   const relocatedBadgeClass = 'diffo-relocated-badge'
@@ -721,6 +756,10 @@
         if (response.ok && url.origin === location.origin && url.search === '') {
           if (url.pathname === '/api/review') {
             const review = await response.clone().json()
+            attachmentThreads.clear()
+            for (const thread of review.threads ?? []) attachmentThreads.set(thread.id, thread.messages ?? [])
+            // リンク先だけの編集では sanitize 後の HTML が同じになるため、DOM の通知に頼らない。
+            if (typeof setTimeout === 'function') setTimeout(mountAttachments, 0)
             threadPaths = new Set(
               (review.threads ?? [])
                 .filter((thread) => thread.anchor?.kind === 'hunk')
@@ -924,15 +963,174 @@
     return null
   }
 
-  const setTextareaValue = (textarea, value) => {
+  const setTextareaValue = (textarea, value, restoring = true) => {
     const setter = Object.getOwnPropertyDescriptor(
       HTMLTextAreaElement.prototype,
       'value',
     )?.set
     if (setter) setter.call(textarea, value)
     else textarea.value = value
-    restoringInputs.add(textarea)
+    if (restoring) restoringInputs.add(textarea)
     textarea.dispatchEvent(new Event('input', { bubbles: true }))
+  }
+
+  const attachmentEditors = new WeakMap()
+  const paintAttachments = (gallery, links, remove) => {
+    const key = JSON.stringify(links)
+    if (gallery.dataset.key === key) return
+    gallery.dataset.key = key
+    gallery.replaceChildren()
+    for (const link of links) {
+      const card = document.createElement('div')
+      card.className = 'diffo-attachment-card'
+      const preview = document.createElement('a')
+      preview.href = link.url
+      preview.target = '_blank'
+      preview.rel = 'noopener noreferrer'
+      preview.title = link.name
+      if (link.image) {
+        const image = document.createElement('img')
+        image.src = link.url
+        image.alt = link.name
+        image.loading = 'lazy'
+        preview.append(image)
+      } else {
+        preview.textContent = link.name
+      }
+      card.append(preview)
+      if (remove) {
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'diffo-attachment-remove'
+        button.textContent = '×'
+        button.setAttribute('aria-label', `添付「${link.name}」を本文から削除`)
+        button.addEventListener('click', () => remove(link))
+        card.append(button)
+      }
+      gallery.append(card)
+    }
+  }
+
+  const mountAttachmentEditor = (textarea) => {
+    let state = attachmentEditors.get(textarea)
+    if (!state) {
+      const wrap = document.createElement('div')
+      wrap.className = 'diffo-attachment-editor'
+      const status = document.createElement('div')
+      status.className = 'diffo-attachment-status'
+      status.setAttribute('role', 'status')
+      const gallery = document.createElement('div')
+      gallery.className = 'diffo-attachment-gallery'
+      wrap.append(status, gallery)
+      state = { wrap, status, gallery, pending: 0, errors: [], queue: Promise.resolve() }
+      attachmentEditors.set(textarea, state)
+      const refresh = () => paintAttachments(gallery, attachmentLinks(textarea.value), (link) => {
+        setTextareaValue(textarea, removeAttachment(textarea.value, link), false)
+      })
+      textarea.addEventListener('input', refresh)
+      const showStatus = () => {
+        const text = [state.pending ? `ファイルを送信中（${state.pending} 件）` : '', ...state.errors].filter(Boolean).join(' / ')
+        if (status.textContent !== text) status.textContent = text
+      }
+      const upload = (event) => {
+        const transfer = event.type === 'paste' ? event.clipboardData : event.dataTransfer
+        if (event.type === 'paste' && transfer?.getData('text/plain')) return
+        const files = [...(transfer?.files ?? [])]
+        if (files.length === 0) return
+        event.preventDefault()
+        const selection = { value: textarea.value, start: textarea.selectionStart, end: textarea.selectionEnd }
+        state.pending += files.length
+        state.errors = []
+        showStatus()
+        state.queue = state.queue.then(async () => {
+          for (const file of files) {
+            try {
+              if (file.size > 20 * 1024 * 1024) throw new Error('ファイルが 20 MiB を超えています')
+              const response = await fetch('/api/plugin/attachments', {
+                method: 'POST',
+                headers: { 'x-diffo-filename': encodeURIComponent(file.name), 'content-type': file.type || 'application/octet-stream' },
+                body: file,
+              })
+              if (!response.ok) throw new Error(`HTTP ${response.status}。添付 API の適用後は diffo を起動し直してください`)
+              const saved = await response.json()
+              if (!attachmentName(saved.path)) throw new Error('サーバーが返した添付パスを読み取れません')
+              // 待機中に利用者が編集した場合は、現在のカーソル位置を使う。
+              const unchanged = textarea.value === selection.value
+              const start = unchanged ? selection.start : textarea.selectionStart
+              const end = unchanged ? selection.end : textarea.selectionEnd
+              const markdown = attachmentMarkdown({ name: file.name, path: saved.path })
+              const insertion = `${start > 0 && !/\s/.test(textarea.value[start - 1]) ? ' ' : ''}${markdown} `
+              setTextareaValue(textarea, textarea.value.slice(0, start) + insertion + textarea.value.slice(end), false)
+              const cursor = start + insertion.length
+              textarea.setSelectionRange(cursor, cursor)
+              Object.assign(selection, { value: textarea.value, start: cursor, end: cursor })
+            } catch (error) {
+              state.errors.push(`「${file.name}」の送信に失敗しました: ${error.message}`)
+            } finally {
+              state.pending--
+              showStatus()
+            }
+          }
+        })
+      }
+      textarea.addEventListener('drop', upload)
+      textarea.addEventListener('paste', upload)
+      textarea.addEventListener('dragover', (event) => {
+        if ([...(event.dataTransfer?.types ?? [])].includes('Files')) event.preventDefault()
+      })
+    }
+    if (textarea.nextElementSibling !== state.wrap) textarea.insertAdjacentElement('afterend', state.wrap)
+    paintAttachments(state.gallery, attachmentLinks(textarea.value), (link) => {
+      setTextareaValue(textarea, removeAttachment(textarea.value, link), false)
+    })
+  }
+
+  const mountCommentAttachments = (body) => {
+    const thread = body.closest('.thread[data-thread-id]')
+    const message = body.closest('.cmt')
+    const messages = thread ? [...thread.querySelectorAll('.cmt:not(.thread-message-pending)')]
+      .filter((item) => item.closest('.thread') === thread) : []
+    const raw = attachmentThreads.get(thread?.dataset.threadId)?.[messages.indexOf(message)]?.text
+    // Diffo 0.28.0 は a 要素を残すが、絶対パスの href を sanitize で消す。
+    // /api/review の元本文と、同じ順序のコメントの a 要素を照合する。
+    const links = typeof raw === 'string' ? attachmentLinks(raw) : attachmentLinks(body.textContent ?? '')
+    const anchors = [...body.querySelectorAll('a')]
+    const remaining = [...links]
+    for (const anchor of anchors) {
+      const href = anchor.getAttribute('href') ?? ''
+      const savedName = attachmentName(href)
+      const index = remaining.findIndex((item) => savedName === item.savedName ||
+        ((!href || href.startsWith('/api/plugin/attachments/')) && anchor.textContent === item.name))
+      if (index < 0) continue
+      const [link] = remaining.splice(index, 1)
+      if (anchor.getAttribute('href') !== link.url) anchor.setAttribute('href', link.url)
+      if (anchor.getAttribute('target') !== '_blank') anchor.setAttribute('target', '_blank')
+      if (anchor.getAttribute('rel') !== 'noopener noreferrer') anchor.setAttribute('rel', 'noopener noreferrer')
+    }
+    let gallery = body.nextElementSibling
+    if (!gallery?.classList.contains('diffo-comment-attachments')) gallery = null
+    if (links.length === 0) {
+      gallery?.remove()
+      return
+    }
+    if (!gallery) {
+      gallery = document.createElement('div')
+      gallery.className = 'diffo-attachment-gallery diffo-comment-attachments'
+      body.insertAdjacentElement('afterend', gallery)
+    }
+    paintAttachments(gallery, links)
+  }
+
+  const mountAttachments = () => {
+    // React が入力欄だけを外したときに、隣へ足した表示も外す。
+    for (const wrap of document.querySelectorAll('.diffo-attachment-editor')) {
+      if (!wrap.previousElementSibling?.matches(attachmentSelector)) wrap.remove()
+    }
+    for (const gallery of document.querySelectorAll('.diffo-comment-attachments')) {
+      if (!gallery.previousElementSibling?.matches('.cmt-body')) gallery.remove()
+    }
+    document.querySelectorAll(attachmentSelector).forEach(mountAttachmentEditor)
+    document.querySelectorAll('.cmt-body').forEach(mountCommentAttachments)
   }
 
   const appendLgtmMessage = (note) => {
@@ -1188,6 +1386,7 @@
   const mount = () => {
     clearSubmittedDrafts()
     restoreDrafts()
+    mountAttachments()
     markSettledSections()
     markResolvedOnlyRows()
     markPlacedThreads()
