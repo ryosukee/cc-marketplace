@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# diffo の配信ファイルへ 6 つのパッチを当てる。何度実行しても同じ結果になる。
+# diffo の配信ファイルへ 7 つのパッチを当てる。何度実行しても同じ結果になる。
 #
 #   1. .md Preview を GitHub 風にする CSS を dist/client へ置き、index.html から link する
 #   2. marked の breaks を false にして、改行 1 つが <br> にならないようにする
@@ -9,6 +9,8 @@
 #   6. スレッドを描くたびに、保存した行番号ではなく書いたときの行の内容で今の差分の行を探し直す。
 #      コメントした行が書き換えられていれば、書き換えた後の行を推定して thread relocated (guessed) として描き、
 #      見つからないスレッドは、ファイル単位に outdated として描く（bundle に接続口を足す）
+#   7. 行の中の変わった語を色付けする上限を 400 文字から 3,000 文字に上げる。
+#      diffo は片方の行が上限を超えると語の差分を計算しない。日本語の段落は 1 行が長い
 #
 # 当てるタイミングは diffo を起動した後。理由は 2 つある。
 #   - npx は初回と版が上がった直後にしかパッケージを取得しない。起動前だと当てる先が無いか、
@@ -156,7 +158,28 @@ else
 	exit 1
 fi
 
-# 5. スレッドの配置処理に、表示位置を探し直す接続口を足す
+# 5. 行の中の変わった語を色付けする上限を上げる。
+# 上限は語の差分の定数の並び（上限 400、類似度の下限 0.3、行の組の上限 400、結合の間隔 3、変更の割合の上限 0.65）の
+# 先頭にある。変数名は版ごとに変わるので、値の並びで当てる先を探す。
+# 上限を上げるほど、語の差分の表（2 行の文字数の積 × 4 バイト）が大きくなる。3,000 文字どうしで約 36 MB
+WORD_LIMIT=3000
+word_limit_count() {
+	local value="$1"
+	(grep -rhoE "var [A-Za-z_\$][A-Za-z0-9_\$]*=${value},[A-Za-z_\$][A-Za-z0-9_\$]*=\.3,[A-Za-z_\$][A-Za-z0-9_\$]*=400,[A-Za-z_\$][A-Za-z0-9_\$]*=3,[A-Za-z_\$][A-Za-z0-9_\$]*=\.65;" "$CLIENT/assets" 2>/dev/null || true) | wc -l | tr -d '[:space:]'
+}
+if [ "$(word_limit_count "$WORD_LIMIT")" -eq 1 ] && [ "$(word_limit_count 400)" -eq 0 ]; then
+	echo "  word diff: 変更なし"
+elif [ "$(word_limit_count 400)" -eq 1 ] && [ "$(word_limit_count "$WORD_LIMIT")" -eq 0 ]; then
+	WORD_BUNDLE="$(grep -rlE 'var [A-Za-z_$][A-Za-z0-9_$]*=400,[A-Za-z_$][A-Za-z0-9_$]*=\.3,[A-Za-z_$][A-Za-z0-9_$]*=400,[A-Za-z_$][A-Za-z0-9_$]*=3,[A-Za-z_$][A-Za-z0-9_$]*=\.65;' "$CLIENT/assets")"
+	# perl の式は単一引用符で書く（二重引用符だと $] などが perl の変数として読まれる）。上限は環境変数で渡す
+	WORD_LIMIT="$WORD_LIMIT" perl -pi -e 's/var ([A-Za-z_\$][\w\$]*)=400,([A-Za-z_\$][\w\$]*)=\.3,([A-Za-z_\$][\w\$]*)=400,([A-Za-z_\$][\w\$]*)=3,([A-Za-z_\$][\w\$]*)=\.65;/var $1=$ENV{WORD_LIMIT},$2=.3,$3=400,$4=3,$5=.65;/' "$WORD_BUNDLE"
+	echo "  word diff: 上限を ${WORD_LIMIT} 文字にした（$(basename "$WORD_BUNDLE")）"
+else
+	echo "  word diff: 当てる先が 1 か所に決まらない。diffo 側が語の差分の定数を変えた可能性がある" >&2
+	exit 1
+fi
+
+# 6. スレッドの配置処理に、表示位置を探し直す接続口を足す
 if ! command -v node >/dev/null 2>&1; then
 	echo "diffo-patch: node が見つからない。diffo は npx（node）で動くので、同じ環境で実行する" >&2
 	exit 1
@@ -201,6 +224,10 @@ if grep -rq '{gfm:!0,breaks:!0}' "$CLIENT/assets" 2>/dev/null; then
 fi
 if ! grep -rq '{gfm:!0,breaks:!1}' "$CLIENT/assets" 2>/dev/null; then
 	echo "diffo-patch: breaks: false を確認できない" >&2
+	exit 1
+fi
+if [ "$(word_limit_count "$WORD_LIMIT")" -ne 1 ] || [ "$(word_limit_count 400)" -ne 0 ]; then
+	echo "diffo-patch: 語の差分の上限が ${WORD_LIMIT} 文字になっていない" >&2
 	exit 1
 fi
 placement_hooks="$( (grep -rhoF '(globalThis.__diffoPlaceThreads??' "$CLIENT/assets" || true) | wc -l | tr -d '[:space:]')"
